@@ -1,0 +1,115 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<? if(!isset($vacio)){
+	?>
+
+<table width="100%"><tr><td align="right">
+<?= $sisap->submitTagRemote('Limpiar Lista', array('funcion'=>'confirma_limpiar_lista_completa','url1' => '/cfpp10_registro_asiento_contable/limpiar_lista/2', 'update1'=>'principal')); ?>
+</td></tr></table>
+
+<div id="grabar" style="overflow:hidden;">
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td align="center"  width="5%">Linea</td>
+    <td align="center" width="8%">Tipo de Movimiento</td>
+    <td align="center" width="7%">Tipo<br />Cuenta</td>
+    <td align="center" width="7%">Cuenta</td>
+    <td align="center" width="7%">Sub <br />Cuenta </td>
+    <td align="center" width="7%">División<br />Estadística</td>
+    <td align="center" width="7%">Subdivisión<br />Estadística</td>
+    <td align="center" width="13%">Debe</td>
+    <td align="center" width="13%">Haber</td>
+    <td align="center" width="5%">---</td>
+  </tr>
+
+<?php
+ if(isset($_SESSION ["items1"]) && $_SESSION ["items1"]!=null){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+ 	$monto1=0;
+ 	$monto2=0;
+	$cont_ie = count($_SESSION["items1"]);
+	$cupd = $cont_ie == 1 ? 'principal' : 'carga_grilla';
+
+    foreach($_SESSION ["items1"] as $codigos){
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=7;$x++){
+    	$linea=$codigos[0];
+	   	if($x==7){
+	   		if($codigos[1]==1){
+	   			echo "<td align=\"right\" id=\"columna_$i\">".$sisap->Formato2($codigos[$x])."</td>";
+	   			echo "<td align=\"right\">---</td>";
+	   		 	$monto1=$monto1+$sisap->Formato1($codigos[$x]);
+	   		}else{
+	   			echo "<td align=\"right\">---</td>";
+	   			echo "<td align=\"right\" id=\"columna_$i\">".$sisap->Formato2($codigos[$x])."</td>";
+	   		 	$monto2=$monto2+$sisap->Formato1($codigos[$x]);
+	   		}
+	   	}else{
+	   		if($x==1 && $codigos[$x]==1){
+	   			echo "<td align=\"center\">Debito</td>";
+	   		}else if($x==1 && $codigos[$x]!=1){
+	   			echo "<td align=\"center\">Credito</td>";
+	   		}else{
+	   			echo "<td align=\"center\">".$codigos[$x]."</td>";
+	   		}
+	   	}
+    }
+   ?>
+   <td align="center">
+   	<a href="javascript:ver_documento('/cfpp10_registro_asiento_contable/editar_monto/<?=$i?>/<?=$codigos[8]?>/<?=$codigos[1]?>','<?= "columna_".$i ?>');"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar'))?></a>
+   	<?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cfpp10_registro_asiento_contable/eliminar_items/'.$codigos['id'].'/'.$codigos[8], array('update'=>$cupd,'title'=>'Eliminar'),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+   </td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+ }else{
+ 	for($x=0;$x<=9;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ }
+?>
+<tr>
+	<td colspan="7" align="right">TOTALES</td>
+	<td align="right" id="total_mddebe"><?=$sisap->Formato2($monto1);?></td><input type="hidden" id="monto_debe" value="<?=$monto1?>"/>
+	<td align="right" id="total_mdhaber"><?=$sisap->Formato2($monto2);?></td><input type="hidden" id="monto_haber" value="<?=$monto2?>"/>
+	<td align="center">---</td><input type="hidden" name="data[cnmp09][num_prox_line]" id="num_prox_line" value="<?=$num_prox_line?>" readonly />
+</tr>
+</table>
+<? $linea=$linea+1; ?>
+<script>
+	document.getElementById('linea').value=<?=$linea?>;
+	document.getElementById('debe').value='';
+	document.getElementById('haber').value='';
+</script>
+
+<div id="del"></div>
+</div>
+<?/*<script language="JavaScript" type="text/javascript">
+  document.getElementById('lista_partidas').value=<?=$_SESSION["contador"];?>;
+</script> */ ?>
+<? } ?>
+
+

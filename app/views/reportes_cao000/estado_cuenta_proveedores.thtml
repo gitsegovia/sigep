@@ -1,0 +1,406 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+$_SESSION['titulo_a']=$titulo_a;
+$_SESSION['ano']=$ANO;
+
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	 function Footer(){
+	   	$this->SetY(-10);
+		$this->SetFont('vera','',5);
+	   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG','',1,'C');
+   	 }
+
+
+	function Header()
+	{
+
+
+	    $this->top_reporte("ESTADO DE CUENTA DE PROVEEDORES", "AÑO: ".$_SESSION['ano'], null, array("Y"=>"22", "X"=>"13", "Z"=>"14"), array("Y"=>"15", "X"=>"315"));
+
+
+		$this->Cell(0,3,"",'B',1,'C');
+
+		$this->SetFont('vera','B',7);
+
+		$this->Cell(68,6,"PROVEEDORES",'LB',0,'C');
+		$this->Cell(77,6,"                  ORDEN DE COMPRA",'LB',0,'C');
+		$this->Cell(76,6,"                  ORDEN DE PAGO",'B',0,'C');
+		$this->Cell(0,6,"CANCELACIÓN",'LRB',1,'C');
+
+		$this->Cell(22,1,"",'RL',0,'C');
+		$this->Cell(46,1,"",'',0,'C');
+		$this->Cell(16,1,"",'LR',0,'C');
+		$this->Cell(15,1,"",'LR',0,'C');
+		$this->Cell(23,1,"",'LR',0,'C');
+		$this->Cell(23,1,"",'LR',0,'C');
+		$this->Cell(23,1,"",'LR',0,'C');
+		$this->Cell(15,1,"",'LR',0,'C');
+		$this->Cell(15,1,"",'LR',0,'C');
+		$this->Cell(23,1,"",'LR',0,'C');
+		$this->Cell(38,1,"",'LR',0,'C');
+		$this->Cell(15,1,"",'LR',0,'C');
+		$this->Cell(15,1,"",'LR',0,'C');
+		$this->Cell(0,1,"",'LR',1,'C');
+		//$this->Cell(0,1,"",'LR',1,'C');
+
+
+		$this->Cell(22,2,"",'RL',0,'C');
+		$this->Cell(46,2,"",'',0,'C');
+		$this->Cell(16,2,"",'L',0,'C');
+		$this->Cell(15,2,"",'LR',0,'C');
+		$this->Cell(23,2,"",'LR',0,'C');
+		$this->Cell(23,2,"MONTO",'LR',0,'C');
+		$this->Cell(23,2,"",'LR',0,'C');
+		$this->Cell(15,2,"",'LR',0,'C');
+		$this->Cell(15,2,"",'LR',0,'C');
+		$this->Cell(23,2,"",'LR',0,'C');
+		$this->Cell(38,2,"ENTIDAD",'LR',0,'C');
+		$this->Cell(15,2,"NÚMERO",'LR',0,'C');
+		$this->Cell(15,2,"",'LR',0,'C');
+		$this->Cell(0,2,"",'LR',1,'C');
+		//$this->Cell(0,2,"",'LR',1,'C');
+
+		$this->Cell(22,6,"R.I.F",'RLB',0,'C');
+		$this->Cell(46,6,"DENOMINACIÓN COMERCIAL",'B',0,'C');
+		$this->Cell(16,6,"NÚMERO",'LB',0,'C');
+		$this->Cell(15,6,"FECHA",'LB',0,'C');
+		$this->Cell(23,6,"MONTO",'LB',0,'C');
+		$this->Cell(23,6,"CANCELADO",'LBR',0,'C');
+		$this->Cell(23,6,"SALDO",'LBR',0,'C');
+		$this->Cell(15,6,"NÚMERO",'LBR',0,'C');
+		$this->Cell(15,6,"FECHA",'LBR',0,'C');
+		$this->Cell(23,6,"MONTO",'LBR',0,'C');
+		$this->Cell(38,6,"BANCARIA",'LBR',0,'C');
+		$this->Cell(15,6,"CHEQUE",'LBR',0,'C');
+		$this->Cell(15,6,"FECHA",'LBR',0,'C');
+		$this->Cell(0,6,"MONTO",'LBR',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$fpdf = new fpdfview('L','mm','LEGAL');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(12);
+$fpdf->SetLeftMArgin(20);
+$fpdf->SetRightMargin(20);
+$fpdf->SetAutoPageBreak(true, 10);
+$fpdf->AddPage();
+$fpdf->SetFont('vera','B',5);
+$total_monto_oc = 0;
+$total_monto_cancelado = 0;
+$total_monto_op = 0;
+$total_monto_cheque = 0;
+$total_deuda = 0;
+$temp = 'j';
+foreach($estado_cuenta_proveedores as $ecp){
+	$denominacion=$ecp[0]["razon_social"];
+	$long=strlen($denominacion);
+	$long2 = strlen($ecp[0]["entidad_bancaria"]);
+	if($long<=45 && $long2<=45){//echo "a";
+		$height=5;
+	}else if(($long>45 && $long<=90) || ($long2>45 && $long2<=90)){//echo "b";
+		$height=10;
+	}else if(($long>90 && $long<=135) && ($long2>90 && $long2<=135)){//echo "c";
+		$height=14;
+	}else if(($long>135 && $long<=170) && ($long2>135 && $long2<=170)){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=26;
+	}else{//echo "i";
+		$height=28;
+	}
+	$rif= $ecp[0]["rif"];
+	if($temp != $rif){
+		$temp = $rif;
+		$fpdf->Cell(22,$height,$rif,'RL',0,'C');//RIF
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(46,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		$fpdf->MultiCell(46,3,$denominacion,'','L');//AQUI DENOMINACION COMERCIAL
+	}else{
+		$fpdf->Cell(22,$height,'','RL',0,'C');//RIF
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(46,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		$fpdf->MultiCell(46,3,'','','L');//AQUI DENOMINACION COMERCIAL
+	}
+
+
+
+	$varX =$varX+46;
+	$varY=$varY-1;
+	$fpdf->SetXY($varX,$varY);
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(16,$height,$sisap->mascara_ocho($ecp[0]["numero_orden_compra"]),'L',0,'C');//NUMERO
+	$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_orden_compra"],"D/M/A"),'L',0,'C');//FECHA
+	$fpdf->Cell(23,$height,$sisap->Formato2($ecp[0]["monto_orden"]),'L',0,'R');//MONTO
+	$total_monto_oc += $ecp[0]["monto_orden"];
+	if($ecp[0]["monto_cancelado"] == 0 && $ecp[0]["monto_orden_pago"] != 0){
+		$monto_cancelado = $ecp[0]["monto_orden_pago"];
+		$saldo=($ecp[0]["monto_orden"]-$ecp[0]["monto_orden_pago"]);
+		$total_monto_cancelado += $ecp[0]["monto_orden_pago"];
+	}else{
+		$monto_cancelado = $ecp[0]["monto_cancelado"];
+		$saldo=($ecp[0]["monto_orden"]-$ecp[0]["monto_cancelado"]);
+		$total_monto_cancelado += $ecp[0]["monto_cancelado"];
+	}
+	$fpdf->Cell(23,$height,$sisap->Formato2($monto_cancelado),'L',0,'R');//MONTO CANCELADO
+
+	$fpdf->Cell(23,$height,$sisap->Formato2($saldo),'L',0,'R');//SALDO
+	$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["numero_orden_pago"]),'L',0,'C');//NUMERO
+	$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_orden_pago"],"D/M/A"),'L',0,'C');//FECHA
+	$fpdf->Cell(23,$height,$sisap->Formato2($ecp[0]["monto_orden_pago"]),'LR',0,'R');//MONTO
+	$total_monto_op += $ecp[0]["monto_neto_cobrar"];
+	$fpdf->SetFont('vera','',5);
+	//$fpdf->Cell(38,$height,"",'L',0,'L');//entidad bancaria
+	$fpdf->Cell(38,1,"",'',2,'C');
+	$varX = $fpdf->GetX();
+	$varY = $fpdf->GetY();
+	$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"],'','L');//AQUI entidad bancaria
+	$varX =$varX+38;
+	$varY=$varY-1;
+	$fpdf->SetXY($varX,$varY);
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["numero_cheque"]),'L',0,'C');//NUMERO CHEQUE
+	$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_cheque"],"D/M/A"),'L',0,'C');//FECHA
+	$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+	$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_neto_cobrar"]),'LR',1,'R');//MONTO
+	$total_monto_cheque += $ecp[0]["monto_neto_cobrar"];
+	$deuda = $ecp[0]["monto_orden"] - $ecp[0]["monto_neto_cobrar"];
+	$total_deuda += $deuda;
+	//$fpdf->Cell(0,$height,$sisap->Formato2($deuda),'LR',1,'R');//DEUDA
+	$fpdf->Cell(0,0,"",'T',1,'R');
+	if($ecp[0]["monto_isrl"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		//$fpdf->Cell(38,$height,'','RL',0,'C');
+		//$fpdf->Cell(15,$height,'','RL',0,'C');
+		//$fpdf->Cell(15,$height,'','RL',0,'C');
+		//$fpdf->Cell(221,$height,"",'LR',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].' (ISRL)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_isrl"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_isrl"],"D/M/A"),'L',0,'C');//FECHA
+		//$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_isrl"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_isrl"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+	if($ecp[0]["monto_iva"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		//$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].' (IVA)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_iva"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_iva"],"D/M/A"),'L',0,'C');//FECHA
+		//$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_iva"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_iva"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+	if($ecp[0]["monto_municipal"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		//$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].' (IMP.MCPAL)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_municipal"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_municipal"],"D/M/A"),'L',0,'C');//FECHA
+		//$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_municipal"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_municipal"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+	if($ecp[0]["monto_timbre"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		//$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].'(TIMBRE)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_timbre"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_timbre"],"D/M/A"),'L',0,'C');//FECHA
+		//$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_timbre"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+
+
+
+
+	if($ecp[0]["monto_multa"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		//$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].'(R. Civil)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_multa"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_multa"],"D/M/A"),'L',0,'C');//FECHA
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_multa"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_multa"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+
+
+
+	if($ecp[0]["monto_responsabilidad"] != '0.00'){
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(22,$height,'','RL',0,'C');
+		$fpdf->Cell(46,$height,'','R',0,'C');
+		$fpdf->Cell(16,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(15,$height,'','R',0,'C');
+		$fpdf->Cell(23,$height,'','R',0,'C');
+		$fpdf->Cell(38,1,"",'',2,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		//$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(38,3,$ecp[0]["entidad_bancaria"].'(R. Social)','','L');//AQUI entidad bancaria
+		$varX =$varX+38;
+		$varY=$varY-1;
+		$fpdf->SetXY($varX,$varY);
+		$fpdf->SetFont('vera','B',5);
+		$fpdf->Cell(15,$height,$sisap->mascara_ocho($ecp[0]["cheque_responsabilidad"]),'L',0,'C');//NUMERO CHEQUE
+		$fpdf->Cell(15,$height,$sisap->Cfecha($ecp[0]["fecha_responsabilidad"],"D/M/A"),'L',0,'C');//FECHA
+		//$monto_retenciones = $ecp[0]["monto_isrl"] + $ecp[0]["monto_iva"] + $ecp[0]["monto_municipal"] + $ecp[0]["monto_timbre"];
+		$fpdf->Cell(0,$height,$sisap->Formato2($ecp[0]["monto_responsabilidad"]),'LR',1,'R');//MONTO
+		$total_monto_cheque += $ecp[0]["monto_responsabilidad"];
+		$fpdf->Cell(0,0,"",'T',1,'R');
+	}
+
+
+
+
+
+
+
+
+}//fin foreach
+	$fpdf->Cell(0,0,"",'T',1,'R');
+	$fpdf->SetFont('vera','B',7);
+	$fpdf->Cell(68,6,"TOTALES",'TRLB',0,'R');
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(16,6,"",'LB',0,'R');//TOTAL NUMERO
+	$fpdf->Cell(15,6,"",'LB',0,'R');//TOTAL FECHA
+	$fpdf->Cell(23,6,$sisap->Formato2($total_monto_oc),'LB',0,'R');//TOTAL MONTO
+	$fpdf->Cell(23,6,$sisap->Formato2($total_monto_cancelado),'LB',0,'R');//TOTAL MONTO CANCELADO
+	$fpdf->Cell(23,6,"",'LB',0,'R');//TOTAL SALDO
+	$fpdf->Cell(15,6,"",'LB',0,'R');//TOTAL NUMERO
+	$fpdf->Cell(15,6,"",'LB',0,'R');//TOTAL FECHA
+	$fpdf->Cell(23,6,$sisap->Formato2($total_monto_op),'LB',0,'R');//TOTAL MONTO
+	$fpdf->Cell(38,6,"",'LB',0,'R');//TOTAL entidad bancaria
+	$fpdf->Cell(15,6,"",'LB',0,'R');//TOTAL NUMERO CHEQUE
+	$fpdf->Cell(15,6,"",'LB',0,'R');//TOTAL FECHA
+	$fpdf->Cell(0,6,$sisap->Formato2($total_monto_cheque),'LBR',1,'R');//TOTAL MONTO
+
+$fpdf->OutPut('Estado_cuenta_proveedores_'.date("d-m-Y h:i:sa").".pdf",'D');
+
+?>

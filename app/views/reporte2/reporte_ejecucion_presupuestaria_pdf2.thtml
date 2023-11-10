@@ -1,0 +1,178 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+// TIPO DE GASTO:
+ $_SESSION["tipo_gasto_reporte"]='';
+switch($tipo_gasto){
+	case 0:$_SESSION["tipo_gasto_reporte"]='Tipo de Gasto: Todo';break;
+    case 1:$_SESSION["tipo_gasto_reporte"]='Capital';break;
+    case 2:$_SESSION["tipo_gasto_reporte"]='Corriente';break;
+}
+
+/*
+ Presupuestos: o recursos
+1.-Ordinario
+2.-Coordinado
+3.-Fci
+4.-Mpps
+5.-Ingresos extraordinarios
+6.-Ingresos propios
+ */
+ $_SESSION["tipo_presupues_recurso"]='';
+switch($tipo_recurso){
+	case 0:$_SESSION["tipo_presupues_recurso"]='Tipo de Recurso: Todo';break;
+    case 1:$_SESSION["tipo_presupues_recurso"]='Ordinario';break;
+    case 2:$_SESSION["tipo_presupues_recurso"]='Coordinado';break;
+    case 3:$_SESSION["tipo_presupues_recurso"]='Fci';break;
+    case 4:$_SESSION["tipo_presupues_recurso"]='Mpps';break;
+    case 5:$_SESSION["tipo_presupues_recurso"]='Ingresos extraordinarios';break;
+    case 6:$_SESSION["tipo_presupues_recurso"]='Ingresos propios';break;
+    case 7:$_SESSION["tipo_presupues_recurso"]='Laee';break;
+    case 8:$_SESSION["tipo_presupues_recurso"]='Fides';break;
+
+}
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"EJECUCION PRESUPUESTARIA A NIVEL DE PARTIDAS",'RL',1,'C');
+		$this->Cell(0,7,"DESDE: ".$_SESSION['fecha'],'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+
+        $this->SetFont('vera','B',6);
+		$this->Cell(80,3,"ENTIDAD FEDERAL: ".$_SESSION['estado'],'LB',0,'L');
+		$this->Cell(0,3," ".$_SESSION['tipo_gasto_reporte']."  /  ".$_SESSION['tipo_presupues_recurso']."  /  ".$_SESSION['frecuencia'],'RB',1,'R');
+
+		// $this->top_reporte("EJECUCION PRESUPUESTARIA A NIVEL DE PARTIDAS", "TIPO DE GASTO: ".$_SESSION["tipo_gasto_reporte"]."  -  TIPO DE RECURSO: ".$_SESSION["tipo_presupues_recurso"]."  -  FRECUENCIA: ".$_SESSION['frecuencia'], "DESDE: ".$_SESSION['fecha'], array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"18", "X"=>"245"));
+		$this->Ln(3);
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(15,3,"",'TRL',0,'C');
+$pdf->Cell(41,3,"",'TR',0,'C');
+
+$pdf->Cell(25,3,"ASIGNACIÓN ",'TR',0,'C');
+$pdf->Cell(25,3,"",'TR',0,'C');
+$pdf->Cell(25,3,"",'TR',0,'C');
+
+$pdf->Cell(25,3,"ASIGNACIÓN ",'TR',0,'C');
+$pdf->Cell(25,3,"",'TR',0,'C');
+$pdf->Cell(25,3,"SALDO PARA",'TR',0,'C');
+
+$pdf->Cell(25,3,"GASTOS",'TR',0,'C');
+$pdf->Cell(0,3,"",'TR',1,'C');
+
+
+
+$pdf->Cell(15,3,"CÓDIGO",'RBL',0,'C');
+$pdf->Cell(41,3,"PARTIDAS",'RB',0,'C');
+
+$pdf->Cell(25,3,"AL ".$_SESSION['fecha_al'],'RB',0,'C');
+$pdf->Cell(25,3,"AUMENTO",'RB',0,'C');
+$pdf->Cell(25,3,"DISMINUCIÓN",'RB',0,'C');
+
+$pdf->Cell(25,3,"AJUSTADA ",'RB',0,'C');
+$pdf->Cell(25,3,"COMPROMISOS",'RB',0,'C');
+$pdf->Cell(25,3,"COMPROMETER",'RB',0,'C');
+
+$pdf->Cell(25,3,"CAUSADOS",'RB',0,'C');
+$pdf->Cell(0,3,"PAGADOS",'RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+
+$total_asignacion = $total_aumento = $total_disminucion = $total_compromisos = $total_causado = $total_pagado = $total_asignacion_ajustada = $total_saldo_comprometer = 0;
+foreach($data as $row){
+	$cod_partida = $row[0]['cod_partida'];
+	$partida = $row[0]['partida'];
+	$asignacion = $row[0]['asignacion'];
+	$aumento = $row[0]['aumento'];
+	$disminucion = $row[0]['disminucion'];
+	$compromisos = $row[0]['compromisos'];
+	$causado = $row[0]['causado'];
+	$pagado = $row[0]['pagado'];
+	//$diferencia = $row[0]['diferencia'];
+
+	$asignacion_ajustada = $asignacion + $aumento - $disminucion;
+	$saldo_comprometer = $asignacion_ajustada - $compromisos;
+
+	$total_asignacion += $asignacion;
+	$total_aumento += $aumento;
+	$total_disminucion += $disminucion;
+	$total_compromisos += $compromisos;
+	$total_causado += $causado;
+	$total_pagado += $pagado;
+	$total_asignacion_ajustada += $asignacion_ajustada;
+	$total_saldo_comprometer += $saldo_comprometer;
+
+
+	$pdf->Cell(15,8,$cod_partida,'TRL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(41,1,"",'T',2,'C');
+	$pdf->MultiCell(40,3,$partida,'','L');
+	$varX =$varX+41;
+	//$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);
+
+
+	$pdf->Cell(25,8,$sisap->Formato2($asignacion),'TLR',0,'R');//asignacion
+	$pdf->Cell(25,8,$sisap->Formato2($aumento),'TR',0,'R');//aumento
+	$pdf->Cell(25,8,$sisap->Formato2($disminucion),'TR',0,'R');//disminucion
+	$pdf->Cell(25,8,$sisap->Formato2($asignacion_ajustada),'TR',0,'R');//asignacion ajustada
+	$pdf->Cell(25,8,$sisap->Formato2($compromisos),'TR',0,'R');//compromisos
+	$pdf->Cell(25,8,$sisap->Formato2($saldo_comprometer),'TR',0,'R');//saldo para comprometer
+	$pdf->Cell(25,8,$sisap->Formato2($causado),'TR',0,'R');//causado
+	$pdf->Cell(0,8,$sisap->Formato2($pagado),'TR',1,'R');//pagado
+	$pdf->Cell(0,0,"",'T',1);//--Linea en blanco
+}
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(56,5,"T O T A L E S",'TRLB',0,'C');
+$pdf->Cell(25,5,$sisap->Formato2($total_asignacion),'TRB',0,'C');//total asignacion
+$pdf->Cell(25,5,$sisap->Formato2($total_aumento),'TRB',0,'R');//total aumento
+$pdf->Cell(25,5,$sisap->Formato2($total_disminucion),'TRB',0,'R');//total disminucion
+$pdf->Cell(25,5,$sisap->Formato2($total_asignacion_ajustada),'TRB',0,'R');//total asignacion ajustada
+$pdf->Cell(25,5,$sisap->Formato2($total_compromisos),'TRB',0,'R');//total compromiso
+$pdf->Cell(25,5,$sisap->Formato2($total_saldo_comprometer),'TRB',0,'R');//total saldo para comprometer
+$pdf->Cell(25,5,$sisap->Formato2($total_causado),'TRB',0,'R');//total causado
+$pdf->Cell(0,5,$sisap->Formato2($total_pagado),'TRB',1,'R');//total pagado
+
+$pdf->Ln(8);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(100,4,"NOMBRE Y FIRMA",'',0);
+$pdf->Cell(0,4,"CARGO:",'',1);
+
+$pdf->SetFont('vera','I',7);
+$pdf->Cell(15,$nombre_primera_firma,'',0);//nombre firma1
+$pdf->Cell(0,15,$cargo_primera_firma,'',1);//cargo 1
+$pdf->Cell(100,15,$nombre_segunda_firma,'',0);//nombre firma 2
+$pdf->Cell(0,15,$cargo_segunda_firma,'',1);//cargo 2
+$pdf->Output('reporte_ejecucion_presupuestaria'.date('d/m/Y').".pdf", 'D');
+?>

@@ -1,0 +1,304 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Contribuyentes - Zonificado'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shp001_registro_contribuyentes/2/'); ?>" >
+			<table border="0" >
+
+
+			<tr>
+			   <td>
+			     ORDENADO POR:
+			     <?= $sisap->radioTagRemote("reporte3/ordenado", array('1'=>'Rif', '2'=>'Razón social','3'=>'Ubicación Geográfica'), array('url1'=>'/reporte_hacienda/funcion/', 'update1'=>'funcion', 'id'=>'tipo_ordenado'), null, $opc=2); ?>
+			   </td>
+		    </tr>
+
+
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$this->top_reporte($titulo_A = "Contribuyentes - Zonificado", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"250", "Z"=>"12"));
+
+
+
+				$this->SetFont('vera','B',7);
+				$this->Cell(35,4,'','TRBL',0,'C');
+				$this->Cell(20,4,'CÓDIGO','TRB',0,'C');
+				$this->Cell(0,4,'DENOMINACIÓN DE LA UBICACIÓN GEOGRÁFICA','TRB',1,'L');
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(35,4,'ESTADO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_estado"],'RB',0,'C');//--------[COD. ESTADO]
+				$this->Cell(0,4,$_SESSION["deno_cod_estado"],'RB',1,'L');//---------[DENO. ESTADO]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(35,4,'MUNICIPIO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_municipio"],'RB',0,'C');//--------[COD. MUNICIPIO]
+				$this->Cell(0,4,$_SESSION["deno_cod_municipio"],'RB',1,'L');//---------[DENO. MUNICIPIO]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(35,4,'PARROQUIA','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_parroquia"],'RB',0,'C');//--------[COD. PARRORQUIA]
+				$this->Cell(0,4,$_SESSION["deno_cod_parroquia"],'RB',1,'L');//---------[DENO. PARROQUIA]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(35,4,'CENTRO POBLADO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_centro"],'RB',0,'C');//--------[COD. CENTRO]
+				$this->Cell(0,4,$_SESSION["deno_cod_centro"],'RB',1,'L');//---------[DENO. CENTRO]
+
+
+
+
+		$this->SetFont('vera','B',6);
+
+
+		$this->Cell(20,4,'RIF','TRL',0,'C');
+		$this->Cell(60,4,'','TR',0,'C');
+		$this->Cell(30,4,'FECHA','TR',0,'C');
+		$this->Cell(25,4,'','RT',0,'C');
+		$this->Cell(35,4,'','RT',0,'C');
+		$this->Cell(42,4,'','TR',0,'C');
+		$this->Cell(22,4,'IMPUESTO','TR',0,'C');
+		$this->Cell(0,4,'IMPUESTO','TR',1,'C');
+
+
+
+		$this->Cell(20,3,'CÉDULA ID.','RBL',0,'C');
+		$this->Cell(60,3,'NOMBRES Y APELLIDOS / RAZÓN SOCIAL','RBL',0,'C');
+		$this->Cell(30,3,'INSCRIPCIÓN','RB',0,'C');
+        $this->Cell(25,3,'TELÉFONOS','RB',0,'C');
+        $this->Cell(35,3,'CORREO ELECTRÓNICO','RB',0,'C');
+		$this->Cell(42,3,'DIRECCIÓN','RB',0,'C');
+		$this->Cell(22,3,'MENSUAL','RB',0,'C');
+		$this->Cell(0,3,'ANUAL','RB',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+
+
+$_SESSION["aux_cod_estado"] = "";
+$_SESSION["aux_cod_municipio"] = "";
+$_SESSION["aux_cod_parroquia"] = "";
+$_SESSION["aux_cod_centro"] = "";
+
+
+
+
+$_SESSION["cod_estado"] = "";
+$_SESSION["cod_municipio"] = "";
+$_SESSION["cod_parroquia"] = "";
+$_SESSION["cod_centro"] = "";
+
+
+
+
+$_SESSION["deno_cod_estado"] = "";
+$_SESSION["deno_cod_municipio"] = "";
+$_SESSION["deno_cod_parroquia"] = "";
+$_SESSION["deno_cod_centro"] = "";
+
+
+
+
+$i = 0;
+
+
+foreach($rs as $ve2){      $i++;
+                          $ve[$i]["rif_cedula"]                  =   $ve2[0]["rif_cedula"];
+						  $ve[$i]["personalidad_juridica"]       =   $ve2[0]["personalidad_juridica"];
+						  $ve[$i]["fecha_inscripcion"]           =   $ve2[0]["fecha_inscripcion"];
+						  $ve[$i]["nacionalidad"]                =   $ve2[0]["nacionalidad"];
+						  $ve[$i]["estado_civil"]                =   $ve2[0]["estado_civil"];
+						  $ve[$i]["profesion"]                   =   $ve2[0]["profesion"];
+						  $ve[$i]["cod_calle_avenida"]           =   $ve2[0]["cod_calle_avenida"];
+						  $ve[$i]["cod_vereda_edificio"]         =   $ve2[0]["cod_vereda_edificio"];
+						  $ve[$i]["numero_vivienda_local"]       =   $ve2[0]["numero_vivienda_local"];
+						  $ve[$i]["cod_vereda_edificio"]         =   $ve2[0]["cod_vereda_edificio"];
+						  $ve[$i]["telefonos_fijos"]             =   $ve2[0]["telefonos_fijos"];
+						  $ve[$i]["telefonos_celulares"]         =   $ve2[0]["telefonos_celulares"];
+						  $ve[$i]["correo_electronico"]          =   $ve2[0]["correo_electronico"];
+						  $ve[$i]["razon_social_nombres"]        =   $ve2[0]["razon_social_nombres"];
+						  $ve[$i]["monto_mensual"]       		 =   $ve2[0]["monto_mensual"];
+
+
+						  $ve[$i]["cod_estado"]           =   $ve2[0]["cod_estado"];
+						  $ve[$i]["cod_municipio"]        =   $ve2[0]["cod_municipio"];
+						  $ve[$i]["cod_parroquia"]        =   $ve2[0]["cod_parroquia"];
+						  $ve[$i]["cod_centro_poblado"]   =   $ve2[0]["cod_centro_poblado"];
+
+						  $ve[$i]["deno_cod_estado"]       =   $ve2[0]["deno_cod_estado"];
+						  $ve[$i]["deno_cod_municipio"]    =   $ve2[0]["deno_cod_municipio"];
+						  $ve[$i]["deno_cod_parroquia"]    =   $ve2[0]["deno_cod_parroquia"];
+						  $ve[$i]["deno_cod_centro"]       =   $ve2[0]["deno_cod_centro"];
+						  $ve[$i]["deno_cod_vialidad"]     =   $ve2[0]["deno_cod_vialidad"];
+						  $ve[$i]["deno_cod_vereda"]       =   $ve2[0]["deno_cod_vereda"];
+
+}//fin foreach
+
+
+$ii = $i;
+
+for($i=1; $i<=$ii; $i++){
+
+
+    $_SESSION["cod_estado"]      = $sisap->AddCero2($ve[$i]["cod_estado"]);
+	$_SESSION["cod_municipio"]   = $sisap->AddCero2($ve[$i]["cod_municipio"]);
+	$_SESSION["cod_parroquia"]   = $sisap->AddCero2($ve[$i]["cod_parroquia"]);
+	$_SESSION["cod_centro"]      = $sisap->AddCero2($ve[$i]["cod_centro_poblado"]);
+
+	$_SESSION["deno_cod_estado"]    = $ve[$i]["deno_cod_estado"];
+	$_SESSION["deno_cod_municipio"] = $ve[$i]["deno_cod_municipio"];
+	$_SESSION["deno_cod_parroquia"] = $ve[$i]["deno_cod_parroquia"];
+	$_SESSION["deno_cod_centro"]    = $ve[$i]["deno_cod_centro"];
+
+
+ if($_SESSION["aux_cod_estado"]     != $ve[$i]["cod_estado"] ||
+	$_SESSION["aux_cod_municipio"]  != $ve[$i]["cod_municipio"] ||
+	$_SESSION["aux_cod_parroquia"]  != $ve[$i]["cod_parroquia"] ||
+	$_SESSION["aux_cod_centro"]     != $ve[$i]["cod_centro_poblado"]
+	){
+
+	                    $_SESSION["aux_cod_estado"]     = $ve[$i]["cod_estado"];
+						$_SESSION["aux_cod_municipio"]  = $ve[$i]["cod_municipio"];
+						$_SESSION["aux_cod_parroquia"]  = $ve[$i]["cod_parroquia"];
+						$_SESSION["aux_cod_centro"]     = $ve[$i]["cod_centro_poblado"];
+
+
+						$pdf->AddPage();
+
+
+	}
+
+	if($ve[$i]["correo_electronico"]==0){$ve[$i]["correo_electronico"]='';}
+	if($ve[$i]["telefonos_fijos"]==0){   $ve[$i]["telefonos_fijos"]='';}
+
+        $pdf->Cell(20,6,$ve[$i]["rif_cedula"],'RL',0,'C');
+		$pdf->Cell(60,6,$ve[$i]["razon_social_nombres"],'RL',0,'L');
+		$pdf->Cell(30,6,$sisap->cambia_fecha($ve[$i]["fecha_inscripcion"]),'R',0,'C');
+
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(25,1,'','T',2,'C');
+	    $pdf->MultiCell(25,2,$ve[$i]["telefonos_fijos"],'','L');
+	    $varX = $varX+25;
+	    $pdf->SetXY($varX,$varY);
+//        $pdf->Cell(25,6,$ve[$i]["telefonos_fijos"],'R',0,'C');
+
+        $pdf->Cell(35,6,$ve[$i]["correo_electronico"],'RL',0,'C');
+
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(42,1,'','T',2,'C');
+	    $pdf->MultiCell(42,2,$ve[$i]["deno_cod_vialidad"].' '.$ve[$i]["deno_cod_vereda"].' '.$ve[$i]["numero_vivienda_local"],'','L');
+	    $varX = $varX+42;
+	    $pdf->SetXY($varX,$varY);
+//		$pdf->Cell(30,5,$ve[$i]["cod_calle_avenida"].' '.$ve[$i]["cod_vereda_edificio"].' '.$ve[$i]["numero_vivienda_local"],'RB',0,'C');
+
+		if($ve[$i]["monto_mensual"]==0){
+			$monto_mensual='';
+			$monto_anual='';
+		}else{
+			$monto_mensual=$sisap->Formato2($ve[$i]["monto_mensual"]);
+			$monto_anual=($ve[$i]["monto_mensual"]*12);
+			$monto_anual=$sisap->Formato2($monto_anual);
+		}
+
+		$pdf->Cell(22,6,$monto_mensual,'RL',0,'R');
+		$pdf->Cell(0,6, $monto_anual,'R',1,'R');
+
+		$pdf->Cell(0,0,'','T',1,'R');
+
+
+}//fin foreach
+
+
+
+
+
+$pdf->Output('shp001_registro_contribuyentes_'.date("d_m_Y_h"),'D');
+
+
+
+
+
+
+
+
+
+ } ?>

@@ -1,0 +1,166 @@
+<?if($opcion1==1){ ?>
+<?$sisap->Tabla("",true,"RELACIÓN DE CONTRIBUYENTES DE CRÉDITO DE VIVIENDAS","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda2/relacion_contribuyente_credito_vivienda/2'); ?>" >
+<?$sisap->OpenTable("750");?>
+<br />
+<b>ORDENADO POR:</b><?= $html->radio('reporte_hacienda2/ordenado', array('1'=>'Alfabético', '2'=>'RIF / C.I'), null, array('value'=>'1')); ?>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if($opcion1==2){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	    $titulo_A = "RELACIÓN DE CONTRIBUYENTES DE CRÉDITO DE VIVIENDAS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+       	$this->SetFont('vera','B',7);
+		$this->Cell(0,5,"CRÉDITOS OTORGADOS AL CONTRIBUYENTE",'TRL',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(58,3,"Nombres y Apellidos",'TR',0,'C');
+		$this->Cell(18,3,"Número",'TR',0,'C');
+		$this->Cell(18,3,"Fecha de",'TR',0,'C');
+		$this->Cell(18,3,"Cedula de",'TR',0,'C');
+		$this->Cell(37,3,"",'TR',0,'C');
+		$this->Cell(20,3,"Grupo",'TR',0,'C');
+		$this->Cell(20,3,"Ingreso",'TR',0,'C');
+		$this->Cell(19,3,"Frecuencia",'TR',0,'C');
+		$this->Cell(21,3,"Monto a",'TR',0,'C');
+		$this->Cell(0,3,"Monto",'TR',1,'C');
+
+		$this->Cell(20,3,"RIF/C.I.",'RBL',0,'C');
+		$this->Cell(58,3,"Razón social",'RB',0,'C');
+		$this->Cell(18,3,"Solicitud",'RB',0,'C');
+		$this->Cell(18,3,"Solicitud",'RB',0,'C');
+		$this->Cell(18,3,"Identidad",'RB',0,'C');
+		$this->Cell(37,3,"Nombre del conyugue",'RB',0,'C');
+		$this->Cell(20,3,"Familiar",'RB',0,'C');
+		$this->Cell(20,3,"Familiar",'RB',0,'C');
+		$this->Cell(19,3,"de pago",'RB',0,'C');
+		$this->Cell(21,3,"cancelar",'RB',0,'C');
+		$this->Cell(0,3,"Deuda",'RB',1,'C');
+    }
+
+
+}
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+if($datos!=null){
+
+
+$aux_rif_ci   = "";
+$contador_1   = 0;
+$contador_2   = 0;
+$monto_total  = 0;
+$total_contri = 0;
+  for($i=0;$i<count($datos);$i++){
+
+		  	if($aux_rif_ci!=$datos[$i][0]['rif_cedula']){
+		         $aux_rif_ci = $datos[$i][0]['rif_cedula'];
+		         $contador_2 = 0;
+		  	}//fin for
+
+		  	  if($contador_2==0){
+		  	  	 $rif_cedula           = $datos[$i][0]['rif_cedula'];
+		  	  	 $razon_social_nombres = $datos[$i][0]['razon_social_nombres'];
+		  	  }else{
+		  	  	 $rif_cedula           = "";
+		  	  	 $razon_social_nombres = "";
+		  	  }
+
+
+		  	$contador_1++;
+		  	$contador_2++;
+
+
+			if($datos[$i][0]['personalidad_juridica']==1) $personalidad='Natural'; else $personalidad='Juridica';
+			/////////////////////////////////////////
+			if($datos[$i][0]['frecuencia_pago']==1){
+				 $frecuencia='Mensual';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*1);
+			}else if($datos[$i][0]['frecuencia_pago']==2){
+				 $frecuencia='Bimestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*2);
+			}else if($datos[$i][0]['frecuencia_pago']==3){
+				 $frecuencia='Trimestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*3);
+			}else if($datos[$i][0]['frecuencia_pago']==4){
+				 $frecuencia='Semestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*6);
+			}else{
+				 $frecuencia='Anual';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*12);
+			}
+
+					$pdf->Cell(20,6,$rif_cedula,'RL',0,'C');// RIF/C.I.
+					//$pdf->Cell(58,6,"Razón social",'R',0,'C');// Razón social
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(58,1,"",'',2,'C');
+						$pdf->MultiCell(57,2,$razon_social_nombres,'','L');// Razón social
+						$varX = $varX+58;
+						$pdf->SetXY($varX,$varY);
+					$pdf->Cell(18,6,mascara_seis($datos[$i][0]['numero_solicitud']),'RL',0,'C');// Solicitud
+					$pdf->Cell(18,6,cambiar_formato_fecha($datos[$i][0]['fecha_solicitud']),'R',0,'C');// Solicitud
+					$pdf->Cell(18,6,$datos[$i][0]['cedula_conyugue'],'R',0,'C');// Cedula Identidad
+					//$pdf->Cell(37,6,"Nombre del conyugue",'R',0,'C');// Nombre del conyugue
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(37,1,"",'',2,'C');
+						$pdf->MultiCell(36,2,$datos[$i][0]['nombre_conyugue'],'','L');// Nombre del conyugue
+						$varX = $varX+37;
+						$pdf->SetXY($varX,$varY);
+					$pdf->Cell(20,6,$datos[$i][0]['nombre_conyugue'],'RL',0,'C');// Grupo Familiar
+					$pdf->Cell(20,6,$sisap->Formato2($datos[$i][0]['ingreso_mensual']),'R',0,'R');// Ingreso Familiar
+					$pdf->Cell(19,6,$frecuencia,'R',0,'C');// Frecuencia de pago
+					$pdf->Cell(21,6,$sisap->Formato2($monto_cancelar),'R',0,'R');// Total a cancelar
+					$pdf->Cell(0,6, $sisap->Formato2($datos[$i][0]['monto_deuda']),'R',1,'R');// Monto Deuda
+					$pdf->Cell(0,0,"",'T',1);
+
+	}//fin for
+
+}else{
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+
+}//fin else
+
+
+
+
+
+
+$pdf->Output('relacion_contribuyentes_credito_comercial_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

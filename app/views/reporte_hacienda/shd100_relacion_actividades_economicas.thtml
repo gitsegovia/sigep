@@ -1,0 +1,250 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Relación de licencias de actividades economicas'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd100_relacion_actividades_economicas/2/'); ?>" >
+			<table border="0" >
+			 <center>
+			  Año: <?= $sisap->selectTagRemote('reporte3/ano', $lista_ano,  null,  $ano1, array('onchange1'=>'/', 'update1'=>'vacio', 'id'=>'ano','style'=>'width:10%', 'onChange'=>'vacio'  , true), null, true);?>
+			  <br><br>
+			  </center>
+
+			<tr>
+			   <td align="center">
+			     ORDENADO POR: <?= $sisap->radioTagRemote("reporte3/radio_1", array('1'=>'Rif','2'=>'Razon social', '3'=>'Número de patente'), array('url1'=>'/reporte_hacienda/funcion/', 'update1'=>'funcion', 'id'=>'tipo_ordenado1'), null, $opc=1); ?>
+
+			   </td>
+		    </tr>
+
+
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$titulo_A = "Relación de licencias de actividades economicas";
+		$titulo_B = "Año : ".$_SESSION['top_relacion_ano'];
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"10", "X"=>"12", "Z"=>"13"), array("Y"=>"14", "X"=>"250", "Z"=>"13"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(7,4,'','TRL',0,'C');
+		$this->Cell(17,4,'Fecha de','TR',0,'C');
+		$this->Cell(17,4,'N° de','TR',0,'C');
+		$this->Cell(65,4,'nombres de la empresa','TR',0,'C');
+		$this->Cell(26,4,'rif','TR',0,'C');
+		$this->Cell(60,4,'dirección','TR',0,'C');
+		$this->Cell(35,4,'ciudad','TR',0,'C');
+		$this->Cell(0,4,'actividad','TR',1,'C');
+
+
+
+		$this->Cell(7,2,'','RLB',0,'C');
+		$this->Cell(17,2,'Emisión','BR',0,'C');
+		$this->Cell(17,2,'Patente','BR',0,'C');
+        $this->Cell(65,2,'','BR',0,'C');
+        $this->Cell(26,2,'','BR',0,'C');
+		$this->Cell(60,2,'','BR',0,'C');
+		$this->Cell(35,2,'','BR',0,'C');
+		$this->Cell(0,2,'Economica','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+$concatena=rand().rand().rand();
+$datos=null;
+if($datos!=null){
+$k=1;
+	for($i=0;$i<count($datos);$i++){
+
+		$concatena1=$datos[$i][0]['rif_cedula'];
+
+		if($concatena!=$concatena1){
+					$concatena=$concatena1;
+					$pdf->Cell(7,7,$k,'RL',0,'C');
+					$k++;
+					$pdf->Cell(17,7,$sisap->cambia_fecha($datos[$i][0]['fecha_patente']),'R',0,'C');
+					$pdf->Cell(17,7,$datos[$i][0]['numero_patente'],'R',0,'C');
+
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(65,1,"",'T',2,'C');
+					$pdf->MultiCell(65,2,$datos[$i][0]['razon_social_nombres'],'','L');// Nombres y Apellidos
+					$varX = $varX+65;
+					$pdf->SetXY($varX,$varY);
+			//        $pdf->Cell(65,6,$datos[$i][0]['razon_social_nombres'],'BR',0,'C');
+
+			        $pdf->Cell(26,7,$datos[$i][0]['rif_cedula'],'RL',0,'C');
+
+					$direccion=$datos[$i][0]['deno_estado']." - ".$datos[$i][0]['deno_municipio']." - ".$datos[$i][0]['deno_parroquia']." - ".$datos[$i][0]['deno_centro']." - ".$datos[$i][0]['deno_vialidad']." - ".$datos[$i][0]['numero_vivienda_local'];
+			        $varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(60,1,"",'T',2,'C');
+					$pdf->MultiCell(60,2,$direccion,'','L');// Nombres y Apellidos
+					$varX = $varX+60;
+					$pdf->SetXY($varX,$varY);
+			//		$pdf->Cell(60,'','BR',0,'C');
+
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(1,7,'','TL',0,'l');
+					$pdf->Cell(35,1,"",'T',2,'C');
+					$pdf->MultiCell(35,2,$datos[$i][0]['conocido'],'','L');// Nombres y Apellidos
+					$varX = $varX+35;
+					$pdf->SetXY($varX,$varY);
+//					$pdf->Cell(35,7,$datos[$i][0]['conocido'],'RL',0,'l');
+
+					$pdf->Cell(0,7,$datos[$i][0]['cod_actividad'],'LR',1,'C');
+
+					$pdf->Cell(0,0,'','T',1,'C');
+		}else{
+					$pdf->Cell(7,7,'','RL',0,'C');
+					$pdf->Cell(17,7,'','R',0,'C');
+					$pdf->Cell(17,7,'','R',0,'C');
+
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(65,1,"",'T',2,'C');
+					$pdf->MultiCell(65,2,'','','L');// Nombres y Apellidos
+					$varX = $varX+65;
+					$pdf->SetXY($varX,$varY);
+			//        $pdf->Cell(65,6,$datos[$i][0]['razon_social_nombres'],'BR',0,'C');
+
+			        $pdf->Cell(26,7,'','RL',0,'C');
+
+					$direccion=$datos[$i][0]['deno_estado']." - ".$datos[$i][0]['deno_municipio']." - ".$datos[$i][0]['deno_parroquia']." - ".$datos[$i][0]['deno_centro']." - ".$datos[$i][0]['deno_vialidad']." - ".$datos[$i][0]['numero_vivienda_local'];
+			        $varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(60,1,"",'T',2,'C');
+					$pdf->MultiCell(60,2,'','','L');// Nombres y Apellidos
+					$varX = $varX+60;
+					$pdf->SetXY($varX,$varY);
+			//		$pdf->Cell(60,'','BR',0,'C');
+
+					$pdf->Cell(35,7,'','RL',0,'C');
+					$pdf->Cell(0,7,$datos[$i][0]['cod_actividad'],'R',1,'C');
+
+					$pdf->Cell(0,0,'','T',1,'C');
+
+		}
+
+	}
+}else{
+	$pdf->Cell(7,7,'','RL',0,'C');
+					$pdf->Cell(17,7,'','R',0,'C');
+					$pdf->Cell(17,7,'','R',0,'C');
+
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(65,1,"",'T',2,'C');
+					$pdf->MultiCell(65,2,'','','L');// Nombres y Apellidos
+					$varX = $varX+65;
+					$pdf->SetXY($varX,$varY);
+			//        $pdf->Cell(65,6,$datos[$i][0]['razon_social_nombres'],'BR',0,'C');
+
+			        $pdf->Cell(26,7,'','RL',0,'C');
+
+			        $varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(60,1,"",'T',2,'C');
+					$pdf->MultiCell(60,2,'','','L');// Nombres y Apellidos
+					$varX = $varX+60;
+					$pdf->SetXY($varX,$varY);
+			//		$pdf->Cell(60,'','BR',0,'C');
+
+					$pdf->Cell(35,7,'','RL',0,'C');
+					$pdf->Cell(0,7,'','R',1,'C');
+
+					$pdf->Cell(0,0,'','T',1,'C');
+}
+
+$pdf->Output('Relacion_licencias_actividades_economicas_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

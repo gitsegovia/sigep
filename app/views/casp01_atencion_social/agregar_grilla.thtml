@@ -1,0 +1,118 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+<? if(!isset($vacio)){
+	?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro">
+		<td align="center" width="15%">Parentesco</td>
+		<td align="center" width="15%">Cédula</td>
+		<td align="center" width="45%">Apellidos y nombres</td>
+		<td align="center" width="15%">Fecha nacimiento</td>
+		<td align="center" width="15%">Sexo</td>
+		<td align="center" width="15%">Trabaja</td>
+		<td align="center" width="15%">Estudia</td>
+		<td align="center" width="10%">Acción</td>
+	</tr>
+
+
+  <?php
+//  print_r($_SESSION["items1"]);
+ if(isset($_SESSION ["items1"]) && $_SESSION ["items1"]!=array() ){
+
+
+ 	$i=0;
+ 	$j=0;
+	foreach($paren as $x){
+		$deno[$j] = $x['cnmd06_parentesco']['denominacion'];
+		$codigo[$j] = $x['cnmd06_parentesco']['cod_parentesco'];
+		$j++;
+	}
+    foreach($_SESSION ["items1"] as $codigos){
+    	//print_r($ve);
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+    	$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=6;$x++){
+    	if($x==0){
+    		echo "<td align=\"center\">".denominacion($deno, $codigo,$codigos[$x])."</td>";
+    	}else if($x==1){
+			echo "<td align=\"center\">".$codigos[$x]."</td>";
+    	}else if($x==2){
+    		echo "<td>".$codigos[$x]."</td>";
+    	}else if($x==3){
+    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+    	}else if($x==4){
+    		if($codigos[$x]==1)$muestra_1='Masculino'; else $muestra_1='Femenino';
+    		echo "<td>".$muestra_1."</td>";
+    	}else if($x==5 || $x==6){
+			if($codigos[$x]==1)$muestra='Si'; else $muestra='No';
+			echo "<td align=\"center\">".$muestra."</td>";
+    	}
+    }
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/casp01_atencion_social/eliminar_items/'.$codigos['id'], array('update'=>'carga_grilla','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+ }else{
+ 	for($x=0;$x<=7;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ }
+?>
+
+</table>
+<script>
+	document.getElementById('parentesco').value='';
+	document.getElementById('cedula_fami').value='';
+	document.getElementById('apenom').value='';
+	document.getElementById('fecha_nacimiento_2').value='';
+	document.getElementById('sexofami').value='';
+	document.getElementById('sexofami').text='';
+	document.getElementById('trabaja_1').checked=false;
+	document.getElementById('trabaja_2').checked=false;
+	document.getElementById('estudia_1').checked=false;
+	document.getElementById('estudia_2').checked=false;
+</script>
+<center>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/casp01_atencion_social/limpiar_lista/', 'update1'=>'carga_grilla')); ?>
+</center>
+<div id="del"></div>
+</div>
+<? } ?>
+<input type="hidden" id="familia" value="<?=$x?>"/>
+

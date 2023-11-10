@@ -1,0 +1,365 @@
+
+<form>
+
+<?php
+
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+
+if(isset($pag_num)){$pageNum_Recordset1 = $pag_num; }else{$pageNum_Recordset1 = 0;}
+
+$siguiente = $pageNum_Recordset1 + 1;
+$anterior = $pageNum_Recordset1 - 1;
+?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"AUTORIZACIÓN DE PAGO",null,"950");?>
+
+
+<?php
+
+if(isset($datos_orden_compra)){
+ if($datos_orden_compra!=null){
+
+ foreach($datos_orden_compra as $aux_datos_orden_compra){
+
+
+?>
+<?= $sisap->OpenTable("950")?>
+       <span class="pagenav">
+        <?php  if ($pageNum_Recordset1 > 0) {   $opcion = " "; }else{ $opcion = 'disabled' ;}  ?>
+		   <?= $sisap->buttonTagRemote('cscp04_ordencompra_autorizacion_pagos/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta/'.$anterior.'/'.$numero_orden_compra, 'update1'=>'principal')) ?>
+       </span>
+       <span class="pagenav">
+       <?php if ($pageNum_Recordset1 < $totalPages_Recordset1) {   $opcion = " "; }else{ $opcion =  'disabled';}  ?>
+	       <?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta/'.$siguiente.'/'.$numero_orden_compra, 'update1'=>'principal')) ?>
+       </span>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+
+
+
+
+<tr class="tr_negro"><td colspan="4" align="center"><b>DETALLES DE LA ORDEN DE COMPRA</b></td></tr>
+	<tr align="center">
+		<td>A&ntilde;o</td>
+		<td>N&uacute;mero</td>
+		<td>Fecha</td>
+		<td>Tipo de orden</td>
+	</tr>
+
+
+	<tr align="center">
+		<td align="center" id="year_cotizacion"><?= $html ->input('cscp04_ordencompra_autorizacion_pagos/ano_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$ano_orden_compra.'', 'readonly'=>'readonly','style'=>'text-align:center;', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?></td>
+		<td align="center"><?= $html ->input('cscp04_ordencompra_autorizacion_pagos/numero_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$sisap->mascara_cuatro($numero_orden_compra).'', 'style'=>'text-align:center;font-size:19;font-weight:bold;', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?></td>
+		<td align="center" id="fecha_cotizacion"><?= $html ->input('cscp04_ordencompra_autorizacion_pagos/fecha_autorizacion_pagos', $htmlAttributes = array('size'=>'11', 'value'=>''.$sisap->cambia_fecha($fecha_orden_compra).'', 'readonly'=>'readonly','style'=>'text-align:center;'), false); ?></td>
+		<td align="center"><?= $html->radio('cscp04_ordencompra_autorizacion_pagos/tipo_ordencompra', $options = array('1'=>'Bienes', '2'=>'Servicios'), $inbetween = null, $htmlAttributes = array('value'=>''.$tipo_orden.'', 'disabled'=>'disabled'), $return = false); ?></td>
+	</tr>
+
+
+	<tr align="center">
+		<td>Rif del Proveedor</td>
+		<td colspan="2">Nombre de Proveedor o Raz&oacute;n Social</td>
+		<td>Direcci&oacute;n</td>
+	</tr>
+
+
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/rif', $htmlAttributes = array('style'=>'width:98%;text-align:center;font-weight:bold;', 'readonly'=>'readonly', 'value'=>''.$rif.''), false); ?></td>
+		<td colspan="2"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/nom_prov', $htmlAttributes = array('style'=>'width:98%;font-weight:bold;', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?></td>
+		<td><?= $html->textarea('cscp04_ordencompra_autorizacion_pagos/dir_prov', $htmlAttributes = array('rows'=>'2', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$direccion_comercial_rif.''), false); ?></td>
+   </tr>
+
+
+	<tr align="center">
+		<td width="25%" rowspan="2" style="font-size:14px;font-weight:bold;">Situaci&oacute;n de la Orden</td>
+		<td width="25%">Monto Original</td>
+		<td width="25%">Modificaciones</td>
+		<td width="25%">Monto Actual</td>
+	</tr>
+
+
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_original', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_orden_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/modificaciones', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($modificacion_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_actual', $htmlAttributes = array('id'=>'monto_actual', 'size'=>'16', 'value'=>''.$sisap->Formato2($monto_total_orden_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+
+
+	<tr align="center">
+		<td>Retenci&oacute;n Laboral</td>
+		<td>Fiel Cumplimiento</td>
+		<td>Monto Retenciones</td>
+		<td>Monto Cancelado</td>
+	</tr>
+
+
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/retencion_laboral', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_ret_laboral_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/fiel_cumplimiento', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_ret_fielc_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_retenciones', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_total_retenciones).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_cancelado'  , $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_cancelado_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+	</tr>
+
+
+	<tr align="center">
+		<td>Monto Anticipo</td>
+		<td>Amortizaciones</td>
+		<td>Saldo Anticipo</td>
+		<td>Saldo de la Orden</td>
+	</tr>
+
+
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_anticipo', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_anticipo_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_amortizacion', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_amortizacion_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_amortizacion2', $htmlAttributes = array('id'=>'saldo_anticipo', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_anticipo_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_autorizacion_pagos/saldo_orden', $htmlAttributes = array('id'=>'saldo_orden', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_orden_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+
+
+<div id="opcion_pago"></div>
+
+<br><br>
+
+<table width="100%"  border="0" class="tablacompromiso tablacompromiso2">
+<tr><td align="center"><b>IMPUTACIÓN PRESUPUESTARIA</b></td></tr>
+</table>
+
+<div id="cotizacion"><?php include("datos_consulta.thtml");?></div>
+<div id="funcion"></div>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr><td align="center" colspan="5" style="font-size:17px"><b>DETALLES DE ESTE PAGO</b></td></tr>
+
+<tr>
+		<td align="center" width="20%"><b>Número</b></td>
+		<td align="center" width="20%"><b>Fecha</b></td>
+		<td align="center" width="20%"><b>Monto Mano de Obra</b></td>
+		<td align="center" rowspan="2" colspan="2" style="text-align:center;font-size:16;font-weight:bold;">C&aacute;lculos</td>
+</tr>
+
+<tr>
+		<td align="center"><?= $html ->input('cscp04_ordencompra_autorizacion_pagos/numero_orden_compra_autorizacion_pagos', $htmlAttributes = array('size'=>'11', 'value'=>''.$sisap->mascara_cuatro($numero_pago_nueve).'', 'style'=>'text-align:center;font-size:19;font-weight:bold;', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?></td>
+		<td align="center" id="fecha_autorizacion"><?= $html ->input('cscp04_ordencompra_autorizacion_pagos/fecha_autorizacion', $htmlAttributes = array('size'=>'11', 'value'=>''.$sisap->cambia_fecha($fecha_autorizacion_nueve).'', 'readonly'=>'readonly','style'=>'text-align:center;'), false); ?></td>
+		<td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_mano_obra', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_mano_obra_nueve).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+</tr>
+
+
+      <tr>
+          <td colspan="3"><font size="2"><b>MONTO TOTAL A CANCELAR</b></font></td>
+          <td>&nbsp;</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_orden', $htmlAttributes = array( 'id'=>'monto_orden',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_cancelar_nueve), 'style'=>'text-align:right; font-weight:bold; font-size:14;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retenci&oacute;n Laboral</td>
+          <td width="19%" align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_laboral', $htmlAttributes = array( 'id'=>'retencion_incluye_iva','size'=>'10', 'value'=>''.$sisap->Formato2($porcentaje_laboral_nueve).'', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td width="21%" align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_laboral', $htmlAttributes = array( 'id'=>'retencion_incluye_iva_monto_iva',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_laboral_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retenci&oacute;n de Fiel Cumplimiento</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_fielcumplimiento', $htmlAttributes = array( 'id'=>'retencion_incluye_iva','size'=>'10', 'value'=>''.$sisap->Formato2($porcentaje_fielc_nueve).'', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_fielcumplimiento', $htmlAttributes = array( 'id'=>'retencion_incluye_iva_monto_iva',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_fielc_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3"><font size="2"><b>Monto total factura</B></font></td>
+          <td ></td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_total_factura', $htmlAttributes = array( 'id'=>'monto_total_factura',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_factura_nueve), 'style'=>'text-align:right; font-weight:bold; font-size:14;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Monto del I.V.A.</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_iva', $htmlAttributes = array( 'id'=>'retencion_incluye_iva','size'=>'10', 'value'=>''.$sisap->Formato2($porcentaje_iva_aplicado_nueve).'', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_iva', $htmlAttributes = array( 'id'=>'retencion_incluye_iva_monto_iva',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_iva_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3"><font size="2"><b>Monto base factura</B></font></td>
+          <td ></td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_cancelar_siniva', $htmlAttributes = array( 'id'=>'monto_cancelar_siniva',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_cancelar_siniva_nueve), 'style'=>'text-align:right; font-weight:bold; font-size:14;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+         <td colspan="3">Amortización del anticipo (Monto total a cancelar menos I.V.A.)</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_anticipo', $htmlAttributes = array( 'id'=>'porcentaje_anticipo','size'=>'10', 'value'=>''.$sisap->Formato2($porcentaje_amortizacion_nueve).'', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_amortizacion', $htmlAttributes = array( 'id'=>'monto_amortizacion',"class"=>"inputtext", 'value'=>$sisap->Formato2($amortizacion_anticipo_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3"><font size="2"><b>Monto de la orden de pago</B></font></td>
+          <td ></td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_orden_pago', $htmlAttributes = array( 'id'=>'monto_orden_pago',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_orden_pago_nueve), 'style'=>'text-align:right; font-weight:bold; font-size:14;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención de i.v.a</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_amortizacion', $htmlAttributes = array( 'id'=>'porcentaje_amortizacion','size'=>'10', 'value'=>''.$sisap->Formato2($porcentaje_retencion_iva_nueve).'', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_amortizacion', $htmlAttributes = array( 'id'=>'monto_amortizacion',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_retencion_iva_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención d Impuesto sobre la renta </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_islr', $htmlAttributes = array( 'id'=>'porcentaje_islr','size'=>'10', 'value'=>$sisap->Formato2($porcentaje_islr_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_islr', $htmlAttributes = array( 'id'=>'monto_islr',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_islr_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Sustraendo </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/sustraendo', $htmlAttributes = array( 'id'=>'sustraendo','size'=>'10', 'value'=>$sisap->Formato2($monto_sustraendo_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> Bs.</td>
+          <td ></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención de Timbre fiscal </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_timbre', $htmlAttributes = array( 'id'=>'porcentaje_timbre','size'=>'10', 'value'=>$sisap->Formato2($porcentaje_timbre_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_timbre', $htmlAttributes = array( 'id'=>'monto_timbre',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_timbre_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención de Impuesto municipal </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_municipal', $htmlAttributes = array( 'id'=>'porcentaje_municipal','size'=>'10', 'value'=>$sisap->Formato2($porcentaje_municipal_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_municipal', $htmlAttributes = array( 'id'=>'monto_municipal',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_municipal_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención de responsabilidad civil </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_civil', $htmlAttributes = array( 'id'=>'porcentaje_civil','size'=>'10', 'value'=>$sisap->Formato2($porcentaje_civil_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_civil', $htmlAttributes = array( 'id'=>'monto_civil',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_civil_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3">Retención de responsabilidad social </td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/porcentaje_social', $htmlAttributes = array( 'id'=>'porcentaje_social','size'=>'10', 'value'=>$sisap->Formato2($porcentaje_social_nueve), 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?> %</td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_social', $htmlAttributes = array( 'id'=>'monto_social',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_social_nueve), 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3" align="right"><font size="2"><b>TOTAL RETENCIONES</B></font></td>
+          <td align="center"><br></td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/total_retenciones', $htmlAttributes = array( 'id'=>'total_retenciones',"class"=>"inputtext", 'value'=>$sisap->Formato2($total_retenciones_nueve), 'style'=>'text-align:right;font-weight:bold;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+
+      <tr>
+          <td colspan="3"><font size="2"><b>Monto a pagar en el cheque</B></font></td>
+          <td align="center"><br></td>
+          <td align="center"><?= $html->input('cscp04_ordencompra_autorizacion_pagos/monto_cheque', $htmlAttributes = array( 'id'=>'monto_cheque',"class"=>"inputtext", 'value'=>$sisap->Formato2($monto_chque_nueve), 'style'=>'text-align:right;font-weight:bold;background-color:#CDF2FF', 'readonly'=>'readonly'), false); ?></td>
+      </tr>
+     </table>
+
+
+<br>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr>
+    <td align="center">CONCEPTO</td>
+</tr>
+
+<tr>
+    <td align="center">
+<?= $html->textarea('cscp04_ordencompra_autorizacion_pagos/concepto_anulacion', array('','rows'=>'6', 'value'=>$concepto_nueve, 'id' =>'concepto_anulacion','class'=>'inputtext', 'readonly'=>'readonly'),  false) ?>
+    </td>
+</tr>
+</table>
+
+<br>
+<table width="100%" border="0"class="tablacompromiso tablacompromiso2">
+    <tr>
+	  <td align="center" width="300">Año de la orden de Pago</td><td><span id="partida_producto" class="mensaje_resaltado"><?= $ano_orden_pago ?></span></td>
+	</tr>
+	<tr>
+	  <td align="center"  width="300">Número de Orden de Pago</td><td><span id="partida_producto" class="mensaje_resaltado"><?= $sisap->mascara_ocho($numero_orden_pago) ?></span></td>
+	</tr>
+</table>
+<?
+ $caja['fecha_registro'] = $fecha_proceso_registro;
+ $caja['dia_asiento_registro'] = $dia_asiento_registro;
+ $caja['mes_asiento_registro'] = $mes_asiento_registro;
+ $caja['ano_asiento_registro'] = $ano_asiento_registro;
+ $caja['numero_asiento_registro'] = $numero_asiento_registro;
+ $caja['username_registro'] = $username_registro;
+ $caja['ano_anulacion'] = $ano_acta_anulacion;
+ $caja['numero_acta_anulacion'] = $numero_acta_anulacion;
+ $caja['fecha_proceso_anulacion'] = $fecha_proceso_anulacion;
+ $caja['dia_asiento_anulacion'] = $dia_asiento_anulacion;
+ $caja['mes_asiento_anulacion'] = $mes_asiento_anulacion;
+ $caja['ano_asiento_anulacion'] = $ano_asiento_anulacion;
+ $caja['numero_asiento_anulacion'] = $numero_asiento_anulacion;
+ $caja['username_anulacion'] = $username_anulacion;
+ $caja['radio'] = $condicion_actividad;
+ $caja['condicion_actividad'] = (int) $condicion_actividad;
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+<div id="anulacion"></div>
+
+<br>
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'cscp04_ordencompra_autorizacion_pagos_valida_consulta', 'url1' => '/cscp04_ordencompra_autorizacion_pagos/guardar_anulacion2', 'update1'=>'principal', 'disabled'=>'disabled', 'id'=>'guardar')); ?>
+
+<?= $sisap->buttonTagRemote('cscp04_registro_anticipo_ordencompra/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta/', 'update1'=>'principal'))?>
+
+
+
+
+
+
+<?php if($_SESSION["SScoddep"]==$cod_dep && $condicion_actividad=="1" && $numero_orden_pago==0 && $laboral_cancelado==0 && $fielcumplimiento_cancelado==0 && $ano_ejecucion==$ano_orden_compra){ ?>
+   <?= $sisap->submitTagRemote('Eliminar', array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cscp04_ordencompra_autorizacion_pagos/guardar_anulacion2', 'update1'=>'principal', 'id'=>'anular'), true); ?>
+<?php }else{ ?>
+   <?= $sisap->submitTagRemote('Eliminar', array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cscp04_ordencompra_autorizacion_pagos/guardar_anulacion1', 'update1'=>'principal', 'disabled'=>'disabled', 'id'=>'anular')); ?>
+<?php }//fin else ?>
+
+
+
+
+
+<?= $sisap->buttonTagRemote('cscp04_registro_anticipo_ordencompra/consultar', array ('value'=>'Buscar'), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta_index/1', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/', 'update1'=>'principal')) ?>
+
+
+
+
+<br><br>
+
+       <span class="pagenav">
+        <?php  if ($pageNum_Recordset1 > 0) {   $opcion = " "; }else{ $opcion = 'disabled' ;}  ?>
+		   <?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta/'.$anterior.'/'.$numero_orden_compra, 'update1'=>'principal')) ?>
+       </span>
+       <span class="pagenav">
+       <?php if ($pageNum_Recordset1 < $totalPages_Recordset1) {   $opcion = " "; }else{ $opcion =  'disabled';}  ?>
+	       <?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/consulta/'.$siguiente.'/'.$numero_orden_compra, 'update1'=>'principal')) ?>
+       </span>
+
+
+<?=$sisap->CloseTable()?>
+
+
+
+<?php
+    }//fin
+  }//fin
+
+}else{ ?>
+
+   <?= $sisap->buttonTagRemote('cugp01parroquias/consultar', array ('value'=>'Salir'), array('url1' => '/cscp04_ordencompra_autorizacion_pagos/index/', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+<?php }// fin else ?>
+
+
+
+
+
+
+
+</form>

@@ -1,0 +1,232 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Descripción de los Proyectos'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion_alc2014/forma_2129/2/'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?> FORMA: 2129</td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+
+
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('tcpdfs/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='EXTRAOFICE') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+ 	$this->top_reporte22(array("DESCRIPCIÓN DE LOS PROYECTOS"), array("Y"=>"11", "X"=>"30", "Z"=>"13"), array("Y"=>"20", "X"=>"354"));
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2129','',1,'R');
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','EXTRAOFICE');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 17);
+
+
+if($datos!=null){
+
+	for($i=0;$i<count($datos);$i++){
+			$pdf->AddPage();
+			$pdf->Ln(24);
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(28,6,'','TRL',0,'C');
+			$pdf->Cell(20,6,'CÓDIGO','TR',0,'C');
+			$pdf->Cell(0,6,'D E N O M I N A C I Ó N','TR',1,'C');
+
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(28,5,'SECTOR','TRL',0);
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(20,5,mascara($datos[$i][0]['cod_sector'],2),'TRL',0,'C');// CÓDIGO DEL SECTOR
+			$pdf->Cell(0,5,$datos[$i][0]['deno_sector'],'TR',1);// DENOMINACIÓN DEL SECTOR
+
+
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(28,5,'PROGRAMA','TRL',0);
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(20,5,mascara($datos[$i][0]['cod_programa'],2),'TRL',0,'C');// CÓDIGO DEL PROGRAMA
+			$pdf->Cell(0,5,$datos[$i][0]['deno_programa'],'TR',1);// DENOMINACIÓN DEL PROGRAMA
+
+
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(28,5,'SUBPROGRAMA','TRL',0);
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(20,5,mascara($datos[$i][0]['cod_sub_prog'],2),'TRL',0,'C');// CÓDIGO DEL SUBPROGRAMA
+			$pdf->Cell(0,5,$datos[$i][0]['deno_sub_programa'],'TR',1);// DENOMINACIÓN DEL SUBPROGRAMA
+
+
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(28,5,'PROYECTO','TRL',0);
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(20,5,mascara($datos[$i][0]['cod_proyecto'],2),'TRL',0,'C');// CÓDIGO DEL PROYECTO
+			$pdf->Cell(0,5,$datos[$i][0]['deno_proyecto'],'TR',1);// DENOMINACIÓN DEL PROYECTO
+
+
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+			$pdf->Cell(0,5,$datos[$i][0]['unidad_ejecutora_sector'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+
+			$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+			$pdf->Cell(0,5,$datos[$i][0]['unidad_ejecutora_programa'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+
+			$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+			$pdf->Cell(0,5,$datos[$i][0]['unidad_ejecutora_sub_programa'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+
+			$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+			$pdf->Cell(0,5,$datos[$i][0]['unidad_ejecutora_proyecto'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+
+			$pdf->SetFont('vera','B',14);
+			$pdf->SetFillColor(0, 70, 130);
+			$pdf->SetTextColor(255, 255, 255);
+			$pdf->Cell(0,7,"DESCRIPCIÓN:",'TRLB',1,'C',1);
+			$pdf->SetFillColor(255, 255, 255);
+			$pdf->SetTextColor(0, 0, 0);
+
+			$pdf->SetFont('vera','',10);
+		    $pdf->MultiCell($w=0, $h=85, '<p style="line-height:15em;">'.$datos[$i][0]['objetivo'].'</p>', $border=1, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+
+	}
+
+}else{
+
+	$pdf->AddPage();
+    $pdf->Ln(24);
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(28,6,'','TRL',0,'C');
+	$pdf->Cell(20,6,'CÓDIGO','TR',0,'C');
+	$pdf->Cell(0,6,'D E N O M I N A C I Ó N','TR',1,'C');
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(28,5,'SECTOR','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(20,5,'','TRL',0,'C');// CÓDIGO DEL SECTOR
+	$pdf->Cell(0,5,'','TR',1);// DENOMINACIÓN DEL SECTOR
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(28,5,'PROGRAMA','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(20,5,'','TRL',0,'C');// CÓDIGO DEL PROGRAMA
+	$pdf->Cell(0,5,'','TR',1);// DENOMINACIÓN DEL PROGRAMA
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(28,5,'SUBPROGRAMA','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(20,5,'','TRL',0,'C');// CÓDIGO DEL SUBPROGRAMA
+	$pdf->Cell(0,5,'','TR',1);// DENOMINACIÓN DEL SUBPROGRAMA
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(28,5,'PROYECTO','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(20,5,'','TRL',0,'C');// CÓDIGO DEL PROYECTO
+	$pdf->Cell(0,5,'','TR',1);// DENOMINACIÓN DEL PROYECTO
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,5,'','TR',1);// UNIDA(DES) EJECUTORAS
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,5,'','TR',1);// UNIDA(DES) EJECUTORAS
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,5,'','TR',1);// UNIDA(DES) EJECUTORAS
+
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,5,'','TR',1);// UNIDA(DES) EJECUTORAS
+
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,7,'D E S C R I P C I Ó N','TRBL',1,'C');
+
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(1,80,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(333,1,"",'',4,'C');
+		$pdf->MultiCell(332,5,"",'','L');
+		$varX = $varX+333;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,80,'','R',1,'C');
+
+
+
+	$pdf->Cell(0,0,'','T',1);
+
+}
+
+$pdf->OutPut('forma_2129_'.date("d-m-Y").'.pdf','D');
+}//fin function
+
+
+?>

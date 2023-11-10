@@ -1,0 +1,335 @@
+<?php
+//funciones
+$cedula_primera_firma= number_format($cedula_primera_firma, '0','','.');
+$cedula_segunda_firma= number_format($cedula_segunda_firma, '0','','.');
+$cedula_tercera_firma= number_format($cedula_tercera_firma, '0','','.');
+$cedula_cuarta_firma= number_format($cedula_cuarta_firma, '0','','.');
+
+function FormatoVacio($numero) {
+    if ($numero == 0) {
+        $numero = '';
+    }
+    return $numero;
+}
+
+function FormatoCero($numero) {
+    if ($numero == 0) {
+        $numero = '';
+    } else {
+        $numero = number_format($numero, 2, ',', '.');
+    }
+    return $numero;
+}
+
+//fin funciones
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+
+        $this->SetY(-10);
+        $this->SetFont('vera', '', 5);
+      //  $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/TPAG', 0, 0, 'C');
+    }
+
+     function Header() {
+        $img_dependencia_o = '/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_' . $_SESSION['SScodinst'] . '_' . $_SESSION['SScoddep'] . '.jpg';
+        if (file_exists($img_dependencia_o)) {
+            $escudo = $img_dependencia_o;
+            $varTOPh1 = " ";
+            $varTOPh2 = "  ";
+            $varTOPh11 = " ";
+            $varTOPh22 = " ";
+            $t1 = 14;
+            $t2 = 14;
+        } else {
+            //$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+            $escudo = "/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+            $varTOPh1 = $_SESSION['entidad_federal'];
+            $varTOPh2 = $_SESSION['dependencia'];
+            $varTOPh11 = $_SESSION['entidad_federal'];
+            $varTOPh22 = $_SESSION['dependencia'];
+            $t1 = 13;
+            $t2 = 13;
+        }
+
+        $this->Image($escudo, 15, 16, $t1);
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(18, 6, "", 'TL', 0);
+        $this->Cell(174, 6, $varTOPh1, 'TR', 1);
+
+        $this->Cell(18, 6, "", 'L', 0);
+        $this->SetFont('vera', '', 7);
+        $this->Cell(174, 4, $varTOPh2, 'R', 1);
+
+
+        $this->SetFont('vera', 'B', 12);
+        $this->Cell(192, 6, "ARC – EJERCICIO FISCAL AÑO: " . $_SESSION['ano'], 'RL', 1, 'C');
+
+        $this->SetFont('vera', 'R', 8);
+        $this->Cell(192, 6, $_SESSION['dependencia'], 'RLB', 1, 'L');
+        $this->Ln(5);
+
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(40, 6, "INSTITUCION", 'LTRB', 0, 'L');
+        $this->Cell(152, 6, $_SESSION['institucion'], 'LTRB', 1, 'L');
+        $this->Cell(40, 6, "R.I.F.", 'LTRB', 0, 'L');
+        $this->Cell(152, 6, $_SESSION['rif_institucion'], 'LTRB', 1, 'L');
+        $this->Ln(5);
+
+        $this->SetFont('vera', 'Br', 6);
+        $this->Cell(40, 4, "DEPENDENCIA", 'LTR', 0, 'B');
+        $this->Cell(152, 4, $_SESSION['dependencia'], 'LTR', 1, 'L');
+
+        $this->Cell(40, 3, "R.I.F.", 'LR', 0, 'L');
+        $this->Cell(152, 3, $_SESSION['rif_dependencia'], 'LR', 1, 'L');
+
+        $this->Cell(40, 3, "DIRECCIÓN", 'LR', 0, 'L');
+        $this->Cell(152, 3, $_SESSION['direccion'], 'LR', 1, 'L');
+
+        $this->Cell(40, 4, "CIUDAD", 'LR', 0, 'LR');
+        $this->Cell(152, 4, $_SESSION['ciudad'], 'RL', 1, 'L');
+
+        $this->Cell(40, 4, "ESTADO", 'LR', 0, 'LR');
+        $this->Cell(152, 4, $_SESSION['estado'], 'RL', 1, 'L');
+
+        $this->Cell(40, 4, "TELÉFONO", 'LR', 0, 'LR');
+        $this->Cell(152, 4, $_SESSION['telefono'], 'RL', 1, 'L');
+
+        //$this->Cell(40, 4, "FUNCIONARIO", 'LR', 0, 'LR');
+        //$this->Cell(152, 4, $_SESSION['funcionario'], 'RL', 1, 'L');
+
+        $this->Cell(40, 4, "AGENTE DE RETENCIÓN", 'LRB', 0, 'L');
+        $this->Cell(152, 4, $_SESSION['agente_retencion'], 'BRL', 1, 'L');
+
+
+        $varX_aux = $this->GetX() + 186;
+        $varY_aux = $this->GetY() - 50;
+        $this->SetFont('vera', 'B', 5);
+    //    $this->Text($varX_aux, $varY_aux, 'PAGINA: ' . $this->PageNo() . '/TPAG');
+       // $this->Text($varX_aux, $varY_aux + 3, 'FECHA: ' . date("d/m/Y"));
+       // $this->Text($varX_aux, $varY_aux + 6, 'HORA: ' . date("h:i a"));
+
+        $this->Ln(5);
+    }
+
+}
+//fin clase
+$pdf = new fpdfview('P', 'mm', 'Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(13);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+
+$rows = (count($vista));
+$fila=-12;
+
+for ($i=1;$i<$rows+1;$i++) {
+
+    $fila=$fila+1;
+
+if (($i % 12 == 0) && ($i !=0)){
+
+
+$_SESSION['titulo_reporte'] = $titulo_reporte;
+$_SESSION['direccion'] = $vista[$fila][0]['direccion'];
+$_SESSION['ciudad'] = $vista[$fila][0]['ciudad'];
+$_SESSION['estado'] = $vista[$fila][0]['estado'];
+$_SESSION['telefono'] = $vista[$fila][0]['telefono'];
+$_SESSION['agente_retencion'] = $vista[$fila][0]['agente_retencion'];
+$_SESSION['funcionario'] = $vista[$fila][0]['nombre'];
+$_SESSION['ano'] = $vista[$fila][0]['ano'];
+$_SESSION['dependencia'] = $vista[$fila][0]['dependencia'];
+$_SESSION['rif_dependencia'] = $vista[$fila][0]['rif_dependencia'];
+$_SESSION['institucion'] = $vista[$fila][0]['institucion'];
+$_SESSION['rif_institucion'] = $vista[$fila][0]['rif_institucion'];
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(40, 4, "NÓMINA", 'LTR', 0, 'LR');
+$pdf->Cell(92, 4, $vista[$fila][0]['denominacion'], 'RTL', 0, 'L');
+$pdf->SetFont('vera', 'B', 8);
+$pdf->Cell(60, 4, "PERIODO", 'RTLB', 1, 'C');
+
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(40, 4, "UNIDAD DE TRABAJO", 'LR', 0, 'LR');
+$pdf->Cell(92, 4, $vista[$fila][0]['unidad_trabajo'], 'RL', 0, 'L');
+$pdf->SetFont('vera', 'B', 8);
+$pdf->Cell(30, 4, "DESDE", 'RTLB', 0, 'C');
+$pdf->Cell(30, 4, "HASTA", 'RTLB', 1, 'C');
+
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(40, 4, "FUNCIONARIO", 'LR', 0, 'LR');
+$pdf->Cell(92, 4,  $vista[$fila][0]['nombre'] , 'RL', 0, 'L');
+$pdf->SetFont('vera', 'B', 8);
+$pdf->Cell(30, 4, "01/01/" . $vista[$fila][0]['ano'], 'RTLB', 0, 'C');
+$pdf->Cell(30, 4, "31/12/" . $vista[$fila][0]['ano'], 'RTLB', 1, 'C');
+
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(40, 4, "CÉDULA DE IDENTIDAD Nº", 'LR', 0, 'LR');
+$pdf->Cell(152, 4, number_format($vista[$fila][0]['cedula_identidad'],'0','','.'), 'RL', 1, 'L');
+
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(40, 4, "CARGO", 'LR', 0, 'LR');
+$pdf->Cell(152, 4, $vista[$fila][0]['cargo'], 'RL', 1, 'L');
+
+$pdf->Cell(40, 4, "FECHA INGRESO", 'LRB', 0, 'L');
+$pdf->Cell(152, 4, $vista[$fila][0]['fecha_ingreso'], 'BRL', 1, 'L');
+$pdf->ln(5);
+
+
+
+$pdf->SetFont('vera', 'B', 5);
+$pdf->Cell(21, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "SUELDO", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "BONO", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(20, 4, "OTRAS", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "PARO", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(16, 4, "", 'TLR', 0, 'C');
+$pdf->Cell(23, 4, "OTRAS", 'TLR', 1, 'C');
+
+$pdf->Cell(21, 4, "MESES", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "BÁSICO", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "VACIONAL", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "AGUINALDO", 'LRB', 0, 'C');
+$pdf->Cell(20, 4, "ASIGNACIONES", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "S.S.O.", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "FORZOSO", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "L.P.H.", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "F.P.J.", 'LRB', 0, 'C');
+$pdf->Cell(16, 4, "I.S.L.R.", 'LRB', 0, 'C');
+$pdf->Cell(23, 4, "DEDUCCIONES", 'LRB', 1, 'C');
+
+
+
+$total_sueldo_basico = 0;
+$total_bono_vacacional = 0;
+$total_aguinaldos = 0;
+$total_otras_asignaciones = 0;
+$total_seguro_social=0;
+$total_paro_forzoso=0;
+$total_ahorro_hab=0;
+$total_fondo_jub=0;
+$total_islr=0;
+$total_otras_deducciones=0;
+
+
+$pdf->SetFont('vera', '', 6);
+
+/// ------------------------- CICLO FOR ---------------------
+$temp=($i-12);
+
+for ($num=$temp;$num<$i;$num++){
+
+    //totales
+    $total_sueldo_basico = $total_sueldo_basico + $vista[$num][0]['sueldo_basico'];
+    $total_bono_vacacional = $total_bono_vacacional + $vista[$num][0]['bono_vacacional'];
+    $total_aguinaldos = $total_aguinaldos + $vista[$num][0]['aguinaldos'];
+    $total_otras_asignaciones = $total_otras_asignaciones + $vista[$num][0]['otras_asignaciones'];
+    $total_seguro_social = $total_seguro_social + $vista[$num][0]['seguro_social'];
+    $total_paro_forzoso = $total_paro_forzoso + $vista[$num][0]['paro_forzoso'];
+    $total_ahorro_hab = $total_ahorro_hab + $vista[$num][0]['ahorro_hab'];
+    $total_fondo_jub = $total_fondo_jub + $vista[$num][0]['fondo_jub'];
+    $total_islr = $total_islr + $vista[$num][0]['islr'];
+    $total_otras_deducciones = $total_otras_deducciones + $vista[$num][0]['otras_deducciones'];
+
+
+	$pdf->SetFont('vera', 'B', 6);
+    $pdf->Cell(21, 4, $vista[$num][0]['deno_mes'], 'LRB', 0, 'L');
+    $pdf->SetFont('vera', 'Br', 7);
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['sueldo_basico']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['bono_vacacional']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['aguinaldos']), 'LRB', 0, 'R');
+    $pdf->Cell(20, 4, FormatoCero($vista[$num][0]['otras_asignaciones']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['seguro_social']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['paro_forzoso']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['ahorro_hab']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['fondo_jub']), 'LRB', 0, 'R');
+    $pdf->Cell(16, 4, FormatoCero($vista[$num][0]['islr']), 'LRB', 0, 'R');
+    $pdf->Cell(23, 4, FormatoCero($vista[$num][0]['otras_deducciones']), 'LRB', 1, 'R');
+}
+
+//TOTALES
+//
+$pdf->SetFont('vera', 'B', 6);
+$pdf->Cell(21, 4, "TOTALES: ", 'LRB', 0, 'R');
+
+$pdf->Cell(16, 4, FormatoCero($total_sueldo_basico), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_bono_vacacional), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_aguinaldos), 'LRB', 0, 'R');
+$pdf->Cell(20, 4, FormatoCero($total_otras_asignaciones), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_seguro_social), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_paro_forzoso), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_ahorro_hab), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_fondo_jub), 'LRB', 0, 'R');
+$pdf->Cell(16, 4, FormatoCero($total_islr), 'LRB', 0, 'R');
+$pdf->Cell(23, 4, FormatoCero($total_otras_deducciones), 'LRB', 1, 'R');
+
+$pdf->ln(4);
+$pdf->SetFont('vera', 'B', 8);
+$pdf->Cell(64, 6, "TOTAL ASIGNACIONES", 'LRBT', 0, 'C');
+$pdf->Cell(64, 6, "TOTAL DEDUCCIONES", 'LRBT', 0, 'C');
+$pdf->Cell(64, 6, "DEVENGADO NETO", 'LRBT', 1, 'C');
+
+$total_asignaciones=$total_sueldo_basico+$total_bono_vacacional+$total_aguinaldos+$total_otras_asignaciones;
+$total_deducciones=$total_seguro_social+$total_paro_forzoso+$total_ahorro_hab+$total_fondo_jub+$total_islr+$total_otras_deducciones;
+$devengado_neto=$total_asignaciones-$total_deducciones;
+
+$pdf->Cell(64, 6, FormatoCero($total_asignaciones), 'LRBT', 0, 'C');
+$pdf->Cell(64, 6, FormatoCero($total_deducciones), 'LRBT', 0, 'C');
+$pdf->Cell(64, 6, FormatoCero($devengado_neto), 'LRBT', 1, 'C');
+
+//firmantes
+$pdf->ln(20);
+$pdf->SetFont('vera', 'B', 9);
+
+$pdf->Cell(48, 6, "ELABORADO POR:", 'LRT', 0, 'C');
+$pdf->Cell(48, 6, "REVISADO POR:", 'LRT', 0, 'C');
+$pdf->Cell(48, 6, "VERIFICADO POR:", 'LRT', 0, 'C');
+$pdf->Cell(48, 6, "AGENTE DE RETENCION:", 'LRT', 1, 'C');
+
+$pdf->SetFont('vera', '', 8);
+$pdf->Cell(48, 4, $nombre_primera_firma, 'LR', 0, 'L');
+$pdf->Cell(48, 4, $nombre_segunda_firma, 'LR', 0, 'L');
+$pdf->Cell(48, 4, $nombre_tercera_firma, 'LR', 0, 'L');
+$pdf->Cell(48, 4, $nombre_cuarta_firma, 'LR', 1, 'L');
+
+$pdf->Cell(48, 4, "C.I.: ".FormatoVacio($cedula_primera_firma), 'LRB', 0, 'L');
+$pdf->Cell(48, 4, "C.I.: ".FormatoVacio($cedula_segunda_firma), 'LRB', 0, 'L');
+$pdf->Cell(48, 4, "C.I.: ".FormatoVacio($cedula_tercera_firma), 'LRB', 0, 'L');
+$pdf->Cell(48, 4, "C.I.: ".FormatoVacio($cedula_cuarta_firma), 'LRB', 1, 'L');
+
+$pdf->Cell(48, 30, "", 'TLRB', 0, 'L');
+$pdf->Cell(48, 30, "", 'TLRB', 0, 'L');
+$pdf->Cell(48, 30, "", 'TLRB', 0, 'L');
+$pdf->Cell(48, 30, "", 'TLRB', 1, 'L');
+
+$pdf->SetFont('vera', 'B', 9);
+$pdf->Cell(48, 4, $cargo_segunda_firma, 'LRB', 0, 'C');
+$pdf->Cell(48, 4, $cargo_primera_firma, 'LRB', 0, 'C');
+$pdf->Cell(48, 4, $cargo_tercera_firma, 'LRB', 0, 'C');
+$pdf->Cell(48, 4, $cargo_cuarta_firma, 'LRB', 1, 'C');
+}
+
+
+}
+
+	$pdf->Output('Reporte_ARC_'.date("d-m-Y").".pdf",'D');
+
+?>

@@ -1,0 +1,2315 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+set_time_limit(0);
+
+$_SESSION['titulo_inst']=$titulo_inst;
+$_SESSION['titulo_a']=$titulo_a;
+$_SESSION['titulo_reporte']=$titulo_reporte;
+$_SESSION['sub_titulo_reporte']="TRASLADO ENTRE PARTIDAS";
+$_SESSION['tipo_presupuesto']=$presupuesto;
+$_SESSION['ano_reporte']=$ano_reporte;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',6);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+	function Header()
+	{
+    	$this->top_reporte2(array($_SESSION['titulo_reporte'],$_SESSION['ano_reporte'],$_SESSION['tipo_presupuesto']), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"330"));
+
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,5,$_SESSION['sub_titulo_reporte'],'TRLB',1,'C');
+		$this->Cell(0,2,"",'',1,'L');
+
+		$this->SetFont('vera','B',6);
+		$this->cell(32,3,"",'TRL',0,'C');
+		$this->Cell(15,3,"FECHA",'TR',0,'C');
+		$this->cell(32,3,"",'TR',0,'C');
+		$this->Cell(15,3,"FECHA",'TR',0,'C');
+		$this->Cell(65,3,"",'TR',0,'C');
+		$this->cell(50,3,"CÓDIGO",'TR',0,'C');
+		$this->cell(32,3,"ASIGNACIÓN",'TR',0,'C');
+		$this->cell(32,3,"DISMINUCIÓN",'TR',0,'C');
+		$this->cell(32,3,"MONTO",'TR',0,'C');
+		$this->cell(12,3,"%",'TR',0,'C');
+		$this->Cell(0,3,"MONTO",'TR',1,'C');
+
+		$this->cell(32,3,"NUMERO DE OFICIO",'RLB',0,'C');
+		$this->Cell(15,3,"DE OFICIO",'RB',0,'C');
+		$this->cell(32,3,"NÚMERO DECRETO",'RB',0,'C');
+		$this->Cell(15,3,"DECRETO",'RB',0,'C');
+		$this->Cell(65,3,"CONCEPTO",'RB',0,'C');
+		$this->cell(50,3,"PRESUPUESTARIO",'RB',0,'C');
+		$this->cell(32,3,"AJUSTADA",'RB',0,'C');
+		$this->cell(32,3,"ACUMULADA",'RB',0,'C');
+		$this->cell(32,3,"DISMINUCIÓN",'RB',0,'C');
+		$this->cell(12,3,"",'RB',0,'C');
+		$this->Cell(0,3,"AUMENTO",'RB',1,'C');
+	}//fin funtion
+}//fin de la clase PDF
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(4);
+$pdf->SetRightMargin(4);
+$pdf->SetAutoPageBreak(true, 14);
+$pdf->SetFont('vera','',6);
+
+if(isset($vacio) && $vacio=='si'){
+$pdf->AddPage();
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(22,10,"",'',1,'C');
+$pdf->Cell(0,20,"NO SE ENCONTRARON OFICIOS REGISTRADOS EN EL SISTEMA PARA ESTA OPCIÓN",'',1,'C');
+
+}else{
+
+	$total_a = 0;
+	$total_b = 0;
+	$total_c = 0;
+
+				if($pase1!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="TRASLADO ENTRE PARTIDAS";
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+
+					$total_disminucion = 0;
+					$total_aumento     = 0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_1); $i++){
+							$num_oficio1 = $datos_1[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_1[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_1[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_1[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_activ_obra'])."-".$datos_1[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_1[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_1[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+									$pdf->SetFont('vera','',6);
+								if($datos_1[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_1[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->Cell(15,$heigth,$sisap->cambia_fecha($datos_1[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_1[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->Cell(15,$heigth,$sisap->cambia_fecha($datos_1[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+									$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_1[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_1[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_1[$i][0]['monto_disminucion'];
+										$total_a += $datos_1[$i][0]['monto_disminucion'];
+										$total_dis  += $datos_1[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_1[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_1[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_1[$i][0]['monto_aumento'];
+										$total_b += $datos_1[$i][0]['monto_aumento'];
+										$total_aum += $datos_1[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_1[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_1[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_1[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_1[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_1[$i][0]['monto_disminucion']),'RL',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_1[$i][0]['monto_disminucion'];
+										$total_a += $datos_1[$i][0]['monto_disminucion'];
+										$total_dis  += $datos_1[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_1[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_1[$i][0]['monto_aumento']),'RL',1,'R');
+										$total_aumento += $datos_1[$i][0]['monto_aumento'];
+										$total_b += $datos_1[$i][0]['monto_aumento'];
+										$total_aum += $datos_1[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_1[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_activ_obra'])."-".$datos_1[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_1[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_1[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_1[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_1[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_1[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_1[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_1[$i][0]['monto_disminucion'];
+										$total_a += $datos_1[$i][0]['monto_disminucion'];
+										$total_dis  += $datos_1[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_1[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_1[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_1[$i][0]['monto_aumento'];
+										$total_b += $datos_1[$i][0]['monto_aumento'];
+										$total_aum += $datos_1[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_1[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_1[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_1[$i][0]['monto_disminucion'];
+										$total_a    += $datos_1[$i][0]['monto_disminucion'];
+										$total_dis  += $datos_1[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_1[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_1[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_1[$i][0]['monto_aumento'];
+										$total_b += $datos_1[$i][0]['monto_aumento'];
+										$total_aum += $datos_1[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_1[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_1[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+                    $pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+
+
+
+				}//Fin if
+
+				if($pase2!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="CREDITOS ADICIONALES";
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_2); $i++){
+							$num_oficio1 = $datos_2[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_2[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+									$pdf->SetFont('vera','',6);
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_2[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_2[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_activ_obra'])."-".$datos_2[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_2[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_2[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_2[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_2[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_2[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_2[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_2[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_2[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_2[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_2[$i][0]['monto_disminucion'];
+										$total_a += $datos_2[$i][0]['monto_disminucion'];
+										$total_dis += $datos_2[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_2[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_2[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_2[$i][0]['monto_aumento'];
+										$total_b += $datos_2[$i][0]['monto_aumento'];
+										$total_aum += $datos_2[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_2[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_2[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_2[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_2[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_2[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_2[$i][0]['monto_disminucion'];
+										$total_a += $datos_2[$i][0]['monto_disminucion'];
+										$total_dis += $datos_2[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_2[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_2[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_2[$i][0]['monto_aumento'];
+										$total_b += $datos_2[$i][0]['monto_aumento'];
+										$total_aum += $datos_2[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_2[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_activ_obra'])."-".$datos_2[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_2[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_2[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_2[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_2[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_2[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_2[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_2[$i][0]['monto_disminucion'];
+										$total_a += $datos_2[$i][0]['monto_disminucion'];
+										$total_dis += $datos_2[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_2[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_2[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_2[$i][0]['monto_aumento'];
+										$total_b += $datos_2[$i][0]['monto_aumento'];
+										$total_aum += $datos_2[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_2[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_2[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_2[$i][0]['monto_disminucion'];
+										$total_a += $datos_2[$i][0]['monto_disminucion'];
+										$total_dis += $datos_2[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_2[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_2[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_2[$i][0]['monto_aumento'];
+										$total_b +=  $datos_2[$i][0]['monto_aumento'];
+										$total_aum += $datos_2[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_2[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_2[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+
+
+				}//Fin if
+
+				if($pase3!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="REBAJA PRESUPUESTARIA";
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_3); $i++){
+							$num_oficio1 = $datos_3[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_3[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+									$pdf->SetFont('vera','',6);
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_3[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_3[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_activ_obra'])."-".$datos_3[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_3[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_3[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_3[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_3[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_3[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_3[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_3[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_3[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_3[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_3[$i][0]['monto_disminucion'];
+										$total_a += $datos_3[$i][0]['monto_disminucion'];
+										$total_aum += $datos_3[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_3[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_3[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_3[$i][0]['monto_aumento'];
+										$total_b +=  $datos_3[$i][0]['monto_aumento'];
+										$total_dis +=  $datos_3[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_3[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_3[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_3[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_3[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_3[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_3[$i][0]['monto_disminucion'];
+										$total_a += $datos_3[$i][0]['monto_disminucion'];
+										$total_aum += $datos_3[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_3[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_3[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_3[$i][0]['monto_aumento'];
+										$total_b +=  $datos_3[$i][0]['monto_aumento'];
+										$total_dis +=  $datos_3[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_3[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_activ_obra'])."-".$datos_3[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_3[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_3[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_3[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_3[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_3[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_3[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_3[$i][0]['monto_disminucion'];
+										$total_a += $datos_3[$i][0]['monto_disminucion'];
+										$total_aum += $datos_3[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_3[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_3[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_3[$i][0]['monto_aumento'];
+										$total_b +=  $datos_3[$i][0]['monto_aumento'];
+										$total_dis +=  $datos_3[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'R',0,'C');
+									if($datos_3[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_3[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_3[$i][0]['monto_disminucion'];
+										$total_a += $datos_3[$i][0]['monto_disminucion'];
+										$total_aum += $datos_3[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_3[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_3[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_3[$i][0]['monto_aumento'];
+										$total_b +=  $datos_3[$i][0]['monto_aumento'];
+										$total_dis +=  $datos_3[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_3[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_3[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NUMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+				}//Fin if
+
+				if($pase4!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="SALDO DE COMPROMISOS AÑO ANTERIOR";
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_4); $i++){
+							$num_oficio1 = $datos_4[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_4[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_4[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_4[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_activ_obra'])."-".$datos_4[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_4[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_4[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_4[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_4[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_4[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_4[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_4[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_4[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_4[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_4[$i][0]['monto_disminucion'];
+										$total_a += $datos_4[$i][0]['monto_disminucion'];
+										$total_dis += $datos_4[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_4[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_4[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_4[$i][0]['monto_aumento'];
+										$total_b += $datos_4[$i][0]['monto_aumento'];
+										$total_aum += $datos_4[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_4[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_4[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_4[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_4[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_4[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_4[$i][0]['monto_disminucion'];
+										$total_a += $datos_4[$i][0]['monto_disminucion'];
+										$total_dis += $datos_4[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_4[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_4[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_4[$i][0]['monto_aumento'];
+										$total_b += $datos_4[$i][0]['monto_aumento'];
+										$total_aum += $datos_4[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_4[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_activ_obra'])."-".$datos_4[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_4[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_4[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_4[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_4[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_4[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_4[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_4[$i][0]['monto_disminucion'];
+										$total_a += $datos_4[$i][0]['monto_disminucion'];
+										$total_dis += $datos_4[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_4[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_4[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_4[$i][0]['monto_aumento'];
+										$total_b += $datos_4[$i][0]['monto_aumento'];
+										$total_aum += $datos_4[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_4[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_4[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_4[$i][0]['monto_disminucion'];
+										$total_a += $datos_4[$i][0]['monto_disminucion'];
+										$total_dis += $datos_4[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_2[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_4[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_4[$i][0]['monto_aumento'];
+										$total_b +=  $datos_4[$i][0]['monto_aumento'];
+										$total_aum += $datos_4[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_4[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_4[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->SetFont('vera','',5);
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+
+
+				}//Fin if
+
+				if($pase5!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="CREDITOS POR INGRESOS PROPIOS";
+
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_5); $i++){
+							$num_oficio1 = $datos_5[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_5[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_5[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_5[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_activ_obra'])."-".$datos_5[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_5[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_5[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_5[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_5[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_5[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_5[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_5[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_5[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_5[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_5[$i][0]['monto_disminucion'];
+										$total_a += $datos_5[$i][0]['monto_disminucion'];
+										$total_dis += $datos_5[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_5[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_5[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_5[$i][0]['monto_aumento'];
+										$total_b += $datos_5[$i][0]['monto_aumento'];
+										$total_aum += $datos_5[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_5[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_5[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_5[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_5[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_5[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_5[$i][0]['monto_disminucion'];
+										$total_a += $datos_5[$i][0]['monto_disminucion'];
+										$total_dis += $datos_5[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_5[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_5[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_5[$i][0]['monto_aumento'];
+										$total_b += $datos_5[$i][0]['monto_aumento'];
+										$total_aum += $datos_5[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_5[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_activ_obra'])."-".$datos_5[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_5[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_5[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_5[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_5[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_5[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_5[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_5[$i][0]['monto_disminucion'];
+										$total_a += $datos_5[$i][0]['monto_disminucion'];
+										$total_dis += $datos_5[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_5[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_5[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_5[$i][0]['monto_aumento'];
+										$total_b += $datos_5[$i][0]['monto_aumento'];
+										$total_aum += $datos_5[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_5[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_5[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_5[$i][0]['monto_disminucion'];
+										$total_a += $datos_5[$i][0]['monto_disminucion'];
+										$total_dis += $datos_5[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_5[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_5[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_5[$i][0]['monto_aumento'];
+										$total_b +=  $datos_5[$i][0]['monto_aumento'];
+										$total_aum += $datos_5[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_5[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_5[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->SetFont('vera','',5);
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+
+
+				}//Fin if
+
+				if($pase6!=0){//Pregunto si existen datos.
+					$_SESSION['sub_titulo_reporte']="TRANSF. RECURSOS NO EJECUTADOS AÑOS ANTERIORES";
+					$pdf->AddPage();
+					$total_num_oficios=0;
+					$num_oficio2 = "";
+					$num_aprobacion2 = "";
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$total_dis = 0;
+					$total_aum = 0;
+
+					for($i=0; $i<count($datos_6); $i++){
+							$num_oficio1 = $datos_6[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_6[$i][0]['numero_aprobacion'];
+
+							if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+								if($i!=0){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','B',6);
+									$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,"",'R',0,'R');
+									$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+									$pdf->cell(12,4,"",'R',0,'R');
+									$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1);
+									$pdf->SetFont('vera','',6);
+									$total_disminucion=0;
+									$total_aumento=0;
+								}
+
+								$cadena_concepto=$datos_6[$i][0]['concepto'];
+								$char_concepto=strlen($cadena_concepto);
+
+
+								if($char_concepto<=56){
+						$heigth=4;
+						}elseif($char_concepto>56 && $char_concepto<112){
+						$heigth=6;
+						}elseif($char_concepto>=112 && $char_concepto<168){
+						$heigth=8;
+						}elseif($char_concepto>=168 && $char_concepto<224){
+						$heigth=10;
+						}elseif($char_concepto>=224 && $char_concepto<280){
+						$heigth=11;
+						}elseif($char_concepto>=280 && $char_concepto<336){
+						$heigth=14;
+						}elseif($char_concepto>=336 && $char_concepto<392){
+						$heigth=16;
+						}elseif($char_concepto>=392 && $char_concepto<448){
+						$heigth=18;
+						}elseif($char_concepto>=448 && $char_concepto<504){
+						$heigth=20;
+						}elseif($char_concepto>=504 && $char_concepto<560){
+						$heigth=22;
+						}elseif($char_concepto>=560 && $char_concepto<616){
+						$heigth=24;
+						}elseif($char_concepto>=616 && $char_concepto<672){
+						$heigth=26;
+						}elseif($char_concepto>=672 && $char_concepto<728){
+						$heigth=28;
+						}elseif($char_concepto>=728 && $char_concepto<784){
+						$heigth=30;
+						}elseif($char_concepto>=784 && $char_concepto<840){
+						$heigth=32;
+						}elseif($char_concepto>=840 && $char_concepto<896){
+						$heigth=34;
+						}elseif($char_concepto>=896 && $char_concepto<952){
+						$heigth=36;
+						}elseif($char_concepto>=952 && $char_concepto<1008){
+						$heigth=38;
+						}elseif($char_concepto>=1008 && $char_concepto<1064){
+						$heigth=40;
+						}elseif($char_concepto>=1064 && $char_concepto<1120){
+						$heigth=42;
+						}elseif($char_concepto>=1120 && $char_concepto<1176){
+						$heigth=44;
+						}elseif($char_concepto>=1176 && $char_concepto<1232){
+						$heigth=46;
+						}elseif($char_concepto>=1232 && $char_concepto<1288){
+						$heigth=48;
+						}elseif($char_concepto>=1288 && $char_concepto<1344){
+						$heigth=50;
+						}elseif($char_concepto>=1344){
+						$heigth=52;
+						}
+
+								$new_concepto=str_replace("\n","",$cadena_concepto);
+								$new_concepto=trim($new_concepto);
+								$codigo_presu = $sisap->mascara_cuatro($datos_6[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_activ_obra'])."-".$datos_6[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_6[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_6[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_6[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,$heigth,$datos_6[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_6[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_6[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_6[$i][0]['fecha_decreto']),'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_6[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_6[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_6[$i][0]['monto_disminucion'];
+										$total_a += $datos_6[$i][0]['monto_disminucion'];
+										$total_dis += $datos_6[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_6[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_6[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_6[$i][0]['monto_aumento'];
+										$total_b += $datos_6[$i][0]['monto_aumento'];
+										$total_aum += $datos_6[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,$heigth,$datos_6[$i][0]['numero_oficio'],'RL',0,'C');
+									$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_6[$i][0]['fecha_oficio']),'R',0,'C');
+									$pdf->cell(32,$heigth,$datos_6[$i][0]['numero_decreto'],'R',0,'C');
+									$pdf->cell(15,$heigth,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+									if($datos_6[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,$heigth,$sisap->Formato2($datos_6[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_6[$i][0]['monto_disminucion'];
+										$total_a += $datos_6[$i][0]['monto_disminucion'];
+										$total_dis += $datos_6[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(32,$heigth,"",'R',0,'R');
+										$pdf->cell(12,$heigth,"",'R',0,'R');
+									}
+									if($datos_6[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,$heigth,$sisap->Formato2($datos_6[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_6[$i][0]['monto_aumento'];
+										$total_b += $datos_6[$i][0]['monto_aumento'];
+										$total_aum += $datos_6[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,$heigth,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+								$total_num_oficios++;
+								$total_c++;
+
+							}else{
+								$codigo_presu = $sisap->mascara_cuatro($datos_6[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_activ_obra'])."-".$datos_6[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_6[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_6[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_6[$i][0]['cod_auxiliar']);
+
+								$asignacion = $datos_1[$i][0]['asignacion_inicial'];
+								$acumulada  = $datos_1[$i][0]['disminucion_acumulada'];
+								$porc       = $datos_1[$i][0]['porcentaje'];
+
+								if($datos_6[$i][0]['numero_aprobacion']!='0'){
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_6[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_6[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_6[$i][0]['monto_disminucion'];
+										$total_a += $datos_6[$i][0]['monto_disminucion'];
+										$total_dis += $datos_6[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_6[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_6[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_6[$i][0]['monto_aumento'];
+										$total_b += $datos_6[$i][0]['monto_aumento'];
+										$total_aum += $datos_6[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}else{
+									$pdf->cell(32,4,"",'RL',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->cell(32,4,"",'R',0,'C');
+									$pdf->cell(15,4,"",'R',0,'C');
+									$pdf->SetFont('vera','',5);
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(65,1,"",'',2);
+										$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+										$varX = $varX+65;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+										$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+									if($datos_6[$i][0]['monto_disminucion'] != 0){
+										$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+										$pdf->cell(32,4,$sisap->Formato2($datos_6[$i][0]['monto_disminucion']),'R',0,'R');
+										$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+										$total_disminucion += $datos_6[$i][0]['monto_disminucion'];
+										$total_a += $datos_6[$i][0]['monto_disminucion'];
+										$total_dis += $datos_6[$i][0]['monto_disminucion'];
+									}else{
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(32,4,"",'R',0,'R');
+										$pdf->cell(12,4,"",'R',0,'R');
+									}
+									if($datos_6[$i][0]['monto_aumento'] != 0){
+										$pdf->Cell(0,4,$sisap->Formato2($datos_6[$i][0]['monto_aumento']),'R',1,'R');
+										$total_aumento += $datos_6[$i][0]['monto_aumento'];
+										$total_b +=  $datos_6[$i][0]['monto_aumento'];
+										$total_aum += $datos_6[$i][0]['monto_aumento'];
+									}else{
+										$pdf->Cell(0,4,"",'R',1,'R');
+									}
+									$pdf->Cell(0,0,"",'T',1);
+								}
+							}
+
+							$num_oficio2 = $datos_6[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_6[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+					}//Fin foreach
+					$pdf->cell(32,4,"",'RL',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$pdf->cell(32,4,"",'R',0,'C');
+					$pdf->cell(15,4,"",'R',0,'C');
+					$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(65,1,"",'',2);
+						$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+						$varX = $varX+65;
+						$pdf->SetXY($varX,$varY);
+					$pdf->SetFont('vera','B',6);
+					$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,"",'R',0,'R');
+					$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+					$pdf->cell(12,4,"",'R',0,'R');
+					$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+					$pdf->Cell(0,0,"",'T',1);
+
+					$total_disminucion=0;
+					$total_aumento=0;
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+					$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+
+					$pdf->Ln(3);
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+					$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+					$pdf->SetFont('vera','',6);
+
+
+				}//Fin if
+				
+				if($pase7!=0){//Pregunto si existen datos.
+						$_SESSION['sub_titulo_reporte']="RECURSOS NACIONALES";
+						$pdf->AddPage();
+						$total_num_oficios=0;
+						$num_oficio2 = "";
+						$num_aprobacion2 = "";
+						$total_disminucion=0;
+						$total_aumento=0;
+
+						$total_dis = 0;
+						$total_aum = 0;
+
+						for($i=0; $i<count($datos_7); $i++){
+							$num_oficio1 = $datos_7[$i][0]['numero_oficio'];
+							$num_aprobacion1 = $datos_7[$i][0]['numero_aprobacion'];
+
+								if(($num_oficio1 != $num_oficio2) || ($num_aprobacion1 != $num_aprobacion2)){
+
+									if($i!=0){
+											$pdf->cell(32,4,"",'RL',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$pdf->cell(32,4,"",'R',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(65,1,"",'',2);
+													$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+													$varX = $varX+65;
+													$pdf->SetXY($varX,$varY);
+											$pdf->SetFont('vera','B',6);
+											$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+											$pdf->cell(32,4,"",'R',0,'R');
+											$pdf->cell(32,4,"",'R',0,'R');
+											$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+											$pdf->cell(12,4,"",'R',0,'R');
+											$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+											$pdf->Cell(0,0,"",'T',1);
+											$pdf->SetFont('vera','',6);
+											$total_disminucion=0;
+											$total_aumento=0;
+									}
+
+									$cadena_concepto=$datos_7[$i][0]['concepto'];
+									$char_concepto=strlen($cadena_concepto);
+
+
+									if($char_concepto<=56){
+									$heigth=4;
+									}elseif($char_concepto>56 && $char_concepto<112){
+									$heigth=6;
+									}elseif($char_concepto>=112 && $char_concepto<168){
+									$heigth=8;
+									}elseif($char_concepto>=168 && $char_concepto<224){
+									$heigth=10;
+									}elseif($char_concepto>=224 && $char_concepto<280){
+									$heigth=11;
+									}elseif($char_concepto>=280 && $char_concepto<336){
+									$heigth=14;
+									}elseif($char_concepto>=336 && $char_concepto<392){
+									$heigth=16;
+									}elseif($char_concepto>=392 && $char_concepto<448){
+									$heigth=18;
+									}elseif($char_concepto>=448 && $char_concepto<504){
+									$heigth=20;
+									}elseif($char_concepto>=504 && $char_concepto<560){
+									$heigth=22;
+									}elseif($char_concepto>=560 && $char_concepto<616){
+									$heigth=24;
+									}elseif($char_concepto>=616 && $char_concepto<672){
+									$heigth=26;
+									}elseif($char_concepto>=672 && $char_concepto<728){
+									$heigth=28;
+									}elseif($char_concepto>=728 && $char_concepto<784){
+									$heigth=30;
+									}elseif($char_concepto>=784 && $char_concepto<840){
+									$heigth=32;
+									}elseif($char_concepto>=840 && $char_concepto<896){
+									$heigth=34;
+									}elseif($char_concepto>=896 && $char_concepto<952){
+									$heigth=36;
+									}elseif($char_concepto>=952 && $char_concepto<1008){
+									$heigth=38;
+									}elseif($char_concepto>=1008 && $char_concepto<1064){
+									$heigth=40;
+									}elseif($char_concepto>=1064 && $char_concepto<1120){
+									$heigth=42;
+									}elseif($char_concepto>=1120 && $char_concepto<1176){
+									$heigth=44;
+									}elseif($char_concepto>=1176 && $char_concepto<1232){
+									$heigth=46;
+									}elseif($char_concepto>=1232 && $char_concepto<1288){
+									$heigth=48;
+									}elseif($char_concepto>=1288 && $char_concepto<1344){
+									$heigth=50;
+									}elseif($char_concepto>=1344){
+									$heigth=52;
+									}
+
+									$new_concepto=str_replace("\n","",$cadena_concepto);
+									$new_concepto=trim($new_concepto);
+									$codigo_presu = $sisap->mascara_cuatro($datos_7[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_activ_obra'])."-".$datos_7[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_7[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_7[$i][0]['cod_auxiliar']);
+
+									$asignacion = $datos_7[$i][0]['asignacion_inicial'];
+									$acumulada  = $datos_7[$i][0]['disminucion_acumulada'];
+									$porc       = $datos_7[$i][0]['porcentaje'];
+
+									if($datos_7[$i][0]['numero_aprobacion']!='0'){
+											$pdf->cell(32,$heigth,$datos_7[$i][0]['numero_oficio'],'RL',0,'C');
+											$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_7[$i][0]['fecha_oficio']),'R',0,'C');
+											$pdf->cell(32,$heigth,$datos_7[$i][0]['numero_decreto'],'R',0,'C');
+											$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_7[$i][0]['fecha_decreto']),'R',0,'C');
+											$pdf->SetFont('vera','',5);
+													$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(65,1,"",'',2);
+													$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+													$varX = $varX+65;
+													$pdf->SetXY($varX,$varY);
+													$pdf->SetFont('vera','',6);
+													$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+											if($datos_7[$i][0]['monto_disminucion'] != 0){
+													$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+													$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+													$pdf->cell(32,$heigth,$sisap->Formato2($datos_7[$i][0]['monto_disminucion']),'R',0,'R');
+													$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+													$total_disminucion += $datos_7[$i][0]['monto_disminucion'];
+													$total_a += $datos_7[$i][0]['monto_disminucion'];
+													$total_dis += $datos_7[$i][0]['monto_disminucion'];
+											}else{
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(12,$heigth,"",'R',0,'R');
+											}
+											if($datos_7[$i][0]['monto_aumento'] != 0){
+													$pdf->Cell(0,$heigth,$sisap->Formato2($datos_7[$i][0]['monto_aumento']),'R',1,'R');
+													$total_aumento += $datos_7[$i][0]['monto_aumento'];
+													$total_b += $datos_7[$i][0]['monto_aumento'];
+													$total_aum += $datos_7[$i][0]['monto_aumento'];
+											}else{
+													$pdf->Cell(0,$heigth,"",'R',1,'R');
+											}
+											$pdf->Cell(0,0,"",'T',1);
+									}else{
+											$pdf->cell(32,$heigth,$datos_7[$i][0]['numero_oficio'],'RL',0,'C');
+											$pdf->cell(15,$heigth,$sisap->cambia_fecha($datos_7[$i][0]['fecha_oficio']),'R',0,'C');
+											$pdf->cell(32,$heigth,$datos_7[$i][0]['numero_decreto'],'R',0,'C');
+											$pdf->cell(15,$heigth,"",'R',0,'C');
+											$pdf->SetFont('vera','',5);
+													$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(65,1,"",'',2);
+													$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+													$varX = $varX+65;
+													$pdf->SetXY($varX,$varY);
+													$pdf->SetFont('vera','',6);
+													$pdf->cell(50,$heigth,$codigo_presu,'RL',0,'C');
+											if($datos_7[$i][0]['monto_disminucion'] != 0){
+													$pdf->cell(32,$heigth,$sisap->Formato2($asignacion),'R',0,'R');
+													$pdf->cell(32,$heigth,$sisap->Formato2($acumulada),'R',0,'R');
+													$pdf->cell(32,$heigth,$sisap->Formato2($datos_7[$i][0]['monto_disminucion']),'R',0,'R');
+													$pdf->cell(12,$heigth,$sisap->Formato2($porc),'R',0,'R');
+													$total_disminucion += $datos_7[$i][0]['monto_disminucion'];
+													$total_a += $datos_7[$i][0]['monto_disminucion'];
+													$total_dis += $datos_7[$i][0]['monto_disminucion'];
+											}else{
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(32,$heigth,"",'R',0,'R');
+													$pdf->cell(12,$heigth,"",'R',0,'R');
+											}
+											if($datos_7[$i][0]['monto_aumento'] != 0){
+													$pdf->Cell(0,$heigth,$sisap->Formato2($datos_7[$i][0]['monto_aumento']),'R',1,'R');
+													$total_aumento += $datos_7[$i][0]['monto_aumento'];
+													$total_b += $datos_7[$i][0]['monto_aumento'];
+													$total_aum += $datos_7[$i][0]['monto_aumento'];
+											}else{
+													$pdf->Cell(0,$heigth,"",'R',1,'R');
+											}
+											$pdf->Cell(0,0,"",'T',1);
+									}
+									$total_num_oficios++;
+									$total_c++;
+
+								}else{
+									$codigo_presu = $sisap->mascara_cuatro($datos_7[$i][0]['codi_dep'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sector'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_programa'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sub_prog'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_proyecto'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_activ_obra'])."-".$datos_7[$i][0]['cod_partida']."-".$sisap->AddCero2($datos_7[$i][0]['cod_generica'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_especifica'])."-".$sisap->AddCero2($datos_7[$i][0]['cod_sub_espec'])."-".$sisap->AddCero4($datos_7[$i][0]['cod_auxiliar']);
+
+									$asignacion = $datos_7[$i][0]['asignacion_inicial'];
+									$acumulada  = $datos_7[$i][0]['disminucion_acumulada'];
+									$porc       = $datos_7[$i][0]['porcentaje'];
+
+									if($datos_7[$i][0]['numero_aprobacion']!='0'){
+											$pdf->cell(32,4,"",'RL',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$pdf->cell(32,4,"",'R',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$pdf->SetFont('vera','',5);
+													$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(65,1,"",'',2);
+													$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+													$varX = $varX+65;
+													$pdf->SetXY($varX,$varY);
+													$pdf->SetFont('vera','',6);
+													$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+											if($datos_7[$i][0]['monto_disminucion'] != 0){
+													$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+													$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+													$pdf->cell(32,4,$sisap->Formato2($datos_7[$i][0]['monto_disminucion']),'R',0,'R');
+													$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+													$total_disminucion += $datos_7[$i][0]['monto_disminucion'];
+													$total_a += $datos_7[$i][0]['monto_disminucion'];
+													$total_dis += $datos_7[$i][0]['monto_disminucion'];
+											}else{
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(12,4,"",'R',0,'R');
+											}
+											if($datos_7[$i][0]['monto_aumento'] != 0){
+													$pdf->Cell(0,4,$sisap->Formato2($datos_7[$i][0]['monto_aumento']),'R',1,'R');
+													$total_aumento += $datos_7[$i][0]['monto_aumento'];
+													$total_b += $datos_7[$i][0]['monto_aumento'];
+													$total_aum += $datos_7[$i][0]['monto_aumento'];
+											}else{
+													$pdf->Cell(0,4,"",'R',1,'R');
+											}
+											$pdf->Cell(0,0,"",'T',1);
+									}else{
+											$pdf->cell(32,4,"",'RL',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$pdf->cell(32,4,"",'R',0,'C');
+											$pdf->cell(15,4,"",'R',0,'C');
+											$pdf->SetFont('vera','',5);
+													$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(65,1,"",'',2);
+													$pdf->MultiCell(64,2,$new_concepto,'','L');//----[CONCEPTO]
+													$varX = $varX+65;
+													$pdf->SetXY($varX,$varY);
+													$pdf->SetFont('vera','',6);
+													$pdf->cell(50,4,$codigo_presu,'RL',0,'C');
+											if($datos_7[$i][0]['monto_disminucion'] != 0){
+													$pdf->cell(32,4,$sisap->Formato2($asignacion),'R',0,'R');
+													$pdf->cell(32,4,$sisap->Formato2($acumulada),'R',0,'R');
+													$pdf->cell(32,4,$sisap->Formato2($datos_7[$i][0]['monto_disminucion']),'R',0,'R');
+													$pdf->cell(12,4,$sisap->Formato2($porc),'R',0,'R');
+													$total_disminucion += $datos_7[$i][0]['monto_disminucion'];
+													$total_a += $datos_7[$i][0]['monto_disminucion'];
+													$total_dis += $datos_7[$i][0]['monto_disminucion'];
+											}else{
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(32,4,"",'R',0,'R');
+													$pdf->cell(12,4,"",'R',0,'R');
+											}
+											if($datos_7[$i][0]['monto_aumento'] != 0){
+													$pdf->Cell(0,4,$sisap->Formato2($datos_7[$i][0]['monto_aumento']),'R',1,'R');
+													$total_aumento += $datos_7[$i][0]['monto_aumento'];
+													$total_b +=  $datos_7[$i][0]['monto_aumento'];
+													$total_aum += $datos_7[$i][0]['monto_aumento'];
+											}else{
+													$pdf->Cell(0,4,"",'R',1,'R');
+											}
+											$pdf->Cell(0,0,"",'T',1);
+									}
+								}
+
+							$num_oficio2 = $datos_7[$i][0]['numero_oficio'];
+							$num_aprobacion2 = $datos_7[$i][0]['numero_aprobacion'];
+							//$total_num_oficios++;
+
+						}//Fin foreach
+						$pdf->cell(32,4,"",'RL',0,'C');
+						$pdf->cell(15,4,"",'R',0,'C');
+						$pdf->cell(32,4,"",'R',0,'C');
+						$pdf->cell(15,4,"",'R',0,'C');
+						$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(65,1,"",'',2);
+								$pdf->MultiCell(64,2,"",'','L');//----[CONCEPTO]
+								$varX = $varX+65;
+								$pdf->SetXY($varX,$varY);
+						$pdf->SetFont('vera','B',6);
+						$pdf->cell(50,4,"TOTAL ",'RL',0,'R');
+						$pdf->cell(32,4,"",'R',0,'R');
+						$pdf->cell(32,4,"",'R',0,'R');
+						$pdf->cell(32,4,$sisap->Formato2($total_disminucion),'R',0,'R');
+						$pdf->cell(12,4,"",'R',0,'R');
+						$pdf->Cell(0,4,$sisap->Formato2($total_aumento),'R',1,'R');
+						$pdf->Cell(0,0,"",'T',1);
+
+						$total_disminucion=0;
+						$total_aumento=0;
+
+						$pdf->Ln(3);
+						$pdf->SetFont('vera','B',7);
+						$pdf->Cell(60,5,"TOTAL MONTO AUMENTO",'TRLB',0,'C');
+						$pdf->cell(32,5,$sisap->Formato2($total_aum),'TRB',1,'C');
+
+						$pdf->Ln(3);
+						$pdf->SetFont('vera','B',7);
+						$pdf->Cell(60,5,"TOTAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+						$pdf->cell(32,5,$sisap->Formato2($total_dis),'TRB',1,'C');
+
+						$pdf->Ln(3);
+						$pdf->SetFont('vera','B',7);
+						$pdf->Cell(60,5,"TOTAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+						$pdf->cell(32,5,$total_num_oficios,'TRB',1,'C');
+						$pdf->SetFont('vera','',6);
+                }//Fin if
+
+				$pdf->Ln(6);
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(60,5,"TOTAL GENERAL MONTO AUMENTO",'TRLB',0,'C');
+				$pdf->cell(32,5,$sisap->Formato2($total_b),'TRB',1,'C');
+
+				$pdf->Ln(3);
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(60,5,"TOTAL GENERAL MONTO DISMINUCIÓN",'TRLB',0,'C');
+				$pdf->cell(32,5,$sisap->Formato2($total_a),'TRB',1,'C');
+				$pdf->SetFont('vera','',7);
+
+				$pdf->Ln(3);
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(60,5,"TOTAL GENERAL NÚMERO DE OFICIOS",'TRLB',0,'C');
+				$pdf->cell(32,5,$total_c,'TRB',1,'C');
+				$pdf->SetFont('vera','',6);
+
+}//fin else principal
+$pdf->Output('Reporte_oficios_registrados_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

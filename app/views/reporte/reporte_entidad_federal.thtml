@@ -1,0 +1,144 @@
+<?php
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer(){
+	    $this->SetY(-15);
+	    $this->SetFont('vera','B',6);
+	    $this->Cell(150,8," ",0,0,'R');
+	    $this->Cell(0,18,"FORMA: 2.000 ",0,0,'R');
+	}
+
+
+	function Header()
+	{
+		$this->top_reporte("IDENTIFICACIÓN DE LA ENTIDAD FEDERAL", null, null, array("Y"=>"17", "X"=>"20", "Z"=>"11"), null, false);
+	}//fin funtion
+}//fin clases
+
+
+
+if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"IdentificaciÒn de la Entidad Federal",NULL,"750");?>
+
+
+ <form name='data[cfpp08]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_entidad_federal/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO:
+<input name="data[cfpp08][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+$fpdf = new fpdfview('L','mm','Letter', true);
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(20);
+$fpdf->SetLeftMargin(15);
+$fpdf->SetRightMargin(10);
+
+foreach($DATOS as $x){
+	$presupuesto=$x['cfpd08']['ejercicio_fiscal'];
+	$domicilio=$x['cfpd08']['domicilio'];
+	$ciudad=$x['cfpd08']['ciudad'];
+	$telefono=$x['cfpd08']['telefonos'];
+	$dir_internet=$x['cfpd08']['dir_internet'];
+	$fax=$x['cfpd08']['fax'];
+	$codigo=$x['cfpd08']['cod_postal'];
+
+	$gobernador=$x['cfpd08']['gobernador'];
+	$contralor=$x['cfpd08']['contralor'];
+	$presi_y_vice=$x['cfpd08']['presi_consejo_legisla'];
+	$director=$x['cfpd08']['director_presu'];
+
+//Creacion del objeto de la clase heredada
+
+
+
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(20);
+$fpdf->SetLeftMargin(15);
+$fpdf->SetRightMargin(10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $presupuesto;
+$_SESSION['titulo'] = $titulo_a;
+$fpdf->AddPage();
+
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,10,"  DOMICILIO LEGAL",'TLR',1);
+$fpdf->SetFont('vera','',10);
+$fpdf->Cell(0,10,"  $domicilio",'LRB',1);
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(50,6,"  CIUDAD",'LB',0);
+$fpdf->Cell(60,6,"  TELÉFONOS",'LB',0);
+$fpdf->Cell(60,6,"  DIRECCIÓN INTERNET",'LB',0);
+$fpdf->Cell(60,6,"  FAX",'LB',0);
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(0,6,"CòDIGO POSTAL",'LRB',0,'C');
+$fpdf->Ln();
+
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(50,20," $ciudad",'LR',0);
+$fpdf->Cell(60,20," $telefono",'LR',0);
+$fpdf->SetFont('vera','',6);
+$fpdf->Cell(60,20,"$dir_internet",'LR',0);
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(60,20," $fax",'LR',0);
+$fpdf->Cell(0,20,"$codigo",'LR',0,'C');
+$fpdf->Ln();
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,10,"  GOBERNADOR (a)",'TLR',1);
+$fpdf->SetFont('vera','',10);
+$fpdf->Cell(0,10,"   $gobernador",'LRB',1);
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,10,"  CONTRALOR (a) GENERAL DEL ESTADO",'TLR',1);
+$fpdf->SetFont('vera','',10);
+$fpdf->Cell(0,10,"   $contralor",'LRB',1);
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,10,"  PRESIDENTE Y/O VICEPRESIDENTE DEL CONCEJO LEGISLATIVO ESTADAL",'TLR',1);
+$fpdf->SetFont('vera','',10);
+$fpdf->Cell(0,10,"   $presi_y_vice",'LRB',1);
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,10,"  SECRETARIO (a) DE PLANIFICACIÓN Y PRESUPUESTO",'TLR',1);
+$fpdf->SetFont('vera','',10);
+$fpdf->Cell(0,10,"   $director",'LRB',1);
+}//fin del foreach
+
+//$fpdf->SetFont('vera','B',6);
+//$fpdf->Cell(0,7,"FORMA: 2.000 ",'',1,'R');
+$fpdf->OutPut('forma_2000_'.date("d-m-Y"),'D');
+} ?>

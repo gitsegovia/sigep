@@ -1,0 +1,98 @@
+<?= $sisap->Tabla('',true,'TABLA DE DEPRECIACIÓN DE EDIFICACIONES','','950');?>
+<?= $sisap->OpenTable("950")?>
+<?$modelo_form="catp01_depreciacion_edificaciones";?>
+<form name='data[consulta]'  method = "post" id='form1'>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <td width="20%">A&ntilde;o de la Ordenanza </td>
+    <td width="80%">
+    <?= $sisap->inputTagRemote($modelo_form.'/ano_ordenanza', array('value'=>$ano_actual,'url'=>'/'.$modelo_form.'/mostrar_tipos/', 'update'=>'Lista', 'id'=>'ano_ordenanza','maxlength'=>'4','size'=>'6',"onKeyPress"=>"return solonumeros(event);", "onBlur"=>"verifica_plus_factor()","style"=>"text-align:center;"));?>
+    </td>
+  </tr>
+</table>
+<table width="100%" border="0"  cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="10%" align="center">Edad</td>
+    <td width="20%" align="center">Factor Excelente </td>
+    <td width="20%" align="center">Factor Bueno </td>
+    <td width="20%" align="center">Factor Regular </td>
+    <td width="20%" align="center">Factor Malo </td>
+    <td width="10%" align="center">Acci&oacute;n</td>
+  </tr>
+  <tr>
+    <td><?= $html->input($modelo_form.'/edad',array('id'=>'edad', 'class'=>'campoText','value'=>$sisap->AddCero3($ultima_edad),'maxlength'=>3, "onKeyPress"=>"return solonumeros(event);", "onBlur"=>"verifica_plus_factor()","style"=>"text-align:center;"));?></td>
+    <td><?= $html->input($modelo_form.'/factor_excelente',array('id'=>'factor_excelente', 'class'=>'campoText', 'value'=>'', 'maxlength'=>6, "onChange"=>"moneda('factor_excelente');", "style"=>"text-align:center;","onKeyPress"=>"return solonumeros_con_punto(event);", "onBlur"=>"verifica_plus_factor();", "onfocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td><?= $html->input($modelo_form.'/factor_bueno',array(    'id'=>'factor_bueno',     'class'=>'campoText', 'value'=>'', 'maxlength'=>6, "onChange"=>"moneda('factor_bueno');",     "style"=>"text-align:center;","onKeyPress"=>"return solonumeros_con_punto(event);", "onBlur"=>"verifica_plus_factor();", "onfocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td><?= $html->input($modelo_form.'/factor_regular',array(  'id'=>'factor_regular',   'class'=>'campoText', 'value'=>'', 'maxlength'=>6, "onChange"=>"moneda('factor_regular');",   "style"=>"text-align:center;","onKeyPress"=>"return solonumeros_con_punto(event);", "onBlur"=>"verifica_plus_factor();", "onfocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td><?= $html->input($modelo_form.'/factor_malo',array(     'id'=>'factor_malo',      'class'=>'campoText', 'value'=>'', 'maxlength'=>6, "onChange"=>"moneda('factor_malo');",      "style"=>"text-align:center;","onKeyPress"=>"return solonumeros_con_punto(event);", "onBlur"=>"verifica_plus_factor();", "onfocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td align="center"><?= $sisap->submitTagRemote('+', array('url1' => '/'.$modelo_form.'/guardar/', 'update1'=>'Lista','id'=>'plus','disabled'=>'disabled',"loading"=>"Element.show('mini_loading');", "complete"=>"Element.hide('mini_loading')")); ?></td>
+  </tr>
+</table>
+
+<br><br>
+
+<div id="Lista" class="Lista">
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td width="10%" align="center">Edad</td>
+    <td width="20%" align="center">Factor Excelente </td>
+    <td width="20%" align="center">Factor Bueno </td>
+    <td width="20%" align="center">Factor Regular </td>
+    <td width="20%" align="center">Factor Malo </td>
+    <td width="8%" align="center">Acci&oacute;n</td>
+  </tr>
+  <?php
+ if(isset($data_tipo)){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+ //	pr($_SESSION ["items_tipo"]);
+    foreach($data_tipo as $tipo){
+    	//print_r($ve);
+        $codigos[0]=$tipo[$modelo]["edad"];
+        $codigos[1]=$sisap->Formato2($tipo[$modelo]["factor_excelente"]);
+        $codigos[2]=$sisap->Formato2($tipo[$modelo]["factor_bueno"]);
+        $codigos[3]=$sisap->Formato2($tipo[$modelo]["factor_regular"]);
+        $codigos[4]=$sisap->Formato2($tipo[$modelo]["factor_malo"]);
+        $codigos[5]=$tipo[$modelo]["ano_ordenanza"];
+    	$ale = rand();
+        $id_fila = ''.$ale.'_'.$i;
+        $fila = 'fila_'.$ale.'_'.$i;
+    	if($i%2==0){$color="tr_grid_c1";}else{$color="tr_grid_c2";}
+?>
+  <tr class="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+     <td align="center"><?=$sisap->AddCero3($codigos[0])?></td>
+     <td align="center"><?=$codigos[1]?></td>
+     <td align="center"><?=$codigos[2]?></td>
+     <td align="center"><?=$codigos[3]?></td>
+     <td align="center"><?=$codigos[4]?></td>
+     <td align="center" id="<?= "td_accion_".$i ?>"><div id="<?= "accion_".$i ?>">
+       <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/catp01_depreciacion_edificaciones/eliminar_items/'.$codigos[0].'/'.$codigos[5], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+       <?= $ajax->link($html->image('edit.png',array('border'=>0)), '/catp01_depreciacion_edificaciones/editar_tipo/'.$codigos[0].'/'.$codigos[5].'/'.$i.'/'.$id_fila, array('update'=>$fila,'title'=>'Modificar'),false,false,true) ?>
+     </div></td>
+  </tr>
+<?
+   	$i++;
+    }//fin foreach
+ }
+?>
+</table>
+<script language="JavaScript" type="text/javascript">
+  document.getElementById('factor_excelente').value="";
+  document.getElementById('factor_bueno').value="";
+  document.getElementById('factor_regular').value="";
+  document.getElementById('factor_malo').value="";
+  $('plus').disabled=true;
+</script>
+  <input type="hidden" name="total_filas_tipo" id="total_filas_tipo" value="<?=$i?>"/>
+<div id="del"></div>
+</div>
+
+</div>
+<br>
+  <?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+</form>
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable()?>

@@ -1,0 +1,120 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$color="";
+
+?>
+
+<?$sisap->Tabla_modulos("",true,"PROBLEMAS O ÁREAS DE GESTIÓN INSTITUCIONAL","","950","cpop")?>
+<?$sisap->OpenTable("950");?>
+
+	<form name='data[cpod04_problemas_areas_gestion]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="35%">EJERCICIO A FORMULAR</td>
+				<td><?= $sisap->inputTagRemote('cpod04_problemas_areas_gestion/ano', array('url'=>'/cpop04_problemas_areas_gestion/index/'.$this->data['cpod04_problemas_areas_gestion']['ano'],'update'=>'principal','size'=>'4', 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$ano));?></td>
+			</tr>
+			<tr>
+				<td>OBJETIVO A RELACIONAR</td>
+				<td>
+					<?php
+						if(!isset($seleccionado)){
+							$seleccionado=null;
+						}
+					?>
+					<?= $sisap->selectTagRemote('cpod04_problemas_areas_gestion/numero_objetivo', $selectObj!=null?$selectObj:array(), array(), $seleccionado, array('id' =>'numero_objetivo', 'onChange' => 'vacio'));	?>
+				</td>
+			</tr>
+			<tr>
+				<td>DESCRIPCIÓN</td>
+				<td>
+					<?= $html->textarea('cpod04_problemas_areas_gestion/problema_area_gestion', array('id'=>'problema_area_gestion','rows'=>'2',  'cols' => '40', 'class'=>'inputtext'),  false); ?>
+					<?= $html->input('cpod04_problemas_areas_gestion/tipo_problema_area_gestion', array('id'=>'tipo_problema_area_gestion', 'value'=>'PROBLEMA', 'readonly'=>'readonly', 'type'=>'hidden')); ?>
+					<?= $html->input('cpod04_problemas_areas_gestion/numero_problema_area_gestion', array('id'=>'numero_problema_area_gestion', 'value'=>'0', 'readonly'=>'readonly', 'type'=>'hidden')); ?>
+				</td>
+			</tr>
+			<!-- tr>
+				<td>FECHA DE CREACI&Oacute;N</td>
+				<td> < ? = // $sisap->input_fecha("cpyp01_proy_accion","fecha","fecha", date('d/m/Y'), array()); ?></td>
+			</tr -->
+			<tr>
+       	<? if(!$consulta){?>
+				<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Registro', array('funcion'=>'valida_cpop04_problemas_areas_gestion','url1' => '/cpop04_problemas_areas_gestion/guardar/', 'update1'=>'principal')); ?></td>
+				<?}?>
+			</tr>
+		</table>
+	</form>
+
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="5" align="left">PROBLEMA O ÁREA DE GESTIÓN REGISTRADOS PARA ESTE EJERCICIO PRESUPUESTARIO:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="10%" align="center">C&oacute;digo</td>
+				<td width="40%" align="center">Objetivo</td>
+				<td width="40%" align="center">Descripción</td>
+				<td width="10%" align="center">Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $objetivos){
+        				$param = $objetivos[0]['numero_problema_area_gestion']."/".$objetivos[0]['ano'];
+
+						if($color=="#DAEBFF"){
+		    				$color="#CDF2FF";
+			    		}else{
+				    		$color="#DAEBFF";
+				    	}
+					?>
+
+						<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							<td width="10%" align="center"><?= $id ?></td>
+							<td width="40%" align="left"><?= $objetivos[0]['objetivo'] ?></td>
+							<td width="40%" align="left"><?= $objetivos[0]['problema_area_gestion'] ?></td>
+							<td width="10%" align="center">
+						        <?if(!$consulta){?>
+							        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop04_problemas_areas_gestion/eliminar/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpop04_problemas_areas_gestion/editar/'.$param, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+								<?}?>
+							</td>
+						</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				}else{ // fin datos
+				 ?>
+					<tr>
+						<td  colspan="7" align="center">NO EXISTEN OBJETIVOS REGISTRADOS EN ESTE AÑO</td>
+					</tr>
+			 	 <?
+				} 
+			?>
+		</table>
+	</div>
+<?= $sisap->buttonTagRemote('cpop04_problemas_areas_gestion/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>
+<script>
+$('problema_area_gestion').value='';
+$('numero_objetivo').value='';
+$('tipo_problema_area_gestion_PROBLEMA').checked=0;
+$('tipo_problema_area_gestion_GESTION').checked=0;
+</script>

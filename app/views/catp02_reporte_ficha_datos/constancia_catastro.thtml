@@ -1,0 +1,268 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}//fin function
+
+if(isset($var) && $var=="si"){
+?>
+<form name="data[catp02_reporte_ficha_datos]" method="post" id='form' action="<?php echo $html->url('/catp02_reporte_ficha_datos/constancia_catastro/0/0/no'); ?>">
+
+<?= $sisap->Tabla('',true,'CONSTANCIA DE CATASTRO','','950');?>
+<?= $sisap->OpenTable("950")?>
+<br />
+
+<table width="12%" border="0">
+		<tr>
+
+			<td>
+		 		<?= $html->input('catp02_reporte_ficha_datos/codigo_ficha', $htmlAttributes = array('style'=>'width:120;text-align:center','type'=>'hidden','value'=>$codigo_ficha, 'readonly'=>'readonly','id'=>'cedula'), false); ?>
+			</td>
+			<td>
+		 		<?= $html->input('catp02_reporte_ficha_datos/cedule', $htmlAttributes = array('style'=>'width:300;text-align:center','type'=>'hidden','value'=>$cedula, 'readonly'=>'readonly','id'=>'nombre'), false); ?>
+			</td>
+
+		</tr>
+</table>
+
+<table width="70%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+<TR align="center" class="tr_negro">
+	<TD> primera firma </TD>
+</TR>
+
+<TR align="center">
+<TD width="100%">Nombres y Apellidos</TD>
+</TR>
+
+<TR align="center">
+<TD>  <input type="text" name="data[cugd07_firmas_oficio_anulacion][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" id="nombre_primera_firma" maxlength="150" style="text-align:righ;" class="inputtext" <?= $b_readonly ?>/>  </TD>
+</TR>
+</table>
+
+<table width="70%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<TR align="center">
+<TD width="100%"> Cargo </TD>
+</TR>
+<TR align="center">
+<TD>  <input type="text" name="data[cugd07_firmas_oficio_anulacion][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" id="cargo_primera_firma"  maxlength="150" style="text-align:righ;"  class="inputtext" <?= $b_readonly ?>/>  </TD>
+</TR>
+</table>
+<br/>
+<div id="idsave_modificar_firmantes">
+<?php if(isset($firma_existe) && $firma_existe=='no'){ ?>
+	<?= $sisap->submitTagRemote('Guardar Firmas', array('url1' => '/catp02_reporte_ficha_datos/guardar_editar_firmas/2', 'update1'=>'principal', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php }else if(isset($firma_existe) && $firma_existe=='si'){ ?>
+	<?= $sisap->submitTagRemote('Modificar Firmas', array( 'url1' => '/catp02_reporte_ficha_datos/modificar_firmas_form/2', 'update1'=>'idsave_modificar_firmantes', 'id'=>'id_b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php } ?>
+</div>
+<?=$sisap->CloseTable()?>
+<?= $html->submit('Generar', array('id'=>'enviar'));?>
+</form>
+<br>
+<?= $sisap->buttonTagRemote('/catp02_reporte_ficha_datos/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?echo $sisap->imagen_ventana(array("value"=>"..", 'disabled'=>''),3,"Buscar C&eacute;dula Catastral", "/catp02_reporte_ficha_datos/buscar_datos_ficha/2", "750px", "400px");?>
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+	   function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	    $this->top_reporte("CONSTANCIA DE CATASTRO",null, null, array("Y"=>"11", "X"=>"15", "Z"=>"12"), array("Y"=>"18", "X"=>"186"));
+	}
+	function FooteR() {
+		// Position at 1.5 cm from bottom
+		$this->SetY(-80);
+
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,'ATENTAMENTE','',1,'C');
+		$this->Ln(20);
+		$this->Cell(0,5,'________________________________________________','',1,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,5,$_SESSION['nombre_firma'],'',1,'C');
+		$this->Cell(0,5,$_SESSION['cargo_firma'],'',1,'C');
+		$this->Ln(25);
+		$this->Cell(11,5,"NOTA: ",'',0,'L');
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,"SOLO PARA USO INTERNO DE SOLICITUD DE VIVIENDA.",'',1,'L');
+
+
+
+		// Set font
+		//$this->SetFont('helvetica', 'I', 8);
+		// Page number
+		//$this->Cell(0, 10, 'Página '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, 0, 'C');
+	}
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+		$pdf->Ln(3);
+
+if(isset($datos) && !empty($datos)){
+
+	$edo = mascara($datos[0]['v_catd02_ficha_datos']['cod_act_edo'],2);
+    $mun =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_mun'],2);
+    $prr =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_prr'],2);
+    $amb_t =  $datos[0]['v_catd02_ficha_datos']['cod_act_amb_t'];
+    $amb =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_amb'],2);
+    $sec =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_sec'],3);
+    $man =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_man'],3);
+    $par =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_par'],3);
+    $sbp =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_sbp'],3);
+    $niv =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_niv'],3);
+    $und =  mascara($datos[0]['v_catd02_ficha_datos']['cod_act_und'],3);
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(0,3,$datos[0]['v_catd02_ficha_datos']['ciudad'].', '.$sisap->fecha_alfabetico(date("Y-m-d")),'',1,'R');
+ 		$pdf->Ln(5);
+		$pdf->SetFont('vera','B',8);
+        $pdf->Cell(0,3,'REGISTRO CATASTRAL','',1,'L');
+ 		$pdf->Ln(2);
+
+        $pdf->SetFont('vera','B',5);
+		$pdf->Cell(50,3,'NÚMERO','TRL',0,'C');
+		$pdf->Cell(50,3,'NÚMERO','TR',0,'C');
+		$pdf->Cell(50,3,'FICHA DE','TR',0,'C');
+		$pdf->Cell(0,3,'NÚMERO','TR',1,'C');
+
+		$pdf->Cell(50,3,'FICHA CATASTRAL','BRL',0,'C');
+		$pdf->Cell(50,3,'INSCRIPCIÓN CATASTRAL','RB',0,'C');
+		$pdf->Cell(50,3,'INSCRIPCIÓN','RB',0,'C');
+		$pdf->Cell(0,3,'CONTROL DE ARCHIVO','RB',1,'C');
+
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(50,5,mascara_seis($datos[0]['v_catd02_ficha_datos']['cod_ficha']),'RLB',0,'C');
+		$pdf->Cell(50,5,mascara_seis($datos[0]['v_catd02_ficha_datos']['cod_inscripcion']),'RB',0,'C');
+		$pdf->Cell(50,5,$sisap->cambia_fecha($datos[0]['v_catd02_ficha_datos']['fecha_inscripcion']),'RB',0,'C');
+		$pdf->Cell(0,5,mascara_seis($datos[0]['v_catd02_ficha_datos']['cod_control_archivo']),'RB',1,'C');
+$pdf->Ln(6);
+
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,'CÓDIGO CATASTRAL','',1,'L');
+		$pdf->Ln(2);
+		$pdf->SetFont('vera','B',5);
+
+		$pdf->Cell(10,5,'EDO.','TLB',0,'C');
+		$pdf->Cell(10,5,'MUN. ','LTB',0,'C');
+		$pdf->Cell(10,5,'PRR.','TLRB',0,'C');
+		$pdf->Cell(24,5,'ÁMB.','TBL',0,'C');
+		$pdf->Cell(24,5,'SEC.','TLRB',0,'C');
+		$pdf->Cell(24,5,'MAN.','TRB',0,'C');
+		$pdf->Cell(24,5,'PAR.','TLRB',0,'C');
+		$pdf->Cell(24,5,'SBP. ','TRB',0,'C');
+		$pdf->Cell(24,5,'NIV.','TLRB',0,'C');
+		$pdf->Cell(0,5,'UND.','TRB',1,'C');
+
+
+        $pdf->SetFont('vera','',5);
+
+        $pdf->Cell(5,5,$edo[0],'TLRB',0,'C');
+		$pdf->Cell(5,5,$edo[1],'TRB',0,'C');
+
+		$pdf->Cell(5,5,$mun[0],'LRB',0,'C');
+		$pdf->Cell(5,5,$mun[1],'TLRB',0,'C');
+
+		$pdf->Cell(5,5,$prr[0],'TRB',0,'C');
+		$pdf->Cell(5,5,$prr[1],'TRB',0,'C');
+
+ $pdf->SetFont('vera','B',7);
+
+ if((int) $amb==1){
+ 	$color_r=180;
+ 	$color_v=0;
+ 	$color_b=0;
+ }else if((int) $amb==2){
+ 	$color_r=0;
+ 	$color_v=100;
+ 	$color_b=0;
+ }else{
+
+ }
+
+ $pdf->SetTextColor($color_r,$color_v,$color_b);
+		$pdf->Cell(8,5,$amb_t,'RBL',0,'C');
+$pdf->SetTextColor(0,0,0);
+
+
+ $pdf->SetFont('vera','',5);
+		$pdf->Cell(8,5,$amb[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$amb[1],'TRB',0,'C');
+
+		$pdf->Cell(8,5,$sec[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$sec[1],'TRB',0,'C');
+		$pdf->Cell(8,5,$sec[2],'TRB',0,'C');
+
+		$pdf->Cell(8,5,$man[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$man[1],'TRB',0,'C');
+		$pdf->Cell(8,5,$man[2],'TRB',0,'C');
+
+		$pdf->Cell(8,5,$par[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$par[1],'TRB',0,'C');
+		$pdf->Cell(8,5,$par[2],'TRB',0,'C');
+
+		$pdf->Cell(8,5,$sbp[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$sbp[1],'TRB',0,'C');
+		$pdf->Cell(8,5,$sbp[2],'TRB',0,'C');
+
+		$pdf->Cell(8,5,$niv[0],'TRB',0,'C');
+		$pdf->Cell(8,5,$niv[1],'TRB',0,'C');
+		$pdf->Cell(8,5,$niv[2],'TRB',0,'C');
+
+		$pdf->Cell(7.5,5,$und[0],'TRB',0,'C');
+		$pdf->Cell(7.5,5,$und[1],'TRB',0,'C');
+		$pdf->Cell(0,5,$und[2],'TRB',1,'C');
+
+
+
+	$pdf->Ln(8);
+
+$pdf->SetFont('vera','',7);
+$pdf->SetLeftMArgin(20);
+	$pdf->SetRightMargin(30);
+	$contenido="La oficina Municipal de Catastro del Municipio   ".$datos[0]['v_catd02_ficha_datos']['deno_municipio2'].", del Estado ".$datos[0]['v_catd02_ficha_datos']['deno_estado2'].",                   <b>HACE CONSTAR</b>, que el Ciudadano(a) <b>".$datos[0]['v_catd02_ficha_datos']['nombre_repre'].",</b>                  Titular de la Cédula de Identidad N°           <b>".$datos[0]['v_catd02_ficha_datos']['cedula_rif_repre']."</b>, posee una parcela de terreno           <b>".$sisap->Formato2($datos[0]['v_catd02_ficha_datos']['terreno_area'])."  M<sup>2</sup></b> ubicada en ".$datos[0]['v_catd02_ficha_datos']['direccion_uno']." entre ".$datos[0]['v_catd02_ficha_datos']['direccion_dos']." y ".$datos[0]['v_catd02_ficha_datos']['direccion_tres'].", de la Parroquia ".$datos[0]['v_catd02_ficha_datos']['deno_parroquia2'].", en el Sector ".$datos[0]['v_catd02_ficha_datos']['deno_sector2']." , con  los siguientes linderos:<br/><br/> <b>norte:</b>    ".$datos[0]['v_catd02_ficha_datos']['lindero_norte']."<br/><br/><b>sur:</b>         ".$datos[0]['v_catd02_ficha_datos']['lindero_sur']."<br/><br/><b>este:</b>       ".$datos[0]['v_catd02_ficha_datos']['lindero_este']."<br/><br/> <b>oeste:</b>   ".$datos[0]['v_catd02_ficha_datos']['lindero_oeste']."<br/><br/>Constancia que se expide a solicitud de la parte interesada en la Ciudad de ".$datos[0]['v_catd02_ficha_datos']['ciudad']." de fecha: ".$sisap->cambia_fecha(date('Y-m-d')).".";
+	$pdf->Cell(0,5,"",'',2,'C');
+	$pdf->MultiCell(0, 1, $pdf->WriteHTML($contenido), 0, 'J', 0, 1, '', '', true, 0, false);
+	$pdf->SetFont('vera','B',11);
+	$pdf->Cell(0,2,"",'',1,'C');
+}else{
+	$pdf->SetFont('vera','',12);
+	$pdf->Cell(0,8,'NO SE ENCONTRARON DATOS','',1,'C');
+}
+
+
+
+$pdf->Output('constancia_de_catastro_'.date('d-m-Y').'.pdf','D');
+}
+?>
+
+
+
+
+
+
+
+
+
+
+

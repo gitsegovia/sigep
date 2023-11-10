@@ -1,0 +1,246 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}?>
+<?php
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+
+
+
+class fpdfview extends TCPDF{
+
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION['titulo_a'],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"INGRESOS MENSUALES MES DE ".$_SESSION['mes']." DE ".$_SESSION['year'],'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(18,4,"N° SOLICITUD",'TRBL',0,'C');
+		$this->Cell(20,4,"FECHA",'TRB',0,'C');
+		$this->Cell(15,4,"MES",'TRB',0,'C');
+		$this->Cell(60,4,"PARTIDAS",'TRB',0,'C');
+		$this->Cell(28,4,"PRIMERA QUINCENA",'TRB',0,'C');
+		$this->Cell(28,4,"SECUNDA QUINCENA",'TRB',0,'C');
+		$this->Cell(0,4,"MONTO MENSUAL",'TRB',1,'C');
+    }//fin funtion
+}//fin clase
+
+
+
+if($opcion=='no'){ ?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"REPORTE INGRESOS MENSUALES","","950");?>
+<form  method = "post" id='form' action="<?php echo  $html->url('/reporte4/reporte_ingreso_mensual_sr/si'); ?>" onSubmit="return reporte_ingreso_mensual();">
+
+
+<?= $sisap->OpenTable("950")?>
+
+<table width='30%' border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<th colspan="2"><br></th>
+
+<tr>
+		<td align="center">Año del Recurso</td>
+		<td align="center">Mes del Recurso</td>
+</tr>
+<tr>
+         <td width='10%'><input name="data[datos][ano]"     value="<?= $ano ?>" id="ano"   onKeyPress="return solonumeros(event);" class="inputtext"></td>
+	     <td width='10%'><?=  $html->selectTag('datos/mes', $mes !='' ? $mes : array(''=>''),  array('value1'=>'otros'),  '', array(null), null, true); ?></td>
+</tr>
+
+</table>
+
+<br>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+
+
+<?php }else{
+
+
+$_SESSION['year'] = $year;
+$meses            = array(1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre');
+$_SESSION['mes']  = $meses[$mes];
+
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$primera_quincena = 0;
+$segunda_quincena = 0;
+
+$total_primera_quincena = 0;
+$total_segunda_quincena = 0;
+
+$total_entregado = 0;
+
+$numero_solicitud=0;
+
+$count = 0;
+
+$diponibilidad = 0;
+
+//pr($datos2);
+
+foreach($datos2 as $ve2){
+
+
+$concate2 = $sisap->AddCero2($ve2[0]['cod_sector']).'.'.$sisap->AddCero2($ve2[0]['cod_programa']).'.'.$sisap->AddCero2($ve2[0]['cod_sub_prog']).'.'.$sisap->AddCero2($ve2[0]['cod_proyecto']).'.'.$sisap->AddCero2($ve2[0]['cod_activ_obra']).'.'.$sisap->AddCero2(substr($ve2[0]['cod_partida'], -2), substr($ve2[0]['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve2[0]['cod_generica']).'.'.$sisap->AddCero2($ve2[0]['cod_especifica']).'.'.$sisap->AddCero2($ve2[0]['cod_sub_espec']).'.'.$sisap->AddCero2($ve2[0]['cod_auxiliar']);
+
+$cod_sector     =  $ve2[0]['cod_sector'];
+$cod_programa   =  $ve2[0]['cod_programa'];
+$cod_sub_prog   =  $ve2[0]['cod_sub_prog'];
+$cod_proyecto   =  $ve2[0]['cod_proyecto'];
+$cod_activ_obra =  $ve2[0]['cod_activ_obra'];
+$cod_partida    =  $ve2[0]['cod_partida'];
+$cod_partida    =  $ve2[0]['cod_partida'];
+$cod_generica   =  $ve2[0]['cod_generica'];
+$cod_especifica =  $ve2[0]['cod_especifica'];
+$cod_sub_espec  =  $ve2[0]['cod_sub_espec'];
+$cod_auxiliar   =  $ve2[0]['cod_auxiliar'];
+
+			if($cod_generica!=0){
+					if($cod_especifica!=0){
+					       $diponibilidad += $ve2[0]['disponibilidad_partida_a'];
+					}else{
+					       $diponibilidad += $ve2[0]['disponibilidad_partida_c'];
+					}//fin else
+			}else{
+			       $diponibilidad += $ve2[0]['disponibilidad_partida_b'];
+			}//fin else
+
+}//fin foreach
+
+
+//echo $diponibilidad;
+
+
+$pdf->SetFont('vera','',6);
+foreach($datos as $ve){ $count++;
+
+	$concate = $sisap->AddCero2($ve[0]['cod_sector']).'.'.$sisap->AddCero2($ve[0]['cod_programa']).'.'.$sisap->AddCero2($ve[0]['cod_sub_prog']).'.'.$sisap->AddCero2($ve[0]['cod_proyecto']).'.'.$sisap->AddCero2($ve[0]['cod_activ_obra']).'.'.$sisap->AddCero2(substr($ve[0]['cod_partida'], -2), substr($ve[0]['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve[0]['cod_generica']).'.'.$sisap->AddCero2($ve[0]['cod_especifica']).'.'.$sisap->AddCero2($ve[0]['cod_sub_espec']).'.'.$sisap->AddCero2($ve[0]['cod_auxiliar']);
+
+	if($numero_solicitud == $ve[0]['numero_solicitud']){
+
+		 $pdf->Cell(18,4,"",'TRBL',0,'C');
+	     $pdf->Cell(20,4,"",'TRB',0,'C');
+	     $pdf->Cell(15,4,"",'TRB',0,'C');
+
+	}else{
+
+		 $pdf->Cell(18,4,$sisap->AddCero2($ve[0]['numero_solicitud']),'TRBL',0,'C');
+	     $pdf->Cell(20,4,$sisap->cambia_fecha($ve[0]['fecha_solicitud']),'TRB',0,'C');
+	     $pdf->Cell(15,4,$meses[$ve[0]['mes_solicitado']],'TRB',0,'C');
+	     $numero_solicitud = $ve[0]['numero_solicitud'];
+
+	}//fin else
+
+
+
+
+
+	$pdf->Cell(60,4,$concate,'TRB',0,'C');
+
+	      if($ve[0]['numero_quincena']==1 && $ve[0]['frecuencia_solicitud']==1){
+			$pdf->Cell(28,4,$sisap->Formato2($ve[0]['monto_entregado_partida']),'TRB',0,'R');
+			$pdf->Cell(28,4,"",'TRB',0,'R');
+			$primera_quincena       += $ve[0]['monto_entregado_partida'];
+			$total_primera_quincena += $ve[0]['monto_entregado_partida'];
+	}else if($ve[0]['numero_quincena']==2 && $ve[0]['frecuencia_solicitud']==1){
+            $pdf->Cell(28,4,"",'TRB',0,'R');
+			$pdf->Cell(28,4,$sisap->Formato2($ve[0]['monto_entregado_partida']),'TRB',0,'R');
+			$segunda_quincena       += $ve[0]['monto_entregado_partida'];
+			$total_segunda_quincena += $ve[0]['monto_entregado_partida'];
+	}else{
+            $pdf->Cell(28,4,"",'TRB',0,'R');
+			$pdf->Cell(28,4,"",'TRB',0,'R');
+	}//fin else
+
+
+	if($ve[0]['frecuencia_solicitud']==2){
+			$pdf->Cell(0,4,$sisap->Formato2($ve[0]['monto_entregado_partida']),'TRB',1,'R');
+
+	}else{
+		   if($ve[0]['numero_quincena']==2){
+		   	  $pdf->Cell(0,4,$sisap->Formato2($ve[0]['monto_entregado_partida_mes']),'TRB',1,'R');
+		   }else{
+		   	  $pdf->Cell(0,4,"",'TRB',1,'R');
+		   }//fin else
+
+	}//fin else
+
+	        $total_entregado += $ve[0]['monto_entregado_partida'];
+
+
+}
+
+
+
+
+$pdf->SetFont('vera','B',6);
+
+$pdf->Cell(169,5,"TOTAL ENTREGADO BS.",'TRLB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_entregado),'TRLB',1,'R');
+
+
+
+$pdf->Cell(169,5,"TOTAL DISPONIBLE BS.",'TRLB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($diponibilidad-$total_entregado),'TRLB',1,'R');
+
+
+$pdf->OutPut('Reporte_ingreso_mensual_sr_'.date('Y_m_d'),'D');
+
+
+
+
+}//fin else
+
+
+?>

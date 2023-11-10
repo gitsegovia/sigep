@@ -1,0 +1,170 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+	    $this->SetY(-10);
+	    $this->SetFont('vera','',6);
+	    $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		$this->top_reporte("PARAMETROS PARA CÁLCULOS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), null, false);
+	}
+}//fin clase
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+if(isset($vacio) && $vacio=='si' && isset($mensaje)){
+   $pdf->Ln(8);
+   $pdf->SetFont('vera','BU',11);
+   $pdf->Cell(0,10,$mensaje,'',0,'C');
+}elseif(isset($vacio) && $vacio=='no'){
+
+$pdf->Cell(110,5,"",'TRL',0,'L');
+$pdf->Cell(20,5,"",'TR',0,'C');
+$pdf->Cell(110,5,"",'TR',0,'L');
+$pdf->Cell(0,5,"",'TR',1,'C');
+
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(110,6,"RETENCIONES POR GARANTIAS",'RL',0,'L');
+$pdf->Cell(20,6,"",'R',0,'C');
+$pdf->Cell(110,6,"TIMBRE FISCAL",'R',0,'L');
+$pdf->Cell(0,6,"",'R',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(110,5,"PORCENTAJE DE FIEL CUMPLIMIENTO",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_fiel_cumplimiento'],'R',0,'C');
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_timbre_fiscal'],'R',1,'C');
+
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN LABORAL",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_laboral'],'R',0,'C');
+$pdf->Cell(110,5,"A PARTIR DEL SIGUIENTE MONTO",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['desde_monto_timbre'],'R',1,'C');
+
+$pdf->Cell(110,5,"INCLUYE I.V.A.?",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['retencion_incluye_iva']==1 ? 'SI' : 'NO','R',0,'C');
+$pdf->Cell(110,5,"",'R',0,'L');
+$pdf->Cell(0,5,"",'R',1,'C');
+
+$pdf->Cell(110,5,"",'RL',0,'L');
+$pdf->Cell(20,5,"",'R',0,'C');
+$pdf->Cell(110,5,"",'R',0,'L');
+$pdf->Cell(0,5,"",'R',1,'C');
+
+
+
+$pdf->Cell(110,4,"",'RL',0,'L');
+$pdf->Cell(20,4,"",'R',0,'C');
+$pdf->Cell(110,4,"",'R',0,'L');
+$pdf->Cell(0,4,"",'R',1,'C');
+
+
+
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(110,6,"I.S.L.R. PERSONAS NATURALES",'RL',0,'L');
+$pdf->Cell(20,6,"",'R',0,'C');
+$pdf->Cell(110,6,"IMPUESTO AL VALOR AGREGADO (I.V.A.)",'R',0,'L');
+$pdf->Cell(0,6,"",'R',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_islr_natural'],'R',0,'C');
+$pdf->Cell(110,5,"RETIENE I.V.A.?",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['aplica_retencion_iva']==1 ? 'SI' : 'NO','R',1,'C');
+
+$pdf->Cell(110,5,"A PARTIR DEL SIGUIENTE MONTO",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['desde_monto_natural'],'R',0,'C');
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_retencion_iva'],'R',1,'C');
+
+$pdf->Cell(110,5,"SUSTRAENDO (1%)",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['sustraendo'],'R',0,'C');
+$pdf->Cell(110,5,"PORCENTAJE DE I.V.A.",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_iva'],'R',1,'C');
+
+$pdf->Cell(110,5,"",'RL',0,'L');
+$pdf->Cell(20,5,"",'R',0,'C');
+$pdf->Cell(110,5,"FACTOR DE CONVERSIÓN",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['factor_reversion'],'R',1,'C');
+
+
+
+$pdf->Cell(110,4,"",'RL',0,'L');
+$pdf->Cell(20,4,"",'R',0,'C');
+$pdf->Cell(110,4,"",'R',0,'L');
+$pdf->Cell(0,4,"",'R',1,'C');
+
+
+
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(110,6,"I.S.L.R. PERSONAS JURIDICAS",'RL',0,'L');
+$pdf->Cell(20,6,"",'R',0,'C');
+$pdf->Cell(110,6,"ANTICIPOS",'R',0,'L');
+$pdf->Cell(0,6,"",'R',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_islr_juridico'],'R',0,'C');
+$pdf->Cell(110,5,"PORCENTAJE DE ANTICIPO",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_anticipo'],'R',1,'C');
+
+$pdf->Cell(110,5,"A PARTIR DEL SIGUIENTE MONTO",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['desde_monto_juridico'],'R',0,'C');
+$pdf->Cell(110,5,"INCLUYE I.V.A.?",'R',0,'L');
+$pdf->Cell(0,5,$parametros[0]['cscd04_ordencompra_parametros']['anticipo_incluye_iva']==1 ? 'SI' : 'NO','R',1,'C');
+
+
+
+$pdf->Cell(110,4,"",'RL',0,'L');
+$pdf->Cell(20,4,"",'R',0,'C');
+$pdf->Cell(110,4,"",'R',0,'L');
+$pdf->Cell(0,4,"",'R',1,'C');
+
+
+
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(110,6,"IMPUESTO MUNICIPAL",'RL',0,'L');
+$pdf->Cell(20,6,"",'R',0,'C');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(110,6,"MONTO DE LA UNIDAD TRIBUTARIA",'R',0,'L');
+$pdf->Cell(0,6,$parametros[0]['cscd04_ordencompra_parametros']['unidad_tributaria'],'R',1,'C');
+
+$pdf->Cell(110,5,"PORCENTAJE DE RETENCIÓN",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['porcentaje_impuesto_municipal'],'R',0,'C');
+$pdf->Cell(110,5,"",'R',0,'L');
+$pdf->Cell(0,5,"",'R',1,'C');
+
+$pdf->Cell(110,5,"A PARTIR DEL SIGUIENTE MONTO",'RL',0,'L');
+$pdf->Cell(20,5,$parametros[0]['cscd04_ordencompra_parametros']['desde_monto_impuesto_municipal'],'R',0,'C');
+$pdf->Cell(110,5,"",'R',0,'L');
+$pdf->Cell(0,5,"",'R',1,'C');
+
+$pdf->Cell(110,10,"",'RBL',0,'L');
+$pdf->Cell(20,10,"",'RB',0,'C');
+$pdf->Cell(110,10,"",'RB',0,'L');
+$pdf->Cell(0,10,"",'RB',1,'C');
+}
+$pdf->Output('Parametros_para_Calculos_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

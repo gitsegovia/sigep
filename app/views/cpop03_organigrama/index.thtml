@@ -1,0 +1,120 @@
+<?php
+$aleatorio=intval(rand());
+if(isset($errorMessage)) {
+	echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<?php
+	$sisap->Tabla_modulos('', true, "INFORMACI&Oacute;N ORGANIGRAMA INSTITUCIONAL", '', "950","cpop");
+?>
+
+<?php $sisap->OpenTable("950"); ?>
+
+
+<?php
+
+	if(!empty($datos_img)){
+    if(!is_null($datos_img['cpod03_organigrama']['fundamento_legal']) && $datos_img['cpod03_organigrama']['fundamento_legal']!=""){
+      $fundamento_legal=$datos_img['cpod03_organigrama']['fundamento_legal'];
+    }else{
+      $fundamento_legal = '';
+    }
+  }else{
+    $fundamento_legal = '';
+	}
+
+  if($consulta || $fundamento_legal!=""){
+    $readonly='readonly';
+  }else{
+    $readonly='';
+  }
+  
+  if(isset($editar)){
+    $readonly=''; 
+  }
+
+?>
+
+
+<form name='data[cpod03_organigrama]' method = "post" id='form_cpod03_organigrama' enctype="multipart/form-data">
+
+	<table width="100%" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	  <tr>
+	  	<td width="20%">Año</td>
+	  	<td>
+	  		<?= $sisap->inputTagRemote('cpod03_organigrama/ano', array('url'=>'/cpop03_organigrama/index/'.$this->data['cpod03_organigrama']['ano'],'update'=>'principal','size'=>'4' , 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$ano));?>
+
+	  	</td>
+	  <tr>
+	  <tr>
+	    <td width="20%">Fundamentación Legal</td>
+	    <td width="80%"><?php echo $html->input('cpod03_organigrama/fundamento_legal', array('class'=>'inputtext', 'value'=>$fundamento_legal, 'id'=>'fundamento_legal', $readonly=>$readonly)); ?></td>
+	  </tr>
+	</table>
+
+	<br /><br />
+	<span style="font-size:17px;color:#740000;"><b><u>NOTA</u>:</b> EL FORMATO DE LAS IM&Aacute;GENES DEBEN SER EN JPG/JPEG.</span>
+
+	<span style="font-size:12px;color:#000000;">
+		<br />Se Recomienda:
+		<br />Ancho: 750 P&iacute;xeles
+		<br />&nbsp;&nbsp;Alto: 750 P&iacute;xeles
+	</span>
+	<br /><br />
+
+	<table width="100%" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  		<tr>
+    		<td align="center" width="100%">Imagen Organigrama</td>
+		</tr>
+		<tr>
+    		<!-- <td>
+			Codigo dependencia <?= $cod_dep ?>
+    			<div id="organigrama" style="margin-left:auto;margin-right:auto;text-align:center;height:450px; width:99%;">
+					<iframe allow="fullscreen" allowfullscreen="allowfullscreen" src="http://organigrama.guarico.gob.ve/?institucion=<?=$cod_dep?>" height="450px" width="99%">
+					</iframe>
+    			</div>
+    		</td> -->
+    		<td>
+    			<div id="organigrama" style="margin-left:auto;margin-right:auto;text-align:center;height:450px; width:99%;">
+    				<?php
+    					// if(!empty($datos_img) && !empty($datos_img["cpod03_organigrama"]["tipo_organigrama"])){
+    					// 	//' . $this->onclick_ventana('/cnmp06_constancia_firmante/ver_img_grande_croquis/' . $identificador . '/' . $opcion, 'Imagen', '550px', '400px', true, true, true) . '
+    					// 	$ano = $datos_img["cpod03_organigrama"]["ano"];
+
+    						echo '<img src="http://data-recargas.guarico.gob.ve/api/download-tree-image/'.$cod_dep.'" border="0" height="98%" width="98%" title="HACER CLICK PARA VER LA IMAGEN" style="cursor:pointer;" onclick="" />';
+    					// }else{
+         //          if(!$consulta){
+        	// 					$sisap->imagen_ventana(array("value" => ".."), 6, "Cargar Imagen", "/cpop03_organigrama/subir_imagen/formulario/organigrama/add/1", "400px", "110px");
+         //          }
+    					// }
+    				?>
+    			</div>
+    		</td>
+		</tr>
+	</table>
+
+	<div id="guarda_info_organigrama"></div>
+
+	<?= $sisap->buttonTagRemote('cpod03_organigrama/principal', array ('value'=>'Salir'), array('url1'=>'/modulos/vacio','update1'=>'principal')); ?>
+
+	<?php
+    if(!$consulta){
+  		if(isset($datos_img) && !empty($datos_img) && $datos_img["cpod03_organigrama"]["ano"]==$ano){
+  			echo $sisap->buttonTagRemote('cpod03_organigrama/eliminar', array ('value'=>'Eliminar', 'id'=>'bt_eliminar'), array('url1'=>'/cpop03_organigrama/eliminar','update1'=>'principal'));
+              if($fundamento_legal!="" && !isset($editar)){
+                  echo $sisap->buttonTagRemote('cpod03_organigrama/modificar', array ('value'=>'Modificar', 'id'=>'modificar'), array('url1'=>'/cpop03_organigrama/modificar','update1'=>'principal'));
+              }else{
+                  echo $sisap->submitTagRemote('Guardar', array('funcion'=>'valida_cpop03_organigrama', 'url1' => '/cpop03_organigrama/guardar_datos', 'update1'=>'principal', 'id'=>'guardar'));
+              }
+  		}else{
+  			echo $sisap->submitTagRemote('Guardar', array('funcion'=>'valida_cpop03_organigrama', 'url1' => '/cpop03_organigrama/guardar_datos', 'update1'=>'principal', 'id'=>'guardar'));
+  		}
+    }
+	?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>

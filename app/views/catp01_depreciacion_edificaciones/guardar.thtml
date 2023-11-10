@@ -1,0 +1,82 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td width="10%" align="center">Edad</td>
+    <td width="20%" align="center">Factor Excelente </td>
+    <td width="20%" align="center">Factor Bueno </td>
+    <td width="20%" align="center">Factor Regular </td>
+    <td width="20%" align="center">Factor Malo </td>
+    <td width="8%" align="center">Acci&oacute;n</td>
+  </tr>
+  <?php
+
+  $edad_aux = 0;
+ if(isset($data_tipo)){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+ //	pr($_SESSION ["items_tipo"]);
+    foreach($data_tipo as $tipo){
+    	//print_r($ve);
+        $codigos[0]=$tipo[$modelo]["edad"];
+        $codigos[1]=$sisap->Formato2($tipo[$modelo]["factor_excelente"]);
+        $codigos[2]=$sisap->Formato2($tipo[$modelo]["factor_bueno"]);
+        $codigos[3]=$sisap->Formato2($tipo[$modelo]["factor_regular"]);
+        $codigos[4]=$sisap->Formato2($tipo[$modelo]["factor_malo"]);
+        $codigos[5]=$tipo[$modelo]["ano_ordenanza"];
+    	$ale = rand();
+        $id_fila = ''.$ale.'_'.$i;
+        $fila = 'fila_'.$ale.'_'.$i;
+    	if($i%2==0){$color="tr_grid_c1";}else{$color="tr_grid_c2";}
+
+
+?>
+  <tr class="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+     <td align="center"><?=$sisap->AddCero3($codigos[0])?></td>
+     <td align="center"><?=$codigos[1]?></td>
+     <td align="center"><?=$codigos[2]?></td>
+     <td align="center"><?=$codigos[3]?></td>
+     <td align="center"><?=$codigos[4]?></td>
+     <td align="center" id="<?= "td_accion_".$i ?>"><div id="<?= "accion_".$i ?>">
+       <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/catp01_depreciacion_edificaciones/eliminar_items/'.$codigos[0].'/'.$codigos[5], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+       <?= $ajax->link($html->image('edit.png',array('border'=>0)), '/catp01_depreciacion_edificaciones/editar_tipo/'.$codigos[0].'/'.$codigos[5].'/'.$i.'/'.$id_fila, array('update'=>$fila,'title'=>'Modificar'),false,false,true) ?>
+
+     </div></td>
+  </tr>
+<?
+   	$i++;
+
+   	$edad_aux = $codigos[0];
+
+    }//fin foreach
+ }
+
+ $edad_aux = $edad_aux==0?1:$edad_aux+1;
+ $edad_aux = $sisap->AddCero3($edad_aux);
+
+
+?>
+
+</table>
+<script language="JavaScript" type="text/javascript">
+  document.getElementById('edad').value="<?= $edad_aux ?> ";
+  document.getElementById('factor_excelente').value="";
+  document.getElementById('factor_bueno').value="";
+  document.getElementById('factor_regular').value="";
+  document.getElementById('factor_malo').value="";
+  $('plus').disabled=true;
+</script>
+
+  <input type="hidden" name="total_filas_tipo" id="total_filas_tipo" value="<?=$i?>"/>
+<div id="del"></div>
+</div>
+
+

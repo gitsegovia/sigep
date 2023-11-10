@@ -1,0 +1,109 @@
+<?php
+set_time_limit(0);
+/*
+ * Created on 05/11/2007
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ //echo "el numero de datos es: ".count($datos)."<br>";
+ //print_r($datos);
+ //print_r($num);
+ if(isset($datos)){
+?>
+<div style="height:300px;overflow:auto;">
+<table width="100%" id="grid" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro" align="center">
+	<td width="7%">Cod nom</td>
+	<td width="7%">Cod cargo</td>
+	<td width="7%">Cod Puesto</td>
+	<td width="45%">Denominación nómina</td>
+	<td width="30%">Denominación R.A.C.</td>
+	<td width="10%">Sueldo<br>básico</td>
+	<td width="10%">Sueldo<br> integral</td>
+	<td width="4%">---</td>
+</tr>
+<?php
+$i=0;
+$k=1;
+$contador = 0;
+$total = 0;
+$total_integral=0;
+foreach($datos as $row){
+
+$op=0;
+
+if(!isset($_SESSION["cod_nomina1"])){$op=1;}else{
+	if($row['cfpd97']['cod_tipo_nomina']==$_SESSION["cod_nomina1"]){$op=1;}else{$op=0;}
+}
+
+//echo $_SESSION["cod_nomina1"]." ++ ".$op." ++".$row['cfpd97']['cod_tipo_nomina']." <br>";
+
+if($op==1){$contador++;
+			$cod_tipo_nomina[$i]=$sisap->AddCero3($row['cfpd97']['cod_tipo_nomina']);
+			$cod_cargo[$i]=$row['cfpd97']['cod_cargo'];
+			$cod_puesto[$i]=$row['cfpd97']['cod_puesto'];
+			$sueldo_basico[$i]=$row['cfpd97']['sueldo_basico'];
+			$compensaciones[$i]=$row['cfpd97']['compensaciones'];
+			$primas[$i]=$row['cfpd97']['primas'];
+			$bonos[$i]=$row['cfpd97']['bonos'];
+			$integral[$i] = $sueldo_basico[$i]+$compensaciones[$i]+$primas[$i]+$bonos[$i];
+			$datos=$cod_tipo_nomina[$i]."/".$cod_cargo[$i]."/".$cod_puesto[$i];
+
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+		?>
+		<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);">
+			<td align="center"><?= $cod_tipo_nomina[$i] ?></td>
+			<td align="center"><?= $sisap->zero($cod_cargo[$i]); ?></td>
+			<td align="center"><?= $cod_puesto[$i] ?></td>
+			<td align="lefth"><textarea name='data[ccfp01_division][concepto_div_contable]' value='' rows='1'  class='inputtext' maxlength='100' id='concepto_div_contable' readonly='readonly' ><?= strtoupper($dNomina[$i]) ?></textarea></td>
+			<td align="lefth"><textarea name='data[ccfp01_division][concepto_div_contable]' value='' rows='1'  class='inputtext' maxlength='100' id='concepto_div_contable' readonly='readonly' ><?= strtoupper($dPuesto[$i]) ?></textarea></td>
+			<td><?= $sisap->formato2($sueldo_basico[$i]) ?></td>
+			<td><?= $sisap->formato2($integral[$i]) ?></td>
+			<td><?= $ajax->link($html->image('eye.png', array('border'=>'0')), '/cfpp97/consulta/'.$variables.'/'.$k, array('update'=>'principal', 'title'=>'Ver'), null, false, true); ?></td>
+		</tr>
+
+		<?php
+		$total += $sueldo_basico[$i];
+		$total_integral +=$integral[$i];
+
+
+}//fin if
+
+$i++;
+$k++;
+
+
+
+}
+
+
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr bgcolor="<?= $color ?>">
+<td align="right" colspan="3">TOTAL CARGOS:</td>
+<td align="lefth"><?=$contador?></td>
+<td colspan="1" align="right">TOTAL <?=MONEDA2?> :</b></td>
+<td colspan="1" align="left">&nbsp;<?= $sisap->formato2($total)?></td>
+<td colspan="2" align="left">&nbsp;<?= $sisap->formato2($total_integral)?></td>
+</tr>
+</table>
+</div>
+<div id="nav">
+
+</div>
+<br>
+
+<?php
+ }else{
+ 	echo $sisap->mensajes_error('NO EXISTEN DATOS');
+ }
+?>

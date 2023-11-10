@@ -1,0 +1,270 @@
+<? if(isset($ir) && $ir=="si"){ ?>
+<?$sisap->Tabla("",true,"Saldo de los Contrato de Obras","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[cobd01_saldo_contrato]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte/cobd01_saldo_contrato_reporte/no'); ?>" onSubmit="return reporte_cobd01_saldo_contrato(1);">
+
+
+<?= $sisap->radio_consolidado('cobd01_saldo_contrato/consolidacion', null, '', true, 1)  ?>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0"  tablacompromiso2">
+
+	<tr>
+		<td width="50%" align="center">AÑO:
+			<input name="data[cobd01_saldo_contrato][ano]"  style="width:8%;text-align:center" value="<?=$ano;?>" id="ano"  maxlength="4" onKeyPress="return solonumeros(event);" class="inputtext">
+		</td>
+	</tr>
+	<tr>
+		<td align="center" width="100%"><br>
+			<font class="mensaje_resaltado_rojo"><b>NOTA: USAR PAPEL OFICIO PARA ESTE REPORTE.</b></font>
+		</td>
+	</tr>
+</table>
+<br><br>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=="no"){
+
+
+$_SESSION['ano_cobd01']=$ano;
+
+
+	vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$this->top_reporte("SALDOS DE LOS CONTRATOS DE OBRAS", "AÑO: ".$_SESSION['ano_cobd01'], null, array("Y"=>"12", "X"=>"15", "Z"=>"12"), array("Y"=>"15", "X"=>"320"));
+
+		$this->Cell(0,4,"",'',1,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(40,4,"Numero",'TRL',0,'C');
+		$this->Cell(18,4,"Fecha",'TR',0,'C');
+		$this->Cell(35,4,"Numero",'TR',0,'C');
+		$this->Cell(64,4,"Obra",'TR',0,'C');
+		$this->Cell(56,4,"Contratista",'TR',0,'C');
+		$this->Cell(22,4,"Monto",'TR',0,'C');
+		$this->Cell(22,4,"Saldo",'TR',0,'C');
+		$this->Cell(20,4,"Monto",'TR',0,'C');
+		$this->Cell(20,4,"Saldo",'TR',0,'C');
+		$this->Cell(22,4,"Retenido Fiel",'TR',0,'C');
+		$this->Cell(0,4,"Retenido",'TR',1,'C');
+
+		$this->Cell(40,4,"Contrato",'RLB',0,'C');
+		$this->Cell(18,4,"",'RB',0,'C');
+		$this->Cell(35,4,"Obra",'RB',0,'C');
+		$this->Cell(64,4,"",'RB',0,'C');
+		$this->Cell(56,4,"",'RB',0,'C');
+		$this->Cell(22,4,"Contrato",'RB',0,'C');
+		$this->Cell(22,4,"Contrato",'RB',0,'C');
+		$this->Cell(20,4,"Anticipo",'RB',0,'C');
+		$this->Cell(20,4,"Anticipo",'RB',0,'C');
+		$this->Cell(22,4,"Cumplimiento",'RB',0,'C');
+		$this->Cell(0,4,"Laboral",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LEGAL');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$total_monto_contrato=0;
+$total_saldo_contrato=0;
+$total_monto_anticipo=0;
+$total_saldo_anticipo=0;
+$total_fiel_cumplimiento=0;
+$total_retencion_laboral=0;
+
+$pdf->SetFont('vera','B',6);
+if(isset($datos)){
+
+foreach($datos as $row){
+			//$saldo_contrato= 0;
+				$num_com                          = $row['v_cobp01_cfpd07_cuerpo']['numero_contrato_obra'];
+				$year_contrato                    = $row['v_cobp01_cfpd07_cuerpo']['ano_contrato_obra'];
+				$num_obra                         = $row['v_cobp01_cfpd07_cuerpo']['cod_obra'];
+				$fecha                            = $sisap->cambia_fecha($row['v_cobp01_cfpd07_cuerpo']['fecha_contrato_obra']);
+				$deno_obra                        = $row['v_cobp01_cfpd07_cuerpo']['denominacion_obra'];
+				$monto_contrato                   = (($row['v_cobp01_cfpd07_cuerpo']['monto_original_contrato']+$row['v_cobp01_cfpd07_cuerpo']['aumento'])-$row['v_cobp01_cfpd07_cuerpo']['disminucion']);
+				$monto_cancelado                  = $row['v_cobp01_cfpd07_cuerpo']['monto_cancelado'];
+				$monto_amortizacion               = $row['v_cobp01_cfpd07_cuerpo']['monto_amortizacion'];
+				$monto_retencion_laboral          = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_laboral'];
+				$monto_retencion_fielcumplimiento = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_fielcumplimiento'];
+				$saldo_contrato=($monto_contrato-($monto_cancelado+$monto_amortizacion+$monto_retencion_laboral+$monto_retencion_fielcumplimiento));
+				$saldo_contrato                   = $sisap->Formato2($saldo_contrato);
+				$saldo_contrato                   = $sisap->Formato1($saldo_contrato);
+				$monto_anticipo                   = $row['v_cobp01_cfpd07_cuerpo']['monto_anticipo'];
+				$saldo_anticipo                   = $row['v_cobp01_cfpd07_cuerpo']['monto_anticipo']-$row['v_cobp01_cfpd07_cuerpo']['monto_amortizacion'];
+				$fiel_cumplimiento                = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_fielcumplimiento'];
+				$retencion_laboral                = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_laboral'];
+				$rif                              = $row['v_cobp01_cfpd07_cuerpo']['rif'];
+				$deno_contrato                    = $row['v_cobp01_cfpd07_cuerpo']['denominacion_rif'];
+
+
+				  $marca1 = 0;
+		          $marca2 = 0;
+				  foreach($datos2 as $var2){$marca2 = 0;
+		              if($var2["v_cobp01_cfpd07_partidas"]['numero_contrato_obra']==$num_com && $var2["v_cobp01_cfpd07_partidas"]['ano_contrato_obra']==$year_contrato){
+							   $deno_obra .= "\n ".mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sector']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_programa']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sub_prog']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_proyecto']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_activ_obra']).".";
+							   $deno_obra .= $sisap->AddCero2(substr($var2["v_cobp01_cfpd07_partidas"]['cod_partida'], -2), substr($var2["v_cobp01_cfpd07_partidas"]['cod_partida'], 0, 1 )).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_generica']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_especifica']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sub_espec']).".";
+							   $deno_obra .= mascara_cuatro($var2["v_cobp01_cfpd07_partidas"]['cod_auxiliar']).':  '.MONEDA2.' ';
+							   $monto_actual = $var2['v_cobp01_cfpd07_partidas']['monto'] + ($var2['v_cobp01_cfpd07_partidas']['aumento'] - $var2['v_cobp01_cfpd07_partidas']['disminucion']) - ($var2['v_cobp01_cfpd07_partidas']['cancelacion']) - ($var2['v_cobp01_cfpd07_partidas']['amortizacion'] + $var2['v_cobp01_cfpd07_partidas']['retencion_fielcumplimiento'] + $var2['v_cobp01_cfpd07_partidas']['retencion_laboral']);
+		                       $deno_obra .= " ".$sisap->Formato2($monto_actual);
+		                       $marca2 = 1;
+		                       $marca1 = 1;
+		              }//fin if
+		              if($marca1==1 && $marca2==0){break;}
+				  }//fin foreach
+
+
+				$long=strlen($deno_obra);
+				//echo "<br>".$long=strlen($deno_obra);
+				if($long<=45){//echo "a";
+					$height=5;
+				}else if($long>45 && $long<=90){//echo "b";
+					$height=10;
+				}else if($long>90 && $long<=135){//echo "c";
+					$height=14;
+				}else if($long>135 && $long<=170){//echo "d";
+					$height=16;
+				}else if($long>170 && $long<=205){//echo "e";
+					$height=19;
+				}else if($long>205 && $long<=240) {//echo "f";
+					$height=22;
+				}else if($long>240 && $long<=280) {//echo "g";
+					$height=24;
+				}else if($long>280 && $long<=315) {//echo "h";
+					$height=26;
+			    }else if($long>315 && $long<=345) {//echo "h";
+					$height=28;
+			    }else if($long>345 && $long<=385) {//echo "h";
+					$height=30;
+			    }else if($long>385 && $long<=430) {//echo "h";
+					$height=32;
+			    }else if($long>430 && $long<=460) {//echo "h";
+					$height=34;
+			    }else if($long>460 && $long<=490) {//echo "h";
+					$height=36;
+				}else{//echo "i";
+					$height=38;
+				}
+
+
+			$pdf->Cell(40,$height,$num_com,'RLB',0,'C');
+			$pdf->Cell(18,$height,$fecha,'RB',0,'C');
+			$pdf->Cell(35,$height,$num_obra,'RB',0,'C');//pendiente aqui
+			$pdf->SetFont('vera','',6);
+
+			$pdf->Cell(64,1,"",'LT',2,'C');
+			$varX = $pdf->GetX();//capturo X
+			$varY = $pdf->GetY();//capturo Y
+			$pdf->MultiCell(64,3,$deno_obra,'','L');//Concepto Orden de Pago
+			$varX =$varX+64;
+			$varY=$varY-1;
+			$pdf->SetXY($varX,$varY);// cargo XY
+			//$pdf->Cell(60,8,"ssssssssssssssggggggggggggg",'RB',0,'C');
+			$pdf->Cell(1,$height,"",'L',0,'C');
+			$pdf->Cell(56,1,"",'T',2,'C');
+			$pdf->MultiCell(56,3,$deno_contrato,'','L');//Concepto Orden de Pago
+			$varX =$varX+56;
+			//$varY=$varY-1;
+			$pdf->SetXY($varX,$varY);// cargo XY
+			//$pdf->Cell(60,8,"",'LRB',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(22,$height,$sisap->Formato2($monto_contrato),'LRB',0,'R');
+			$pdf->Cell(22,$height,$sisap->Formato2($saldo_contrato),'RB',0,'R');
+			$pdf->Cell(20,$height,$sisap->Formato2($monto_anticipo),'RB',0,'R');
+			$pdf->Cell(20,$height,$sisap->Formato2($saldo_anticipo),'RB',0,'R');
+			$pdf->Cell(22,$height,$sisap->Formato2($fiel_cumplimiento),'RB',0,'R');
+			$pdf->Cell(0,$height,$sisap->Formato2($retencion_laboral),'RB',1,'R');
+			$pdf->Cell(0,0,"",'T',1,'C');
+			$total_monto_contrato+=$monto_contrato;
+			$total_saldo_contrato+=$saldo_contrato;
+			$total_monto_anticipo+=$monto_anticipo;
+			$total_saldo_anticipo+=$saldo_anticipo;
+			$total_fiel_cumplimiento+=$fiel_cumplimiento;
+			$total_retencion_laboral+=$retencion_laboral;
+
+}//fin foreach
+
+
+
+$pdf->Cell(213,8,"TOTALES",'LRB',0,'R');
+$pdf->Cell(22,8,$sisap->Formato2($total_monto_contrato),'LRB',0,'R');
+$pdf->Cell(22,8,$sisap->Formato2($total_saldo_contrato),'RB',0,'R');
+$pdf->Cell(20,8,$sisap->Formato2($monto_anticipo),'RB',0,'R');
+$pdf->Cell(20,8,$sisap->Formato2($saldo_anticipo),'RB',0,'R');
+$pdf->Cell(22,8,$sisap->Formato2($fiel_cumplimiento),'RB',0,'R');
+$pdf->Cell(0,8,$sisap->Formato2($retencion_laboral),'RB',1,'R');
+ }else{
+ 	$pdf->Cell(40,20,"",'RLB',0,'C');
+	$pdf->Cell(18,20,"",'RB',0,'C');
+	$pdf->Cell(35,20,"",'RB',0,'C');//pendiente aqui
+	$pdf->SetFont('vera','',6);
+
+	$pdf->Cell(64,1,"",'LT',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(64,3,"",'','L');//Concepto Orden de Pago
+	$varX =$varX+64;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	//$pdf->Cell(60,8,"ssssssssssssssggggggggggggg",'RB',0,'C');
+	$pdf->Cell(1,20,"",'L',0,'C');
+	$pdf->Cell(56,1,"",'T',2,'C');
+	$pdf->MultiCell(56,3,"",'','L');//Concepto Orden de Pago
+	$varX =$varX+56;
+	//$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	//$pdf->Cell(60,8,"",'LRB',0,'C');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(22,20,"",'LRB',0,'R');
+	$pdf->Cell(22,20,"",'RB',0,'R');
+	$pdf->Cell(20,20,"",'RB',0,'R');
+	$pdf->Cell(20,20,"",'RB',0,'R');
+	$pdf->Cell(22,20,"",'RB',0,'R');
+	$pdf->Cell(0,20,"",'RB',1,'R');
+	$pdf->Cell(0,0,"",'T',1,'C');
+ }
+
+$pdf->Output('saldo_contrato_'.date("d-m-Y").".pdf",'D');
+
+
+
+ } ?>

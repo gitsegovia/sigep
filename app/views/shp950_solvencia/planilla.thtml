@@ -1,0 +1,480 @@
+<?php
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    }
+
+
+    function recibo_hacienda($posicion=null, $data1=null,$sisap){
+		$objeto_solvencia=array('1'=>'SOLICITUD DE PATENTE DE INDUSTRIA Y COMERCIO','2'=>'RENOVACIÓN DE CARTA DE PATENTE','3'=>'DECLARACIÓN JURADA DE INGRESOS BRUTOS',
+							  '4'=>'PERMISOS DE CONSTRUCCIÓN','5'=>'VARIABLES URBANAS','6'=>'REPARACIÓN O MEJORAS DE INMUBLES','7'=>'PROTOCOLIZACIÓN DE DOCUMENTOS',
+							  '8'=>'REGULACIÓN O DESOCUPACIÓN DE INMUEBLE','9'=>'SOLICITUD DE CRÉDITO A ENTIDAD FINANCIERA','10'=>'ESPECTACULOS PÚBLICOS','11'=>'CONSTITUCIÓN DE EMPRESAS',
+							  '12'=>'LICITACIONES','14'=>'TRÁMITES ADMINISTRATIVOS','13'=>'OTROS');
+
+
+	if($_SESSION['radio_formato1']==2){////////Aqui colocar los formatos preimpresos para cada institucion
+		if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13){
+				/**
+				 * COLOCAR AQUI FORMATO PRE-IMPRESO DE CANTAURA
+				 */
+//				 $_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==37 //SAN FERNANDO
+//				 $_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13 //CANTAURA
+//				$img_dependencia_o='/var/www/imagen_solvencia.png';
+//				$this->Image($img_dependencia_o,0,0,0);
+
+				$codigo_barra = mascara($data1[0][0]['numero_solvencia'],8).$data1[0][0]['rif_cedula'];
+				$this->SetFont('vera','B',7);
+				$this->SetFont('vera','',6);
+//				$this->Cell(0,5,''.$codigo_barra.' ','R',1,'R');
+				$this->SetFont('vera','',7);
+//				$this->Cell(0,6,'','RBL',1,'C');//AQUI EL TITULO
+		        $varX=$this->getX();
+				$varY=$this->getY();
+				$varX=$varX+90;
+				$varY=$varY+10;
+				$this->writeBarcode($varX,$varY,35,6,"C39","","","",$codigo_barra);
+
+				$this->Cell(0,17,$codigo_barra,'',1,'C');
+				$this->Cell(157,7,'','',0,'C');
+				$this->SetFont('vera','B',17);
+				$this->Cell(0,7,'','',1,'L');
+
+				$this->Cell(157,5,'','',0,'L');
+				$this->Cell(0,5,mascara($data1[0][0]['numero_solvencia'],8),'',1,'L');///aqui numero de solvencia
+				$this->Cell(0,20,'','',1,'L');
+				$this->Cell(148,9,'','',0,'C');
+
+				$this->SetFont('vera','',10);
+				//Fecha de Expedicion
+				 $paso= explode('-',$data1[0][0]['fecha_expedicion']);
+				 $ano=$paso[0];
+				 $mes=$paso[1];
+				 $dia=$paso[2];
+				$this->Cell(9,9,$dia,'',0,'C');//Dia
+				$this->Cell(10,9,$mes,'',0,'C');//Mes
+				$this->Cell(13,9,$ano,'',0,'C');//Año
+
+				//Fecha de Hasta
+				 $paso= explode('-',$data1[0][0]['valida_hasta']);
+				 $ano=$paso[0];
+				 $mes=$paso[1];
+				 $dia=$paso[2];
+				$this->Cell(9,9,'','',0,'C');//Dia
+				$this->Cell(10,9,'','',0,'C');//Mes
+				$this->Cell(0,9,'','',1,'C');//Año
+
+				//Conforme a disposiciones legales se expide este documento a:
+				$this->SetFont('vera','',8);
+				$this->Cell(43,17,$data1[0][0]['rif_cedula'],'',0,'C');
+				$this->Cell(33,17,'','',0,'L');
+				$this->Cell(0,17,$data1[0][0]['razon_social_nombres'],'',1,'L');
+
+
+				$this->Cell(0,5,'','',1,'L');
+
+
+			///Ubicacion geografica
+				$this->SetFont('vera','',6);
+				$this->Cell(50,5,"    ".$data1[0][0]['deno_conocido'],'',0,'L');//Lugar
+				$this->Cell(31,5,"    ".$data1[0][0]['deno_cod_estado'],'',0,'L');//Estado
+				$this->Cell(36,5,"   ".$data1[0][0]['deno_cod_municipio'],'',0,'L');//Municipio
+				$this->Cell(36,5,"   ".$data1[0][0]['deno_cod_parroquia'],'',0,'L');//Parroquia
+				$this->Cell(0,5,"   ".$data1[0][0]['deno_cod_centro'],'',1,'L');//Centro Poblado
+
+
+				$this->Cell(0,4,'','',1,'L');
+
+				//direccion
+				$this->SetFont('vera','',6);
+				$this->Cell(0,4,"     ".$data1[0][0]['numero_vivienda_local'],'',1,'L');//Direccion
+
+
+				$this->Cell(0,4,'','',1,'L');
+
+				$this->SetFont('vera','',6);
+				$this->Cell(3,40,"",'',0);
+						$varX = $this->GetX();
+						$varY = $this->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$this->Cell(99,1,"",'',2,'C');
+						$this->MultiCell(99,2,$data1[0][0]['observaciones'],'','L');//Direccion
+						$varX = $varX+99;
+						$this->SetXY($varX,$varY);
+
+				$this->Cell(0,3,"    ".$objeto_solvencia[$data1[0][0]["objeto_solvencia"]],'',2,'L');//Direccion
+				$this->SetFont('vera','B',6);
+				$this->Cell(0,5,"    Válida hasta : ".$sisap->cambia_fecha($data1[0][0]['valida_hasta']),'',2,'L');//Direccion
+				$this->Cell(0,1,"    Monto de la Solvencia : ".$sisap->Formato2($data1[0][0]['monto_solvencia'])." Bs",'',1,'L');//Monto de la solvencia
+		}else{/////si la seleccion es formato preimpreso y no existen los codigos de la institucion entra aqui y genera el generico
+			$img_dependencia_o='/var/www/sigep/app/webroot/img/catsp0/logo_derecho.jpg';
+				if($posicion==1){
+					$var_x=10;
+					$var_y=7;
+					$this->SetXY($var_x,$var_y);
+					//$this->Image($img_dependencia_o,$var_x,$var_y,13);
+					$this->image_escudo_sin_consolidado($var_x,$var_y,14);
+				}elseif($posicion==2){
+					$var_x=10;
+					$var_y=142;
+					$this->SetXY($var_x,$var_y);
+					//$this->Image($img_dependencia_o,$var_x,$var_y,13);
+					$this->image_escudo_sin_consolidado($var_x,$var_y,14);
+				}
+
+
+			        $codigo_barra = mascara($data1[0][0]['numero_solvencia'],8).$data1[0][0]['rif_cedula'];
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'                  '.$_SESSION['entidad_federal_aux'],'TRL',1,'L');
+					$this->Cell(0,4,'                  '.$_SESSION['titulo'],'RL',1,'L');
+					$this->Cell(110,5,'','L',0,'R');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,5,''.$codigo_barra.' ','R',1,'R');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,6,'','RBL',1,'C');//AQUI EL TITULO
+			        $varX=$this->getX();
+					$varY=$this->getY();
+					$varX=$varX+160;
+					$varY=$varY-7;
+					$this->writeBarcode($varX,$varY,35,6,"C39","","","",$codigo_barra);
+					$this->SetFont('vera','B',7);
+					$this->Cell(40,5,'SOLVENCIA NÚMERO Nº','TRL',0,'C');
+					$this->SetFont('vera','B',7);
+					$this->Cell(30,5,$sisap->mascara_ocho($data1[0][0]['numero_solvencia']),'TR',0,'L');//--[COMPROBANTE DE INGRESO Nº]
+					$this->SetFont('vera','B',7);
+					$this->Cell(35,5,'FECHA DE SOLVENCIA','TR',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(30,5,cambiar_formato_fecha($data1[0][0]['fecha_expedicion']),'TR',0,'C');//--[COMPROBANTE DE INGRESO Nº]
+					$this->SetFont('vera','B',7);
+					$this->Cell(30,5,'MONTO BS.','TRL',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,5,$sisap->Formato2($data1[0][0]['monto_solvencia']),'TR',1,'R');//--[FECHA DE COMPROBANTE]
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(27,5,'Contribuyente','TRL',0,'C');
+					$this->SetFont('vera','',6);
+					$this->Cell(110,5,$data1[0][0]['razon_social_nombres'],'T',0,'L');//--[Contribuyente]
+					$this->SetFont('vera','B',7);
+					$this->Cell(28,5,'RIF / Cédula Id.','TLR',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,5,$data1[0][0]['rif_cedula'],'TR',1,'C');//--[RIF / Cédula Id.]
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'DIRECCIÓN','TBRL',1,'C');
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'País:','RL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(40,4,$data1[0][0]['deno_cod_republica'],'R',0,'L');//--[País]
+					$this->SetFont('vera','B',6);
+					$this->Cell(20,4,'Estado:','R',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(45,4,$data1[0][0]['deno_cod_estado'],'R',0,'L');//--[Estado]
+					$this->SetFont('vera','B',6);
+					$this->Cell(16,4,'Municipio:','R',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['deno_cod_municipio'],'R',1,'L');//--[Municipio]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'Parroquia:','TRL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(60,4,$data1[0][0]['deno_cod_parroquia'],'TR',0,'L');//--[Parroquia]
+					$this->SetFont('vera','B',6);
+					$this->Cell(30,4,'Centro poblado:','TR',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['deno_cod_centro'],'TR',1,'L');//--[Centro poblado]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'Calle/Avenida:','TRL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(60,4,$data1[0][0]['deno_cod_vialidad'],'TR',0,'L');//--[Calle/Avenida]
+					$this->SetFont('vera','B',6);
+					$this->Cell(30,4,'Número Casa/Local:','TR',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['numero_vivienda_local'],'TR',1,'L');//--[Número Casa/Local]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'valida hasta:','TRL',0,'C');
+					$this->Cell(0,4,'Objeto de la solvencia','TR',1,'C');
+					$this->SetFont('vera','',6);
+					$this->Cell(22,4,cambiar_formato_fecha($data1[0][0]['valida_hasta']),'TRL',0,'C');
+					$this->Cell(0,4,$objeto_solvencia[$data1[0][0]["objeto_solvencia"]],'TR',1,'C');
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'OBSERVACIONES','TBRL',1,'C');
+
+
+					$this->SetFont('vera','',6);
+					$this->Cell(1,40,"",'L',0);
+						$varX = $this->GetX();
+						$varY = $this->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$this->Cell(194,1,"",'',2,'C');
+						$this->MultiCell(194,3,$data1[0][0]['observaciones'],'','L');//--[Concepto]
+						$varX = $varX+194;
+						$this->SetXY($varX,$varY);
+					$this->Cell(0,40,"",'R',1);
+					$this->Cell(0,0,"",'T',1);
+
+					if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13){
+						/*********
+						 * FIRMAS PARA CANTAURA
+						 */
+							$this->SetFont('vera','',7);
+							$this->Cell(0,5,'DIRECCIÓN DE HACIENDA','TRBL',1,'C');
+
+
+							$this->Cell(0,8,'','RL',1,'C');
+
+							$this->Cell(0,3,'________________________________________','RL',1,'C');
+
+							$this->Cell(0,5,'','RBL',1,'C');
+					}else{
+						$this->SetFont('vera','',7);
+							$this->Cell(104,5,'DEPARTAMENTO DE RENTAS','TRBL',0,'C');
+							$this->Cell(0,5,'DIRECCIÓN DE HACIENDA','TRB',1,'C');
+
+
+							$this->Cell(52,8,'','L',0,'C');
+							$this->Cell(52,8,'','R',0,'C');
+							$this->Cell(52,8,'','',0,'C');
+							$this->Cell(0,8,'','R',1,'C');
+
+							$this->Cell(104,3,'________________________________________','LR',0,'C');
+							$this->Cell(0,3,'________________________________________','R',1,'C');
+
+							$this->Cell(52,5,'','BL',0,'C');
+							$this->Cell(52,5,'','BR',0,'C');
+							$this->Cell(52,5,'','B',0,'C');
+							$this->Cell(0,5,'','RB',1,'C');
+					}
+		}
+
+	}else{
+			$img_dependencia_o='/var/www/sigep/app/webroot/img/catsp0/logo_derecho.jpg';
+				if($posicion==1){
+					$var_x=10;
+					$var_y=7;
+					$this->SetXY($var_x,$var_y);
+					//$this->Image($img_dependencia_o,$var_x,$var_y,13);
+					$this->image_escudo_sin_consolidado($var_x,$var_y,14);
+				}elseif($posicion==2){
+					$var_x=10;
+					$var_y=142;
+					$this->SetXY($var_x,$var_y);
+					//$this->Image($img_dependencia_o,$var_x,$var_y,13);
+					$this->image_escudo_sin_consolidado($var_x,$var_y,14);
+				}
+
+
+			        $codigo_barra = mascara($data1[0][0]['numero_solvencia'],8).$data1[0][0]['rif_cedula'];
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'                  '.$_SESSION['entidad_federal_aux'],'TRL',1,'L');
+					$this->Cell(0,4,'                  '.$_SESSION['titulo'],'RL',1,'L');
+					$this->Cell(110,5,'','L',0,'R');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,5,''.$codigo_barra.' ','R',1,'R');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,6,'','RBL',1,'C');//AQUI EL TITULO
+			        $varX=$this->getX();
+					$varY=$this->getY();
+					$varX=$varX+160;
+					$varY=$varY-7;
+					$this->writeBarcode($varX,$varY,35,6,"C39","","","",$codigo_barra);
+					$this->SetFont('vera','B',7);
+					$this->Cell(40,5,'SOLVENCIA NÚMERO Nº','TRL',0,'C');
+					$this->SetFont('vera','B',7);
+					$this->Cell(30,5,$sisap->mascara_ocho($data1[0][0]['numero_solvencia']),'TR',0,'L');//--[COMPROBANTE DE INGRESO Nº]
+					$this->SetFont('vera','B',7);
+					$this->Cell(35,5,'FECHA DE SOLVENCIA','TR',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(30,5,cambiar_formato_fecha($data1[0][0]['fecha_expedicion']),'TR',0,'C');//--[COMPROBANTE DE INGRESO Nº]
+					$this->SetFont('vera','B',7);
+					$this->Cell(30,5,'MONTO BS.','TRL',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,5,$sisap->Formato2($data1[0][0]['monto_solvencia']),'TR',1,'R');//--[FECHA DE COMPROBANTE]
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(27,5,'Contribuyente','TRL',0,'C');
+					$this->SetFont('vera','',6);
+					$this->Cell(110,5,$data1[0][0]['razon_social_nombres'],'T',0,'L');//--[Contribuyente]
+					$this->SetFont('vera','B',7);
+					$this->Cell(28,5,'RIF / Cédula Id.','TLR',0,'C');
+					$this->SetFont('vera','',7);
+					$this->Cell(0,5,$data1[0][0]['rif_cedula'],'TR',1,'C');//--[RIF / Cédula Id.]
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'DIRECCIÓN','TBRL',1,'C');
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'País:','RL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(40,4,$data1[0][0]['deno_cod_republica'],'R',0,'L');//--[País]
+					$this->SetFont('vera','B',6);
+					$this->Cell(20,4,'Estado:','R',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(45,4,$data1[0][0]['deno_cod_estado'],'R',0,'L');//--[Estado]
+					$this->SetFont('vera','B',6);
+					$this->Cell(16,4,'Municipio:','R',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['deno_cod_municipio'],'R',1,'L');//--[Municipio]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'Parroquia:','TRL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(60,4,$data1[0][0]['deno_cod_parroquia'],'TR',0,'L');//--[Parroquia]
+					$this->SetFont('vera','B',6);
+					$this->Cell(30,4,'Centro poblado:','TR',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['deno_cod_centro'],'TR',1,'L');//--[Centro poblado]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'Calle/Avenida:','TRL',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(60,4,$data1[0][0]['deno_cod_vialidad'],'TR',0,'L');//--[Calle/Avenida]
+					$this->SetFont('vera','B',6);
+					$this->Cell(30,4,'Número Casa/Local:','TR',0,'L');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$data1[0][0]['numero_vivienda_local'],'TR',1,'L');//--[Número Casa/Local]
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(22,4,'valida hasta:','TRL',0,'C');
+					$this->Cell(0,4,'Objeto de la solvencia','TR',1,'C');
+					$this->SetFont('vera','',6);
+					$this->Cell(22,4,cambiar_formato_fecha($data1[0][0]['valida_hasta']),'TRL',0,'C');
+					$this->Cell(0,4,$objeto_solvencia[$data1[0][0]["objeto_solvencia"]],'TR',1,'C');
+
+					$this->SetFont('vera','B',7);
+					$this->Cell(0,5,'OBSERVACIONES','TBRL',1,'C');
+
+
+					$this->SetFont('vera','',6);
+					$this->Cell(1,40,"",'L',0);
+						$varX = $this->GetX();
+						$varY = $this->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$this->Cell(194,1,"",'',2,'C');
+						$this->MultiCell(194,3,$data1[0][0]['observaciones'],'','L');//--[Concepto]
+						$varX = $varX+194;
+						$this->SetXY($varX,$varY);
+					$this->Cell(0,40,"",'R',1);
+					$this->Cell(0,0,"",'T',1);
+
+			if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13){
+				/*********
+				 * FIRMAS PARA CANTAURA
+				 */
+					$this->SetFont('vera','',7);
+					$this->Cell(0,5,'DIRECCIÓN DE HACIENDA','TRBL',1,'C');
+
+
+					$this->Cell(0,8,'','RL',1,'C');
+
+					$this->Cell(0,3,'________________________________________','RL',1,'C');
+
+					$this->Cell(0,5,'','RBL',1,'C');
+			}else if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==2){
+
+				$this->SetFont('vera','',7);
+					$this->Cell(104,5,'SELLO','TRBL',0,'C');
+					$this->Cell(0,5,'DEPARTAMENTO DE RENTAS','TRB',1,'C');
+
+
+					$this->Cell(52,8,'','L',0,'C');
+					$this->Cell(52,8,'','R',0,'C');
+					$this->Cell(52,8,'','',0,'C');
+					$this->Cell(0,8,'','R',1,'C');
+
+					$this->Cell(104,3,'','LR',0,'C');
+					$this->Cell(0,3,'________________________________________','R',1,'C');
+
+					$this->Cell(52,5,'','BL',0,'C');
+					$this->Cell(52,5,'','BR',0,'C');
+					$this->Cell(52,5,'','B',0,'C');
+					$this->Cell(0,5,'','RB',1,'C');
+			}else{
+				$this->SetFont('vera','',7);
+					$this->Cell(104,5,'DEPARTAMENTO DE RENTAS','TRBL',0,'C');
+					$this->Cell(0,5,'DIRECCIÓN DE HACIENDA','TRB',1,'C');
+
+
+					$this->Cell(52,8,'','L',0,'C');
+					$this->Cell(52,8,'','R',0,'C');
+					$this->Cell(52,8,'','',0,'C');
+					$this->Cell(0,8,'','R',1,'C');
+
+					$this->Cell(104,3,'________________________________________','LR',0,'C');
+					$this->Cell(0,3,'________________________________________','R',1,'C');
+
+					$this->Cell(52,5,'','BL',0,'C');
+					$this->Cell(52,5,'','BR',0,'C');
+					$this->Cell(52,5,'','B',0,'C');
+					$this->Cell(0,5,'','RB',1,'C');
+			}
+	}
+
+
+    }
+}//fin clase
+
+
+if($_SESSION['radio_formato1']==2){
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13){
+	/**
+	 * COLOCAR AQUI FORMATO PRE-IMPRESO DE CANTAURA
+	 */
+//		 $_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==37 //SAN FERNANDO
+//		$_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13 //CANTAURA
+		$pdf = new fpdfview('P','mm','Letter');
+		$pdf->AliasNbPages('TPAG');
+		$pdf->SetTopMargin(0);
+		$pdf->SetLeftMArgin(0);
+		$pdf->SetRightMargin(0);
+		$pdf->SetAutoPageBreak(true, 5);
+		$pdf->AddPage();
+	}else{
+		$pdf = new fpdfview('P','mm','Letter');
+		$pdf->AliasNbPages('TPAG');
+		$pdf->SetTopMargin(5);
+		$pdf->SetLeftMArgin(10);
+		$pdf->SetRightMargin(10);
+		$pdf->SetAutoPageBreak(true, 5);
+		$pdf->AddPage();
+	}
+
+}else{
+	$pdf = new fpdfview('P','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(5);
+	$pdf->SetLeftMArgin(10);
+	$pdf->SetRightMargin(10);
+	$pdf->SetAutoPageBreak(true, 5);
+	$pdf->AddPage();
+}
+
+
+$data="array con los datos a imprimir...";
+//pr($datos1);
+//pr($datos2);
+$pdf->recibo_hacienda(1, $datos,$sisap);
+//$pdf->recibo_hacienda(2, $datos1,$sisap);
+
+
+$pdf->Output('recibo_solvencia_'.date("dmY-hi").'.pdf','D');//Poner nombre y la opcion D
+?>

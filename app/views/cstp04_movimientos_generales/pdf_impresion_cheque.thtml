@@ -1,0 +1,206 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		//$this->image_escudo_sin_consolidado(14,11,13);
+		//$this->SetFont('vera','B',9);
+		//$this->Cell(0,6,"",'TRL',1);
+		//$this->Cell(100,6,"             ".$_SESSION["entidad_federal"],'L',0);
+		//$this->Cell(0,6,"",'R',1,'L');
+		//$this->SetFont('vera','',8);
+		//$this->Cell(100,6,"                DIRECCION GENERAL DE PRESUPUESTO",'LB',0);
+		//$this->Cell(0,6,"",'RB',1);
+	}//fin funtion
+}//fin de la clase PDF
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(3.8);
+$pdf->SetLeftMargin(18);
+$pdf->SetRightMargin(40);
+$pdf->SetAutoPageBreak(true,5);
+
+$pdf->AddPage();
+
+//-------Impresion del Cheque-----------//
+
+//$pdf->SetFont('vera','',10);
+//$pdf->Cell(104,4,"Ano:".$ano." Entidad:".$entidad_banc." Sucursal:".$sucursal_banc." Cuenta Banc:".$cuenta_banc." Cheque:".$numero_cheq,'',0,'R');
+//$pdf->Cell(7,4,"",'',0);
+
+$pdf->SetFont('vera','',10);
+
+$cod_entidad_bancaria = $cheque_cuerpo[0]['cstd03_movimientos_manuales']['cod_entidad_bancaria'];
+$beneficiario = $cheque_cuerpo[0]['cstd03_movimientos_manuales']['beneficiario'];
+$fecha_cheque = $cheque_cuerpo[0]['cstd03_movimientos_manuales']['fecha_documento'];
+$monto 		  = $cheque_cuerpo[0]['cstd03_movimientos_manuales']['monto'];
+$contar = count($sisap->Formato2($monto));
+$contar_aux = 16 - $contar;
+$aux = "";
+for($is=1; $is<=$contar_aux; $is++){$aux .= "*";}
+//$monto_mascara = $sisap->Formato2($monto).$aux;
+$monto_mascara = '*'.$sisap->Formato2($monto).'*';
+
+
+
+if($cod_entidad_bancaria=='0134' || $cod_entidad_bancaria==134){
+	//BANESCO
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(100,4,"",'',0);
+	$pdf->Cell(0,4,"    ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->Cell(11.2,3,"",'',0);
+	$pdf->Cell(0,3,"".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->Cell(11.2,3,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(0,5,"".$sisap->convertir($monto) ,'','L');
+	$pdf->Ln(8);
+
+	$pdf->SetY($varY+13);
+	$pdf->Cell(25,6,"         ".$sisap->fecha_alfabetico($fecha_cheque),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}else if($cod_entidad_bancaria=='0006' || $cod_entidad_bancaria==6){
+	//BANCO DE CORO
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(100,4,"",'',0);
+	$pdf->Cell(0,4,"    ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->Cell(11.2,3,"",'',0);
+	$pdf->Cell(0,3,"".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->Cell(11.2,3,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(0,5,"".$sisap->convertir($monto) ,'','L');
+	$pdf->Ln(8);
+
+	$pdf->SetY($varY+13);
+	$pdf->Cell(25,6,"         ".$sisap->fecha_alfabetico($fecha_cheque),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}else if($cod_entidad_bancaria=='0191' || $cod_entidad_bancaria==191){
+	//BANCO NACIONAL DE CREDITO
+	$pdf->Ln(2);
+	$pdf->Cell(100,4,"",'',0,'R');
+	$pdf->Cell(0,4,"                        ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"    ".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(0,5,"    ".$sisap->convertir($monto) ,'','L');
+	$pdf->Ln(7);
+
+	$pdf->SetY($varY+13);
+	
+	$pdf->Cell(35,5," ".$sisap->fecha_alfabetico($fecha_cheque),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}else if($cod_entidad_bancaria=='0128' || $cod_entidad_bancaria==128){
+	//BANCO CARONI
+	$pdf->Ln(2);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"    ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(6.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(145,4,"       ".$sisap->convertir($monto),'','L');
+	$pdf->Ln(7);
+
+	$pdf->SetY($varY+13);
+	$pdf->Cell(25,5,"         ".$sisap->fecha_alfabetico($fecha_cheque)."",'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}else if($cod_entidad_bancaria=='0116' || $cod_entidad_bancaria==116){
+	//BANCO BOD
+	$pdf->Ln(2);
+	$pdf->Cell(100,4,"",'',0,'R');
+	$pdf->Cell(0,4,"    ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(0,5,"".$sisap->convertir($monto) ,'','L');
+	$pdf->Ln(7);
+
+	$pdf->SetY($varY+13);
+	$pdf->Cell(25,5,"         ".$sisap->fecha_alfabetico($fecha_cheque),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}else{
+	$pdf->Cell(100,1,"",'',0);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,4,"            ".$monto_mascara,'',1,'L');
+	$pdf->Ln(6);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario,'',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+
+	$pdf->Cell(13.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(0,5,"".$sisap->convertir($monto) ,'','L');
+	$pdf->Ln(7);
+
+	$pdf->SetY($varY+13);
+	$pdf->Cell(25,5,"         ".$sisap->fecha_alfabetico($fecha_cheque),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+}
+
+$pdf->Output('cheque_'.$cod_entidad_bancaria.date("d-m-Y").'.pdf','D');
+?>

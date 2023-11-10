@@ -1,0 +1,146 @@
+<?php
+/*
+ * Creado el 13/04/2008 a las 06:25:40 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"OTROS COMPROMISOS",null,"950");?>
+<form name='data[relacion_otroscompromisos]' method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+
+
+<table width="400" cellspacing="0" cellpadding="0" border="0">
+	<tr><td align="center">&nbsp;</td></tr>
+	<tr><td align="center">
+	     <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;
+	     <?= $sisap->inputTagRemote('relacion_otroscompromisos/ano', array('url'=>'/consulta_relaciones_documentos/buscar_year_otroscompromisos/', 'update'=>'td-beneficiario', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+	     </td>
+	</tr>
+	<tr><td align="center">&nbsp;</td></tr>
+	<tr><td align="center"><?= $sisap->radioTagRemote("relacion_otroscompromisos/estilo_reporte", array('1'=>'Todo', '2'=>'Por Beneficiario', '3'=>'Por Tipo de Compromiso'), array('url1'=>'/reporte2/distinct_beneficiarios_otros_compromisos', 'update1'=>'td-beneficiario', 'disabled'=>'enabled', 'id'=>'estilo_reporte'), null, 1);?></td></tr>
+	<tr><td align="center" id="td-inputbusqueda">&nbsp;</td></tr>
+	<tr><td align="center">&nbsp;</td></tr>
+	<tr><td align="center" id="td-beneficiario">&nbsp;</td></tr>
+	<tr><td align="center">&nbsp;</td></tr>
+</table>
+
+<div id="datos-consulta"></div>
+<br />
+<?= $sisap->submitTagRemote('Consultar', array('url1' => '/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/no', 'update1'=>'datos-consulta', 'id'=>'guardar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+$cont_acti=0;
+$cont_anul=0;
+$acum_acti=0;
+$acum_anul=0;
+?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro">
+	<td width="10%" align="center">N&uacute;mero</td>
+	<td width="10%" align="center">Status</td>
+	<td width="10%" align="center">Fecha</td>
+	<td width="50%" align="center">Beneficiario</td>
+	<td width="10%" align="center">Monto</td>
+	<td width="10%" align="center">Ver</td>
+</tr>
+</table>
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<?php
+	$k = 1;
+	$j = 0;
+
+foreach($datos_compromiso_cuerpo as $datos_compromiso_cuerpo){
+
+	if($k%2 == 0){
+		$color = "#CDF2FF";
+	}else{
+		$color = "#DAEBFF";
+	}
+	$k++;
+
+if($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['condicion_actividad']==1){
+?>
+<tr id="<?= $j ?>" bgcolor="<?=$color?>" style="color:#000">
+	<td width="10%" align="center"><?=$sisap->mascara_ocho($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['numero_documento'])?></td>
+	<td width="10%" align="center">&nbsp;</td>
+	<td width="10%" align="center"><?=$sisap->cambia_fecha($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['fecha_documento'])?></td>
+	<td width="50%" align="left"><?= strtoupper($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['beneficiario'])?></td>
+	<td width="10%" align="right"><?=$sisap->Formato2($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['monto'])?></td>
+	<td width="10%" align="center">
+
+        <?= $sisap->imagen_ventana(array("value"=>".."),4,"Buscar", "/consulta_relaciones_documentos/lista_busqueda_compromiso/".$datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['numero_documento'], "950px", "550px" ); ?>
+	</td>
+</tr>
+
+<?php
+
+}elseif($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['condicion_actividad']==2){
+
+?>
+<tr id="<?= $j ?>" bgcolor="<?=$color?>" style="color:#000">
+	<td width="10%" align="center"><?=$sisap->mascara_ocho($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['numero_documento'])?></td>
+	<td width="10%" align="center">ANULADO</td>
+	<td width="10%" align="center"><?=$sisap->cambia_fecha($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['fecha_documento'])?></td>
+	<td width="50%" align="left"><?=strtoupper($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['beneficiario'])?></td>
+	<td width="10%" align="right"><?=$sisap->Formato2($datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['monto'])?></td>
+	<td width="10%" align="center">
+
+	    <?= $sisap->imagen_ventana(array("value"=>".."),4,"Buscar", "/consulta_relaciones_documentos/lista_busqueda_compromiso/".$datos_compromiso_cuerpo["v_reporte_relacion_otros_compromisos"]['numero_documento'], "950px", "550px" ); ?>
+    </td>
+</tr>
+
+<?php
+
+}
+
+}//fin for
+echo "</table>";
+echo "</div>";
+?>
+
+
+<? $sisap->link_paginacion_ventanas('/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir, 'datos-consulta', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+
+        <br />
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''),     array('url1' => '/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir.'/1',              'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''),   array('url1' => '/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir.'/'.$anterior.'',  'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir.'/'.$siguiente.'', 'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''),       array('url1' => '/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir.'/'.$ultimo.'',    'update1'=>'datos-consulta')) ?>
+			<? //$sisap->link_paginacion('/consulta_relaciones_documentos/reporte_relacion_otros_compromisos/'.$ir,'datos-consulta',$total_paginas,$pagina_actual);?>
+		<br />
+
+
+
+
+
+
+<?php
+
+echo "</table>";
+
+?>
+
+
+<div id="datos-consulta2"></div>
+
+
+<?php
+
+}//fin else
+?>
+
+
+
+

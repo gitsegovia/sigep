@@ -1,0 +1,126 @@
+<?php
+/*
+ * Created on 13/01/2008
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+  if(isset($msg)){
+ 	echo $sisap->mensajes_error($msg);
+ 	echo "<script>document.getElementById('guardar').disabled=true;</script>";
+
+ if(isset($remote)){
+ 	echo $ajax->remoteTimer(array('url'=>'/cepp02_contratoservicio/ver_trafico/'.$partida,'update'=>'semaforo2','frequency'=>'220'));
+ }
+ }else{
+	echo "<script>document.getElementById('guardar').disabled=false;</script>";
+ }
+
+
+?>
+
+
+<div id="semaforo2"></div>
+
+
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2" style="color:#FFF;background-color:#000; color:#FFF;">
+   <tr bgcolor="#000000">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="17%">MONTO</td>
+    <td align="center" width="14%">--</td>
+  </tr>
+  <?php
+
+   	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+
+ if(isset($_SESSION ["items"])){
+  if($_SESSION ["items"]!=null){
+
+    foreach($_SESSION ["items"] as $codigos){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <?
+
+   for($x=0;$x<=11;$x++){
+   	if($x==11){
+   	   echo "<td align=\"center\">".$codigos[$x+1]."</td>";
+   	   echo "<td align=\"center\">";
+   		 $monto_total=$monto_total+$sisap->Formato1($codigos[$x]);
+   		 $monto = $codigos[$x];
+   	     $sisap->inputTagRemote('cepp02_contratoservicio/monto_'.$i, array('url'=>'/cepp02_contratoservicio/ver_disponibilidad/'.$i.'/'. $codigos[$x+1], "value"=>$sisap->Formato2($monto),'style'=>'text-align:center','update'=>'ver_disponibilidad', 'onFocus'=>"javascript:if(this.value=='0,00'){this.value='';}", 'onKeyPress'=>"return solonumeros_con_punto(event);", 'id'=>'monto_'.$i, 'maxlength'=>'22', 'size'=>'15', 'onBlur'=>"javascript:if(this.value==''){this.value='0,00';} moneda('monto_$i');  "));
+       echo"</td>";
+   	}else{
+   	   echo "<td align=\"center\">".$sisap->AddCero2($codigos[$x])."</td>";
+   	}
+}
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cepp02_contratoservicio/eliminar_items/'.$codigos['id'], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+
+    	$i++;
+
+    }//fin foreach
+  }
+ }
+?>
+<tr style="color:#000000;background-color:#DAEBFF; "><td colspan="12">&nbsp;</td><td align="center" id="TOTALINGRESOS" ><?=$sisap->Formato2($sisap->Formato($monto_total));?></td><td>--</td></tr>
+</table>
+
+
+<input type="hidden" name="data[cepp02_contratoservicio][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+
+<div id="del"></div>
+<div id="ver_disponibilidad"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,812 @@
+<?php
+if($opcion==1){
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('LISTADO DE EXPEDIENTE'),'','950');
+echo $sisap->OpenTable('950');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_juan/listado_expediente/'.$var1.'/pdf'); ?>" >
+			<table border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+			<tr>
+			   <td align="center" style="border-bottom: 0px;">
+			   	 <br /><b>Tipo de nómina:</b>
+			     <?= $sisap->selectTagRemote('reporte3/tipo', $nomina,  null, 1, array('onchange1'=>'/reporte_juan/funcion/', 'update1'=>'funcion', 'id'=>'tipo','onChange'=>'vacio',  'style'=>'width:600px'), null, true); ?>
+			   </td>
+		    </tr>
+
+		    <tr>
+			   <td align="center" style="border-bottom: 0px;">
+		    		<br /><b>ORDENAR POR:</b>
+		        </td>
+		    </tr>
+
+		    <tr>
+			   <td align="center" style="border-bottom: 0px;">
+		    		UBICACIÓN GEOGRÁFICA:
+					<?= $sisap->radioTagRemote("reporte3/radio_ubicacion_geografica", array('1'=>'TODO', '2'=>'UNA UBICACIÓN ESPECIFICA'), array('url1'=>'/reporte_juan/select_geografica/', 'update1'=>'select_geografica', 'id'=>'radio_ubicacion_geografica'), null, $opc=1); ?>
+		        </td>
+		    </tr>
+
+            <tr>
+			   <td align="center" style="border-bottom: 0px;">
+		    		UBICACIÓN ADMINISTRATIVA:
+					<?= $sisap->radioTagRemote("reporte3/radio_ubicacion_administrativa", array('1'=>'TODO', '2'=>'UNA UBICACIÓN ESPECIFICA'), array('url1'=>'/reporte_juan/select_ubicacion/', 'update1'=>'select_ubicacion', 'id'=>'radio_ubicacion_administrativa'), null, $opc=1); ?>
+		        </td>
+		    </tr>
+
+		    <tr>
+			   <td align="center" style="border-bottom: 0px;">
+					<?= $sisap->radioTagRemote("reporte3/radio_ordenamiento_codigo", array('1'=>'Código cargo', '2'=>'Código Ficha', '3'=>'Código Puesto ', '4'=>'Cédula', '5'=>'Apellidos y Nombres', '6'=>'Fecha nacimiento', '7'=>'Profesión ', '8'=>'Fecha ingreso'), array('url1'=>'', 'update1'=>'', 'id'=>'radio_ordenamiento_codigo'), null, $opc=1); ?>
+		        </td>
+		    </tr>
+
+			<tr>
+			   <td align="center" style="border-bottom: 0px;">
+		    		<br /><b>PRESENTAR SUELDO O SALARIO:</b>
+		        </td>
+		    </tr>
+
+		     <tr>
+			   <td align="center" style="border-bottom: 0px;">
+		    		<?= $sisap->radioTagRemote("reporte3/frecuencia", array('1'=>'Diario', '2'=>'Semanal', '3'=>'Quincenal', '4'=>'Mensual', '5'=>'Bimestral', '6'=>'Trimestral'), array('url1'=>'/reporte_juan/funcion/', 'update1'=>'funcion', 'id'=>'frecuencia'), null, $opc=3); ?>
+		        </td>
+		    </tr>
+
+		     <tr>
+			   <td width='800px' align="center" id="ano_recurso" style="border-bottom: 0px;"><br></td>
+			 </tr>
+
+
+
+<div id="select_geografica"></div>
+
+<div id="select_ubicacion"></div>
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+
+</table>
+</form>
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+<?php
+
+
+
+
+}else if($opcion==2){
+
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Header()
+	{
+       $titulo_A = "LISTADO DE EXPEDIENTE";
+       $titulo_B = "TIPO DE NOMINA: ".$_SESSION["TIPO_NOMINA"];
+       $titulo_C = "SUELDOS O SALARIOS Y REMUNERACIONES PRESENTADAS COMO: ".$_SESSION["TIPO2"];
+       $this->top_reporte($titulo_A, $titulo_B, $titulo_C, array("Y"=>"6", "X"=>"12", "Z"=>"13"), array("Y"=>"14", "X"=>"254"));
+
+                $this->SetFont('vera','B',7);
+				$this->Cell(25,4,'','TRBL',0,'C');
+				$this->Cell(20,4,'CÓDIGO','TRB',0,'C');
+				$this->Cell(75,4,'DENOMINACIÓN DE LA UBICACIÓN GEOGRÁFICA','TRB',0,'L');
+                $this->Cell(30,4,'','TRB',0,'C');
+				$this->Cell(20,4,'CÓDIGO','TRB',0,'C');
+				$this->Cell(0,4,'DENOMINACIÓN DE LA UBICACIÓN ADMINISTRATIVA','TRB',1,'L');
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,'ESTADO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_estado"],'RB',0,'C');//--------[COD. ESTADO]
+				$this->Cell(75,4,$_SESSION["deno_cod_estado"],'RB',0,'L');//---------[DENO. ESTADO]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'DIRECCIÓN SUPERIOR','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_dirsuperior"],'RB',0,'C');//--------[COD. DIR. SUPERIOR]
+				$this->Cell(0,4,$_SESSION["deno_cod_dirsuperior"],'RB',1,'L');//---------[DENO. DIR. SUPERIOR]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,'MUNICIPIO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_municipio"],'RB',0,'C');//--------[COD. MUNICIPIO]
+				$this->Cell(75,4,$_SESSION["deno_cod_municipio"],'RB',0,'L');//---------[DENO. MUNICIPIO]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'COORDINACIÓN','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_coordinacion"],'RB',0,'C');//--------[COD. COORDINACIÓN]
+				$this->Cell(0,4,$_SESSION["deno_cod_coordinacion"],'RB',1,'L');//---------[DENO. COORDINACIÓN]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,'PARROQUIA','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_parroquia"],'RB',0,'C');//--------[COD. PARRORQUIA]
+				$this->Cell(75,4,$_SESSION["deno_cod_parroquia"],'RB',0,'L');//---------[DENO. PARROQUIA]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'SECRETARÍA','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_secretaria"],'RB',0,'C');//--------[COD. SECRETARÍA]
+				$this->Cell(0,4,$_SESSION["deno_cod_secretaria"],'RB',1,'L');//---------[DENO. SECRETARÍA]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,'CENTRO POBLADO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_centro"],'RB',0,'C');//--------[COD. CENTRO]
+				$this->Cell(75,4,$_SESSION["deno_cod_centro"],'RB',0,'L');//---------[DENO. CENTRO]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'DIRECCIÓN','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_direccion"],'RB',0,'C');//--------[COD. DIRECCIÓN]
+				$this->Cell(0,4,$_SESSION["deno_cod_direccion"],'RB',1,'L');//---------[DENO. DIRECCIÓN]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,' ','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,"",'RB',0,'C');//--------[COD. ]
+				$this->Cell(75,4,"",'RB',0,'L');//---------[DENO ]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'DIVISIÓN','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_division"],'RB',0,'C');//--------[COD. DIVISIÓN]
+				$this->Cell(0,4,$_SESSION["deno_cod_division"],'RB',1,'L');//---------[DENO. DIVISIÓN]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,' ','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,"",'RB',0,'C');//--------[COD. ]
+				$this->Cell(75,4,"",'RB',0,'L');//---------[DENO. ]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'DEPARTAMENTO','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_departamento"],'RB',0,'C');//--------[COD. DEPARTAMENTO]
+				$this->Cell(0,4,$_SESSION["deno_cod_departamento"],'RB',1,'L');//---------[DENO. DEPARTAMENTO]
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(25,4,' ','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,"",'RB',0,'C');//--------[COD. ]
+				$this->Cell(75,4,"",'RB',0,'L');//---------[DENO. ]
+				$this->SetFont('vera','B',6);
+				$this->Cell(30,4,'OFICINA','RBL',0,'L');
+				$this->SetFont('vera','B',6);
+				$this->Cell(20,4,$_SESSION["cod_oficina"],'RB',0,'C');//--------[COD. OFICINA]
+				$this->Cell(0,4,$_SESSION["deno_cod_oficina"],'RB',1,'L');//---------[DENO. OFICINA]
+
+/*
+		$this->SetFont('vera','B',6);
+		$this->Cell(11,4,'CÓDIGO','TRL',0,'C');
+		$this->Cell(11,4,'CÓDIGO','TR',0,'C');
+		$this->Cell(15,4,'CÉDULA','TR',0,'C');
+		$this->Cell(60,4,'','TR',0,'C');
+		$this->Cell(14,4,'CÓDIGO','RT',0,'C');
+		$this->Cell(40,4,'','RT',0,'C');
+		$this->Cell(21,4,'','TR',0,'C');
+		$this->Cell(25,4,'','TR',0,'C');
+		$this->Cell(16,4,'','TR',0,'C');
+		$this->Cell(16,4,'','TR',0,'C');
+		$this->Cell(0,4,'','TR',1,'C');
+
+		$this->Cell(11,3,'PUESTO','RBL',0,'C');
+		$this->Cell(11,3,'CARGO','RBL',0,'C');
+		$this->Cell(15,3,'IDENTIDAD','RB',0,'C');
+		$this->Cell(60,3,'DENOMINACIÓN  DEL PUESTO','RB',0,'C');
+        $this->Cell(14,3,'DE FICHA','RB',0,'C');
+        $this->Cell(40,3,'APELLIDOS Y NOMBRES','RB',0,'C');
+		$this->Cell(21,3,'SUELDO BÁSICO','RB',0,'C');
+		$this->Cell(25,3,'COMPENSACIONES','RB',0,'C');
+		$this->Cell(16,3,'PRIMAS','RB',0,'C');
+		$this->Cell(16,3,'BONOS','RB',0,'C');
+		$this->Cell(0,3,'CLASIFICACIÓN','RB',1,'C');
+*/
+		$this->SetFont('vera','B',6);
+		$this->Cell(11,4,'CÓDIGO','TRL',0,'C');
+		$this->Cell(14,4,'CÓDIGO','TR',0,'C');
+		$this->Cell(15,4,'CÉDULA','TR',0,'C');
+		$this->Cell(40,4,'','TR',0,'C');
+		$this->Cell(16,4,'FECHA','RT',0,'C');
+		$this->Cell(30,4,'','RT',0,'C');
+		$this->Cell(12,4,'CÓDIGO','RT',0,'C');
+		$this->Cell(60,4,'','RT',0,'C');
+		$this->Cell(13,4,'FECHA','TR',0,'C');
+		$this->Cell(18,4,'SUELDO','TR',0,'C');
+		$this->Cell(18,4,'','TR',0,'C');
+		$this->Cell(0,4,'','TR',1,'C');
+
+		$this->Cell(11,3,'CARGO','RBL',0,'C');
+		$this->Cell(14,3,'DE FICHA','RBL',0,'C');
+		$this->Cell(15,3,'IDENTIDAD','RB',0,'C');
+		$this->Cell(40,3,'APELLIDOS Y NOMBRES','RB',0,'C');
+		$this->Cell(16,3,'NACIMIENTO','RB',0,'C');
+		$this->Cell(30,3,'PROFESIÓN','RB',0,'C');
+        $this->Cell(12,3,'PUESTO','RB',0,'C');
+        $this->Cell(60,3,'DENOMINACIÓN  DEL PUESTO','RB',0,'C');
+		$this->Cell(13,3,'INGRESO','RB',0,'C');
+		$this->Cell(18,3,'BÁSICO','RB',0,'C');
+		$this->Cell(18,3,'BANCO','RB',0,'C');
+		$this->Cell(0,3,'CUENTA','RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$_SESSION["DENOMINACION_COD_SECTOR"]       = "";
+$_SESSION["DENOMINACION_COD_PROGRAMA"]     = "";
+$_SESSION["DENOMINACION_COD_SUB_PROGRAMA"] = "";
+$_SESSION["DENOMINACION_COD_PROYECTO"]     = "";
+$_SESSION["DENOMINACION_COD_ACTIVIDAD"]    = "";
+
+
+$_SESSION["DENOMINACION_COD_SECTOR2"]       = 0;
+$_SESSION["DENOMINACION_COD_PROGRAMA2"]     = 0;
+$_SESSION["DENOMINACION_COD_SUB_PROGRAMA2"] = 0;
+$_SESSION["DENOMINACION_COD_PROYECTO2"]     = 0;
+$_SESSION["DENOMINACION_COD_ACTIVIDAD2"]    = 0;
+
+
+$i = 0;
+
+foreach($datos as $ve2){      $i++;
+                          $ve[$i]["cod_presi"]            =   $ve2[0]["cod_presi"];
+						  $ve[$i]["cod_entidad"]          =   $ve2[0]["cod_entidad"];
+						  $ve[$i]["cod_tipo_inst"]        =   $ve2[0]["cod_tipo_inst"];
+						  $ve[$i]["cod_inst"]             =   $ve2[0]["cod_inst"];
+						  $ve[$i]["cod_dep"]              =   $ve2[0]["cod_dep"];
+						  $ve[$i]["cod_tipo_nomina"]      =   $ve2[0]["cod_tipo_nomina"];
+						  $ve[$i]["cod_cargo"]            =   $ve2[0]["cod_cargo"];
+						  $ve[$i]["cod_puesto"]           =   $ve2[0]["cod_puesto"];
+						  $ve[$i]["sueldo_basico"]        =   $ve2[0]["sueldo_basico"];
+						  $ve[$i]["compensaciones"]       =   $ve2[0]["compensaciones"];
+						  $ve[$i]["primas"]               =   $ve2[0]["primas"];
+						  $ve[$i]["bonos"]                =   $ve2[0]["bonos"];
+						  $ve[$i]["cod_dir_superior"]     =   $ve2[0]["cod_dir_superior"];
+						  $ve[$i]["cod_coordinacion"]     =   $ve2[0]["cod_coordinacion"];
+						  $ve[$i]["cod_secretaria"]       =   $ve2[0]["cod_secretaria"];
+						  $ve[$i]["cod_direccion"]        =   $ve2[0]["cod_direccion"];
+						  $ve[$i]["cod_division"]         =   $ve2[0]["cod_division"];
+						  $ve[$i]["cod_departamento"]     =   $ve2[0]["cod_departamento"];
+						  $ve[$i]["cod_oficina"]          =   $ve2[0]["cod_oficina"];
+
+						  $ve[$i]["deno_cod_dir_superior"]    =   $ve2[0]["deno_cod_dir_superior"];
+						  $ve[$i]["deno_cod_coordinacion"]    =   $ve2[0]["deno_cod_coordinacion"];
+						  $ve[$i]["deno_cod_secretaria"]      =   $ve2[0]["deno_cod_secretaria"];
+						  $ve[$i]["deno_cod_direccion"]       =   $ve2[0]["deno_cod_direccion"];
+						  $ve[$i]["deno_cod_division"]        =   $ve2[0]["deno_cod_division"];
+						  $ve[$i]["deno_cod_departamento"]    =   $ve2[0]["deno_cod_departamento"];
+						  $ve[$i]["deno_cod_oficina"]         =   $ve2[0]["deno_cod_oficina"];
+
+						  $ve[$i]["cod_estado"]           =   $ve2[0]["cod_estado"];
+						  $ve[$i]["cod_municipio"]        =   $ve2[0]["cod_municipio"];
+						  $ve[$i]["cod_parroquia"]        =   $ve2[0]["cod_parroquia"];
+						  $ve[$i]["cod_centro"]           =   $ve2[0]["cod_centro"];
+
+						  $ve[$i]["deno_cod_estado"]       =   $ve2[0]["deno_cod_estado"];
+						  $ve[$i]["deno_cod_municipio"]    =   $ve2[0]["deno_cod_municipio"];
+						  $ve[$i]["deno_cod_parroquia"]    =   $ve2[0]["deno_cod_parroquia"];
+						  $ve[$i]["deno_cod_centro"]       =   $ve2[0]["deno_cod_centro"];
+
+						  $ve[$i]["condicion_actividad"]  =   $ve2[0]["condicion_actividad"];
+						  $ve[$i]["ano"]                  =   $ve2[0]["ano"];
+						  $ve[$i]["cod_sector"]           =   $ve2[0]["cod_sector"];
+						  $ve[$i]["deno_sector"]          =   $ve2[0]["deno_sector"];
+						  $ve[$i]["cod_programa"]         =   $ve2[0]["cod_programa"];
+						  $ve[$i]["deno_programa"]        =   $ve2[0]["deno_programa"];
+						  $ve[$i]["cod_sub_prog"]         =   $ve2[0]["cod_sub_prog"];
+						  $ve[$i]["deno_sub_prog"]        =   $ve2[0]["deno_sub_prog"];
+						  $ve[$i]["cod_proyecto"]         =   $ve2[0]["cod_proyecto"];
+						  $ve[$i]["deno_proyecto"]        =   $ve2[0]["deno_proyecto"];
+						  $ve[$i]["cod_activ_obra"]       =   $ve2[0]["cod_activ_obra"];
+						  $ve[$i]["deno_activ_obra"]      =   $ve2[0]["deno_activ_obra"];
+						  $ve[$i]["cod_partida"]          =   $ve2[0]["cod_partida"];
+						  $ve[$i]["deno_partida"]         =   $ve2[0]["deno_partida"];
+						  $ve[$i]["cod_generica"]         =   $ve2[0]["cod_generica"];
+						  $ve[$i]["deno_generica"]        =   $ve2[0]["deno_generica"];
+						  $ve[$i]["cod_especifica"]       =   $ve2[0]["cod_especifica"];
+						  $ve[$i]["deno_especifica"]      =   $ve2[0]["deno_especifica"];
+						  $ve[$i]["cod_sub_espec"]        =   $ve2[0]["cod_sub_espec"];
+						  $ve[$i]["deno_sub_espe"]        =   $ve2[0]["deno_sub_espe"];
+						  $ve[$i]["cod_auxiliar"]         =   $ve2[0]["cod_auxiliar"];
+						  $ve[$i]["deno_auxiliar"]        =   $ve2[0]["deno_auxiliar"];
+						  $ve[$i]["cod_nivel_i"]          =   $ve2[0]["cod_nivel_i"];
+						  $ve[$i]["cod_nivel_ii"]         =   $ve2[0]["cod_nivel_ii"];
+						  $ve[$i]["cod_ficha"]            =   $ve2[0]["cod_ficha"];
+						  $ve[$i]["denominacion_devengado"]   =   $ve2[0]["denominacion_devengado"];
+						  $ve[$i]["clasificacion_personal"]   =   $ve2[0]["clasificacion_personal"];
+						  $ve[$i]["frecuencia_cobro"]         =   $ve2[0]["frecuencia_cobro"];
+						  $ve[$i]["dias_laborables"]          =   $ve2[0]["dias_laborables"];
+						  $ve[$i]["horas_laborables"]         =   $ve2[0]["horas_laborables"];
+						  $ve[$i]["descuentos_ley"]           =   $ve2[0]["descuentos_ley"];
+						  $ve[$i]["mensajes_colectivos"]      =   $ve2[0]["mensajes_colectivos"];
+						  $ve[$i]["status_nomina"]            =   $ve2[0]["status_nomina"];
+						  $ve[$i]["cantidad_pagos"]           =   $ve2[0]["cantidad_pagos"];
+						  $ve[$i]["correspondiente"]          =   $ve2[0]["correspondiente"];
+						  $ve[$i]["frecuencia_pago"]          =   $ve2[0]["frecuencia_pago"];
+						  $ve[$i]["numero_recibo"]            =   $ve2[0]["numero_recibo"];
+						  $ve[$i]["control_autorizacion"]     =   $ve2[0]["control_autorizacion"];
+						  $ve[$i]["autorizacion_diskettes"]   =   $ve2[0]["autorizacion_diskettes"];
+						  $ve[$i]["sueldo_sugerido"]          =   $ve2[0]["sueldo_sugerido"];
+						  $ve[$i]["ultimo_cargo"]             =   $ve2[0]["ultimo_cargo"];
+						  $ve[$i]["ultima_ficha"]             =   $ve2[0]["ultima_ficha"];
+						  $ve[$i]["ano_desde"]                =   $ve2[0]["ano_desde"];
+						  $ve[$i]["ano_hasta"]                =   $ve2[0]["ano_hasta"];
+						  $ve[$i]["codigo_transaccion"]       =   $ve2[0]["codigo_transaccion"];
+						  $ve[$i]["dias_cobro"]               =   $ve2[0]["dias_cobro"];
+						  $ve[$i]["denominacion_cargo"]       =   $ve2[0]["denominacion_cargo"];
+						  $ve[$i]["denominacion_dep"]         =   $ve2[0]["denominacion_dep"];
+						  $ve[$i]["denominacion_clasificacion"] =   $ve2[0]["denominacion_clasificacion"];
+						  $ve[$i]["cod_ficha"]                  =   $ve2[0]["cod_ficha"];
+						  $ve[$i]["denominacion_nomina"]        =   $ve2[0]["denominacion_nomina"];
+						  $ve[$i]["nombres_apellidos"]          =   $ve2[0]["primer_apellido"].' '.$ve2[0]["segundo_apellido"].' '.$ve2[0]["primer_nombre"].' '.$ve2[0]["segundo_nombre"];
+
+						  // Nuevos campos para el reporte de expedientes
+						  $ve[$i]["cedula_identidad_ficha"] = $ve2[0]["cedula_identidad_ficha"];
+						  $ve[$i]["fecha_ingreso"] = $ve2[0]["fecha_ingreso"];
+						  $ve[$i]["cuenta_bancaria"] = $ve2[0]["cuenta_bancaria"];
+						  $ve[$i]["banco"] = $ve2[0]["banco"];
+						  $ve[$i]["fecha_nacimiento"] = $ve2[0]["fecha_nacimiento"];
+}//fin foreach
+
+
+$ii = $i;
+
+$var_cod_tipo_nomina = 0;
+$var_cod_cargo       = 0;
+$var_cod_puesto      = 0;
+$var_sueldo_basico   = 0;
+$var_cod_cod_puesto  = 0;
+
+
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+$total_e = 0;
+
+
+$total_totala = 0;
+$total_totalb = 0;
+$total_totalc = 0;
+$total_totald = 0;
+$total_totale = 0;
+
+
+      if($tipo==1){
+	$_SESSION["TIPO"] = "EMPLEADOS";
+}else if($tipo==2){
+	$_SESSION["TIPO"] = "OBREROS";
+}else if($tipo==3){
+	$_SESSION["TIPO"] = "MILITARES PROFESIONALES";
+}else if($tipo==4){
+	$_SESSION["TIPO"] = "MILITARES NO PROFESIONALES";
+}else if($tipo==5){
+	$_SESSION["TIPO"] = "CONTRATADOS";
+}else if($tipo==6){
+	$_SESSION["TIPO"] = "SUPLENCIAS";
+}else if($tipo==7){
+	$_SESSION["TIPO"] = "JUBILADOS EMPLEADOS";
+}else if($tipo==8){
+	$_SESSION["TIPO"] = "JUBILADOS OBREROS";
+}else if($tipo==9){
+	$_SESSION["TIPO"] = "PENSIONADOS EMPLEADOS";
+}else if($tipo==10){
+	$_SESSION["TIPO"] = "PENSIONADOS OBREROS";
+}else if($tipo==11){
+	$_SESSION["TIPO"] = "DIETASS";
+}else if($tipo==12){
+	$_SESSION["TIPO"] = "COMISIÓN DE SERVICIOS";
+}else if($tipo==13){
+	$_SESSION["TIPO"] = "BECAS";
+}else if($tipo==14){
+	$_SESSION["TIPO"] = "AYUDAS";
+}else if($tipo==15){
+	$_SESSION["TIPO"] = "TODOS";
+}//fin else
+
+$var_cod_cod_puesto_aux = "";
+
+
+
+
+      if($presentar_como==1){ $_SESSION["TIPO2"] = " Diario";
+}else if($presentar_como==2){ $_SESSION["TIPO2"] = " Semanal";
+}else if($presentar_como==3){ $_SESSION["TIPO2"] = " Quincenal";
+}else if($presentar_como==4){ $_SESSION["TIPO2"] = " Mensual";
+}else if($presentar_como==5){ $_SESSION["TIPO2"] = " Bimestral";
+}else if($presentar_como==6){ $_SESSION["TIPO2"] = " Trimestral";
+
+}//fin else
+
+
+
+
+$_SESSION["aux_cod_dirsuperior"] = "";
+$_SESSION["aux_cod_coordinacion"] = "";
+$_SESSION["aux_cod_secretaria"] = "";
+$_SESSION["aux_cod_direccion"] = "";
+$_SESSION["aux_cod_division"] = "";
+$_SESSION["aux_cod_departamento"] = "";
+$_SESSION["aux_cod_oficina"] = "";
+$_SESSION["cod_dirsuperior"] = "";
+$_SESSION["cod_coordinacion"] = "";
+$_SESSION["cod_secretaria"] = "";
+$_SESSION["cod_direccion"] = "";
+$_SESSION["cod_division"] = "";
+$_SESSION["cod_departamento"] = "";
+$_SESSION["cod_oficina"] = "";
+$_SESSION["deno_cod_dirsuperior"] = "";
+$_SESSION["deno_cod_coordinacion"] = "";
+$_SESSION["deno_cod_secretaria"] = "";
+$_SESSION["deno_cod_direccion"] = "";
+$_SESSION["deno_cod_division"] = "";
+$_SESSION["deno_cod_departamento"] = "";
+$_SESSION["deno_cod_oficina"] = "";
+
+
+
+$_SESSION["aux_cod_estado"] = "";
+$_SESSION["aux_cod_municipio"] = "";
+$_SESSION["aux_cod_parroquia"] = "";
+$_SESSION["aux_cod_centro"] = "";
+$_SESSION["cod_estado"] = "";
+$_SESSION["cod_municipio"] = "";
+$_SESSION["cod_parroquia"] = "";
+$_SESSION["cod_centro"] = "";
+$_SESSION["deno_cod_estado"] = "";
+$_SESSION["deno_cod_municipio"] = "";
+$_SESSION["deno_cod_parroquia"] = "";
+$_SESSION["deno_cod_centro"] = "";
+
+
+			for($i=1; $i<=$ii; $i++){
+
+									$var_cod_tipo_nomina    = $ve[$i]["cod_tipo_nomina"];
+									$var_cod_cod_cargo      = $ve[$i]["cod_cargo"];
+									$var_cod_cod_puesto     = $ve[$i]["cod_puesto"];
+									$var_cod_sueldo_basico  = $ve[$i]["sueldo_basico"];
+
+									$_SESSION["cod_dirsuperior"]  = $sisap->AddCero2($ve[$i]["cod_dir_superior"]);
+									$_SESSION["cod_coordinacion"] = $sisap->AddCero2($ve[$i]["cod_coordinacion"]);
+									$_SESSION["cod_secretaria"]   = $sisap->AddCero2($ve[$i]["cod_secretaria"]);
+									$_SESSION["cod_direccion"]    = $sisap->AddCero2($ve[$i]["cod_direccion"]);
+									$_SESSION["cod_division"]     = $sisap->AddCero2($ve[$i]["cod_division"]);
+									$_SESSION["cod_departamento"] = $sisap->AddCero2($ve[$i]["cod_departamento"]);
+									$_SESSION["cod_oficina"]      = $sisap->AddCero2($ve[$i]["cod_oficina"]);
+									$_SESSION["deno_cod_dirsuperior"]  = $ve[$i]["deno_cod_dir_superior"];
+									$_SESSION["deno_cod_coordinacion"] = $ve[$i]["deno_cod_coordinacion"];
+									$_SESSION["deno_cod_secretaria"]   = $ve[$i]["deno_cod_secretaria"];
+									$_SESSION["deno_cod_direccion"]    = $ve[$i]["deno_cod_direccion"];
+									$_SESSION["deno_cod_division"]     = $ve[$i]["deno_cod_division"];
+									$_SESSION["deno_cod_departamento"] = $ve[$i]["deno_cod_departamento"];
+									$_SESSION["deno_cod_oficina"]      = $ve[$i]["deno_cod_oficina"];
+
+
+									$_SESSION["cod_estado"]      = $sisap->AddCero2($ve[$i]["cod_estado"]);
+									$_SESSION["cod_municipio"]   = $sisap->AddCero2($ve[$i]["cod_municipio"]);
+									$_SESSION["cod_parroquia"]   = $sisap->AddCero2($ve[$i]["cod_parroquia"]);
+									$_SESSION["cod_centro"]      = $sisap->AddCero2($ve[$i]["cod_centro"]);
+									$_SESSION["deno_cod_estado"]    = $ve[$i]["deno_cod_estado"];
+									$_SESSION["deno_cod_municipio"] = $ve[$i]["deno_cod_municipio"];
+									$_SESSION["deno_cod_parroquia"] = $ve[$i]["deno_cod_parroquia"];
+									$_SESSION["deno_cod_centro"]    = $ve[$i]["deno_cod_centro"];
+
+
+                                    $_SESSION["TIPO_NOMINA"] = $ve[$i]["denominacion_nomina"];
+
+
+									 if($_SESSION["aux_cod_dirsuperior"]  != $ve[$i]["cod_dir_superior"] ||
+										$_SESSION["aux_cod_coordinacion"] != $ve[$i]["cod_coordinacion"] ||
+										$_SESSION["aux_cod_secretaria"]   != $ve[$i]["cod_secretaria"] ||
+										$_SESSION["aux_cod_direccion"]    != $ve[$i]["cod_direccion"] ||
+										$_SESSION["aux_cod_division"]     != $ve[$i]["cod_division"] ||
+										$_SESSION["aux_cod_departamento"] != $ve[$i]["cod_departamento"] ||
+										$_SESSION["aux_cod_oficina"]      != $ve[$i]["cod_oficina"]  ||
+										$_SESSION["aux_cod_estado"]       != $ve[$i]["cod_estado"] ||
+										$_SESSION["aux_cod_municipio"]    != $ve[$i]["cod_municipio"] ||
+										$_SESSION["aux_cod_parroquia"]    != $ve[$i]["cod_parroquia"] ||
+										$_SESSION["aux_cod_centro"]       != $ve[$i]["cod_centro"]
+										){
+
+
+
+                                                 if($total_a!=0){
+                                                 		$pdf->SetFont('vera','B',5);
+                                                 		$pdf->Cell(11,$height,"",'RBL',0,'C');//---[COD CARGO]
+														$pdf->Cell(14,$height,"",'RB',0,'C');//---[COD FICHA]
+														$pdf->Cell(15,$height,"",'RB',0,'C');//---[CEDULA IDENTIDAD]
+														$pdf->Cell(40,$height,"",'RB',0,'C');//---[NOM APELLIDOS]
+														$pdf->Cell(16,$height,"",'RB',0,'C');//---[FECHA NACIMIENTO]
+														$pdf->Cell(30,$height,"",'RB',0,'C');//---[COD PROFESION]
+														$pdf->Cell(12,$height,"",'RB',0,'C');//---[COD PUESTO]
+														$pdf->Cell(60,$height,"",'RB',0,'C');//---[DENOMINACION DEL PUESTO]
+														$pdf->Cell(13,$height,"TOTAL",'RBL',0,'C');//---[FECHA INGRESO]
+														$pdf->Cell(18,$height,$sisap->Formato2($total_b),'RB',0,'R');//---[SUELDO BASICO]
+														$pdf->Cell(18,$height,"",'RB',0,'C');//---[BANCO]
+														$pdf->Cell(0,$height,"",'RB',1,'C');//---[CUENTA]
+														$pdf->SetFont('vera','',5);
+
+                                                 		/*
+                                                  	    $pdf->SetFont('vera','B',5);
+                                                  	    $pdf->Cell(13,$height,"",'RL',0,'C');
+								 			          	$pdf->Cell(13,$height,$sisap->AddCero2($total_a),'RL',0,'C');
+										                $pdf->Cell(118,$height,"TOTAL",'LRT',0,'R');
+									                    $pdf->Cell(21,$height,$sisap->Formato2($total_b),'RT',0,'R');
+														$pdf->Cell(25,$height,$sisap->Formato2($total_c),'RT',0,'R');
+														$pdf->Cell(16,$height,$sisap->Formato2($total_d),'RT',0,'R');
+														$pdf->Cell(16,$height,$sisap->Formato2($total_e),'LRT',0,'R');
+														$pdf->Cell(0,$height,"",'RT',1,'R');
+														$pdf->Cell(0,0,"",'T',1,'R');
+														$pdf->SetFont('vera','',5);
+														*/
+                                                  }//fin if
+
+
+														$total_a = 0;
+														$total_b = 0;
+														$total_c = 0;
+														$total_d = 0;
+														$total_e = 0;
+
+
+
+									                    $_SESSION["aux_cod_dirsuperior"]  = $ve[$i]["cod_dir_superior"];
+														$_SESSION["aux_cod_coordinacion"] = $ve[$i]["cod_coordinacion"];
+														$_SESSION["aux_cod_secretaria"]   = $ve[$i]["cod_secretaria"];
+														$_SESSION["aux_cod_direccion"]    = $ve[$i]["cod_direccion"];
+														$_SESSION["aux_cod_division"]     = $ve[$i]["cod_division"];
+														$_SESSION["aux_cod_departamento"] = $ve[$i]["cod_departamento"];
+														$_SESSION["aux_cod_oficina"]      = $ve[$i]["cod_oficina"];
+
+														$_SESSION["aux_cod_estado"]     = $ve[$i]["cod_estado"];
+														$_SESSION["aux_cod_municipio"]  = $ve[$i]["cod_municipio"];
+														$_SESSION["aux_cod_parroquia"]  = $ve[$i]["cod_parroquia"];
+														$_SESSION["aux_cod_centro"]     = $ve[$i]["cod_centro"];
+
+														$pdf->AddPage();
+
+
+									}//fin if
+
+
+
+
+
+
+
+									//DIARIO
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"];    $A2=$ve[$i]["compensaciones"];    $A3=$ve[$i]["primas"];    $A4=$ve[$i]["bonos"]; }
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==2 ){ $A1=$ve[$i]["sueldo_basico"]/7; $A2=$ve[$i]["compensaciones"]/7;  $A3=$ve[$i]["primas"]/7;  $A4=$ve[$i]["bonos"]/7; }
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==3){ $A1=$ve[$i]["sueldo_basico"]/15; $A2=$ve[$i]["compensaciones"]/15; $A3=$ve[$i]["primas"]/15; $A4=$ve[$i]["bonos"]/15; }
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==4){ $A1=$ve[$i]["sueldo_basico"]/30; $A2=$ve[$i]["compensaciones"]/30; $A3=$ve[$i]["primas"]/30; $A4=$ve[$i]["bonos"]/30; }
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==5){ $A1=$ve[$i]["sueldo_basico"]/60; $A2=$ve[$i]["compensaciones"]/60; $A3=$ve[$i]["primas"]/60; $A4=$ve[$i]["bonos"]/60; }
+									if ($presentar_como==1 && $ve[$i]["frecuencia_cobro"]==6){ $A1=$ve[$i]["sueldo_basico"]/90; $A2=$ve[$i]["compensaciones"]/90; $A3=$ve[$i]["primas"]/90; $A4=$ve[$i]["bonos"]/90; }
+
+									//SEMANAL
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"]*7;         $A2=$ve[$i]["compensaciones"]*7;         $A3=$ve[$i]["primas"]*7;          $A4=$ve[$i]["bonos"]*7; }
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==2){ $A1=$ve[$i]["sueldo_basico"];           $A2=$ve[$i]["compensaciones"];           $A3=$ve[$i]["primas"];             $A4=$ve[$i]["bonos"]; }
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==3){ $A1=(($ve[$i]["sueldo_basico"]*24)/52); $A2=(($ve[$i]["compensaciones"]*24)/52); $A3=(($ve[$i]["primas"]*24)/52);   $A4=(($ve[$i]["bonos"]*24)/52); }
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==4){ $A1=(($ve[$i]["sueldo_basico"]*12)/52); $A2=(($ve[$i]["compensaciones"]*12)/52); $A3=(($ve[$i]["primas"]*12)/52);   $A4=(($ve[$i]["bonos"]*12)/52); }
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==5){ $A1=(($ve[$i]["sueldo_basico"]*6)/52);  $A2=(($ve[$i]["compensaciones"]*6)/52);  $A3=(($ve[$i]["primas"]*6)/52);    $A4=(($ve[$i]["bonos"]*6)/52); }
+									if ($presentar_como==2 && $ve[$i]["frecuencia_cobro"]==6){ $A1=(($ve[$i]["sueldo_basico"]*4)/52);  $A2=(($ve[$i]["compensaciones"]*4)/52);  $A3=(($ve[$i]["primas"]*4)/52);    $A4=(($ve[$i]["bonos"]*4)/52); }
+
+
+									//QUINCENAL
+									if ($presentar_como==3 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"]*15;       $A2=$ve[$i]["compensaciones"]*15;       $A3=$ve[$i]["primas"]*15;       $A4=$ve[$i]["bonos"]*15; }
+									if ($presentar_como==3 && $ve[$i]["frecuencia_cobro"]==3){ $A1=$ve[$i]["sueldo_basico"];          $A2=$ve[$i]["compensaciones"];          $A3=$ve[$i]["primas"];          $A4=$ve[$i]["bonos"]; }
+									if ($presentar_como==3 && $ve[$i]["frecuencia_cobro"]==4){ $A1=$ve[$i]["sueldo_basico"]/2;        $A2=$ve[$i]["compensaciones"]/2;        $A3=$ve[$i]["primas"]/2;        $A4=$ve[$i]["bonos"]/2; }
+									if ($presentar_como==3 && $ve[$i]["frecuencia_cobro"]==5){ $A1=(($ve[$i]["sueldo_basico"]*6)/24); $A2=(($ve[$i]["compensaciones"]*6)/24); $A3=(($ve[$i]["primas"]*6)/24); $A4=(($ve[$i]["bonos"]*6)/24); }
+									if ($presentar_como==3 && $ve[$i]["frecuencia_cobro"]==6){ $A1=(($ve[$i]["sueldo_basico"]*4)/24); $A2=(($ve[$i]["compensaciones"]*4)/24); $A3=(($ve[$i]["primas"]*4)/24); $A4=(($ve[$i]["bonos"]*4)/24); }
+
+									///MENSUAL
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"]*30;        $A2=$ve[$i]["compensaciones"]*30;         $A3=$ve[$i]["primas"]*30;         $A4=$ve[$i]["bonos"]*30; }
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==2){ $A1=(($ve[$i]["sueldo_basico"]*52)/12); $A2=(($ve[$i]["compensaciones"]*52)/12);   $A3=(($ve[$i]["primas"]*52)/12);  $A4=(($ve[$i]["bonos"]*52)/12); }
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==3){ $A1=$ve[$i]["sueldo_basico"]*2 ;         $A2=$ve[$i]["compensaciones"]*2;          $A3=$ve[$i]["primas"]*2;          $A4=$ve[$i]["bonos"]*2; }
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==4){ $A1=$ve[$i]["sueldo_basico"];           $A2=$ve[$i]["compensaciones"];            $A3=$ve[$i]["primas"];            $A4=$ve[$i]["bonos"]; }
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==5){ $A1=(($ve[$i]["sueldo_basico"]*6)/12);  $A2=(($ve[$i]["compensaciones"]*6)/12);   $A3=(($ve[$i]["primas"]*6)/12);   $A4=(($ve[$i]["bonos"]*6)/12); }
+									if ($presentar_como==4 && $ve[$i]["frecuencia_cobro"]==6){ $A1=(($ve[$i]["sueldo_basico"]*4)/12);  $A2=(($ve[$i]["compensaciones"]*4)/12);   $A3=(($ve[$i]["primas"]*4)/12);   $A4=(($ve[$i]["bonos"]*4)/12); }
+
+
+									//BIMESTRAL
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"]*60;       $A2=$ve[$i]["compensaciones"]*60;       $A3=$ve[$i]["primas"]*60;       $A4=$ve[$i]["bonos"]*60; }
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==2){ $A1=(($ve[$i]["sueldo_basico"]*52)/6); $A2=(($ve[$i]["compensaciones"]*52)/6); $A3=(($ve[$i]["primas"]*52)/6); $A4=(($ve[$i]["bonos"]*52)/6); }
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==3){ $A1=(($ve[$i]["sueldo_basico"]*24)/6); $A2=(($ve[$i]["compensaciones"]*24)/6); $A3=(($ve[$i]["primas"]*24)/6); $A4=(($ve[$i]["bonos"]*24)/6); }
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==4){ $A1=$ve[$i]["sueldo_basico"]*2;        $A2=$ve[$i]["compensaciones"]*2;        $A3=$ve[$i]["primas"]*2;        $A4=$ve[$i]["bonos"]*2; }
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==5){ $A1=$ve[$i]["sueldo_basico"];          $A2=$ve[$i]["compensaciones"];          $A3=$ve[$i]["primas"];          $A4=$ve[$i]["bonos"]; }
+									if ($presentar_como==5 && $ve[$i]["frecuencia_cobro"]==6){ $A1=(($ve[$i]["sueldo_basico"]*4)/6);  $A2=(($ve[$i]["compensaciones"]*4)/6);  $A3=(($ve[$i]["primas"]*4)/6);  $A4=(($ve[$i]["bonos"]*4)/6); }
+
+									//TRIMESTRAL
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==1){ $A1=$ve[$i]["sueldo_basico"]*90;       $A2=$ve[$i]["compensaciones"]*90;      $A3=$ve[$i]["primas"]*90;       $A4=$ve[$i]["bonos"]*90; }
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==2){ $A1=(($ve[$i]["sueldo_basico"]*52)/4); $A2=(($ve[$i]["compensaciones"]*52)/4);$A3=(($ve[$i]["primas"]*52)/4); $A4=(($ve[$i]["bonos"]*52)/4); }
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==3){ $A1=$ve[$i]["sueldo_basico"]*6;        $A2=$ve[$i]["compensaciones"]*6;       $A3=$ve[$i]["primas"]*6;        $A4=$ve[$i]["bonos"]*6; }
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==4){ $A1=(($ve[$i]["sueldo_basico"]*3));    $A2=(($ve[$i]["compensaciones"]*3));   $A3=(($ve[$i]["primas"]*3));    $A4=(($ve[$i]["bonos"]*3)); }
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==5){ $A1=(($ve[$i]["sueldo_basico"]*6)/4);  $A2=(($ve[$i]["compensaciones"]*6)/4); $A3=(($ve[$i]["primas"]*6)/4);  $A4=(($ve[$i]["bonos"]*6)/12); }
+									if ($presentar_como==6 && $ve[$i]["frecuencia_cobro"]==6){ $A1=$ve[$i]["sueldo_basico"];          $A2=$ve[$i]["compensaciones"];         $A3=$ve[$i]["primas"];          $A4=$ve[$i]["bonos"]; }
+
+
+
+
+
+
+
+												$denominacion= $ve[$i]["denominacion_cargo"];
+												$long=strlen($denominacion);
+
+													if($long<=45){//echo "a";
+														$height=5;
+													}else if($long>45 && $long<=90){//echo "b";
+														$height=7;
+													}else if($long>90 && $long<=135){//echo "c";
+														$height=14;
+													}else if($long>135 && $long<=170){//echo "d";
+														$height=16;
+													}else if($long>170 && $long<=205){//echo "e";
+														$height=19;
+													}else if($long>170 && $long<=240) {//echo "f";
+														$height=22;
+													}else if($long>240 && $long<=280) {//echo "g";
+														$height=24;
+													}else if($long>280 && $long<=315) {//echo "h";
+														$height=26;
+													}else{//echo "i";
+														$height=28;
+													}
+
+
+
+														$pdf->Cell(11,$height,mascara_seis($var_cod_cod_cargo),'RBL',0,'C');//---[COD CARGO]
+														$pdf->Cell(14,$height,mascara_seis($ve[$i]["cod_ficha"]),'RB',0,'C');//---[COD FICHA]
+														$pdf->Cell(15,$height,$ve[$i]["cedula_identidad_ficha"],'RB',0,'C');//---[CEDULA IDENTIDAD]
+														$pdf->Cell(40,$height,$ve[$i]["nombres_apellidos"],'RB',0);//---[NOM APELLIDOS]
+														$pdf->Cell(16,$height,$sisap->cambia_fecha($ve[$i]["fecha_nacimiento"]),'RB',0,'C');//---[FECHA NACIMIENTO]
+														$pdf->Cell(30,$height,'PROFESIÓN','RB',0);//---[COD PROFESION]
+														$pdf->Cell(12,$height,mascara_seis($var_cod_cod_puesto),'RB',0,'C');//---[COD PUESTO]
+														$varX = $pdf->GetX();
+														$varY = $pdf->GetY();
+														$pdf->Cell(60,1,"",'',2,'C');
+														$pdf->MultiCell(59,3,$denominacion,'','L');//---[DENOMINACION DEL PUESTO]
+														$varX = $varX+60;
+														$pdf->SetXY($varX,$varY);
+														//$pdf->Cell(60,$height,'DENOMINACIÓN DEL PUESTO','RB',0,'C');//---[DENOMINACION DEL PUESTO]
+														$pdf->Cell(13,$height,$sisap->cambia_fecha($ve[$i]["fecha_ingreso"]),'RBL',0,'C');//---[FECHA INGRESO]
+														$pdf->Cell(18,$height,$sisap->Formato2($A1),'RB',0,'R');//---[SUELDO BASICO]
+														$pdf->Cell(18,$height,$ve[$i]["banco"],'RB',0);//---[BANCO]
+														$pdf->Cell(0,$height,$ve[$i]["cuenta_bancaria"],'RB',1);//---[CUENTA]
+
+
+														/*
+														$pdf->SetFont('vera','',5);
+														$pdf->Cell(13,$height,mascara_seis($var_cod_cod_puesto),'RL',0,'C');
+														$pdf->Cell(13,$height,mascara_seis($var_cod_cod_cargo),'R',0,'C');
+														$varX = $pdf->GetX();
+														$varY = $pdf->GetY();
+														$pdf->Cell(60,1,"",'',2,'C');
+														$pdf->MultiCell(59,3,$denominacion,'','L');//---[DENOMINACION DEL PUESTO]
+														$varX = $varX+60;
+														$pdf->SetXY($varX,$varY);
+														$pdf->Cell(18,$height,mascara_seis($ve[$i]["cod_ficha"]),'LR',0,'C');
+												        $pdf->Cell(40,$height,$ve[$i]["nombres_apellidos"],'R',0,'L');
+														$pdf->Cell(21,$height,$sisap->Formato2($A1),'R',0,'R');//---[SUELDO BASICO]
+														$pdf->Cell(25,$height,$sisap->Formato2($A2),'R',0,'R');//---[COMPENSACIONES]
+														$pdf->Cell(16,$height,$sisap->Formato2($A3),'R',0,'R');//-----------[PRIMAS]
+														$pdf->Cell(16,$height,$sisap->Formato2($A4),'R',0,'R');//------------[BONOS]
+														$pdf->Cell(0,$height, $ve[$i]["denominacion_clasificacion"],'RB',1,'L');
+														*/
+
+														$pdf->Cell(0,0,'','T',1);
+
+														$total_a ++;
+														$total_b += $A1;
+														$total_c += $A2;
+														$total_d += $A3;
+														$total_e += $A4;
+
+														$total_totala ++;
+														$total_totalb += $A1;
+														$total_totalc += $A2;
+														$total_totald += $A3;
+														$total_totale += $A4;
+
+
+ 			         }//FIN FOR
+
+
+
+                 if($total_a!=0){
+                 		$pdf->SetFont('vera','B',5);
+                 		$pdf->Cell(11,$height,"",'RBL',0,'C');//---[COD CARGO]
+						$pdf->Cell(14,$height,"",'RB',0,'C');//---[COD FICHA]
+						$pdf->Cell(15,$height,"",'RB',0,'C');//---[CEDULA IDENTIDAD]
+						$pdf->Cell(40,$height,"",'RB',0,'C');//---[NOM APELLIDOS]
+						$pdf->Cell(16,$height,"",'RB',0,'C');//---[FECHA NACIMIENTO]
+						$pdf->Cell(30,$height,"",'RB',0,'C');//---[COD PROFESION]
+						$pdf->Cell(12,$height,"",'RB',0,'C');//---[COD PUESTO]
+						$pdf->Cell(60,$height,"",'RB',0,'C');//---[DENOMINACION DEL PUESTO]
+						$pdf->Cell(13,$height,"TOTAL",'RBL',0,'C');//---[FECHA INGRESO]
+						$pdf->Cell(18,$height,$sisap->Formato2($total_b),'RB',0,'R');//---[SUELDO BASICO]
+						$pdf->Cell(18,$height,"",'RB',0,'C');//---[BANCO]
+						$pdf->Cell(0,$height,"",'RB',1,'C');//---[CUENTA]
+
+						$pdf->Cell(11,$height,"",'RBL',0,'C');//---[COD CARGO]
+						$pdf->Cell(14,$height,"",'RB',0,'C');//---[COD FICHA]
+						$pdf->Cell(15,$height,"",'RB',0,'C');//---[CEDULA IDENTIDAD]
+						$pdf->Cell(40,$height,"",'RB',0,'C');//---[NOM APELLIDOS]
+						$pdf->Cell(16,$height,"",'RB',0,'C');//---[FECHA NACIMIENTO]
+						$pdf->Cell(30,$height,"",'RB',0,'C');//---[COD PROFESION]
+						$pdf->Cell(12,$height,"",'RB',0,'C');//---[COD PUESTO]
+						$pdf->Cell(60,$height,"",'RB',0,'C');//---[DENOMINACION DEL PUESTO]
+						$pdf->Cell(13,$height,"TOTAL GENERAL",'RBL',0,'C');//---[FECHA INGRESO]
+						$pdf->Cell(18,$height,$sisap->Formato2($total_totalb),'RB',0,'R');//---[SUELDO BASICO]
+						$pdf->Cell(18,$height,"",'RB',0,'C');//---[BANCO]
+						$pdf->Cell(0,$height,"",'RB',1,'C');//---[CUENTA]
+
+
+                 		/*
+ 			          	$pdf->SetFont('vera','B',5);
+ 			          	$pdf->Cell(13,$height,"",'RL',0,'C');
+ 			          	$pdf->Cell(13,$height,$sisap->AddCero2($total_a),'RL',0,'C');
+		                $pdf->Cell(118,$height,"TOTAL",'LRT',0,'R');
+	                    $pdf->Cell(21,$height,$sisap->Formato2($total_b),'RT',0,'R');
+						$pdf->Cell(25,$height,$sisap->Formato2($total_c),'RT',0,'R');
+						$pdf->Cell(16,$height,$sisap->Formato2($total_d),'RT',0,'R');
+						$pdf->Cell(16,$height,$sisap->Formato2($total_e),'LRT',0,'R');
+						$pdf->Cell(0,$height,"",'RT',1,'R');
+						$pdf->Cell(0,0,"",'T',1,'R');
+
+						$pdf->SetFont('vera','B',5);
+						$pdf->Cell(13,$height,"",'RL',0,'C');
+						$pdf->Cell(13,$height,$sisap->AddCero2($total_totala),'RL',0,'C');
+		                $pdf->Cell(118,$height,"TOTAL GENERAL",'LRT',0,'R');
+	                    $pdf->Cell(21,$height,$sisap->Formato2($total_totalb),'RT',0,'R');
+						$pdf->Cell(25,$height,$sisap->Formato2($total_totalc),'RT',0,'R');
+						$pdf->Cell(16,$height,$sisap->Formato2($total_totald),'RT',0,'R');
+						$pdf->Cell(16,$height,$sisap->Formato2($total_totale),'LRT',0,'R');
+						$pdf->Cell(0,$height,"",'RT',1,'R');
+						$pdf->Cell(0,0,"",'T',1,'R');
+						*/
+	              }//fin if
+
+
+$pdf->Output('listado_expedientes_'.date("d-m-Y_h"),'D');
+
+
+
+}//fin if
+
+?>

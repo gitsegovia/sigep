@@ -1,0 +1,54 @@
+<?php
+if(isset($datos) && count($datos)>0){
+	extract($datos[0][$modelo]);
+}else{
+	$contenido_acta = "<center><h3>Acta no encontrada</h3></center>";
+}
+
+vendor('tcpdf/tcpdf');
+
+class TESIS_PDF extends TCPDF {
+	public function Header() {
+		$this->Ln(20);
+	}
+
+	// Page footer
+	public function Footer() {
+		// Position at 1.5 cm from bottom
+		$this->SetY(-10);
+		// Set font
+		$this->SetFont('helvetica', 'I', 8);
+		// Page number
+		$this->Cell(0, 10, 'Página '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, 0, 'C');
+	}
+}
+
+
+// create new PDF document
+$pdf = new TESIS_PDF('P', PDF_UNIT, 'LEGAL', true, 'UTF-8', false);
+
+// set document information
+$pdf->SetCreator(PDF_CREATOR);
+$pdf->SetAuthor('SISAP - INFOGOBIERNO');
+$pdf->SetTitle('ACTA');
+$pdf->SetSubject('ACTA');
+$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
+$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+$pdf->SetMargins('20', '10', '10');//PDF_MARGIN_RIGHT
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->SetAutoPageBreak(TRUE, '10');
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+// create some HTML content
+
+$pdf->AddPage();
+$pdf->Ln(10);
+$pdf->writeHTML($contenido_acta, 1.5, 0, true, true);
+$pdf->lastPage();
+
+//Close and output PDF document
+$pdf->Output('Acta.pdf', 'D');
+?>

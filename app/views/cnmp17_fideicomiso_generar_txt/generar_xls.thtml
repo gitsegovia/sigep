@@ -1,0 +1,65 @@
+<?php
+set_time_limit(0);
+
+if(isset($DATA)){
+
+vendor ('Writer');
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('Hoja 1');
+$worksheet->setInputEncoding('utf-8');
+$worksheet->setColumn(0, 0, 3, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(1, 1, 10, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(2, 5, 20, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(6, 6, 3, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(7, 7, 16, $format = null, $hidden = 0, $level = 0);
+
+    $var_filas[0]=array("Nacionalidad","Cedula Identidad","Primer Nombre","Segundo Nombre","Primer Apellido","Segundo Apellido","Operacion","Monto Fideicomiso");
+    $nombre='Archivo_N'.$nacionalidad.'-'.$cedula_identidad;
+    $fila_celda=0;
+    foreach($DATA as $D){
+    	extract($D[0]);
+                            $fila_celda++;
+                            $cols[0]=$nacionalidad;
+						    $cols[1]=$cedula_identidad;
+						    $cols[2]=$primer_nombre;
+						    $cols[3]=$segundo_nombre;
+						    $cols[4]=$primer_apellido;
+						    $cols[5]=$segundo_apellido;
+						    $cols[6]='2';
+						    $cols[7]=$monto_fideicomiso;
+						    $var_filas[$fila_celda]=$cols;
+
+	}//fin foreach
+$var_date=date('dmY_His');
+$archivo = $nombre.'_'.$var_date.'.xls';
+foreach($var_filas as $key => $value) {
+  $i = 0;
+    foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      //$excel->write($sheet1, $key+1, $i, $fieldvalue);
+      	$worksheet->writeString($key, $i, $fieldvalue);
+      $i++;
+  }
+}
+
+$workbook->send($archivo);
+$workbook->close();
+
+}else{
+
+vendor ('Writer');
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('Hoja 1');
+$worksheet->setInputEncoding('utf-8');
+$worksheet->setColumn(0, 0, 100, $format = null, $hidden = 0, $level = 0);
+
+    $nombre='Archivo_N'.rand();
+	$var_date=date('dmY_His');
+	$archivo = $nombre.'_'.$var_date.'.xls';
+
+    $worksheet->writeString(0, 0, isset($msj) ? $msj : "NO SE ENCONTRARON DATOS...");
+
+$workbook->send($archivo);
+$workbook->close();
+
+}
+?>

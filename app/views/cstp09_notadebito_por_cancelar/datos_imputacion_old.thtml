@@ -1,0 +1,1582 @@
+<?php
+
+$monto_neto_cobrar = 0;
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}?>
+
+
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro">
+    <td class="td4" width="50">A&ntilde;o</td>
+    <td class="td4" width="50">Sector</td>
+    <td class="td4" width="50">Prog</td>
+    <td class="td4" width="50">Sub<br>Prog</td>
+    <td class="td4" width="50">Proy</td>
+    <td class="td4" width="90">Actividad<br> u Obra</td>
+    <td class="td4" width="50">Partida</td>
+    <td class="td4" width="50">Gener</td>
+    <td class="td4" width="50">Espec</td>
+    <td class="td4" width="50">Sub<br>Espec</td>
+    <td class="td4" width="90">Auxiliar</td>
+    <td class="td4" >Monto</td>
+</tr>
+
+<?php
+
+ 	$i=0;
+ 	$total=0;
+
+
+if(!isset($_SESSION['CUENTA_ORDENES_PAGO'])){$_SESSION['CUENTA_ORDENES_PAGO']=1;}
+
+$cuenta = $_SESSION['CUENTA_ORDENES_PAGO'];
+$monto_retencion_iva       = 0;
+$monto_iva                 = 0;
+$monto_islr                = 0;
+$monto_timbre_fiscal       = 0;
+$monto_impuesto_municipal  = 0;
+$retencion_multa           = 0;
+$retencion_responsabilidad = 0;
+
+
+
+$total_iva_25             = 0;
+$total_iva_75             = 0;
+$total_islr               = 0;
+$total_timbre             = 0;
+$total_municipal          = 0;
+$amortizar                = 0;
+$anticipo_con_iva         = ""; // La pregunta del anticipo incluye iva no c usa porque ya la amortización le rebajo el monto a las partida que no es i.v.a
+                                // asi que no hay nesecidad de quitarle nada
+$campo_rif = "";
+
+$total_retencion_multa           = 0;
+$total_retencion_responsabilidad = 0;
+
+
+
+
+
+
+
+
+
+
+if(isset($datos_orden_pago_cuerpo)){
+  if($datos_orden_pago_cuerpo!=null){
+    foreach($datos_orden_pago_cuerpo as $ve2){
+
+
+  $cod_presi                                   =    $ve2['cepd03_ordenpago_cuerpo']['cod_presi'];
+  $cod_entidad                                 =    $ve2['cepd03_ordenpago_cuerpo']['cod_entidad'];
+  $cod_tipo_inst                               =    $ve2['cepd03_ordenpago_cuerpo']['cod_tipo_inst'];
+  $cod_inst                                    =    $ve2['cepd03_ordenpago_cuerpo']['cod_inst'];
+  $cod_dep                                     =    $ve2['cepd03_ordenpago_cuerpo']['cod_dep'];
+  $ano_orden_pago                              =    $ve2['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+  $numero_orden_pago                           =    $ve2['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+  $tipo_orden                                  =    $ve2['cepd03_ordenpago_cuerpo']['tipo_orden'];
+  $fecha_orden_pago                            =    $ve2['cepd03_ordenpago_cuerpo']['fecha_orden_pago'];
+  $ano_documento_origen                        =    $ve2['cepd03_ordenpago_cuerpo']['ano_documento_origen'];
+  $numero_documento_origen                     =    $ve2['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+  $numero_documento_adjunto                    =    $ve2['cepd03_ordenpago_cuerpo']['numero_documento_adjunto'];
+  $cod_tipo_documento                          =    $ve2['cepd03_ordenpago_cuerpo']['cod_tipo_documento'];
+  $rif                                         =    $ve2['cepd03_ordenpago_cuerpo']['rif'];
+  $beneficiario                                =    $ve2['cepd03_ordenpago_cuerpo']['beneficiario'];
+  $autorizado                                  =    $ve2['cepd03_ordenpago_cuerpo']['autorizado'];
+  $cedula_identidad                            =    $ve2['cepd03_ordenpago_cuerpo']['cedula_identidad'];
+  $concepto                                    =    $ve2['cepd03_ordenpago_cuerpo']['concepto'];
+  $monto_total                                 =    $ve2['cepd03_ordenpago_cuerpo']['monto_total'];
+  $numero_pago                                 =    $ve2['cepd03_ordenpago_cuerpo']['numero_pago'];
+  $monto_parcial                               =    $ve2['cepd03_ordenpago_cuerpo']['monto_parcial'];
+  $cod_frecuencia_pago                         =    $ve2['cepd03_ordenpago_cuerpo']['cod_frecuencia_pago'];
+  $fecha_desde                                 =    $ve2['cepd03_ordenpago_cuerpo']['fecha_desde'];
+  $fecha_hasta                                 =    $ve2['cepd03_ordenpago_cuerpo']['fecha_hasta'];
+  $cod_tipo_pago                               =    $ve2['cepd03_ordenpago_cuerpo']['cod_tipo_pago'];
+  $monto_coniva                                =    $ve2['cepd03_ordenpago_cuerpo']['monto_coniva'];
+  $monto_iva                                   =    $ve2['cepd03_ordenpago_cuerpo']['monto_iva'];
+  $porcentaje_iva                              =    $ve2['cepd03_ordenpago_cuerpo']['porcentaje_iva'];
+  $monto_siniva                                =    $ve2['cepd03_ordenpago_cuerpo']['monto_siniva'];
+  $monto_retencion_laboral                     =    $ve2['cepd03_ordenpago_cuerpo']['monto_retencion_laboral'];
+  $monto_retencion_fielcumplimiento            =    $ve2['cepd03_ordenpago_cuerpo']['monto_retencion_fielcumplimiento'];
+  $monto_descontar_impuesto                    =    $ve2['cepd03_ordenpago_cuerpo']['monto_descontar_impuesto'];
+  $amortizacion_anticipo                       =    $ve2['cepd03_ordenpago_cuerpo']['amortizacion_anticipo'];
+  $monto_orden_pago                            =    $ve2['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+  $monto_retencion_iva                         =    $ve2['cepd03_ordenpago_cuerpo']['monto_retencion_iva'];
+  $porcentaje_retencion_iva                    =    $ve2['cepd03_ordenpago_cuerpo']['porcentaje_retencion_iva'];
+  $monto_islr                                  =    $ve2['cepd03_ordenpago_cuerpo']['monto_islr'];
+  $porcentaje_islr                             =    $ve2['cepd03_ordenpago_cuerpo']['porcentaje_islr'];
+  $monto_sustraendo                            =    $ve2['cepd03_ordenpago_cuerpo']['monto_sustraendo'];
+  $monto_timbre_fiscal                         =    $ve2['cepd03_ordenpago_cuerpo']['monto_timbre_fiscal'];
+  $porcentaje_timbre_fiscal                    =    $ve2['cepd03_ordenpago_cuerpo']['porcentaje_timbre_fiscal'];
+  $monto_impuesto_municipal                    =    $ve2['cepd03_ordenpago_cuerpo']['monto_impuesto_municipal'];
+  $porcentaje_impuesto_municipal               =    $ve2['cepd03_ordenpago_cuerpo']['porcentaje_impuesto_municipal'];
+  $monto_neto_cobrar                           =    $ve2['cepd03_ordenpago_cuerpo']['monto_neto_cobrar'];
+  $dia_asiento_registro                        =    $ve2['cepd03_ordenpago_cuerpo']['dia_asiento_registro'];
+  $mes_asiento_registro                        =    $ve2['cepd03_ordenpago_cuerpo']['mes_asiento_registro'];
+  $ano_asiento_registro                        =    $ve2['cepd03_ordenpago_cuerpo']['ano_asiento_registro'];
+  $numero_asiento_registro                     =    $ve2['cepd03_ordenpago_cuerpo']['numero_asiento_registro'];
+  $username_registro                           =    $ve2['cepd03_ordenpago_cuerpo']['username_registro'];
+  $condicion_actividad                         =    $ve2['cepd03_ordenpago_cuerpo']['condicion_actividad'];
+  $ano_anulacion                               =    $ve2['cepd03_ordenpago_cuerpo']['ano_anulacion'];
+  $numero_anulacion                            =    $ve2['cepd03_ordenpago_cuerpo']['numero_anulacion'];
+  $dia_asiento_anulacion                       =    $ve2['cepd03_ordenpago_cuerpo']['dia_asiento_anulacion'];
+  $mes_asiento_anulacion                       =    $ve2['cepd03_ordenpago_cuerpo']['mes_asiento_anulacion'];
+  $ano_asiento_anulacion                       =    $ve2['cepd03_ordenpago_cuerpo']['ano_asiento_anulacion'];
+  $numero_asiento_anulacion                    =    $ve2['cepd03_ordenpago_cuerpo']['numero_asiento_anulacion'];
+  $username_anulacion                          =    $ve2['cepd03_ordenpago_cuerpo']['username_anulacion'];
+  $cod_entidad_bancaria                        =    $ve2['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+  $cod_sucursal                                =    $ve2['cepd03_ordenpago_cuerpo']['cod_sucursal'];
+  $cuenta_bancaria                             =    $ve2['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+  $numero[$i]['numero_cheque']                 =    $ve2['cepd03_ordenpago_cuerpo']['numero_cheque'];
+  $fecha_cheque                                =    $ve2['cepd03_ordenpago_cuerpo']['fecha_cheque'];
+  $fecha_proceso_registro                      =    $ve2['cepd03_ordenpago_cuerpo']['fecha_proceso_registro'];
+  $fecha_proceso_anulacion                     =    $ve2['cepd03_ordenpago_cuerpo']['fecha_proceso_anulacion'];
+  $numero_comprobante_islr                     =    $ve2['cepd03_ordenpago_cuerpo']['numero_comprobante_islr'];
+  $numero_comprobante_timbre                   =    $ve2['cepd03_ordenpago_cuerpo']['numero_comprobante_timbre'];
+  $numero_comprobante_municipal                =    $ve2['cepd03_ordenpago_cuerpo']['numero_comprobante_municipal'];
+  $numero_comprobante_iva                      =    $ve2['cepd03_ordenpago_cuerpo']['numero_comprobante_iva'];
+  $numero_comprobante_librocompras             =    $ve2['cepd03_ordenpago_cuerpo']['numero_comprobante_librocompras'];
+
+  $retencion_multa                             =    $ve2['cepd03_ordenpago_cuerpo']['retencion_multa'];
+  $retencion_responsabilidad                   =    $ve2['cepd03_ordenpago_cuerpo']['retencion_responsabilidad'];
+
+  if($retencion_multa==""){$retencion_multa=0;}
+  if($retencion_responsabilidad==""){$retencion_responsabilidad=0;}
+
+
+
+  $monto_para_calculo = $monto_descontar_impuesto;
+
+
+
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['ano_orden_pago']      =   $ano_orden_pago;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['numero_orden_pago']   =   $numero_orden_pago;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_1']['DATOS_ORDEN_PAGO']['concepto_orden_pago']        =   $concepto;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['fecha_orden_pago']    =   $fecha_orden_pago;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['tipo_orden']          =   $tipo_orden;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['usar']                =   "si";
+
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['ISRL_MONTO_TOTAL']                  =   0;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['TIMBRE_FISCAL_MONTO_TOTAL']         =   0;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IMPUESTO_MUNICIPAL_MONTO_TOTAL']    =   0;
+
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_MULTA_TOTAL']              =   0;
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_RESPONSABILIDAD_TOTAL']    =   0;
+
+  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IVA_TOTAL'] = 0;
+
+
+  $_SESSION['ORDEN_PAGO_TOTAL']['cod_tipo_pago'] = $cod_tipo_pago;
+
+/*
+if($campo_rif==""){
+    if($rif=="0"){$campo_rif = $cedula_identidad;}else{$campo_rif = $rif; }
+   $_SESSION['ORDEN_PAGO_TOTAL']['rif'] = $campo_rif;
+}//fin if
+*/
+
+    }//fin fi
+   }//fin if
+  }//fin if
+
+
+
+$contar_partida = 0;
+$opcion_401     = 0;
+
+
+ //echo $campo_rif;
+
+
+if(isset($obra_valuacion_partidas)){
+  if($obra_valuacion_partidas!=null){
+    foreach($obra_valuacion_partidas as $ve_a){
+
+  $cod_sector[$contar_partida]       =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_sector'];
+  $cod_programa[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_programa'];
+  $cod_sub_prog[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_sub_prog'];
+  $cod_proyecto[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_proyecto'];
+  $cod_activ_obra[$contar_partida]   =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_activ_obra'];
+  $cod_partida[$contar_partida]      =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_partida'];
+  $cod_generica[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_generica'];
+  $cod_especifica[$contar_partida]   =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_especifica'];
+  $cod_sub_espec[$contar_partida]    =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_sub_espec'];
+  $cod_auxiliar[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['cod_auxiliar'];
+  $monto[$contar_partida]            =    $ve_a['cobd01_contratoobras_valuacion_partidas']['monto'];
+  $amortizacion[$contar_partida]     =    $ve_a['cobd01_contratoobras_valuacion_partidas']['amortizacion'];
+  $retenciones[$contar_partida]      =    $ve_a['cobd01_contratoobras_valuacion_partidas']['retencion_laboral'] + $ve_a['cobd01_contratoobras_valuacion_partidas']['retencion_fielcumplimi'];
+
+$contar_partida++;
+
+    }//fin for
+  }//fin if
+}//fin if
+
+
+
+
+
+
+
+if(isset($servicio_valuacion_partidas)){
+  if($servicio_valuacion_partidas!=null){
+    foreach($servicio_valuacion_partidas as $ve_b){ $opcion_401  = 1;
+
+  $cod_sector[$contar_partida]       =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_sector'];
+  $cod_programa[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_programa'];
+  $cod_sub_prog[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_sub_prog'];
+  $cod_proyecto[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_proyecto'];
+  $cod_activ_obra[$contar_partida]   =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_activ_obra'];
+  $cod_partida[$contar_partida]      =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_partida'];
+  $cod_generica[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_generica'];
+  $cod_especifica[$contar_partida]   =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_especifica'];
+  $cod_sub_espec[$contar_partida]    =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_sub_espec'];
+  $cod_auxiliar[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['cod_auxiliar'];
+  $monto[$contar_partida]            =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['monto'];
+  $amortizacion[$contar_partida]     =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['amortizacion'] ;
+  $retenciones[$contar_partida]      =    $ve_b['cepd02_contratoservicio_valuacion_partidas']['retencion_laboral']  + $ve_b['cepd02_contratoservicio_valuacion_partidas']['retencion_fielcumpl'];
+
+$contar_partida++;
+
+    }//fin for
+  }//fin if
+}//fin if
+
+
+
+
+
+
+if(isset($compra_autorizacion_partidas)){
+  if($compra_autorizacion_partidas!=null){
+    foreach($compra_autorizacion_partidas as $ve_c){
+
+  $cod_sector[$contar_partida]       =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_sector'];
+  $cod_programa[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_programa'];
+  $cod_sub_prog[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_sub_prog'];
+  $cod_proyecto[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_proyecto'];
+  $cod_activ_obra[$contar_partida]   =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_activ_obra'];
+  $cod_partida[$contar_partida]      =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_partida'];
+  $cod_generica[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_generica'];
+  $cod_especifica[$contar_partida]   =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_especifica'];
+  $cod_sub_espec[$contar_partida]    =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_sub_espec'];
+  $cod_auxiliar[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['cod_auxiliar'];
+  $monto[$contar_partida]            =    $ve_c['cscd04_ordencompra_a_pago_partidas']['monto'];
+  $amortizacion[$contar_partida]     =    $ve_c['cscd04_ordencompra_a_pago_partidas']['amortizacion'];
+  $retenciones[$contar_partida]      =    $ve_c['cscd04_ordencompra_a_pago_partidas']['retencion_laboral']  + $ve_c['cscd04_ordencompra_a_pago_partidas']['retencion_fielcumplimiento'];
+$contar_partida++;
+
+    }//fin for
+  }//fin if
+}//fin if
+
+
+
+
+
+
+$contar_partidas     = 0;
+$contar_partidas_401 = 0;
+
+
+
+if(isset($datos_orden_pago_partidas)){
+  if($datos_orden_pago_partidas!=null){
+    foreach($datos_orden_pago_partidas as $ve){
+                $concate2  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 ));
+             if($concate2=="4.01"){$contar_partidas_401++;}
+                $contar_partidas++;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+$contar_partida--;
+$i = 0;
+$monto_aux_aux      =   0;
+$suma_monto_aux     =   0;
+$suma_impuestos     =   0;
+$suma_impuestos_aux =   0;
+$monto_cancelacion  =   0;
+
+
+
+ if(isset($datos_orden_pago_partidas)){
+  if($datos_orden_pago_partidas!=null){
+    foreach($datos_orden_pago_partidas as $ve){
+
+
+$amortizar          =   0;
+$monto              =   0;
+$exeso              =   0;
+$suma_impuestos     =   0;
+$monto_isrl_session                =   0;
+$monto_timbre_fiscal_session       =   0;
+$monto_impuesto_municipal_session  =   0;
+$retencion_multa_session           =   0;
+$retencion_responsabilidad_session =   0;
+
+
+
+
+
+
+$con_a  = 0;
+$con_b  = 0;
+$concate   = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+$concate3  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_auxiliar']);
+$concate2  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 ));
+$con_b = $concate3;
+
+
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                            =       "iva";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['ISRL_MONTO']                           =       "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['TIMBRE_FISCAL_MONTO']                  =       "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IMPUESTO_MUNICIPAL_MONTO']             =       "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_MULTA_MONTO']                =       "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_RESPONSABILIDAD_MONTO']      =       "no";
+
+
+$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']              =        $ve['cepd03_ordenpago_partidas']['monto'];
+$var_aux[$i]['monto'] = $ve['cepd03_ordenpago_partidas']['monto'];
+
+//echo $ve['cepd03_ordenpago_partidas']['monto'].'___'.$concate.' <br>';
+
+
+if($concate2=="4.11"&& $monto_retencion_iva!=0){
+
+			$amortizar = 0;
+			$retencion = 0;
+
+			for($xx=0; $xx<=$contar_partida; $xx++){
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+				$retencion = $retenciones[$xx];}//fin if
+			}//fin for
+
+//GOB.GUARICO
+$var_aux[$i]['monto'] = $monto  + $amortizar + $retencion;
+//FIN GOB.GUARICO
+
+
+//ORIGINAL
+/*
+			$var_aux[$i]['monto'] = $monto  + $amortizar ;
+*/
+//FIN ORIGINAL
+
+
+					$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['ISRL_MONTO']                           =       "iva";
+					$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['TIMBRE_FISCAL_MONTO']                  =       "iva";
+					$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IMPUESTO_MUNICIPAL_MONTO']             =       "iva";
+					$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_MULTA_MONTO']                =       "iva";
+					$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_RESPONSABILIDAD_MONTO']      =       "iva";
+
+
+			$_SESSION['ORDEN_PAGO_TOTAL']['HAY_IVA']        =   "si";
+			if($monto_iva>$monto_retencion_iva){
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']             =  $var_aux[$i]['monto'] - $monto_retencion_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IVA_TOTAL'] =  $monto_retencion_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                 =  $monto_retencion_iva;
+			}else if($monto_iva==$monto_retencion_iva){
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']             =  $var_aux[$i]['monto'] - $monto_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IVA_TOTAL'] =  $monto_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                 =  $monto_iva;
+			}//fin else if
+     $ve['cepd03_ordenpago_partidas']['monto'] = $ve['cepd03_ordenpago_partidas']['monto'] - $monto_iva;
+
+
+}//fin fi
+
+
+
+
+
+      if($concate2=="4.01" && (($monto_islr==0 && $monto_timbre_fiscal==0 && $monto_impuesto_municipal==0 && $opcion_401==1)  ||   ($opcion_401==0 && $contar_partidas!=$contar_partidas_401))   ){
+
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                            =       "iva";
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['ISRL_MONTO']                           =       "no";
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['TIMBRE_FISCAL_MONTO']                  =       "no";
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IMPUESTO_MUNICIPAL_MONTO']             =       "no";
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_MULTA_MONTO']                =       "no";
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_RESPONSABILIDAD_MONTO']      =       "no";
+
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']              =        $ve['cepd03_ordenpago_partidas']['monto'];
+//			if($anticipo_con_iva=="1"){$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']  =   $ve['cepd03_ordenpago_partidas']['monto'] - (($ve['cepd03_ordenpago_partidas']['monto']) * ($porcentaje_iva/100));}
+
+
+
+
+}else  if($concate!="4.03.18.01.00"){
+
+			$amortizar = 0;
+			$retencion = 0;
+
+			for($xx=0; $xx<=$contar_partida; $xx++){
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+				$retencion = $retenciones[$xx];}//fin if
+			}//fin for
+
+
+
+
+
+			////////////////////////////////////////ISRL/////////////////////////////////////////
+			if($monto_islr!="" && $monto_islr!="0.00"){
+			$_SESSION['ORDEN_PAGO_TOTAL']['HAY_ISRL']       =   "si";
+			for($xx=0; $xx<=$contar_partida; $xx++){
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+				$retencion = $retenciones[$xx];}//fin if
+			}//fin for
+
+//GOB.GUARICO
+           $monto_isrl_session = ($monto_islr * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar + $retencion)) / $monto_para_calculo;
+//FIN GOB.GUARICO
+
+//ORIGINAL
+/*
+			$monto_isrl_session = ($monto_islr * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar)) / $monto_para_calculo;
+*/
+//FIN ORIGINAL
+
+			$monto_isrl_session = $monto_isrl_session;
+			$total_islr = $total_islr + $monto_isrl_session;
+			//echo $monto_isrl_session.'_____'.$monto_islr;
+			}else{
+				$monto_isrl_session = "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['ISRL_MONTO_TOTAL']  = "no";
+			}//fin else
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['ISRL_MONTO']  =  $monto_isrl_session;
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['ISRL_MONTO_TOTAL'] = $monto_islr;
+			/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+			///////////////////////////////////////////TIMBRE FISCAL/////////////////////////////////////////
+			if($monto_timbre_fiscal!="" && $monto_timbre_fiscal!="0.00"){
+			  $_SESSION['ORDEN_PAGO_TOTAL']['HAY_TIMBRE']     =   "si";
+			for($xx=0; $xx<=$contar_partida; $xx++){//echo $var_aux[$i]['monto'];
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);;
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+				$retencion = $retenciones[$xx];}//fin if
+			}//fin for
+
+//GOB.GUARICO
+			$monto_timbre_fiscal_session  =  ($monto_timbre_fiscal * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar + $retencion)) / $monto_para_calculo;
+//FIN GOB.GUARICO
+
+
+//ORIGINAL
+/*
+			$monto_timbre_fiscal_session  =  ($monto_timbre_fiscal * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar)) / $monto_para_calculo;
+*/
+//FIN ORIGINAL
+
+			$total_timbre = $total_timbre + $monto_timbre_fiscal_session;
+			}else{
+				$monto_timbre_fiscal_session = "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['TIMBRE_FISCAL_MONTO_TOTAL'] = "no";
+			}//fin else
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['TIMBRE_FISCAL_MONTO']  =  $monto_timbre_fiscal_session;
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['TIMBRE_FISCAL_MONTO_TOTAL'] = $monto_timbre_fiscal;
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+			////////////////////////////////////////IMPUESTO MUNICIPAL///////////////////////////////////////
+			if($monto_impuesto_municipal!="" && $monto_impuesto_municipal!="0.00"){
+			 $_SESSION['ORDEN_PAGO_TOTAL']['HAY_MUNICIPIO']  =   "si";
+			for($xx=0; $xx<=$contar_partida; $xx++){
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);;
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+				$retencion = $retenciones[$xx];}//fin if
+			}//fin for
+
+//GOB.GUARICO
+			$monto_impuesto_municipal_session  =  ($monto_impuesto_municipal * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar + $retencion)) / $monto_para_calculo;
+//FIN GOB.GUARICO
+
+
+//ORIGINAL
+/*
+			$monto_impuesto_municipal_session  =  ($monto_impuesto_municipal * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar)) / $monto_para_calculo;
+*/
+//FIN ORIGINAL
+
+			$total_municipal = $total_municipal + $monto_impuesto_municipal_session;
+			}else{
+				$monto_impuesto_municipal_session = "no";
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IMPUESTO_MUNICIPAL_MONTO_TOTAL'] = "no";
+			}//fin else
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IMPUESTO_MUNICIPAL_MONTO'] =  $monto_impuesto_municipal_session;
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IMPUESTO_MUNICIPAL_MONTO_TOTAL'] = $monto_impuesto_municipal;
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+	      /////////////////////////////////////////RETENCION MULTA////////////////////////////////////////////////////
+	                                   if($retencion_multa!="" && $retencion_multa!="0.00"){
+
+							       	 	    $_SESSION['ORDEN_PAGO_TOTAL']['HAY_RETENCION_MULTA']       =   "si";
+											for($xx=0; $xx<=$contar_partida; $xx++){
+											$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+											if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+												$retencion = $retenciones[$xx];}//fin if
+											}//fin for
+
+//GOB.GUARICO
+											$retencion_multa_session = ($retencion_multa * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar + $retencion)) / $monto_para_calculo;
+//FIN GOB.GUARICO
+
+
+//ORIGINAL
+/*
+											$retencion_multa_session = ($retencion_multa * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar)) / $monto_para_calculo;
+*/
+//FIN ORIGINAL
+
+											$total_retencion_multa = $total_retencion_multa + $retencion_multa_session;
+
+							       	 	}else{
+
+										 $retencion_multa_session = "no";
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_MULTA_TOTAL']  = "no";
+
+										}//fin else
+
+								$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_MULTA_MONTO']                 = $retencion_multa_session;
+			                    $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_MULTA_TOTAL'] = $retencion_multa;
+	      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+	      	      /////////////////////////////////////////RETENCION_RESPONSABILIDAD////////////////////////////////////////////////////
+	                                   if($retencion_responsabilidad!="" && $retencion_responsabilidad!="0.00"){
+
+							       	 	    $_SESSION['ORDEN_PAGO_TOTAL']['HAY_RETENCION_RESPONSABILIDAD']       =   "si";
+											for($xx=0; $xx<=$contar_partida; $xx++){
+											$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+											if($con_a==$con_b){$amortizar = $amortizacion[$xx];
+												$retencion = $retenciones[$xx];}//fin if
+											}//fin for
+
+//GOB.GUARICO
+											$retencion_responsabilidad_session = ($retencion_responsabilidad * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar + $retencion)) / $monto_para_calculo;
+//FIN GUARICO
+
+
+
+//ORIGINAL
+/*
+											$retencion_responsabilidad_session = ($retencion_responsabilidad * ($ve['cepd03_ordenpago_partidas']['monto'] + $amortizar)) / $monto_para_calculo;
+*/
+//FIN ORIGINAL
+
+											$total_retencion_responsabilidad = $total_retencion_responsabilidad + $retencion_responsabilidad_session;
+
+							       	 	}else{
+
+										 $retencion_responsabilidad_session = "no";
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_RESPONSABILIDAD_TOTAL']  = "no";
+
+										}//fin else
+
+								$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_RESPONSABILIDAD_MONTO']                 = $retencion_responsabilidad_session;
+			                    $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['RETENCION_RESPONSABILIDAD_TOTAL'] = $retencion_responsabilidad;
+	      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+			if($monto_isrl_session!="no"){                     $suma_impuestos = $suma_impuestos + $monto_isrl_session;}
+			if($monto_timbre_fiscal_session!="no"){            $suma_impuestos = $suma_impuestos + $monto_timbre_fiscal_session;}
+			if($monto_impuesto_municipal_session!="no"){       $suma_impuestos = $suma_impuestos + $monto_impuesto_municipal_session;}
+			if($retencion_multa_session!="no"){                $suma_impuestos = $suma_impuestos + $retencion_multa_session;}
+			if($retencion_responsabilidad_session!="no"){      $suma_impuestos = $suma_impuestos + $retencion_responsabilidad_session;}
+
+
+			if($concate2=="4.11"&& $monto_retencion_iva!=0){$ve['cepd03_ordenpago_partidas']['monto'] = $ve['cepd03_ordenpago_partidas']['monto'] + $monto_iva;}
+			if($concate2=="4.11"&& $monto_retencion_iva!=0){$ve['cepd03_ordenpago_partidas']['monto'] = $ve['cepd03_ordenpago_partidas']['monto'] - $monto_retencion_iva;}
+			$monto =  $ve['cepd03_ordenpago_partidas']['monto'] - $suma_impuestos;
+            if($concate2=="4.11"&& $monto_retencion_iva!=0){$ve['cepd03_ordenpago_partidas']['monto'] = $ve['cepd03_ordenpago_partidas']['monto'] + $monto_retencion_iva;}
+			//echo $monto;
+			$var_aux[$i]['monto'] = $monto;
+			$suma_impuestos_aux   =  $suma_impuestos_aux + $suma_impuestos;
+			$suma_monto_aux       =  $suma_monto_aux + $var_aux[$i]['monto'];
+//			if($anticipo_con_iva=="1"){ $var_aux[$i]['monto'] = $var_aux[$i]['monto'] - (($ve['cepd03_ordenpago_partidas']['monto']) * ($porcentaje_iva/100));}
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'] = $var_aux[$i]['monto'];
+			if($concate2=="4.11"&& $monto_retencion_iva!=0){}else{$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO'] = "iva";}
+
+
+
+
+
+
+}else if($concate=="4.03.18.01.00" && $monto_retencion_iva!=0){
+
+
+
+
+
+
+
+			$monto =  $ve['cepd03_ordenpago_partidas']['monto'];
+			for($xx=0; $xx<=$contar_partida; $xx++){
+			$con_a  = $sisap->AddCero2(substr($cod_partida[$xx], -2), substr($cod_partida[$xx], 0, 1 )).'.'.$sisap->AddCero2($cod_generica[$xx]).'.'.$sisap->AddCero2($cod_especifica[$xx]).'.'.$sisap->AddCero2($cod_sub_espec[$xx]).'.'.$sisap->AddCero2($cod_auxiliar[$xx]);
+			if($con_a==$con_b){$amortizar = $amortizacion[$xx];}//fin if
+			}//fin for
+			$var_aux[$i]['monto'] = $monto  + $amortizar ;
+
+
+
+
+						$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['ISRL_MONTO']                           =       "iva";
+						$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['TIMBRE_FISCAL_MONTO']                  =       "iva";
+						$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IMPUESTO_MUNICIPAL_MONTO']             =       "iva";
+						$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_MULTA_MONTO']                =       "iva";
+						$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['RETENCION_RESPONSABILIDAD_MONTO']      =       "iva";
+
+
+
+			$_SESSION['ORDEN_PAGO_TOTAL']['HAY_IVA']        =   "si";
+			if($monto_iva>$monto_retencion_iva){
+				$suma_monto_aux       =  $suma_monto_aux + ( $var_aux[$i]['monto']*0.25);
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']             = ($var_aux[$i]['monto']*0.25) ;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IVA_TOTAL'] =  $monto_retencion_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                 = ($var_aux[$i]['monto']*0.75) - $amortizar;
+				$total_iva_25 += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'];
+				$total_iva_75  += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO'];
+
+
+			}else if($monto_iva==$monto_retencion_iva){
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']             = 0;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['IVA_TOTAL'] = $monto_retencion_iva;
+				$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['IVA_MONTO']                 = $var_aux[$i]['monto'] - $amortizar;
+			}//fin else if
+
+
+			}//fin else
+
+
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'] = $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']);
+			$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'] = $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA']);
+			$monto_cancelacion  +=  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'];
+			$i++;
+
+        $monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		$monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+		$monto_neto_cobrar = $sisap->Formato2($monto_neto_cobrar);
+		$monto_neto_cobrar = $sisap->Formato1($monto_neto_cobrar);
+		$total_iva_75 = $sisap->Formato2($total_iva_75);
+		$total_iva_25 = $sisap->Formato2($total_iva_25);
+		$total_iva_75 = $sisap->Formato1($total_iva_75);
+		$total_iva_25 = $sisap->Formato1($total_iva_25);
+		$aux_monto = $total_iva_25 + $total_iva_75;
+		$aux_monto = $sisap->Formato2($aux_monto);
+		$aux_monto = $sisap->Formato1($aux_monto);
+
+    }//fin fi
+  }//fin if
+}//fin if
+
+
+//$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][0]['IVA_MONTO']     -= 0.01;     $total_iva_75      -= 0.01;
+//$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][0]['MONTO_PARTIDA'] -= 0.01;     $total_iva_25      -= 0.01; $monto_cancelacion -= 0.01;
+//$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][1]['MONTO_PARTIDA'] -= 0.01;     $monto_cancelacion -= 0.01;
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////COMIENZA EL REDONDEO/////////////////////////////////////////
+
+        $monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		$monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+		$monto_neto_cobrar = $sisap->Formato2($monto_neto_cobrar);
+		$monto_neto_cobrar = $sisap->Formato1($monto_neto_cobrar);
+		$total_iva_75 = $sisap->Formato2($total_iva_75);
+		$total_iva_25 = $sisap->Formato2($total_iva_25);
+		$total_iva_75 = $sisap->Formato1($total_iva_75);
+		$total_iva_25 = $sisap->Formato1($total_iva_25);
+		$aux_monto = $total_iva_25 + $total_iva_75;
+		$aux_monto = $sisap->Formato2($aux_monto);
+		$aux_monto = $sisap->Formato1($aux_monto);
+        $aux_valor = 0;
+		$cont = 0;
+
+
+ $total_islr                      = 0;
+ $total_municipal                 = 0;
+ $total_timbre                    = 0;
+ $total_retencion_multa           = 0;
+ $total_retencion_responsabilidad = 0;
+
+if(isset($datos_orden_pago_partidas)){
+	   if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+
+             $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+	         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+	         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+	         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+
+
+			         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+
+		             $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+				     $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+
+
+
+
+
+ $total_islr                          += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'];
+ $total_municipal                     += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'];
+ $total_timbre                        += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'];
+ $total_retencion_multa               += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'];
+ $total_retencion_responsabilidad     += $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+
+ $cont++;
+
+
+       }//FIN IF
+    }//FIN IF
+}//fin fi
+
+
+//echo $monto_cancelacion.' + '.$monto_neto_cobrar.' * '.$aux_monto.' + '.$monto_iva.' * '.$monto_retencion_iva.' + '.$total_iva_75;
+
+$cont = 0;
+if($monto_cancelacion!=$monto_neto_cobrar && $aux_monto!=$monto_iva && $monto_retencion_iva!=$total_iva_75  && $monto_iva!=$monto_retencion_iva){
+   if(isset($datos_orden_pago_partidas)){
+	   if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		        if($concate=="4.03.18.01.00" && $monto_retencion_iva!=0){
+                             $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+					         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+					         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+					         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+					         $aux = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'];
+		                     $aux = $sisap->Formato2($aux);
+							 $aux = $sisap->Formato1($aux);
+		                              if($monto_cancelacion!=$monto_neto_cobrar && $aux_monto!=$monto_iva && $monto_retencion_iva>$total_iva_75){//echo 'a';
+				                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     + 0.01; $total_iva_75 = $total_iva_75 +0.01;
+				                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01; $total_iva_25 = $total_iva_25 -0.01; $monto_cancelacion -= 0.01;
+				               }else  if($monto_cancelacion!=$monto_neto_cobrar && $aux_monto!=$monto_iva && $monto_retencion_iva<$total_iva_75){//echo 'b';
+		                                 $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     - 0.01; $total_iva_75 = $total_iva_75 - 0.01;
+		                                 $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01; $total_iva_25 = $total_iva_25 + 0.01; $monto_cancelacion += 0.01;
+		                       }//fin if
+		              }//fin if
+		       $cont++;
+		    }//FIN FOR
+		}//FIN IF
+    }//FIN IF
+}//fin fi
+
+
+//
+
+//echo $total_iva_25.' ++ '.$total_iva_75;
+//echo $monto_retencion_iva.' + + + '.$total_iva_75.' + + + '.$aux_monto.' + + + '.$monto_iva;
+//echo $aux_monto.' + '.$monto_iva.' + '.$monto_retencion_iva.' + '.$total_iva_75;
+//echo $aux_monto.' + '.$monto_iva.' + '.$aux_monto1.' + '.$total_iva_25;
+//echo $monto_iva." * ".$monto_retencion_iva;
+
+
+        $total_iva_75 = $sisap->Formato2($total_iva_75);
+		$total_iva_25 = $sisap->Formato2($total_iva_25);
+		$total_iva_75 = $sisap->Formato1($total_iva_75);
+		$total_iva_25 = $sisap->Formato1($total_iva_25);
+
+
+
+		/// AJUSTAR IVA ///
+		$cont = 0;
+		$aux_monto = $total_iva_25 + $total_iva_75;
+		$aux_monto = $sisap->Formato2($aux_monto);
+		$aux_monto = $sisap->Formato1($aux_monto);
+		if($aux_monto!=$monto_iva && $monto_retencion_iva!=$total_iva_75){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		        if($concate=="4.03.18.01.00" && $monto_retencion_iva!=0){
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+		                    $aux = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'];
+		                    $aux = $sisap->Formato2($aux);
+							$aux = $sisap->Formato1($aux);
+							//echo $aux." + ".$ve['cepd03_ordenpago_partidas']['monto']." <br>";
+		                    if($aux!=$ve['cepd03_ordenpago_partidas']['monto'] && $monto_retencion_iva<$total_iva_75){//echo 'a';
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] - 0.01; $total_iva_75 = $total_iva_75 -0.01;
+		             }else  if($aux!=$ve['cepd03_ordenpago_partidas']['monto'] && $monto_retencion_iva>$total_iva_75){//echo 'b';
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + 0.01; $total_iva_75 = $total_iva_75 + 0.01;
+		                }//fin if
+		                $total_iva_75 = $sisap->Formato2($total_iva_75);
+		                $total_iva_75 = $sisap->Formato1($total_iva_75);
+		              }//fin if
+		  $cont++;  }//FIN IF
+		    }//FIN IF
+		  }//FIN IF
+		}//finf if
+
+							$cont = 0;
+							$aux_monto = $total_iva_25 + $total_iva_75;
+							$aux_monto = $sisap->Formato2($aux_monto);
+							$aux_monto = $sisap->Formato1($aux_monto);
+							if($monto_retencion_iva!=$total_iva_75  && $monto_iva!=$monto_retencion_iva){
+							 if(isset($datos_orden_pago_partidas)){
+							  if($datos_orden_pago_partidas!=null){
+							    foreach($datos_orden_pago_partidas as $ve){
+							      $concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+							        if($concate=="4.03.18.01.00" && $monto_retencion_iva!=0){
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+							                    $aux = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'];
+							                    $aux = $sisap->Formato2($aux);
+												$aux = $sisap->Formato1($aux);
+												//echo $aux." + ".$ve['cepd03_ordenpago_partidas']['monto']." <br>";
+							                    if($monto_retencion_iva<$total_iva_75){//echo 'a';
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] - 0.01; $total_iva_75 = $total_iva_75 -0.01;
+							             }else  if($monto_retencion_iva>$total_iva_75){//echo 'b';
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + 0.01; $total_iva_75 = $total_iva_75 + 0.01;
+							                }//fin if
+							                $total_iva_75 = $sisap->Formato2($total_iva_75);
+							                $total_iva_75 = $sisap->Formato1($total_iva_75);
+							              }//fin if
+							  $cont++;  }//FIN IF
+							    }//FIN IF
+							  }//FIN IF
+							}//finf if
+
+
+
+
+
+
+		$cont = 0;
+		$aux_monto = $total_iva_25 + $total_iva_75;
+		$aux_monto = $sisap->Formato2($aux_monto);
+		$aux_monto = $sisap->Formato1($aux_monto);
+		$aux_monto1= $monto_iva-$monto_retencion_iva;
+		$aux_monto1 = $sisap->Formato2($aux_monto1);
+		$aux_monto1 = $sisap->Formato1($aux_monto1);
+		if($aux_monto!=$monto_iva && $aux_monto1!=$total_iva_25){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		        if($concate=="4.03.18.01.00"  && $monto_retencion_iva!=0 ){
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+		                    $aux = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'];
+		                    $aux = $sisap->Formato2($aux);
+							$aux = $sisap->Formato1($aux);
+							//echo $aux." + ".$ve['cepd03_ordenpago_partidas']['monto']." <br>";
+		                    if($aux!=$ve['cepd03_ordenpago_partidas']['monto'] && $aux_monto1<$total_iva_25){//echo 'a';
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01; $total_iva_25 = $total_iva_25 - 0.01;  $monto_cancelacion = $monto_cancelacion-0.01;
+		             }else  if($aux!=$ve['cepd03_ordenpago_partidas']['monto'] && $aux_monto1>$total_iva_25){//echo 'b';
+		                        $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01; $total_iva_25 = $total_iva_25 + 0.01;  $monto_cancelacion = $monto_cancelacion+0.01;
+		             }//fin if
+		             $total_iva_25 = $sisap->Formato2($total_iva_25);
+		             $total_iva_25 = $sisap->Formato1($total_iva_25);
+
+		            }//fin if
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+		//FIN AJUSTAR IVA//
+								$cont = 0;
+								$aux_monto = $total_iva_25 + $total_iva_75;
+								$aux_monto = $sisap->Formato2($aux_monto);
+								$aux_monto = $sisap->Formato1($aux_monto);
+								$aux_monto1= $monto_iva-$monto_retencion_iva;
+								$aux_monto1 = $sisap->Formato2($aux_monto1);
+								$aux_monto1 = $sisap->Formato1($aux_monto1);
+                                if($aux_monto1!=$total_iva_25  && $monto_iva!=$monto_retencion_iva){
+								 if(isset($datos_orden_pago_partidas)){
+								  if($datos_orden_pago_partidas!=null){
+								    foreach($datos_orden_pago_partidas as $ve){
+								      $concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+								        if($concate=="4.03.18.01.00"  && $monto_retencion_iva!=0 ){
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO']);
+								         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA']);
+								                    $aux = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'];
+								                    $aux = $sisap->Formato2($aux);
+													$aux = $sisap->Formato1($aux);
+													//echo $aux." + ".$ve['cepd03_ordenpago_partidas']['monto']." <br>";
+								                    if($aux_monto1<$total_iva_25){//echo 'a';
+								                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01; $total_iva_25 = $total_iva_25 - 0.01;  $monto_cancelacion = $monto_cancelacion-0.01;
+								             }else  if($aux_monto1>$total_iva_25){//echo 'b';
+								                        $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01; $total_iva_25 = $total_iva_25 + 0.01;  $monto_cancelacion = $monto_cancelacion+0.01;
+								             }//fin if
+								             $total_iva_25 = $sisap->Formato2($total_iva_25);
+								             $total_iva_25 = $sisap->Formato1($total_iva_25);
+
+								            }//fin if
+								  $cont++;  }//FIN IF
+								   }//FIN IF
+								 }//FIN IF
+								}//finf if
+								//FIN AJUSTAR IVA//
+
+
+
+
+
+		/// AJUSTAR ISLR ///
+		$total_islr = $sisap->Formato2($total_islr);
+		$total_islr = $sisap->Formato1($total_islr);
+		$cont = 0;
+		if($total_islr!=$monto_islr){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']!="no"  && $concate!="4.03.18.01.00"){
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+		         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+		                    if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_islr>$monto_islr){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] - 0.01; $total_islr = $total_islr -0.01;
+		             }else  if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_islr<$monto_islr){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + 0.01; $total_islr = $total_islr+0.01;
+		                    }//fin if
+		                    $total_islr = $sisap->Formato2($total_islr);
+		                    $total_islr = $sisap->Formato1($total_islr);
+		              }//fin if
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+		/// AJUSTAR ISLR ///
+							/// AJUSTAR ISLR ///
+							$total_islr = $sisap->Formato2($total_islr);
+							$total_islr = $sisap->Formato1($total_islr);
+							$cont = 0;
+							if($total_islr!=$monto_islr){
+							 if(isset($datos_orden_pago_partidas)){
+							  if($datos_orden_pago_partidas!=null){
+							    foreach($datos_orden_pago_partidas as $ve){
+							      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+							       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']!="no"  && $concate!="4.03.18.01.00"){
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO']);
+							         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+							                    if($total_islr>$monto_islr){
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] - 0.01; $total_islr = $total_islr -0.01;
+							             }else  if($total_islr<$monto_islr){
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + 0.01; $total_islr = $total_islr+0.01;
+							                    }//fin if
+							                    $total_islr = $sisap->Formato2($total_islr);
+							                    $total_islr = $sisap->Formato1($total_islr);
+							              }//fin if
+							              $total_islr = $sisap->Formato2($total_islr);
+							              $total_islr = $sisap->Formato1($total_islr);
+							  $cont++;  }//FIN IF
+							   }//FIN IF
+							 }//FIN IF
+							}//finf if
+							/// AJUSTAR ISLR ///
+
+
+
+
+
+
+
+
+		/// AJUSTAR TIMBRE ///
+		$total_timbre = $sisap->Formato2($total_timbre);
+		$total_timbre = $sisap->Formato1($total_timbre);
+		$cont = 0;
+		if($total_timbre!=$monto_timbre_fiscal){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']!="no"  && $concate!="4.03.18.01.00"){
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+		         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+		                    if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_timbre>$monto_timbre_fiscal){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] - 0.01; $total_timbre = $total_timbre -0.01;
+		             }else  if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_timbre<$monto_timbre_fiscal){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + 0.01; $total_timbre = $total_timbre+0.01;
+		                    }//fin if
+		                    $total_timbre = $sisap->Formato2($total_timbre);
+		                    $total_timbre = $sisap->Formato1($total_timbre);
+		              }//fin if
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+		/// AJUSTAR TIMBRE ///
+							/// AJUSTAR TIMBRE ///
+							$total_timbre = $sisap->Formato2($total_timbre);
+							$total_timbre = $sisap->Formato1($total_timbre);
+							$cont = 0;
+							if($total_timbre!=$monto_timbre_fiscal){
+							 if(isset($datos_orden_pago_partidas)){
+							  if($datos_orden_pago_partidas!=null){
+							    foreach($datos_orden_pago_partidas as $ve){
+							      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+							       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']!="no"  && $concate!="4.03.18.01.00"){
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+							         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO']);
+							         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+
+							                    if($total_timbre>$monto_timbre_fiscal){
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] - 0.01; $total_timbre = $total_timbre -0.01;
+							             }else  if($total_timbre<$monto_timbre_fiscal){
+							                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + 0.01; $total_timbre = $total_timbre+0.01;
+							                    }//fin if
+							                    $total_timbre = $sisap->Formato2($total_timbre);
+							                    $total_timbre = $sisap->Formato1($total_timbre);
+
+							              // echo $total_timbre.' ++ '.$monto_timbre_fiscal.' <br>';
+
+							              }//fin if
+
+
+							  $cont++;  }//FIN IF
+							   }//FIN IF
+							 }//FIN IF
+							}//finf if
+							/// AJUSTAR TIMBRE ///
+
+
+
+
+
+
+
+		/// AJUSTAR MUNICIPAL ///
+		$total_municipal = $sisap->Formato2($total_municipal);
+		$total_municipal = $sisap->Formato1($total_municipal);
+		$cont = 0;
+		if($total_municipal!=$monto_impuesto_municipal){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']!="no" && $concate!="4.03.18.01.00"){
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+		         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+		         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+		                    if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_municipal>$monto_impuesto_municipal){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] - 0.01; $total_municipal = $total_municipal -0.01;
+		             }else  if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_municipal<$monto_impuesto_municipal){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + 0.01; $total_municipal = $total_municipal+0.01;
+		                    }//fin if
+		              }//fin if
+		              $total_municipal = $sisap->Formato2($total_municipal);
+		              $total_municipal = $sisap->Formato1($total_municipal);
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+									/// AJUSTAR MUNICIPAL ///
+							        $total_municipal = $sisap->Formato2($total_municipal);
+									$total_municipal = $sisap->Formato1($total_municipal);
+									$cont = 0;
+									if($total_municipal!=$monto_impuesto_municipal){
+									 if(isset($datos_orden_pago_partidas)){
+									  if($datos_orden_pago_partidas!=null){
+									    foreach($datos_orden_pago_partidas as $ve){
+									      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+									       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']!="no" && $concate!="4.03.18.01.00"){
+									         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+									         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO']);
+									         $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+									                    if($total_municipal>$monto_impuesto_municipal){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] - 0.01; $total_municipal = $total_municipal -0.01;
+									             }else  if($total_municipal<$monto_impuesto_municipal){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + 0.01; $total_municipal = $total_municipal+0.01;
+									                    }//fin if
+									              }//fin if
+									              $total_municipal = $sisap->Formato2($total_municipal);
+									              $total_municipal = $sisap->Formato1($total_municipal);
+									  $cont++;  }//FIN IF
+									   }//FIN IF
+									 }//FIN IF
+									}//finf if
+									/// AJUSTAR MUNICIPAL ///
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		/// AJUSTAR RETENCION_MULTA_MONTO ///
+		$total_retencion_multa = $sisap->Formato2($total_retencion_multa);
+		$total_retencion_multa = $sisap->Formato1($total_retencion_multa);
+		$cont = 0;
+		if($total_retencion_multa!=$retencion_multa){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']!="no" && $concate!="4.03.18.01.00"){
+		          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+		          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+		          $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+		                    if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_retencion_multa>$retencion_multa){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] - 0.01; $total_retencion_multa = $total_retencion_multa -0.01;
+		             }else  if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_retencion_multa<$retencion_multa){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + 0.01; $total_retencion_multa = $total_retencion_multa+0.01;
+		                    }//fin if
+		              }//fin if
+		              $total_retencion_multa = $sisap->Formato2($total_retencion_multa);
+		              $total_retencion_multa = $sisap->Formato1($total_retencion_multa);
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+									/// AJUSTAR RETENCION_MULTA_MONTO ///
+							        $total_retencion_multa = $sisap->Formato2($total_retencion_multa);
+									$total_retencion_multa = $sisap->Formato1($total_retencion_multa);
+									$cont = 0;
+									if($total_retencion_multa!=$retencion_multa){
+									 if(isset($datos_orden_pago_partidas)){
+									  if($datos_orden_pago_partidas!=null){
+									    foreach($datos_orden_pago_partidas as $ve){
+									      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+									       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']!="no" && $concate!="4.03.18.01.00"){
+									          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+									          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO']);
+									          $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+									                    if($total_retencion_multa>$retencion_multa){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] - 0.01; $total_retencion_multa = $total_retencion_multa -0.01;
+									             }else  if($total_retencion_multa<$retencion_multa){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + 0.01; $total_retencion_multa = $total_retencion_multa+0.01;
+									                    }//fin if
+									              }//fin if
+									              $total_retencion_multa = $sisap->Formato2($total_retencion_multa);
+									              $total_retencion_multa = $sisap->Formato1($total_retencion_multa);
+									  $cont++;  }//FIN IF
+									   }//FIN IF
+									 }//FIN IF
+									}//finf if
+									/// AJUSTAR RETENCION_MULTA_MONTO ///
+
+
+
+
+
+		/// AJUSTAR RETENCION_RESPONSABILIDAD ///
+		$total_retencion_responsabilidad = $sisap->Formato2($total_retencion_responsabilidad);
+		$total_retencion_responsabilidad = $sisap->Formato1($total_retencion_responsabilidad);
+		$cont = 0;
+		if($total_retencion_responsabilidad!=$retencion_responsabilidad){
+		 if(isset($datos_orden_pago_partidas)){
+		  if($datos_orden_pago_partidas!=null){
+		    foreach($datos_orden_pago_partidas as $ve){
+		      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']!="no" && $concate!="4.03.18.01.00"){
+		          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+		          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+		          $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+		                    if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_retencion_responsabilidad>$retencion_responsabilidad){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] - 0.01; $total_retencion_responsabilidad = $total_retencion_responsabilidad -0.01;
+		             }else  if($ve['cepd03_ordenpago_partidas']['monto']!=$retenciones_aux_monto &&  $total_retencion_responsabilidad<$retencion_responsabilidad){
+		                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] + 0.01; $total_retencion_responsabilidad = $total_retencion_responsabilidad+0.01;
+		                    }//fin if
+		              }//fin if
+		              $total_retencion_responsabilidad = $sisap->Formato2($total_retencion_responsabilidad);
+		              $total_retencion_responsabilidad = $sisap->Formato1($total_retencion_responsabilidad);
+		  $cont++;  }//FIN IF
+		   }//FIN IF
+		 }//FIN IF
+		}//finf if
+									/// AJUSTAR RETENCION_RESPONSABILIDAD ///
+							        $total_retencion_responsabilidad = $sisap->Formato2($total_retencion_responsabilidad);
+									$total_retencion_responsabilidad = $sisap->Formato1($total_retencion_responsabilidad);
+									$cont = 0;
+									if($total_retencion_responsabilidad!=$retencion_responsabilidad){
+									 if(isset($datos_orden_pago_partidas)){
+									  if($datos_orden_pago_partidas!=null){
+									    foreach($datos_orden_pago_partidas as $ve){
+									      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+									       if($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']!="no" && $concate!="4.03.18.01.00"){
+									          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato2($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+									          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']     =  $sisap->Formato1($_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO']);
+									          $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+									                    if($total_retencion_responsabilidad>$retencion_responsabilidad){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] - 0.01; $total_retencion_responsabilidad = $total_retencion_responsabilidad -0.01;
+									             }else  if($total_retencion_responsabilidad<$retencion_responsabilidad){
+									                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'] + 0.01; $total_retencion_responsabilidad = $total_retencion_responsabilidad+0.01;
+									                    }//fin if
+									              }//fin if
+									              $total_retencion_responsabilidad = $sisap->Formato2($total_retencion_responsabilidad);
+									              $total_retencion_responsabilidad = $sisap->Formato1($total_retencion_responsabilidad);
+									  $cont++;  }//FIN IF
+									   }//FIN IF
+									 }//FIN IF
+									}//finf if
+									/// AJUSTAR RETENCION_RESPONSABILIDAD ///
+
+
+
+
+
+
+
+
+/// AJUSTA CANCELACION ///
+		$monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		$monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+		$monto_neto_cobrar = $sisap->Formato2($monto_neto_cobrar);
+		$monto_neto_cobrar = $sisap->Formato1($monto_neto_cobrar); $cont = 0;
+//echo $monto_cancelacion.'++++'.$monto_neto_cobrar;
+		if($monto_cancelacion!=$monto_neto_cobrar){
+		    	if(isset($datos_orden_pago_partidas)){
+				  if($datos_orden_pago_partidas!=null){
+				    foreach($datos_orden_pago_partidas as $ve){
+				      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		                  $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+                          $retenciones_aux_monto = $sisap->Formato2($retenciones_aux_monto);
+		                  $retenciones_aux_monto = $sisap->Formato1($retenciones_aux_monto);
+		             //    echo $ve['cepd03_ordenpago_partidas']['monto'].'++++'.$_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'].'<br>';
+                          if($monto_cancelacion!=$monto_neto_cobrar){
+		                           if($monto_cancelacion!=$monto_neto_cobrar && $ve['cepd03_ordenpago_partidas']['monto']<$retenciones_aux_monto){//echo 'a';
+				                          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01;  $monto_cancelacion = $monto_cancelacion - 0.01;
+
+				             }else  if($monto_cancelacion!=$monto_neto_cobrar && $ve['cepd03_ordenpago_partidas']['monto']>$retenciones_aux_monto){//echo 'b';
+				                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01;  $monto_cancelacion = $monto_cancelacion + 0.01;
+				                    }//fin if
+				                    $monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		                            $monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+                                 }
+				  $cont++;  }//FIN IF
+				   }//FIN IF
+		}//finf if
+	}//finf if
+/// AJUSTAR CANCELACION ///
+        $monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		$monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+		$monto_neto_cobrar = $sisap->Formato2($monto_neto_cobrar);
+		$monto_neto_cobrar = $sisap->Formato1($monto_neto_cobrar); $cont = 0;
+				if($monto_cancelacion!=$monto_neto_cobrar){
+		    	if(isset($datos_orden_pago_partidas)){
+				  if($datos_orden_pago_partidas!=null){
+				    foreach($datos_orden_pago_partidas as $ve){
+				      $concate  = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		                  $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+                          $retenciones_aux_monto = $sisap->Formato2($retenciones_aux_monto);
+		                  $retenciones_aux_monto = $sisap->Formato1($retenciones_aux_monto);
+
+                          if($monto_cancelacion!=$monto_neto_cobrar){
+		                           if($ve['cepd03_ordenpago_partidas']['monto']<$retenciones_aux_monto){//echo 'a';
+				                          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01;  $monto_cancelacion = $monto_cancelacion - 0.01;
+
+				             }else  if($ve['cepd03_ordenpago_partidas']['monto']>$retenciones_aux_monto){//echo 'b';
+				                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01;  $monto_cancelacion = $monto_cancelacion + 0.01;
+				                    }//fin if
+				              $monto_cancelacion = $sisap->Formato2($monto_cancelacion);
+		                      $monto_cancelacion = $sisap->Formato1($monto_cancelacion);
+                         }
+
+                        /*$retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'];
+                          $retenciones_aux_monto = $sisap->Formato2($retenciones_aux_monto);
+		                  $retenciones_aux_monto = $sisap->Formato1($retenciones_aux_monto);
+                        echo $ve['cepd03_ordenpago_partidas']['monto'].'++++'.$retenciones_aux_monto.'<br>';*/
+
+				  $cont++;  }//FIN IF
+				   }//FIN IF
+		}//finf if
+
+	}//finf if
+/// AJUSTAR CANCELACION ///
+
+
+
+
+
+
+
+/// AJUSTAR CANCELACION ///
+		    	if(isset($datos_orden_pago_partidas)){
+				  if($datos_orden_pago_partidas!=null){
+				    foreach($datos_orden_pago_partidas as $ve){
+				          $concate               = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+		                  $retenciones_aux_monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['ISRL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['TIMBRE_FISCAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IMPUESTO_MUNICIPAL_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['IVA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_MULTA_MONTO'] + $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['RETENCION_RESPONSABILIDAD_MONTO'];
+                          $retenciones_aux_monto = $sisap->Formato2($retenciones_aux_monto);
+		                  $retenciones_aux_monto = $sisap->Formato1($retenciones_aux_monto);
+			                  if($concate!="4.03.18.01.00"){
+			                           if($ve['cepd03_ordenpago_partidas']['monto']<$retenciones_aux_monto){//echo 'a';
+					                          $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] - 0.01;
+					            }else  if($ve['cepd03_ordenpago_partidas']['monto']>$retenciones_aux_monto){//echo 'b';
+					                         $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$cont]['MONTO_PARTIDA'] + 0.01;
+					                    }//fin if
+			                  }//fin if
+				       $cont++;
+				     }//FIN IF
+				   }//FIN IF
+		         }//finf if
+/// AJUSTAR CANCELACION ///
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$monto = 0;
+$aux_i = $i ;
+$i = 0;
+if(isset($datos_orden_pago_partidas)){
+  if($datos_orden_pago_partidas!=null){
+$monto_aux_aux = $suma_monto_aux + $suma_impuestos_aux;
+foreach($datos_orden_pago_partidas as $ve){
+$monto = 0;
+$monto = $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta][$i]['MONTO_PARTIDA'];
+$concate = $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']);
+if($concate=="4.03.18.01.00" && $monto==0){}else{
+
+    	if($i%2==0){
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center"><?= $ano_ejecucion ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_auxiliar']) ?></td>
+    <td class="td2" style="padding-right:5px; text-align:right"  align="center">
+          <input name="data[cepp03_pagos_por_cancelar][<?= "monto_".$i ?>]" readonly  style="text-align:right"  type="text" size="25"  id="<?= "monto_".$i ?>" value="<?= $sisap->Formato2($monto) ?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}" />
+
+
+    </td>
+</tr>
+
+<?php
+
+   }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center"><?= $ano_ejecucion ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cepd03_ordenpago_partidas']['cod_partida'], -2), substr($ve['cepd03_ordenpago_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cepd03_ordenpago_partidas']['cod_auxiliar']) ?></td>
+   <td class="td2" style="padding-right:5px; text-align:right"  align="center">
+          <input name="data[cepp03_pagos_por_cancelar][<?= "monto_".$i ?>]"  readonly  style="text-align:right"  type="text" size="25"  id="<?= "monto_".$i ?>" value="<?= $sisap->Formato2($monto) ?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';} "/>
+
+    </td>
+</tr>
+
+       <?php
+
+
+    	}//fin else
+
+$monto = $sisap->Formato2($monto);
+$monto = $sisap->Formato1($monto);
+$total += $monto;
+
+
+}//fin else
+
+
+
+$i++;
+
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+ </tr>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+ }
+
+ //$i--;
+
+if(empty($fecha_orden_pago)){
+	$fecha_orden_pago = date("Y-m-d");
+}
+?>
+
+<?php if($i!=0){
+
+	  $_SESSION['ORDEN_PAGO']['ORDEN_PAGO_'.$cuenta]['DATOS_ORDEN_PAGO']['monto'] =  $sisap->formato2($total); ;
+
+
+?> <script>cepp03_pagos_montar_valor('<?php echo $sisap->formato2($monto_neto_cobrar); ?>'); </script> <?php } ?>
+
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][fecha]"    id="fecha_orden_pago_aux" value="<?=$sisap->cambia_fecha($fecha_orden_pago) ?>" />
+
+</table>
+</div>
+
+
+
+
+
+

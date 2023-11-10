@@ -1,0 +1,289 @@
+<?php
+	if(isset($var) && $var=='no'){ ?>
+
+<?php
+if(isset($errorMessage)) {
+	echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<? $sisap->Tabla("",true,"OFICIO DE ORDEN DE PAGO","","950"); ?>
+<? $sisap->OpenTable("950"); ?>
+
+<form name='data[cnmp99_prenomina]'  method = "post" id='form' action="<?php echo $html->url('/cnmp99_cierre_nomina/oficio_orden_pago/si'); ?>">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <td width="15%" align="center">Seleccione</td>
+    <td width="15%" align="center">C&oacute;digo</td>
+    <td width="70%" align="center">Denominaci&oacute;n del tipo de n&oacute;mina</td>
+  </tr>
+  <tr>
+    <td><?$sisap->selectTagRemote('cnmp99/tipo_nomina', $tipo_nomina, array(), null, array('onchange1'=>'/cnmp99_cierre_nomina/codeno_nomina/'.$status_nomina, 'update1'=>'procesar_dnominop','id'=>'tipo_nomina','class'=>'inputtext', true), null, true);?></td>
+    <td><input name="data[cnmp99_prenomina][cod_tipo_nomina]"  value="" id="codigo_tipo_nom" class="inputtext"  readonly="readonly" style="text-align:center;"></td>
+    <td colspan="3"><input name="data[cnmp99_prenomina][denominacion_nomina]"  value="" id="denominacion_nom" class="inputtext" readonly="readonly"></td>
+  </tr>
+ </table>
+
+<br />
+	<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="20%" align="center">Firmas</td>
+			<td width="40%" align="center">Nombres y apellidos</td>
+			<td width="40%" align="center">Cargo que ocupa</td>
+		</tr>
+		<tr>
+			<td width="20%" align="center">Oficio dirigido a</td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][enviado_a]" value="<?=$enviado_a?>" maxlength="100" id="enviado_a" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][cargo_a]" value="<?=$cargo_a?>" maxlength="100" id="cargo_a" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+		</tr>
+		<tr>
+			<td width="20%" align="center">Firmante del oficio</td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][enviado_por]" value="<?=$enviado_por?>" maxlength="100" id="enviado_por" <?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][cargo_por]" value="<?=$cargo_por?>" maxlength="100" id="cargo_por" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+		</tr><tr>
+      <td width="20%" align="center">Firmante 1</td>
+      <td width="40%"><input type="text" name="data[cnmp99_prenomina][firmante_1]" value="<?=$firmante_1?>" maxlength="100" id="firmante_1" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+      <td width="40%"><input type="text" name="data[cnmp99_prenomina][cargo_firmante_1]" value="<?=$cargo_firmante_1?>" maxlength="100" id="cargo_firmante_1" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+    </tr>
+    <tr>
+      <td width="20%" align="center">Firmante 2</td>
+      <td width="40%"><input type="text" name="data[cnmp99_prenomina][firmante_2]" value="<?=$firmante_2?>" maxlength="100" id="firmante_2" <?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+      <td width="40%"><input type="text" name="data[cnmp99_prenomina][cargo_firmante_2]" value="<?=$cargo_firmante_2?>" maxlength="100" id="cargo_firmante_2" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+    </tr>
+	</table>
+<br />
+
+
+
+
+<div id="save99_firmas">
+<?php if(isset($firma_existe) && $firma_existe=='no'){ ?>
+	<?= $sisap->submitTagRemote('Guardar Firmas', array('url1' => '/cnmp99_cierre_nomina/guardar_editar_firmas/si', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php }else if(isset($firma_existe) && $firma_existe=='si'){ ?>
+	<?= $sisap->submitTagRemote('Modificar Firmas', array('url1' => '/cnmp99_cierre_nomina/guardar_editar_firmas/no', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php } ?>
+</div>
+
+	<?= $html->submit('Generar', array('id'=>'b_generar', 'disabled'=>'disabled')); ?>
+
+<div id="procesar_dnominop"></div>
+<br/>
+
+</form>
+
+<?= $sisap->buttonTagRemote('cnmp99/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<? $sisap->CloseTable(); ?>
+
+<?php
+
+}else{
+
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION["denomi_ordenp"] = $this->data['cnmp99_prenomina']['denominacion_nomina'];
+if(!empty($firmantes)){
+	$_SESSION["enviado_a"] = $firmantes[0][0]['enviado_a'];
+	$_SESSION["cargo_a"] = $firmantes[0][0]['cargo_a'];
+	$_SESSION["enviado_por"] = $firmantes[0][0]['enviado_por'];
+	$_SESSION["cargo_por"] = $firmantes[0][0]['cargo_por'];
+  $_SESSION["firmante_1"] = $firmantes[0][0]['firmante_1'];
+  $_SESSION["firmante_2"] = $firmantes[0][0]['firmante_2'];
+  $_SESSION["cargo_firmante_1"] = $firmantes[0][0]['cargo_firmante_1'];
+  $_SESSION["cargo_firmante_2"] = $firmantes[0][0]['cargo_firmante_2'];
+}else{
+	$_SESSION["enviado_a"] = "";
+	$_SESSION["cargo_a"] = "";
+	$_SESSION["enviado_por"] = "";
+	$_SESSION["cargo_por"] = "";
+  $_SESSION["firmante_1"] = "";
+  $_SESSION["firmante_2"] = "";
+  $_SESSION["cargo_firmante_1"] = "";
+  $_SESSION["cargo_firmante_2"] = "";
+}
+
+$_SESSION["correspondiente"] = $correspondiente;
+$_SESSION["numero_oficio"] = $numero_oficio;
+$_SESSION["ciudad"] = $ciudad;
+
+/*
+if(!empty($orden)){
+	$_SESSION["fecha_ordenp"] = $sisap->fecha_alfabetico(date("Y-m-d"));
+}else{
+	$_SESSION["fecha_ordenp"] = $sisap->fecha_alfabetico(date("Y-m-d"));
+}
+//*/
+//$_SESSION["fecha_ordenp"] = $sisap->fecha_alfabetico("2018-03-15");
+$_SESSION["fecha_ordenp"] = $sisap->fecha_alfabetico(date("Y-m-d"));
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+		$this->SetFont('vera','',6);
+   		$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		$this->top_reporte($titulo_A = "", null, null, array("Y"=>"21", "X"=>"21", "Z"=>"12"), null);
+
+
+		$this->SetFont('vera','',8);
+	    $this->Cell(0,5,"".$_SESSION["ciudad"].", ".$_SESSION["fecha_ordenp"],'',1,'R');
+		$this->Ln(2);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,5,"OFICIO Nº ".$_SESSION["numero_oficio"],'',1,'L');
+		$this->Ln(2);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"CIUDADANO(A):",'',1,'L');
+		$this->Cell(0,3,"".$_SESSION["enviado_a"],'',1,'L');
+		$this->Cell(0,3,"".$_SESSION["cargo_a"],'',1,'L');
+		$this->Cell(0,3,"SU DESPACHO.-",'',1,'L');
+		$this->Ln(5);
+
+		$this->SetFont('vera','',7);
+		$this->MultiCell(0, 3, "Por medio de la presente me permito dirigirme a Usted, en la oportunidad de hacer de su conocimiento que la Nómina: ". $_SESSION["denomi_ordenp"] .", en el proceso de : ".$_SESSION["correspondiente"].", generó las ordenes de pago que a continuación se detallan, para su emisión, consideración y demás fines.", '', 'J');
+
+/*
+	    $this->SetFont('vera','',8);
+		$this->Cell(0,5,"".$_SESSION["fecha_ordenp"],'',1,'R');
+		$this->Ln(2);
+		$this->SetFont('vera','B',12);
+		$this->Cell(0,5,"RELACIÓN Nº ".$_SESSION["numero_oficio"],'',1,'L');
+		$this->Ln(5);
+
+        $this->SetFont('vera','B',10);
+		$this->MultiCell(0, 5, "ORDENES DE PAGO GENERADAS AUTOMATICAMENTE EN LA ELABORACIÓN DE LA NÓMINA DE: ". $_SESSION["denomi_ordenp"].", CORRESPONDIENTE A: ".$_SESSION["correspondiente"], '', 'J');
+*/
+		$this->Ln(5);
+		$this->SetFont('vera','B',8);
+    	$this->Cell(13,5,"AÑO",'',0,'C');
+    	$this->Cell(20,5,"NÚMERO",'',0,'C');
+    	$this->Cell(117,5,"BENEFICIARIO",'',0,'C');
+    	$this->Cell(0,5,"MONTO",'',1,'C');
+		$this->SetFont('vera','',7);
+    	$this->Cell(13,2,"---------",'',0,'C');
+    	$this->Cell(20,2,"------------------",'',0,'C');
+    	$this->Cell(117,2,"----------------------------------------------------------------------------------------------------------------------------------",'',0,'C');
+    	$this->Cell(0,2,"--------------------------",'',1,'R');
+    }//fin funtion
+
+    function tam_celda($total_char){
+		if($total_char<100){
+			$heigth = 6;
+		}elseif($total_char>=100 && $total_char<200){
+			$heigth = 12;
+		}elseif($total_char>=200 && $total_char<300){
+			$heigth = 18;
+		}elseif($total_char>=300 && $total_char<400){
+			$heigth = 24;
+		}elseif($total_char>=400 && $total_char<500){
+			$heigth = 30;
+		}elseif($total_char>=500 && $total_char<600){
+			$heigth = 36;
+		}elseif($total_char>=600 && $total_char<700){
+			$heigth = 42;
+		}elseif($total_char>=700 && $total_char<800){
+			$heigth = 48;
+		}elseif($total_char>=800 && $total_char<900){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(20);
+$pdf->SetRightMargin(20);
+$pdf->SetAutoPageBreak(true, 8);
+$pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+
+	if(!empty($orden)){
+		$tota_ordenes = 0;
+	foreach($orden as $rorden){
+		$beneficiario = str_replace("\n", "", $rorden[0]['beneficiario']);
+		$total_char = strlen($beneficiario);
+
+		$theigth = $pdf->tam_celda($total_char);
+
+		$pdf->Cell(13, $theigth, $rorden[0]['ano_orden_pago'], '', 0, 'C');
+		$pdf->Cell(20, $theigth, mascara_seis($rorden[0]['numero_orden_pago']), '', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(117, 1.8, "", '', 2, '');
+                $pdf->MultiCell(117, 3, $beneficiario, '', 'L'); // --------[BENEFICIARIO]
+                $varX = $varX + 117;
+                $pdf->SetXY($varX, $varY);
+
+				$pdf->Cell(0, $theigth, $sisap->Formato2($rorden[0]['monto']), '', 1, 'R'); // --------[MONTO]
+				$tota_ordenes += $rorden[0]['monto'];
+	} // END FOREACH
+
+	$pdf->Ln(7);
+	$pdf->SetFont('vera', 'B', 9);
+	$pdf->Cell(150, 7, "TOTAL:  ".$sisap->zero(count($orden))." ORDENES ", '', 0, 'R'); // --------[TOTAL ORDENES]
+	$pdf->Cell(0, 7, $sisap->Formato2($tota_ordenes), '', 1, 'R'); // --------[TOTAL ORDENES]
+
+
+
+/*
+	$pdf->Ln(8);
+	$pdf->SetFont('vera', '', 7);
+	$pdf->Cell(0, 5, "Sin otro particular a que hacer referencia, me suscribo de Usted", '', 1, 'L');
+	$pdf->Ln(12);
+	$pdf->SetFont('vera', 'B', 9);
+	$pdf->Cell(0, 7, "ATENTAMENTE", '', 1, 'C'); // --------[FIRMA ENVIADO POR]
+
+*/
+
+
+	$pdf->Ln(10);
+	$pdf->Cell(0, 7, "".$_SESSION["enviado_por"], '', 1, 'C'); // --------[ENVIADO POR]
+	$pdf->Cell(0, 5, "".$_SESSION["cargo_por"], '', 1, 'C'); // --------[CARGO ENVIADO POR]
+  $pdf->Ln(25);
+  $pdf->Cell(80, 7, "".$_SESSION["firmante_1"], '', 0, 'C'); // --------[ENVIADO POR]
+  $pdf->Cell(0, 7, "".$_SESSION["firmante_2"], '', 1, 'C'); // --------[ENVIADO POR]
+  $pdf->Cell(80, 5, "".$_SESSION["cargo_firmante_1"], '', 0, 'C'); // --------[CARGO ENVIADO POR]
+  $pdf->Cell(0, 5, "".$_SESSION["cargo_firmante_2"], '', 1, 'C'); // --------[CARGO ENVIADO POR]
+
+	}else{
+		$pdf->SetFont('vera', 'B', 14);
+		$pdf->Ln(8);
+		$pdf->Cell(0, 28, "NO SE ENCONTRARON DATOS ...", 'TRBL', 1, 'C');
+	} // END ELSE IF !EMPTY
+
+	unset($_SESSION["denomi_ordenp"]);
+	unset($_SESSION["enviado_a"]);
+	unset($_SESSION["cargo_a"]);
+	unset($_SESSION["enviado_por"]);
+	unset($_SESSION["cargo_por"]);
+  unset($_SESSION["firmante_1"]);
+  unset($_SESSION["firmante_2"]);
+  unset($_SESSION["cargo_firmante_1"]);
+  unset($_SESSION["cargo_firmante_2"]);
+	unset($_SESSION["fecha_ordenp"]);
+	unset($_SESSION["numero_oficio"]);
+
+	$pdf->Output('oficio_orden_pago.pdf','D');
+}//fin if
+?>

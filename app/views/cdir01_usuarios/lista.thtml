@@ -1,0 +1,69 @@
+<div id='todox'>
+    <?php
+    if (isset($errorMessage)) {
+        echo $sisap->mensajes_error($errorMessage);
+    } else if (isset($Message_existe)) {
+        echo $sisap->mensajes_correcto($Message_existe);
+    }
+    ?>
+
+    <?= $sisap->Tabla($session->read('entidad_federal'), true, "REGISTRO DE USUARIOS", "", "800"); ?>
+    
+    <?= $sisap->OpenTable("800") ?>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+        <thead>
+            <tr class="tr_negro">
+                <td align="center" width="">Login</td>
+                <td align="center" width="">Clave</td>
+                <td align="center" width="">C&eacute;dula</td>
+                <td align="center" width="">Nombres y Apellidos</td>
+                <td align="center" width="">Unidad de Trabajo</td>
+                <td align="center"></td>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            foreach ($usuarios as $key => $value) {
+            ?>
+            <tr bgcolor="#DAEBFF" onclick="new Effect.Highlight(this);" style="background-image: none; background-color: rgb(228, 241, 227);">
+                <td align="left"><?php echo $value['cdir01_usuarios']['id_usuario']?></td>
+                <td align="left"><?php echo $value['cdir01_usuarios']['clave']?></td>
+                <td align="left"><?php echo $value['cdir01_usuarios']['cedula']?></td>
+                <td align="left"><?php echo $value['cdir01_usuarios']['nombre']?></td>
+                <td align="left"><?php echo $value['cdir01_usuarios']['unidad_trabajo']?></td>
+                <td align="center"><?php echo $html->image('eye.png',array('class'=>'editar_cuenta','data-user'=>$value['cdir01_usuarios']['id_usuario']));?></td>
+            </tr>
+            <?php
+            }
+            ?>
+            
+            
+        </tbody>
+    </table>
+    <?= $sisap->CloseTable();?>
+</div>
+<style>
+    .editar_cuenta{
+        cursor: pointer;
+    }
+</style>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/cdir01_usuarios/index/', 'update1'=>'principal'));?>
+<?php // $sisap->buttonTagRemote('/cnmp04_tipo/', array('type' => 'button', 'value' => 'Salir'), array('url1' => '/modulos/vacio', 'update1' => 'principal')); ?>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+    jQuery('.editar_cuenta').click(function(e){
+        Element.show('mini_loading');
+        var usr = jQuery(this).attr('data-user');
+        jQuery.ajax({
+            url:'<?php echo $html->url('/cdir01_usuarios/index/',true); ?>',
+            data:{data:{Cdir01Usuarios:{id_usuario:usr}}},
+            type:'POST',
+            dataType:'HTML'
+        }).done(function(data){
+            Element.hide('mini_loading');
+            jQuery('#principal').html(data);
+       }); 
+    });
+});
+</script>

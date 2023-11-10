@@ -1,0 +1,108 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: deudas_proveedores_pdf.thtml
+ * Fecha de creacion: 08/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		$this->image_escudo_sin_consolidado(5,15,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"DEUDAS CON PROVEEDORES",'RLB',1,'C');
+		$this->Ln(2);
+
+		$varX_aux = $this->GetX() + 253;
+		$varY_aux = $this->GetY() - 16;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(90,3,"",'TRL',0,'C');
+		$this->Cell(30,3,"DEUDAS",'TRL',0,'C');
+		$this->Cell(30,3,"",'TRL',0,'C');
+		$this->Cell(30,3,"PAGOS",'TRL',0,'C');
+		$this->Cell(30,3,"PAGOS",'TRL',0,'C');
+		$this->Cell(0,3,"",'TRL',1,'C');
+
+		$this->Cell(20,3,"R.I.F.",'RBL',0,'C');
+		$this->Cell(90,3,"DENOMINACION COMERCIAL",'BRL',0,'C');
+		$this->Cell(30,3,"AÑOS ANTERIORES",'RBL',0,'C');
+		$this->Cell(30,3,"COMPRAS",'RBL',0,'C');
+		$this->Cell(30,3,"EN PROCESO",'RBL',0,'C');
+		$this->Cell(30,3,"REALIZADOS",'BRL',0,'C');
+		$this->Cell(0,3,"DEUDA",'RBL',1,'C');
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(3);
+$pdf->SetRightMargin(3);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+/*
+* Luis Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$pdf->SetFont('vera','B',6);
+
+foreach($datos as $row){
+	$rif = $row['v_cscd04_deuda_proveedores']['rif'];
+	$denominacion_comercial = $row['v_cscd04_deuda_proveedores']['denominacion_comercial'];
+	$compras = $row['v_cscd04_deuda_proveedores']['compras'];
+	$pagos_proceso = $row['v_cscd04_deuda_proveedores']['pagos_proceso'];
+	$pagos_realizados = $row['v_cscd04_deuda_proveedores']['pagos_realizados'];
+	$deuda_anos_anteriores = 0;
+	$deudas = ($deuda_anos_anteriores + $compras) - $pagos_realizados;
+
+$pdf->Cell(20,6,$rif,'RBL',0,'C');//-----------[R.I.F.]
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(90,1,"",'T',2,'C');
+    $pdf->MultiCell(89,2,$denominacion_comercial,'','L');//--[PROVEEDOR COTIZACIÓN]
+    $varX = $varX+90;
+    $pdf->SetXY($varX,$varY);
+$pdf->Cell(30,6,$sisap->Formato2($deuda_anos_anteriores),'RBL',0,'R');//--[DEUDAS AÑOS ANTERIORES]
+$pdf->Cell(30,6,$sisap->Formato2($compras),'RBL',0,'R');//----------[COMPRAS]
+$pdf->Cell(30,6,$sisap->Formato2($pagos_proceso),'RBL',0,'R');//-------[PAGOS EN PROCESO]
+$pdf->Cell(30,6,$sisap->Formato2($pagos_realizados),'BRL',0,'R');//-------[PAGOS REALIZADOS]
+$pdf->Cell(0,6,$sisap->Formato2($deudas),'RBL',1,'R');//-------------[DEUDA]
+$pdf->Cell(0,0,"",'T',1,'C');
+}
+
+$pdf->Output('Deudas_con_proveedores_'.date("d-m-y").".pdf",'D');
+?>

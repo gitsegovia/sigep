@@ -1,0 +1,112 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3" style="color:#FFF;background-color:#000; color:#FFF;">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="17%">MONTO</td>
+    <td align="center" width="14%">--</td>
+  </tr>
+  <?php
+
+   	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+ 	$tiene_iva  = 2;
+
+ if(isset($_SESSION ["items"])){
+  if($_SESSION ["items"]!=null){
+
+
+    foreach($_SESSION ["items"] as $codigos){
+    	//print_r($codigos);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+
+    	if($codigos[0]!=null){
+           $concate = $sisap->AddCero2(substr($codigos[6], -2), substr($codigos[6], 0, 1 )).'.'.$codigos[7].'.'.$codigos[8].'.'.$codigos[9];
+  	?>
+
+
+
+  <tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?php  if($concate=="4.03.18.01.00"){ $tiene_iva = 1; ?>
+          <input type="hidden"  id="<?= "partida_iva_".$i ?>" />
+    <?php } ?>
+          <input type="hidden"  value="1" id="<?= "partida_op_".$i ?>" />
+          <input type="hidden"  value="<?= $sisap->Formato1($codigos[11]) ?>" id="<?= "monto_".$i ?>" />
+
+    <?
+
+   for($x=0;$x<=11;$x++){
+   	if($x==11){
+   		 echo "<td align=\"center\">".$codigos[$x]."</td>";
+   		 $monto_total=$monto_total+$sisap->Formato1($codigos[$x]);
+   	}else{
+   		 echo "<td align=\"center\">".$codigos[$x]."</td>";
+   	}
+}
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cepp02_contratoservicio/eliminar_items/'.$codigos['id'], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+
+    $i++;
+
+}
+
+    }//fin foreach
+  }
+ }
+?>
+<tr style="color:#000000;background-color:#DAEBFF; "><td colspan="11">&nbsp;</td><td align="center" id="TOTALINGRESOS" ><?=$sisap->Formato2($sisap->Formato($monto_total));?></td><td>--</td></tr>
+</table>
+
+
+<input type="hidden" name="data[cepp02_contratoservicio][cuenta_i]"  id="cuenta_i" value="<?= $i ?>" />
+<input type="hidden" name="data[cepp02_contratoservicio][tiene_iva]" id="tiene_iva" value="<?= $tiene_iva?>" />
+
+<div id="del"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

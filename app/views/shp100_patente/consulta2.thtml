@@ -1,0 +1,353 @@
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+foreach($datos as $ve){
+$estado_civil=$ve['v_shd100_patente']['estado_civil'];
+$nacionalidad=$ve['v_shd100_patente']['nacionalidad'];
+
+              if($estado_civil==1){ $estado_civil = "Soltero";
+		}else if($estado_civil==2){ $estado_civil = "Casado";
+		}else if($estado_civil==3){ $estado_civil = "Divorciado";
+		}else if($estado_civil==4){ $estado_civil = "Viudo";
+		}else if($estado_civil==5){ $estado_civil = "Otro"; }else{$estado_civil="";}
+
+		      if($nacionalidad==2){ $nacionalidad = "Extranjera";
+		}else if($nacionalidad==1){ $nacionalidad = "Venezolana"; }else{$nacionalidad="";}
+
+$deno_centro=$ve['v_shd100_patente']['deno_centro_poblado'];
+if($deno_centro==''){
+	$deno_centro='N/A';
+}
+$deno_calle=$ve['v_shd100_patente']['deno_calle'];
+if($deno_calle==''){
+	$deno_calle='N/A';
+}
+$deno_vereda=$ve['v_shd100_patente']['deno_vereda'];
+if($deno_vereda==''){
+	$deno_vereda='N/A';
+}
+$fecha_ultima_decla=$ve['v_shd100_patente']['fecha_ultima_decla'];
+if($fecha_ultima_decla=='1900-01-01'){
+	$fecha_ultima_decla='';
+}else{
+	$fecha_ultima_decla=$sisap->Cfecha($fecha_ultima_decla,'D/M/A');
+}
+$periodo_desde=$ve['v_shd100_patente']['periodo_desde'];
+if($periodo_desde=='1900-01-01'){
+	$periodo_desde='';
+}else{
+	$periodo_desde=$sisap->Cfecha($periodo_desde,'D/M/A');
+}
+$periodo_hasta=$ve['v_shd100_patente']['periodo_hasta'];
+if($periodo_hasta=='1900-01-01'){
+	$periodo_hasta='';
+}else{
+	$periodo_hasta=$sisap->Cfecha($periodo_hasta,'D/M/A');
+}
+$frecu=$ve['v_shd100_patente']['frecuencia_pago'];
+if($frecu==1){$fre=1;}
+if($frecu==2){$fre=2;}
+if($frecu==3){$fre=3;}
+if($frecu==4){$fre=6;}
+if($frecu==5){$fre=12;}
+
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"Contribuyentes de Actividades económicas de industria y comercio","","950");?>
+<form action="/reporte_hacienda/licencia_patente_industria_comercio/<?php echo $ve['v_shd100_patente']['numero_patente'] ?>/<?php echo $ve['v_shd100_patente']['rif_cedula']?>/<?php echo $ve['v_shd100_patente']['numero_solicitud']?>">
+<?= $sisap->OpenTable("950")?>
+<div id="buscar">
+	<table border="0" width="100%"  class="tablacompromiso tablacompromiso2">
+		<th colspan="4" align="center">DATOS RAZ&Oacute;N SOCIAL</th>
+		<tr>
+			<td width="15%" align="center">Número de solicitud</td>
+			<td width="15%" align="center">Fecha solicitud</td>
+		    <td width="25%" align="center">R.I.F. / Cédula de Identidad</td>
+			<td width="45%" align="center">Denominación comercial</td>
+		</tr>
+		<tr>
+	   		<td width="15%" align="center"><input type="text" name="data[shp100_patente][numero_solicitud]" readonly id="numero_solicitud"   value="<?=$ve['v_shd100_patente']['numero_solicitud']?>" class='inputtext' style="text-align:center"/></td>
+	   		<td width="15%" align="center"><input type="text" name="data[shp100_patente][fecha_solicitud]" readonly id="fecha_solicitud"   value="<?=$sisap->Cfecha($ve['v_shd100_patente']['fecha_solicitud'],'D/M/A')?>" class='inputtext' style="text-align:center"/></td>
+	   		<td width="25%" align="center" id="deno_c" >
+            	<?= $sisap->inputTagRemote('shp100_patente/rif_constribuyente', array('url'=>'/shp100_patente/selecionar_constribuyente/', 'update'=>'funcion',  'id'=>'rif_constribuyente', 'size'=>'15','style'=>'text-align:center','value'=>$ve['v_shd100_patente']['rif_cedula'],'readonly'=>'readonly'))?>
+		    <td width="40%"><input type="text" name="data[shp100_patente][deno_comercial]" readonly id="deno_comercial"   value="<?=$ve['v_shd100_patente']['deno_razon']?>" class='inputtext' /></td>
+		</tr>
+	</table>
+	<table border="0" width="100%"  class="tablacompromiso tablacompromiso3">
+		<tr>
+			<td align="center" colspan="3"  width="55%">DIRECCI&Oacute;N</td>
+			<td align="center" colspan="2"  width="45%">DATOS COMPLEMENTARIOS</td>
+		</tr>
+		<tr>
+ 			<td width="17%">Pais</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_pais]" readonly id="cod_pais"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_pais'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_pais]" readonly id="deno_pais"  value="<?=$ve['v_shd100_patente']['deno_pais']?>" class='inputtext' /></td>
+ 			<td width="20%">Fecha de inscripción</td>
+ 			<td width="25%"><input type="text" name="data[shp100_patente][fecha_inscripcion]" readonly id="fecha_inscripcion"   value="<?=$sisap->Cfecha($ve['v_shd100_patente']['fecha_inscripcion'],'D/M/A')?>" class='inputtext'/></td>
+		</tr>
+		<tr>
+ 			<td width="17%">Estado</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_estado]" readonly id="cod_estado"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_estado'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_estado]" readonly id="deno_estado"   value="<?=$ve['v_shd100_patente']['deno_estado']?>" class='inputtext' /></td>
+ 			<td width="20%">Teléfonos fijos</td>
+ 			<td width="25%"><input type="text" name="data[shp100_patente][telefonos_fijos]" readonly id="telefonos_fijos"   value="<?=$ve['v_shd100_patente']['telefonos_fijos']?>" class='inputtext' /></td>
+		</tr>
+		<tr>
+ 			<td width="17%">Municipio</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_municipio]" readonly id="cod_municipio"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_municipio'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_municipio]" readonly id="deno_municipio"   value="<?=$ve['v_shd100_patente']['deno_municipio']?>" class='inputtext' /></td>
+ 			<td width="20%">Teléfonos celulares</td>
+ 			<td width="25%"><input type="text" name="data[shp100_patente][telefonos_celulares]" readonly id="telefonos_celulares"   value="<?=$ve['v_shd100_patente']['telefonos_celulares']?>" class="inputtext" /></td>
+		</tr>
+		<tr>
+ 			<td width="17%">Parroquia</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_parroquia]" readonly id="cod_parroquia"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_parroquia'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_parroquia]" readonly id="deno_parroquia"   value="<?=$ve['v_shd100_patente']['deno_parroquia']?>" class='inputtext' /></td>
+ 			<td width="20%">Correo electrónico</td>
+ 			<td width="25%"><input type="text" name="data[shp100_patente][correo]" readonly id="correo"   value="<?=$ve['v_shd100_patente']['correo']?>" class='inputtext' /></td>
+		</tr>
+		<tr>
+ 			<td width="17%">Centro poblado</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_centro]" readonly id="cod_centro"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_centro_poblado'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_centro]" readonly id="deno_centro"   value="<?=$deno_centro?>" class='inputtext' /></td>
+ 			<td width="20%">Nacionalidad</td>
+ 			<td width="25%"><input type="text" name="data[shp100_patente][nacionalidad]" readonly id="nacionalidad"   value="<?=$nacionalidad?>" class='inputtext' /></td>
+		</tr>
+		<tr>
+ 			<td width="17%">Calle ó Avenida</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_calle]" readonly id="cod_calle"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_calle'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_calle]" readonly id="deno_calle"   value="<?=$deno_calle?>" class='inputtext' /></td>
+ 			<td colspan="2"  width="45%" >Estado civil</td>
+		</tr>
+		<tr>
+ 			<td width="17%">Vereda / Edificio</td>
+ 			<td width="8%"><input type="text" name="data[shp100_patente][cod_vereda]" readonly id="cod_vereda"   value="<?=$sisap->AddCero2($ve['v_shd100_patente']['cod_vereda'])?>" class='inputtext' style="text-align:center"/></td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_vereda]" readonly id="deno_vereda"   value="<?=$deno_vereda?>" class='inputtext' /></td>
+ 			<td colspan="2"><input type="text" name="data[shp100_patente][estado_civil]" readonly id="estado_civil"   value="<?=$estado_civil?>" class='inputtext' /></td>
+		</tr>
+		<tr>
+ 			<td width="25%" colspan="2">Número casa/ Local</td>
+ 			<td width="30%"><input type="text" name="data[shp100_patente][deno_casa]" readonly id="deno_casa"   value="<?=$ve['v_shd100_patente']['numero_casa']?>" class='inputtext' /></td>
+ 			<td colspan="2"  width="45%">Profesión</td>
+		</tr>
+		<tr>
+ 			<td width="25%" colspan="2">&nbsp;</td>
+ 			<td width="30%">&nbsp;</td>
+ 			<td colspan="2"><input type="text" name="data[shp100_patente][profesion]" readonly id="profesion"   value="<?=$ve['v_shd100_patente']['deno_profesion']?>" class='inputtext' /></td>
+		</tr>
+	</table>
+	<table border="0" width="100%"  class="tablacompromiso tablacompromiso3">
+		<tr>
+			<td width="15%" align="center">Número patente</td>
+		   	<td width="15%" align="center">Número de <br> Expediente</td>
+		   	<td width="15%" align="center">Fecha patente</td>
+		    <td width="55%" align="center">Frecuencia de pago</td>
+		</tr>
+		<tr>
+			<td align="center"><input type="text" name="data[shp100_patente][numero_patente]"    value="<?=$ve['v_shd100_patente']['numero_patente']?>"                           id="numero_patente"    class="inputtext" style="text-align:center" readonly/></td>
+		    <td align="center"><input type="text" name="data[shp100_patente][numero_expediente]" value="<?=$sisap->mascara_ocho($ve['v_shd100_patente']['numero_expediente'])?>"  id="numero_expediente" class="inputtext" style='text-align:center' readonly onKeyPress="return solonumeros(event);"/></td>
+		    <td align="center"><?$sisap->input_fecha("shp100_solicitud","fecha_patente","fecha_patente",$sisap->Cfecha($ve['v_shd100_patente']['fecha_patente'],'D/M/A'));?></td>
+		    <td align="center">
+		    	<?= $sisap->radioTagRemote("shp100_patente/frecuencia_pago", array('1'=>'Mensual', '2'=>'Bimestral', '3'=>'trimestral', '4'=>'Semestral', '5'=>'Anual'), array('url1'=>'', 'update1'=>'', 'id'=>'frecuencia_pago',  "onClick"=>"calcular_monto_segun_frecuencia();", "disabled"=>"disabled"), null, $opc=$ve['v_shd100_patente']['frecuencia_pago']); ?>
+		    </td>
+		</tr>
+	</table>
+	<table border="0" width="100%"  class="tablacompromiso tablacompromiso3">
+		<th colspan="3" align="center">COBRADOR</th>
+		<tr>
+			<td width="10%" align="center">Select</td>
+		    <td width="25%" align="center">R.I.F. / C.I.</td>
+		    <td width="65%" align="center">Nombre y Apellidos / Razón social</td>
+		</tr>
+		<tr>
+		   	<td align="center">
+				<select disabled=disabled></select>
+		    </td>
+		    <td align="center"><input type="text" name="data[shp100_patente][numero_patente]" readonly  value="<?=$ve['v_shd100_patente']['rif_ci_cobrador']?>"  id="numero_patente" class="inputtext" style='text-align:center'/></td>
+		   	<td align="center"><input type="text" name="data[shp100_patente][numero_patente]" readonly  value="<?=$ve['v_shd100_patente']['deno_cobrador']?>"  id="numero_patente" class="inputtext"/></td>
+		</tr>
+	</table>
+		<table width="100%">
+		<tr>
+			<th>ACTIVIDADES ECON&Oacute;MICAS</th>
+		</tr>
+	</table>
+		<table border="0" width="100%"  class="tablacompromiso tablacompromiso3">
+			<tr>
+		    	<td width="10%" align="center">Código Actividad</td>
+		    	<td width="40%" align="center">Denominación</td>
+		    	<td width="15%" align="center">Número aforos</td>
+		    	<td width="15%" align="center">Monto por aforo</td>
+		    	<td width="15%" align="center">Total aforos</td>
+		    	<td width="5%" align="center">ACCIÓN</td>
+		  	</tr>
+		  	<tr>
+		    	<td align="center" >
+                	<?= $sisap->imagen_ventana(array("value"=>"..",'disabled'=>'disabled'),1,"Buscar Actividad", "/shp100_patente/buscar_actividadx/1", "750px", "400px" ); ?>
+                </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][activ_deno]"       value=""          id="activ_deno" class="inputtext"       readonly/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][actv_num_afor]"    value=""      onfocus="javascript:if(this.value=='0'){this.value='';}"     onblur="javascript:if(this.value==''){this.value='0';}"    id="actv_num_afor" class="inputtext"    onKeyPress="return solonumeros_con_punto(event);"  onChange="calcular_total_aforo();" readonly/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][activ_mont_aforo]" value=""   onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onblur="javascript:if(this.value==''){this.value='0,00';}" id="activ_mont_aforo" class="inputtext" onKeyPress="return solonumeros_con_punto(event);"  onChange="calcular_total_aforo();" readonly/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][total_aforo]"      value=""      id="total_aforo" class="inputtext"      readonly/> </td>
+		    	<td align="center" >
+                  <?= $sisap->submitTagRemote('+', array('funcion'=>'valida_grilla_patente','url1' => '/shp100_patente/agregar_grilla/', 'update1'=>'guardar_grilla','id'=>'plus','disabled'=>'disabled')); ?>
+		    	</td>
+		   </tr>
+	</table>
+	<div id="guardar_grilla" style="height:150px; overflow:auto;">
+	<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+		<tr class="tr_negro">
+			<td class="td4" width="10%">Código Actividad</td>
+			<td class="td4" width="40%">Denominación</td>
+			<td class="td4" width="15%">Número aforos</td>
+			<td class="td4" width="15%">Monto por aforo</td>
+			<td class="td4" width="15%">Total aforos</td>
+			<td class="td4" width="5%">ACCIÓN</td>
+		</tr>
+<?
+if(isset($datos2)){
+  if($datos2!=null){//print_r($datos2);
+ 	$i=0;
+    foreach($datos2 as $row){
+	$var1 = $row['v_shd100_patente_actividades']['cod_actividad'];
+	$var2 = $row['v_shd100_patente_actividades']['deno_actividad'];
+	$var3 = $row['v_shd100_patente_actividades']['numero_aforos'];
+	$var4 = $row['v_shd100_patente_actividades']['monto_aforo_anual'];
+	$var5 = $row['v_shd100_patente_actividades']['total_aforo_anual'];
+		if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+?>
+						    <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							    <td class="td2center"><?=$var1?></td>
+							    <td><?=$var2?></td>
+							    <td class="td2center"><?=$sisap->Formato2($var3)?></td>
+							    <td align="center"><?=$sisap->Formato2($var4)?></td>
+							    <td align="center"><?=$sisap->Formato2($var5)?></td>
+							    <td class="td2center" height="22">--</td>
+							</tr>
+<?
+    	$i++;
+
+    }//fin foreach
+  }
+ }
+?>
+	   </table>
+</div>
+<div id="funcion"></div>
+<?php
+
+
+$mes= array(1=>'ENERO',2=>'FEBRERO',3=>'MARZO',4=>'ABRIL',5=>'MAYO',6=>'JUNIO',7=>'JULIO',8=>'AGOSTO',9=>'SEPTIEMBRE',10=>'OCTUBRE',11=>'NOVIEMBRE',12=>'DICIEMBRE');
+
+  $ultimo_ano_facturado    =  $ve['v_shd100_patente']['ultimo_ano_facturado']   == 0?'':$ve['v_shd100_patente']['ultimo_ano_facturado'];
+  $ultimo_mes_facturado    =  $ve['v_shd100_patente']['ultimo_mes_facturado']   == 0?'':mascara2($ve['v_shd100_patente']['ultimo_mes_facturado']);
+  $ultimo_ejercicio_decla  =  $ve['v_shd100_patente']['ultimo_ejercicio_decla'] == 0?'':$ve['v_shd100_patente']['ultimo_ejercicio_decla'];
+  $fecha_ultima_decla      =  $ve['v_shd100_patente']['fecha_ultima_decla']     == "1900-01-01"?'':cambiar_formato_fecha($ve['v_shd100_patente']['fecha_ultima_decla']);
+  $ingresos_declarados     =  $ve['v_shd100_patente']['ingresos_declarados']    == 0?'':$ve['v_shd100_patente']['ingresos_declarados'];
+  $periodo_desde           =  $ve['v_shd100_patente']['periodo_desde']          == "1900-01-01"?'':cambiar_formato_fecha($ve['v_shd100_patente']['periodo_desde']);
+  $periodo_hasta           =  $ve['v_shd100_patente']['periodo_hasta']          == "1900-01-01"?'':cambiar_formato_fecha($ve['v_shd100_patente']['periodo_hasta']);
+ if(!isset($pagina)){$pagina=null;}
+
+?>
+<br>
+<table border="0" width="100%"  class="tablacompromiso tablacompromiso2">
+		  <tr>
+		    	<td width="15%" align="center">Monto mensual</td>
+		    	<td width="25%" align="center">Monto según frecuencia</td>
+		    	<td width="15%" align="center">Pago todo el año?</td>
+		    	<td width="15%" align="center">Pago suspendido?</td>
+		    	<td width="15%" align="center">Último año facturado</td>
+		        <td width="15%" align="center">Último mes facturado</td>
+		  </tr>
+		  <?
+		  $campo=$_SESSION["utiliza_planillas_liquidacion_previa"];
+		  if($campo==1){?>
+		  <tr>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][monto_mensual]"      readonly  value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_mensual'])?>"  onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onblur="javascript:if(this.value==''){this.value='0,00';}" id="monto_mensual" class="inputtext" onKeyPress="return solonumeros_con_punto(event);"   onChange="moneda('monto_mensual'); calcular_monto_segun_frecuencia();" style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][monto_segun_fre]"      value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_mensual'] * $fre)?>"  id="monto_segun_fre" class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center"><?= $html->radio('shp100_patente/pago_todo', array('1'=>'Si', '2'=>'No'),null, array('value'=>$ve['v_shd100_patente']['pago_todo'],'readonly'=>'readonly'))?></td>
+		    	<td align="center"><?= $html->radio('shp100_patente/suspendido', array('1'=>'Si', '2'=>'No'),null, array('value'=>$ve['v_shd100_patente']['suspendido'],'readonly'=>'readonly'))?></td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ultimo_year_cancelado]" value="<?= $ultimo_ano_facturado ?>"  id="ultimo_year_cancelado" class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ultimo_mes_facturado]"  value="<?= $ultimo_mes_facturado ?>"  id="ultimo_mes_facturado" class="inputtext"  readonly style='text-align:center'/>  </td>
+
+		   </tr>
+		<?}else if($campo==2){?>
+		  <tr>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][monto_mensual]"      readonly  value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_mensual'])?>"  onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onblur="javascript:if(this.value==''){this.value='0,00';}" id="monto_mensual" class="inputtext" onKeyPress="return solonumeros_con_punto(event);"   onChange="moneda('monto_mensual'); calcular_monto_segun_frecuencia();" style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][monto_segun_fre]"      value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_mensual'] * $fre)?>"  id="monto_segun_fre" class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center"><?= $html->radio('shp100_patente/pago_todo', array('1'=>'Si', '2'=>'No'),null, array('value'=>$ve['v_shd100_patente']['pago_todo'],'readonly'=>'readonly'))?></td>
+		    	<td align="center"><?= $html->radio('shp100_patente/suspendido', array('1'=>'Si', '2'=>'No'),null, array('value'=>$ve['v_shd100_patente']['suspendido'],'readonly'=>'readonly'))?></td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ultimo_year_cancelado]" value=""  id="ultimo_year_cancelado" class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ultimo_mes_facturado]"  value=""  id="ultimo_mes_facturado" class="inputtext"  readonly style='text-align:center'/>  </td>
+
+		   </tr>
+		<?}?>
+</table>
+<br>
+<table border="0" width="100%"  class="tablacompromiso tablacompromiso2">
+		  <tr>
+		    <td width="12%" align="center">Deuda <br> Anterior</td>
+		    <td width="12%" align="center">Deuda <br> Vigente</td>
+		    <td width="12%" align="center">Multa</td>
+		    <td width="12%" align="center">Recargo</td>
+		    <td width="12%" align="center">Intereses</td>
+		    <td width="12%" align="center">Descuento</td>
+		    <td width="16%" align="center">Total deuda</td>
+		</tr>
+		<?php $total_total = (($ve['v_shd100_patente']['deudada_ano_anterior_total']+$ve['v_shd100_patente']['deuda_vigente_total']+$ve['v_shd100_patente']['monto_multa_total']+$ve['v_shd100_patente']['monto_recargo_total']+$ve['v_shd100_patente']['monto_intereses_total'])-$ve['v_shd100_patente']['monto_descuento_total'])?>
+		  <?
+		  if($campo==1){
+		  ?>
+		  <tr>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][deuda_anterior]" value="<?=$sisap->Formato2($ve['v_shd100_patente']['deudada_ano_anterior_total'])?>"  id="deuda_anterior"  class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][deuda_vigente]"  value="<?=$sisap->Formato2($ve['v_shd100_patente']['deuda_vigente_total'])?>"       id="deuda_vigente"   class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][multa]"          value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_multa_total'])?>"         id="multa"           class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][recargo]"        value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_recargo_total'])?>"       id="recargo"         class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][intereses]"      value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_intereses_total'])?>"     id="intereses"       class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][descuento]"      value="<?=$sisap->Formato2($ve['v_shd100_patente']['monto_descuento_total'])?>"     id="descuento"       class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][total_deuda]"    value="<?=$sisap->Formato2($total_total)?>"                                         id="total_deuda"     class="inputtext" readonly style='text-align:center'/> </td>
+		</tr>
+		<?}else if($campo==2){?>
+		<tr>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][deuda_anterior]" value=""  id="deuda_anterior"  class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][deuda_vigente]"  value=""       id="deuda_vigente"   class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][multa]"          value=""         id="multa"           class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][recargo]"        value=""       id="recargo"         class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][intereses]"      value=""     id="intereses"       class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][descuento]"      value=""     id="descuento"       class="inputtext" readonly style='text-align:center'/> </td>
+		   	<td align="center" > <input type="text" name="data[shp100_patente][total_deuda]"    value=""                                         id="total_deuda"     class="inputtext" readonly style='text-align:center'/> </td>
+		</tr>
+		<?}?>
+</table>
+<br>
+	<table border="0" width="100%"  class="tablacompromiso tablacompromiso2">
+		  <tr>
+		    	<td width="20%" align="center">Último ejercicio declarado</td>
+		    	<td width="20%" align="center">Fecha ultima declaración</td>
+		    	<td width="20%" align="center">Periodo declaración desde</td>
+		    	<td width="20%" align="center">Periodo declaración hasta</td>
+		    	<td width="20%" align="center">Ingresos declarados</td>
+		  </tr>
+		  <tr>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ultimo_ejercicio_declarado]"    value="<?= $ultimo_ejercicio_decla ?>"                    id="ultimo_ejercicio_declarado"   class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][fecha_ultima_declaracion]"      value="<?= $fecha_ultima_decla ?>"                        id="fecha_ultima_declaracion"     class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][periodo_declaracion_desde]"     value="<?= $periodo_desde ?>"                             id="periodo_declaracion_desde"    class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][periodo_declaracion_hasta]"     value="<?= $periodo_hasta ?>"                             id="periodo_declaracion_hasta"    class="inputtext" readonly style='text-align:center'/> </td>
+		    	<td align="center" > <input type="text" name="data[shp100_patente][ingresos_declarados]"           value="<?= $sisap->Formato2($ingresos_declarados) ?>"     id="ingresos_declarados"          class="inputtext" readonly style='text-align:center'/> </td>
+    	 </tr>
+</table>
+<div id="funcion"></div>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+<?= $sisap->buttonTagRemote('shp100_patente/consultar', array ('value'=>'Modificar', 'id'=>"modificar"), array('url1' => '/shp100_patente/modificar/'.$ve['v_shd100_patente']['numero_patente'].'/'.$pagina, 'update1'=>'principal'));?>
+<?= $sisap->submitTagRemote('Eliminar', array(null, 'url1' => '/shp100_patente/eliminar/'.$ve['v_shd100_patente']['numero_patente'].'/'.$ve['v_shd100_patente']['rif_cedula'].'/'.$pagina, 'update1'=>'principal' , 'id'=>"eliminar"), true); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Regresar'), array('url1' => '/shp100_patente/', 'update1'=>'principal'));?>
+</div>
+<?=$sisap->CloseTable()?>
+</form>
+<?}?>

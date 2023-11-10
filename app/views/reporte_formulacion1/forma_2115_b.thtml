@@ -1,0 +1,404 @@
+<?php if($opcion==1){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"COSTO DE LOS EQUIPOS POR SECTOR, PROGRAMA Y SUBPROGRAMA <br> (En Bolívares)",NULL,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion1/forma_2115_b/3'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?= $html->selectTag('datos/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+<?= $sisap->radioTagRemote("datos/tipo_busqueda", array('1'=>'TODO','2'=>'Un SUBPROGRAMA ESPECIFICO'), array('url1'=>'/reporte_formulacion1/forma_2115_b/2', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+<br><br>
+<div id="funcion"></div>
+
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php
+
+
+}else if($opcion==2){
+	if($opcion2==2){ ?>
+		<table width='40%' border='0' cellspacing='0' cellpadding='0' >
+				<tr>
+					<td align="right">Sector: </td>
+					<td align="left" id="radio">
+					  <?= $sisap->selectTagRemote('datos/cod_sector', $optionElements=$lista_numero,  null, null, $selectAttr = array('onchange1'=>'/reporte_formulacion1/forma_2115_b/4',  "update1"=>"radio2",  'id'=>'select_lista_reporte' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+				<tr>
+				    <td align="right">Programa:</td>
+					<td align="left" id="radio2">
+					  <?= $sisap->selectTagRemote('datos/cod_programa', $optionElements=array(),  null, null, $selectAttr = array('id'=>'select_lista_reporte2' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+				<tr>
+				    <td align="right">SUBPrograma:</td>
+					<td align="left" id="radio3">
+					  <?= $sisap->selectTagRemote('datos/cod_sub_prog', $optionElements=array(),  null, null, $selectAttr = array('id'=>'select_lista_reporte3' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+		</table>
+<?php
+
+	}//fin else
+
+
+
+
+
+
+}else if($opcion==4){ ?>
+
+<?= $sisap->selectTagRemote('datos/cod_programa', $optionElements=$lista_numero,  null, null, $selectAttr = array('onchange1'=>'/reporte_formulacion1/forma_2115_b/5/'.$sector,  "update1"=>"radio3", 'id'=>'select_lista_reporte2' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+
+<?php
+
+}else if($opcion==5){ ?>
+
+<?= $sisap->selectTagRemote('datos/cod_sub_prog', $optionElements=$lista_numero,  null, null, $selectAttr = array('id'=>'select_lista_reporte3' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+
+<?php
+
+}else{
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "COSTO DE LOS EQUIPOS POR SECTOR, PROGRAMA Y SUBPROGRAMA";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION["ejercicio"],'TRL',1);
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'','TRL',0);
+	$this->Cell(20,6,'CÓDIGO','TR',0,'C');
+	$this->Cell(0,6,'D E N O M I N A C I Ó N','TR',1,'C');
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'SECTOR','TRL',0);
+	$this->SetFont('vera','B',8);
+	$this->Cell(20,6,mascara2($_SESSION["sector"]),'TR',0,'C');// CÓDIGO DEL SECTOR
+	$this->Cell(0,6,$_SESSION["deno_sector"],'TR',1);// DENOMINACIÓN DEL SECTOR
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'PROGRAMA','TRL',0);
+	$this->SetFont('vera','B',8);
+	$this->Cell(20,6,mascara2($_SESSION["programa"]),'TR',0,'C');// CÓDIGO DEL PROGRAMA
+	$this->Cell(0,6,$_SESSION["deno_programa"],'TR',1);// DENOMINACIÓN DEL PROGRAMA
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'SUBPROGRAMA','TRL',0);
+	$this->SetFont('vera','B',8);
+	$this->Cell(20,6,mascara2($_SESSION["subprograma"]),'TR',0,'C');// CÓDIGO DEL SUBPROGRAMA
+	$this->Cell(0,6,$_SESSION["deno_subprograma"],'TR',1);// DENOMINACIÓN DEL SUBPROGRAMA
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(150,4,'','TRL',0,'C');
+	$this->Cell(120,4,'UNIDADES SOLICITADAS','TR',0,'C');
+	$this->Cell(0,4,'C O S T O','TR',1,'C');
+
+	$this->Cell(150,5,'','TRBL',0,'C');
+	$this->Cell(40,5,'REEMPLAZOS','TRB',0,'C');
+	$this->Cell(40,5,'DEFICIENCIAS','TRB',0,'C');
+	$this->Cell(40,5,'TOTAL','TRB',0,'C');
+	$this->Cell(38,5,'UNITARIO','TRB',0,'C');
+	$this->Cell(0,5,'TOTAL','TRB',1,'C');
+
+
+
+    }//fin header
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2115-B','',1,'R');
+    }
+
+}//fin clase
+
+
+
+
+$a=0;
+
+foreach($sector as $s){$a++;
+         $s_aux[$a]['cod_sector'] = $s['cfpd02_sector']['cod_sector'];
+         $s_aux[$a]['denominacion'] = $s['cfpd02_sector']['denominacion'];
+ }
+
+
+$b=0;
+
+foreach($programa as $s){$b++;
+         $s_aux_2[$b]['cod_sector']     = $s['cfpd02_programa']['cod_sector'];
+         $s_aux_2[$b]['cod_programa']   = $s['cfpd02_programa']['cod_programa'];
+         $s_aux_2[$b]['denominacion']   = $s['cfpd02_programa']['denominacion'];
+ }
+
+$c=0;
+
+foreach($sub_programa as $s){$c++;
+         $s_aux_3[$c]['cod_sector']     = $s['cfpd02_sub_prog']['cod_sector'];
+         $s_aux_3[$c]['cod_programa']   = $s['cfpd02_sub_prog']['cod_programa'];
+         $s_aux_3[$c]['cod_sub_prog']   = $s['cfpd02_sub_prog']['cod_sub_prog'];
+         $s_aux_3[$c]['denominacion']   = $s['cfpd02_sub_prog']['denominacion'];
+ }
+
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+
+
+
+
+
+
+$total_1=0;
+$total_2=0;
+$total_3=0;
+$total_4=0;
+$total_5=0;
+
+$sector_aux      = 0;
+$programa_aux    = 0;
+$subprograma_aux = 0;
+
+$_SESSION["ejercicio"]    = "";
+$_SESSION["sector"]       = "";
+$_SESSION["deno_sector"]  = "";
+
+$_SESSION["programa"]       = "";
+$_SESSION["deno_programa"]  = "";
+
+$_SESSION["subprograma"]       = "";
+$_SESSION["deno_subprograma"]  = "";
+
+
+if($datos!=null){
+
+					foreach($datos as $var){
+										    if($sector_aux     !=$var["cfpd06"]['cod_sector']   ||
+										       $programa_aux   !=$var["cfpd06"]['cod_programa'] ||
+										       $subprograma_aux!=$var["cfpd06"]['cod_sub_prog']){
+										        $denominacion_sector   = "";
+										        $denominacion_programa = "";
+										        $denominacion_subprograma = "";
+										    	for($h=1; $h<=$a; $h++){if($s_aux[$h]['cod_sector']==$var["cfpd06"]['cod_sector']){$denominacion_sector = $s_aux[$h]['denominacion'];}}
+										    	for($h=1; $h<=$b; $h++){if($s_aux_2[$h]['cod_sector']==$var["cfpd06"]['cod_sector'] && $s_aux_2[$h]['cod_programa']==$var["cfpd06"]['cod_programa']){$denominacion_programa = $s_aux_2[$h]['denominacion'];}}
+										    	for($h=1; $h<=$c; $h++){if($s_aux_3[$h]['cod_sector']==$var["cfpd06"]['cod_sector'] && $s_aux_3[$h]['cod_programa']==$var["cfpd06"]['cod_programa'] && $s_aux_3[$h]['cod_sub_prog']==$var["cfpd06"]['cod_sub_prog']){$denominacion_subprograma = $s_aux_3[$h]['denominacion'];}}
+										    	$sector_aux      = $var["cfpd06"]['cod_sector'];
+										    	$programa_aux    = $var["cfpd06"]['cod_programa'];
+										    	$subprograma_aux = $var["cfpd06"]['cod_sub_prog'];
+
+										    	$_SESSION["ejercicio"]   = $var["cfpd06"]['ano'];
+										        $_SESSION["sector"]      = $sector_aux;
+										        $_SESSION["deno_sector"] = $denominacion_sector;
+
+										        $_SESSION["programa"]      = $programa_aux;
+										        $_SESSION["deno_programa"] = $denominacion_programa;
+
+										        $_SESSION["subprograma"]      = $subprograma_aux;
+										        $_SESSION["deno_subprograma"] = $denominacion_subprograma;
+
+										            if($total_5!=0){
+																            $pdf->SetFont('vera','B',7);
+																			$pdf->Cell(150,6,'SUB. TOTAL: ','TRBL',0,'R');
+																			$pdf->Cell(40,6,$total_1,'TRB',0,'C');// REEMPLAZOS
+																			$pdf->Cell(40,6,$total_2,'TRB',0,'C');// DEFICIENCIAS
+																			$pdf->Cell(40,6,$total_3,'TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+																			$pdf->Cell(38,6,$sisap->Formato2($total_4),'TRB',0,'R');// UNITARIO
+																			$pdf->Cell(0,6,$sisap->Formato2($total_5),'TRB',1,'R');// COSTO TOTAL
+
+
+																			$pdf->SetFont('vera','B',7);
+																			$pdf->Cell(150,7,'B. OTROS EQUÍPOS NO ESPECIFICADO','TRBL',0,'L');
+																			$pdf->Cell(40,7,'','TRB',0,'C');
+																			$pdf->Cell(40,7,'','TRB',0,'C');
+																			$pdf->Cell(40,7,'','TRB',0,'C');
+																			$pdf->Cell(38,7,'','TRB',0,'C');
+																			$pdf->Cell(0,7,'','TRB',1,'C');
+																			$pdf->SetFont('vera','',7);
+																			/*for($i=1; $i<=3; $i++){
+																				$pdf->Cell(1,7,'','L',0);
+																					$varX = $pdf->GetX();
+																					$varY = $pdf->GetY();
+																					$var_aux_X = $varX;
+																					$var_aux_Y = $varY;
+																					$pdf->Cell(149,1,"",'',2,'C');
+																					$pdf->MultiCell(148,3,"A. PRINCIPALES EQUÍPOS",'','L');// DENOMINACIÓN DEL EQUIPO
+																					$varX = $varX+149;
+																					$pdf->SetXY($varX,$varY);
+																				$pdf->Cell(40,7,'XXX','RL',0,'C');// REEMPLAZOS
+																				$pdf->Cell(40,7,'XXX','R',0,'C');// DEFICIENCIAS
+																				$pdf->Cell(40,7,'XXX','R',0,'C');// TOTAL UNIDADES SOLICITADAS
+																				$pdf->Cell(38,7,'XXX.XXX.XXX.XX','R',0,'R');// UNITARIO
+																				$pdf->Cell(0,7,'XXX.XXX.XXX.XX','R',1,'R');// COSTO TOTAL
+																				$pdf->Cell(0,0,'','T',1);
+																			}*/
+																			$pdf->SetFont('vera','B',7);
+																			$pdf->Cell(150,6,'SUB. TOTAL: ','TRBL',0,'R');
+																			$pdf->Cell(40,6,"0",'TRB',0,'C');// REEMPLAZOS
+																			$pdf->Cell(40,6,'0','TRB',0,'C');// DEFICIENCIAS
+																			$pdf->Cell(40,6,'0','TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+																			$pdf->Cell(38,6,'0,00','TRB',0,'R');// UNITARIO
+																			$pdf->Cell(0,6,'0,00','TRB',1,'R');// COSTO TOTAL
+																			$pdf->SetFont('vera','B',7);
+																			$pdf->Cell(150,6,'TOTAL: ','TRBL',0,'R');
+																			$pdf->Cell(40,6,$total_1,'TRB',0,'C');// REEMPLAZOS
+																			$pdf->Cell(40,6,$total_2,'TRB',0,'C');// DEFICIENCIAS
+																			$pdf->Cell(40,6,$total_3,'TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+																			$pdf->Cell(38,6,$sisap->Formato2($total_4),'TRB',0,'R');// UNITARIO
+																			$pdf->Cell(0,6,$sisap->Formato2($total_5),'TRB',1,'R');// COSTO TOTAL
+
+										                 $total_1=0;
+														 $total_2=0;
+														 $total_3=0;
+														 $total_4=0;
+														 $total_5=0;
+										           }//fin if
+
+										    	$pdf->AddPage();
+										        $pdf->SetFont('vera','B',7);
+												$pdf->Cell(150,7,'A. PRINCIPALES EQUÍPOS','TRBL',0,'C');
+												$pdf->Cell(40,7,'','TRB',0,'C');
+												$pdf->Cell(40,7,'','TRB',0,'C');
+												$pdf->Cell(40,7,'','TRB',0,'C');
+												$pdf->Cell(38,7,'','TRB',0,'C');
+												$pdf->Cell(0,7,'','TRB',1,'C');
+										    }//fin if
+
+
+					                            $pdf->SetFont('vera','',7);
+											    $pdf->Cell(1,7,'','L',0);
+												$varX = $pdf->GetX();
+												$varY = $pdf->GetY();
+												$var_aux_X = $varX;
+												$var_aux_Y = $varY;
+												$pdf->Cell(149,1,"",'',2,'C');
+												$pdf->MultiCell(148,3,$var["cfpd06"]['denominacion'],'','L');// DENOMINACIÓN DEL EQUIPO
+												$varX = $varX+149;
+												$pdf->SetXY($varX,$varY);
+
+												$total_cantidad = ($var["cfpd06"]['cantidad_reemplazo'] + $var["cfpd06"]['cantidad_deficiencia']);
+												$costo_total    =  $total_cantidad * $var["cfpd06"]['costo_unitario'];
+
+					                        $cantidad_reemplazo   = $var["cfpd06"]['cantidad_reemplazo']==0?"":$var["cfpd06"]['cantidad_reemplazo'];
+					                        $cantidad_deficiencia = $var["cfpd06"]['cantidad_deficiencia']==0?"":$var["cfpd06"]['cantidad_deficiencia'];
+
+//					                        $cantidad_reemplazo   = $var["cfpd06"]['cantidad_reemplazo'];
+//					                        $cantidad_deficiencia = $var["cfpd06"]['cantidad_deficiencia'];
+
+											$pdf->Cell(40,7,$cantidad_reemplazo,'RL',0,'C');// REEMPLAZOS
+											$pdf->Cell(40,7,$cantidad_deficiencia,'R',0,'C');// DEFICIENCIAS
+											$pdf->Cell(40,7,$total_cantidad,'R',0,'C');// TOTAL UNIDADES SOLICITADAS
+											$pdf->Cell(38,7,$sisap->Formato2($var["cfpd06"]['costo_unitario']),'R',0,'R');// UNITARIO
+											$pdf->Cell(0,7, $sisap->Formato2($costo_total),'R',1,'R');// COSTO TOTAL
+											$pdf->Cell(0,0,'','T',1);
+
+										$total_1 += $var["cfpd06"]['cantidad_reemplazo'];
+										$total_2 += $var["cfpd06"]['cantidad_deficiencia'];
+										$total_3 += $total_cantidad;
+										$total_4 += $var["cfpd06"]['costo_unitario'];
+										$total_5 += $costo_total;
+					}//fin foreach
+
+                    $pdf->SetFont('vera','B',7);
+					$pdf->Cell(150,6,'SUB. TOTAL: ','TRBL',0,'R');
+					$pdf->Cell(40,6,$total_1,'TRB',0,'C');// REEMPLAZOS
+					$pdf->Cell(40,6,$total_2,'TRB',0,'C');// DEFICIENCIAS
+					$pdf->Cell(40,6,$total_3,'TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+					$pdf->Cell(38,6,$sisap->Formato2($total_4),'TRB',0,'R');// UNITARIO
+					$pdf->Cell(0,6,$sisap->Formato2($total_5),'TRB',1,'R');// COSTO TOTAL
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(150,7,'B. OTROS EQUÍPOS NO ESPECIFICADO','TRBL',0,'L');
+					$pdf->Cell(40,7,'','TRB',0,'C');
+					$pdf->Cell(40,7,'','TRB',0,'C');
+					$pdf->Cell(40,7,'','TRB',0,'C');
+					$pdf->Cell(38,7,'','TRB',0,'C');
+					$pdf->Cell(0,7,'','TRB',1,'C');
+					$pdf->SetFont('vera','',7);
+					/*for($i=1; $i<=3; $i++){
+						$pdf->Cell(1,7,'','L',0);
+							$varX = $pdf->GetX();
+							$varY = $pdf->GetY();
+							$var_aux_X = $varX;
+							$var_aux_Y = $varY;
+							$pdf->Cell(149,1,"",'',2,'C');
+							$pdf->MultiCell(148,3,"A. PRINCIPALES EQUÍPOS",'','L');// DENOMINACIÓN DEL EQUIPO
+							$varX = $varX+149;
+							$pdf->SetXY($varX,$varY);
+						$pdf->Cell(40,7,'XXX','RL',0,'C');// REEMPLAZOS
+						$pdf->Cell(40,7,'XXX','R',0,'C');// DEFICIENCIAS
+						$pdf->Cell(40,7,'XXX','R',0,'C');// TOTAL UNIDADES SOLICITADAS
+						$pdf->Cell(38,7,'XXX.XXX.XXX.XX','R',0,'R');// UNITARIO
+						$pdf->Cell(0,7,'XXX.XXX.XXX.XX','R',1,'R');// COSTO TOTAL
+						$pdf->Cell(0,0,'','T',1);
+					}*/
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(150,6,'SUB. TOTAL: ','TRBL',0,'R');
+					$pdf->Cell(40,6,"0",'TRB',0,'C');// REEMPLAZOS
+					$pdf->Cell(40,6,'0','TRB',0,'C');// DEFICIENCIAS
+					$pdf->Cell(40,6,'0','TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+					$pdf->Cell(38,6,'0,00','TRB',0,'R');// UNITARIO
+					$pdf->Cell(0,6,'0,00','TRB',1,'R');// COSTO TOTAL
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(150,6,'TOTAL: ','TRBL',0,'R');
+					$pdf->Cell(40,6,$total_1,'TRB',0,'C');// REEMPLAZOS
+					$pdf->Cell(40,6,$total_2,'TRB',0,'C');// DEFICIENCIAS
+					$pdf->Cell(40,6,$total_3,'TRB',0,'C');// TOTAL UNIDADES SOLICITADAS
+					$pdf->Cell(38,6,$sisap->Formato2($total_4),'TRB',0,'R');// UNITARIO
+					$pdf->Cell(0,6,$sisap->Formato2($total_5),'TRB',1,'R');// COSTO TOTAL
+
+}else{
+	$pdf->AddPage();
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+
+}//fin else
+
+
+$pdf->Output('FORMA_2115_costo_equipos_sector','D');
+
+
+}?>

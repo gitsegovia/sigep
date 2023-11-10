@@ -1,0 +1,137 @@
+<?php
+vendor('tcpdfs/tcpdf');
+
+$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+    //$this->SetY(-12);
+    //$this->SetFont('vera','',6);
+    //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		/*
+	    $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	 $escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	 $varTOPh1=$_SESSION['titulo_inst'];
+        	$varTOPh2="                  ".$_SESSION['titulo_a'];
+        	$varTOPh11=$_SESSION['titulo_inst'];
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,16,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,5,"",'TL',0);
+		$this->Cell(0,5,$_SESSION['titulo_inst'],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION['titulo_a'],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"LISTADO DE DEPENDENCIAS",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+    	$this->Ln(2);
+		*/
+		$this->top_reporte("LISTADO DE DEPENDENCIAS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), array("Y"=>"17", "X"=>"186"), false);
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(15,4,"CÓDIGO DEP.",'TRLB',0,'C');
+		$this->Cell(0,4,"DENOMINACIÓN",'TRB',1,'C');
+	}//fin funtion
+}//fin clase
+
+
+
+/**
+* Aqui se inicializa la clase fpdfview la cual extiende de TCPDF
+* a la variable a usar para el generar el Documento PDF sera -- $pdf->
+*/
+$pdf = new fpdfview('P','mm','Letter');
+//$pdf->getAliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+
+
+
+foreach($datos as $x){
+
+	$pdf->Cell(0,0,"",'T',1);
+	$pdf->Cell(15,5,mascara($x['arrd05']['cod_dep'],4),'TRL',0,'C');//-------------[CODIGO DEP]
+	$pdf->Cell(0,5,$x['arrd05']['denominacion'],'TR',1,'L');//-------------[TIPO USUARIO]
+	$pdf->Cell(0,0,"",'T',1);
+
+}//fin for
+
+
+
+
+$pdf->Cell(0,0,"",'T',1);
+// Colocamos el nobre al documento y lo enviamos al navegador
+// $pdf->Output('requerimientos_especiales_'.date("d-m-Y"),'D');
+//.realpath('/home/zarsamco/public_html/eghtesad/certs/zarsamhonar.pem')
+$certificate = 'file://'.realpath('/home/gobguarico/IvonneCamacho.p12');
+$certificate2 = 'file://'.realpath('/home/gobguarico/pdf.crt');
+
+// set additional information
+$info = array(
+    'Name' => 'IVONNE CAMACHO',
+    'Location' => 'VENEZUELA',
+    'Reason' => 'Testing FIRMA DIGITAL',
+    'ContactInfo' => 'Jose Segovia',
+    );
+
+// set document signature
+//public function setSignature($signing_cert='', $private_key='', $private_key_password='', $extracerts='', $cert_type=2, $info=array(), $approval='')
+$pdf->setSignature($certificate, $certificate2, 'IVONNE', '', 2, $info);  
+
+$pdf->Output('listado_dependencias_'.date("d-m-Y"),'D');
+
+
+
+
+
+
+
+?>

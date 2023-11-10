@@ -1,0 +1,244 @@
+<?php
+/*
+ * Created on 21/11/2008
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($var) && $var=="si"){
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE RENDICIÓN ANUAL AL SENIAT DE I.S.L.R.","","950");?>
+
+<form name="data[cuadro_rendicion_anual_seniat_islr]" method="post" id='form' action="<?php echo $html->url('/reporte3/reporte_relacion_rendicion_anual_seniat_islr/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table  width="50%" border="0" cellpadding="0" cellspacing="0">
+		<?php
+	  	$d=$session->read('SScoddep');
+		if($d==1){?>
+			<tr><td align="center">
+				CONSOLIDADO POR:<?= $html->radio('cuadro_rendicion_anual_seniat_islr/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), null, array('value'=>'1'))?>
+			</td></tr>
+		<?php }//fin
+		?>
+		<tr>
+			<td align="center" width="20%" id="td-ano-ejecucion"><br />
+				Año:&nbsp;<?= $html->input('cuadro_rendicion_anual_seniat_islr/ano', $htmlAttributes = array('id'=>'ano', 'value'=>$ano_ejecucion, 'size'=>'5', 'maxlength'=>'4', 'onKeyPress'=>'return solonumeros_con_punto(event);', 'style'=>'text-align:center'), false); ?>
+			</td>
+		</tr>
+		<tr><td>&nbsp;<div id="capa_resultados"></div></td></tr>
+	</table>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/cuadro_rendicion_anual_seniat_islr/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="no"){
+set_time_limit(300);
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-34);
+		$this->SetFont('vera','B',6);
+		$this->Cell(105,4,'AGENTE DE RETENCIÓN','TRBL',0,'C');
+		$this->Cell(0,4,'FISCAL DE RENTAS','TRB',1,'C');
+		$this->Cell(105,18,'','RL',0,'C');//--[AGENTE DE RETENCIÓN]
+		$this->Cell(0,18,'','R',1,'C');//--[FISCAL DE RENTAS]
+		$this->Cell(105,4,'FIRMA Y SELLO','TRBL',0,'C');
+		$this->Cell(0,4,'FIRMA Y SELLO','TRB',1,'C');
+    }//fin footer
+
+    function Header(){
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,4,"RELACIÓN DE RENDICIÓN ANUAL AL SENIAT DE I.S.L.R.",'RL',1,'C');
+		$this->Cell(0,3,"",'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+    }//fin header
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 35);
+
+
+$total_cantidad=0;
+$total_monto_base=0;
+$total_impuestos=0;
+$total_total_cantidad=0;
+$total_total_monto_base=0;
+$total_total_impuestos=0;
+$salto='no';
+$cod_dep_2 = 99999999;
+
+for($i=0; $i<count($datos); $i++){
+	$cod_dep_1 = $datos[$i][0]['cod_dep'];
+
+	if($cod_dep_1 != $cod_dep_2){
+		$salto='si';
+	}else{
+		$salto='no';
+	}
+
+	if($salto=='si'){
+		//Imprimimos el final antes de comenzar uno nuevo.
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(110,5,'SUB-TOTAL: ','TRBL',0,'R');
+		$pdf->Cell(15,5,$total_cantidad,'TRB',0,'C');
+		$pdf->Cell(35,5,$sisap->Formato2($total_monto_base),'TRB',0,'R');
+		$pdf->Cell(0,5,$sisap->Formato2($total_impuestos),'TRB',1,'R');
+
+		//Inicializamos las variables nuevamente.
+		$total_cantidad=0;
+		$total_monto_base=0;
+		$total_impuestos=0;
+
+		//Comenzamos de nuevo imprimiendo los titulos.
+		$pdf->AddPage();
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(40,5,'DEPENDENCIA U ORGANISMO:','TRBL',0,'L');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(124,5,$datos[$i][0]['dependencia'],'TRB',0,'L');//--[DEPENDENCIA]
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(15,5,'AÑO','TRB',0,'C');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(0,5,$ano,'TRB',1,'C');//--[ANO]
+
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(65,5,'AGENTE DE RETENCIÓN','TRBL',0,'C');
+		$pdf->Cell(65,5,'FISCAL DE RENTAS','TRB',0,'C');
+		$pdf->Cell(34,5,'R.I.F.','TRB',0,'C');
+		$pdf->Cell(0,5,'N.I.T.','TRB',1,'C');
+
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(1,6,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(64,1,"",'',2,'C');
+		$pdf->MultiCell(63,2,$datos[$i][0]['agente_retencion'],'','L');//--[AGENTE DE RETENCIÓN]
+		$varX = $varX+64;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,6,'','L',0,'C');
+		$pdf->Cell(65,1,"",'',2,'C');
+		$pdf->MultiCell(64,2,$datos[$i][0]['fiscal_rentas'],'','L');//--[FISCAL DE RENTAS]
+		$varX = $varX+65;
+		$pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(34,6,$datos[$i][0]['rif_dependencia'],'RL',0,'C');//--[RIF]
+		$pdf->Cell(0,6,$datos[$i][0]['nit_dependencia'],'R',1,'C');//--[NIT]
+		$pdf->Cell(0,0,'','T',1,'C');
+
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(105,5,'DIRECCION DEL AGENTE DE RETENCIÓN','TRBL',0,'C');
+		$pdf->Cell(45,5,'TELEFONOS','TRB',0,'C');
+		$pdf->Cell(0,5,'E-MAIL','TRB',1,'C');
+
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(1,6,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(104,1,"",'',2,'C');
+		$pdf->MultiCell(103,2,$datos[$i][0]['direccion'],'','L');//--[DIRECCION AGENTE DE RETENCIÓN]
+		$varX = $varX+104;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(45,6,$datos[$i][0]['cod_area'].' - '.$datos[$i][0]['telefonos'],'RL',0,'C');//--[TELEFONOS]
+		$pdf->Cell(0,6,$datos[$i][0]['email'],'R',1,'C');//--[E-MAIL]
+		$pdf->Cell(0,0,'','T',1,'C');
+
+		/*
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(30,5,'ALICUOTA','TRBL',0,'C');
+		$pdf->Cell(95,5,'TIPO DE PAGO','TRB',0,'C');
+		$pdf->Cell(0,5,'PERSONALIDAD JURÍDICA','TRB',1,'C');
+
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(30,6,$datos[$i][0]['porcentaje_islr'],'RBL',0,'C');//--[ALICUOTA]
+		$pdf->Cell(95,6,$datos[$i][0]['cod_tipo_pago'].' - '.$datos[$i][0]['tipo_pago'],'RB',0,'L');//--[TIPO DE PAGO]
+		if($datos[$i][0]['cedula_identidad'] != 0){
+		   $pdf->Cell(0,6,'','RB',1,'C');//----[PERSONALIDAD JURIDICA]   'NATURAL    '.$datos[$i][0]['cedula_identidad']
+		}else{
+			$pdf->Cell(0,6,'','RB',1,'C');//----[PERSONALIDAD JURIDICA]  'JURÍDICA    '.$datos[$i][0]['rif_orden_pago']
+		}
+		*/
+
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(80,5,'EMPRESA','TRLB',0,'C');
+		$pdf->Cell(30,5,'R.I.F. N°','TRB',0,'C');
+		$pdf->Cell(15,5,'CANTIDAD','TRB',0,'C');
+		$pdf->Cell(35,5,'MONTOS BASE','TRB',0,'C');
+		$pdf->Cell(0,5,'IMPUESTOS','TRB',1,'C');
+	}
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(1,7,'','TL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(79,1,"",'T',2,'C');
+	$pdf->MultiCell(78,3,$datos[$i][0]['autorizado'],'','L');//--[EMPRESA]
+	$varX = $varX+79;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(30,7,$datos[$i][0]['rif_orden_pago'],'TRL',0,'C');//--[RIF]
+	$pdf->Cell(15,7,$datos[$i][0]['cantidad_retenciones'],'TR',0,'C');//--[CANTIDAD]
+	$pdf->Cell(35,7,$sisap->Formato2($datos[$i][0]['monto_base']),'TR',0,'R');//--[MONTO BASE]
+	$pdf->Cell(0,7,$sisap->Formato2($datos[$i][0]['impuestos']),'TR',1,'R');//--[IMPUESTO]
+	$pdf->Cell(0,0,'','T',1,'C');
+
+	$total_cantidad += $datos[$i][0]['cantidad_retenciones'];
+	$total_monto_base += $datos[$i][0]['monto_base'];
+	$total_impuestos+= $datos[$i][0]['impuestos'];
+	$cod_dep_2 = $datos[$i][0]['cod_dep'];
+
+	$total_total_cantidad += $datos[$i][0]['cantidad_retenciones'];
+	$total_total_monto_base += $datos[$i][0]['monto_base'];
+	$total_total_impuestos += $datos[$i][0]['impuestos'];
+
+}//fin ciclo for
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(110,5,'SUB-TOTAL: ','TRL',0,'R');
+$pdf->Cell(15,5,$total_cantidad,'TR',0,'C');
+$pdf->Cell(35,5,$sisap->Formato2($total_monto_base),'TR',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_impuestos),'TR',1,'R');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(110,5,'TOTAL ENTERADO AL SENIAT: ','TRBL',0,'R');
+$pdf->Cell(15,5,$total_total_cantidad,'TRB',0,'C');
+$pdf->Cell(35,5,$sisap->Formato2($total_total_monto_base),'TRB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_total_impuestos),'TRB',1,'R');
+
+$pdf->Output('relacion_rendicion_anual_islr_enterado_seniat_'.date('d-m-Y').'.pdf','D');//Poner nombre y la opcion D
+}
+?>

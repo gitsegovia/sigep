@@ -1,0 +1,99 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+$_SESSION['year_pdf1'] = $year;
+
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-10);
+    	//Select Arial italic 8
+	$this->SetFont('vera','',5);
+    	//Print current and total page numbers
+   	 //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+	   $this->top_reporte("PRESUPUESTO POR SECTORES (".$_SESSION['year_pdf1'].")", null, null, array("Y"=>"11", "X"=>"16", "Z"=>"13"), null);
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+//for
+$pdf->AddPage();
+$pdf->Ln(37);
+$x = 0;
+
+
+
+if(count($KK)<=5){
+	$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png',80,35,55);
+}else{
+	$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png',60,43,110);
+}//fin else
+
+
+
+
+
+
+$p=123;
+for($i=0; $i<count($KK);$i++){
+	 	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$KK[$i].'_'.$user.'_'.$rdm.'.png',10,$p+=9,null);
+$x=$KK[$i];
+}
+$x=$x+1;
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$x.'_'.$user.'_'.$rdm.'.png',10,$p+=10,null);
+
+$pdf->Cell(0,46,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',14);
+$pdf->Cell(0,10,"Leyenda: ",'',1,'L');//NOMBRE
+$pdf->Cell(0,2.2,"",'',1);//ESPACIO
+foreach($SECTOR as $k=>$v){
+$pdf->SetFont('freeserif','I',10);
+$pdf->Cell(15,9,"          ".$sisap->AddCero3($k)."",'',0);
+$pdf->Cell(120,9,$v,'',0);
+$pdf->SetFont('freeserif','B',10);
+$pdf->Cell(15,9,$por_sector[$k]." %",'',0);
+$pdf->Cell(0,9,$sector[$k]." Bs.",'',1,'R');
+}
+$pdf->SetFont('freeserif','I',10);
+$pdf->Cell(15,10,"          ",'',0);
+$pdf->Cell(120,10,"Presupuesto Total:",'',0);
+$pdf->SetFont('freeserif','BI',10);
+$pdf->Cell(15,10,"",'',0);
+$pdf->Cell(0,10,$total_presupuesto." Bs.",'',1,'R');
+
+//unlink('/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png');
+//unlink('/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png');
+$pdf->Output('grafico_presupuesto_sectores_'.date("d-m-Y:h:a").".pdf",'D');
+?>

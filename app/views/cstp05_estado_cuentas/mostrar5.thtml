@@ -1,0 +1,178 @@
+
+<input type="text" name="data[cstp05_estado_cuentas][date_actual_server]" value="<?= date("d/m/Y") ?>" id="date_actual_server" size="12" readonly="readonly" style="text-align:center;font-weight:bold;" />
+
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+ if(isset($error) && $error==0){
+
+ $tipo_doc[1]="DEPOSITO";
+ $tipo_doc[2]="NOTA CREDITO";
+ $tipo_doc[3]="NOTA DEBITO.";
+ $tipo_doc[4]="CHEQUE";
+?>
+<table width="100%" border="1" cellspacing="0">
+<tr class="tr_negro">
+	<td height="30" colspan="4" align="center"><b>Estado de Cuenta del Banco</b></td>
+	<td height="30" colspan="2" align="center"><b>Movimiento de Tesoreria</b></td>
+	<td height="30" align="center">&nbsp;</td>
+</tr>
+
+<tr class="tr_negro">
+	<td width="100" height="25" align="center"><b>Tipo de documento</b></td>
+	<td width="100" height="25" align="center"><b>N&uacute;mero documento</b></td>
+	<td width="100" height="25" align="center"><b>Fecha documento</b></td>
+	<td width="100" height="25" align="center"><b>Monto</b></td>
+	<td width="100" height="25" align="center"><b>Fecha documento</b></td>
+	<td width="100" height="25" align="center"><b>Monto</b></td>
+	<td width="50" height="25" align="center"><b>Accion</b></td>
+</tr>
+
+<tr>
+	<td width="100" height="20" align="left">
+		<?= $sisap->radioTagRemote("cstp05_estado_cuentas/tipodocumento", array('1'=>'Deposito', '2'=>'Nota credito', '3'=>'Nota debito', '4'=>'Cheque'), array('url1'=>'/cstp05_estado_cuentas/tipodocumento', 'update1'=>'td_num_docu_banco', 'disabled'=>'enabled', 'id'=>'tipodocumento'), "<br>");?>
+	</td>
+	<td width="100" height="20" align="center" id="td_num_docu_banco"><input type="text" name="data[cstp05_estado_cuentas][numero_documento_banco]" id="numero_documento_banco" class="inputtext" disabled="disabled" /></td>
+	<td width="100" height="20" align="center"><?= $sisap->input_fecha('cstp05_estado_cuentas', 'fecha_documento_banco', 'fecha_documento_banco') ?></td>
+	<td width="100" height="20" align="center"><input type="text" name="data[cstp05_estado_cuentas][monto_documento_banco]" id="monto_documento_banco" onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('monto_documento_banco')" class="inputtext" style="text-align:center;font-weight:bold; font-size:14" /></td>
+	<td width="100" height="20" align="center" id="td_docu_tesoreria" colspan="2">
+		<table width="100%" border="0" cellspacing="0">
+			<tr>
+				<td align="center" colspan="2">&nbsp</td>
+			</tr>
+			<tr>
+				<td align="center" width="138"><input type="text" value='' name="data[cstp05_estado_cuentas][fecha_documento_tesoreria]" id="fecha_documento_tesoreria" readonly="readonly" style="text-align:center;width:80%" disabled="disabled" /></td>
+				<td align="center" width=""><input type="text" name="data[cstp05_estado_cuentas][monto_documento_tesoreria]" id="monto_documento_tesoreria" readonly="readonly" style="text-align:right;width:100%" disabled="disabled" /></td>
+			</tr>
+			<tr>
+				<td align="center" colspan="2">&nbsp</td>
+			</tr>
+		</table>
+	</td>
+	<!--La funcion para validar el formulario a la hora de guardar los datos se encuentra en el programa de movimientos generales -->
+	<td width="50" height="25" align="center"><?= $sisap->submitTagRemote('  +  ', array('funcion'=>'valida_cstp05_estado_cuentas_guardar', 'url1' => '/cstp05_estado_cuentas/guardar', 'update1'=>'datos', 'id'=>'b_guardar', 'disabled'=>'enable')); ?></td>
+</tr>
+
+<tr>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="100" height="20" align="center">&nbsp;</td>
+	<td width="50" height="20" align="center">&nbsp;</td>
+</tr>
+
+<tr>
+	<td height="20" align="center" colspan="7">&nbsp;</td>
+</tr>
+
+
+	<tr>
+		<td align="center" class="td3" id="datos" colspan="7">
+				<table width="100%" border="1" cellspacing="0" style="empty-cells:show;">
+				<tr class="tr_negro">
+					<td width="90" height="25" align="center"><b>Tipo de documento</b></td>
+					<td width="90" height="25" align="center"><b>N&uacute;mero documento</b></td>
+					<td width="80" height="25" align="center"><b>Fecha documento</b></td>
+					<td width="90" height="25" align="center"><b>Monto</b></td>
+					<td width="80" height="25" align="center"><b>Saldo</b></td>
+					<td width="80" height="25" align="center"><b>Fecha documento</b></td>
+					<td width="90" height="25" align="center"><b>Monto</b></td>
+					<td width="50" height="25" align="center">&nbsp;</td>
+				</tr>
+				</table>
+
+				<div style="width=auto; height:350px; overflow:auto;">
+				<table border="1" width="100%" cellspacing="0" style="empty-cells:show;">
+
+				<?php
+					$saldo_anterior = $suma_dep_nc - $suma_che_nd;
+					$saldo = $saldo_anterior;
+				?>
+
+				<tr bgcolor="#CDF2FF" onclick="new Effect.Highlight(this);" style="color:#000">
+					<td width="350" align="right" colspan="4" class="tr_negro"><b>SALDO ANTERIOR:</b>&nbsp;&nbsp;</td>
+					<td width="80" align="right"><?php echo $sisap->Formato2($saldo_anterior)?>&nbsp;</td>
+					<td width="220" colspan="3">&nbsp;</td>
+				</tr>
+
+				<?php
+
+				if($datos!=null){
+				$i=-1;
+				$k = 1;
+				$j = 0;
+
+				$img_edit = $html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el documento bancario'));
+				$img_dele = $html->image('delete.png',array('border'=>'0', 'width'=>'25', 'height'=>'20', 'title'=>'Eliminar el documento bancario'));
+
+				foreach($datos as $x){
+					$i++;
+
+					if($k%2 == 0){
+						$color = "#CDF2FF";
+					}else{
+						$color = "#DAEBFF";
+					}
+					$k++;
+
+					if($datos[$i][0]['tipo_documento'] == 1 || $datos[$i][0]['tipo_documento'] == 2){
+						$saldo += $datos[$i][0]['monto'];
+					}else if($datos[$i][0]['tipo_documento'] == 3 || $datos[$i][0]['tipo_documento'] == 4){
+						$saldo -= $datos[$i][0]['monto'];
+					}
+					?>
+					<tr id="tr_<?= $k ?>" bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);"  style="color:#000">
+						<td width="90" height="20" align="left" id="td_tipodocu_<?=$k?>"><?= $tipo_doc[$datos[$i][0]['tipo_documento']]; ?></td>
+						<td width="90" height="20" align="center" id="td_numdocu_<?= $k?>"><?= $datos[$i][0]['tipo_documento']==4 ? $sisap->mascara_ocho($datos[$i][0]['numero_documento']) : $datos[$i][0]['numero_documento']; ?></td>
+						<td width="85" height="20" align="center" id="td_fechadocu_<?= $k?>"><?= $sisap->cambia_fecha($datos[$i][0]['fecha_documento']); ?></td>
+						<td width="90" height="20" align="right" id="td_montodocu_<?= $k?>"><?= $sisap->Formato2($datos[$i][0]['monto']); ?>&nbsp;</td>
+						<td width="80" height="20" align="right" id="td_saldo_<?= $k?>"><?= $sisap->Formato2($saldo); ?>&nbsp;</td>
+						<td width="80" height="20" align="center" id="td_fechateso_<?= $k?>">&nbsp;<?= $sisap->cambia_fecha($datos[$i][0]['fecha_tesoreria']); ?></td>
+						<td width="90" height="20" align="right" id="td_montoteso_<?= $k?>"><?= $datos[$i][0]['monto_tesoreria']!='' ? $sisap->Formato2($datos[$i][0]['monto_tesoreria']) : $datos[$i][0]['monto_tesoreria'];; ?>&nbsp;</td>
+						<td width="50" height="20" align="center" id="td_elimina_<?= $k?>"><a href="javascript:ver_documento('/cstp05_estado_cuentas/modificar/<?=$datos[$i][0]['ano_movimiento']?>/<?=$datos[$i][0]['cod_entidad_bancaria']?>/<?=$datos[$i][0]['cod_sucursal']?>/<?=$datos[$i][0]['cuenta_bancaria']?>/<?=$datos[$i][0]['tipo_documento']?>/<?=$datos[$i][0]['numero_documento']?>/<?=$k?>/<?=$datos[$i][0]['fecha_tesoreria']?>/<?=$datos[$i][0]['monto_tesoreria']?>','tr_<?= $k ?>');"  id="numero_td"><?=$img_edit?></a>
+																						   <a href="javascript:ver_documento('/cstp05_estado_cuentas/eliminar/<?=$datos[$i][0]['ano_movimiento']?>/<?=$datos[$i][0]['cod_entidad_bancaria']?>/<?=$datos[$i][0]['cod_sucursal']?>/<?=$datos[$i][0]['cuenta_bancaria']?>/<?=$datos[$i][0]['tipo_documento']?>/<?=$datos[$i][0]['numero_documento']?>/<?=$k?>','principal22');"  id="numero_td" onClick="new Effect.DropOut('tr_<?=$k?>');"><?=$img_dele?></a></td>
+					</tr>
+
+				<?php
+				}
+
+				}//fin if datos!=null
+				?>
+				</table>
+				</div>
+		</td>
+	</tr>
+</table>
+
+<br />
+<br />
+
+
+<?php
+}else{//else error==1
+?>
+<table width="100%" border="1" cellspacing="0">
+<tr class="tr_negro">
+	<td height="30" colspan="4" align="center"><b>Estado de Cuenta del Banco</b></td>
+	<td height="30" colspan="2" align="center"><b>Movimiento de Tesoreria</b></td>
+	<td height="30" align="center">&nbsp;</td>
+</tr>
+
+<tr class="tr_negro">
+	<td width="100" height="25" align="center"><b>Tipo de documento</b></td>
+	<td width="100" height="25" align="center"><b>N&uacute;mero documento</b></td>
+	<td width="101" height="25" align="center"><b>Fecha documento</b></td>
+	<td width="101" height="25" align="center"><b>Monto</b></td>
+	<td width="100" height="25" align="center"><b>Fecha documento</b></td>
+	<td width="100" height="25" align="center"><b>Monto</b></td>
+	<td width="45" height="25" align="center">Accion</td>
+</tr>
+</table>
+
+
+<?php
+}//fin if null
+?>

@@ -1,0 +1,1802 @@
+<?php
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+function x($var){
+	if($var==1){
+		return "X";
+	}else{
+		return "";
+	}
+}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		/*$this->Image('/var/www/utf8_tcpdf/images/logo_11_100.jpg',11,15,70);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"",'TR',1);//GOBERNACIÓN DEL ESTADO FALCÓN
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,"",'R',1);//DIRECCION GENERAL DE PRESUPUESTO
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"RESUMEN DE LA FICHA CATASTRAL",'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 239;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(40,5,'FICHA','TRBL',0,'C');
+		$this->Cell(121,5,'CÓDIGO CATASTRAL ACTUAL','TRB',0,'C');
+		$this->Cell(0,5,'OCUPANTE','TRB',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,'','RL',0,'C');
+		$this->Cell(20,3,'','R',0,'C');
+
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'TIPO','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'SUB','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(11,3,'','R',0,'C');
+		$this->Cell(30,3,'','R',0,'C');
+		$this->Cell(0,3,'','R',1,'C');
+
+		$this->Cell(20,3,'NÚMERO','RBL',0,'C');
+		$this->Cell(20,3,'FECHA','RB',0,'C');
+
+		$this->Cell(11,3,'EDO','RB',0,'C');
+		$this->Cell(11,3,'MUN','RB',0,'C');
+		$this->Cell(11,3,'PARR','RB',0,'C');
+		$this->Cell(11,3,'TIPO','RB',0,'C');
+		$this->Cell(11,3,'AMB','RB',0,'C');
+		$this->Cell(11,3,'SECT','RB',0,'C');
+		$this->Cell(11,3,'MANZ','RB',0,'C');
+		$this->Cell(11,3,'PARC','RB',0,'C');
+		$this->Cell(11,3,'PARC','RB',0,'C');
+		$this->Cell(11,3,'NIV','RB',0,'C');
+		$this->Cell(11,3,'UND','RB',0,'C');
+		$this->Cell(30,3,'RIF / CÉDULA','RB',0,'C');
+		$this->Cell(0,3,'NOMBRE','RB',1,'C');
+		*/
+    }//fin funtion
+}//fin clase
+
+if(isset($DATOS) && $DATOS!=null){
+foreach($DATOS as $datos){
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+$pdf->Image('/var/www/sigep/app/webroot/img/logo_ficha_catastro.jpg',6,11,15);
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,1,'                              ','TRL',1,'L');
+$pdf->Cell(0,2,'                              REPÚBLICA BOLIVARIANA DE VENEZUELA','RL',1,'L');
+$pdf->Cell(0,2,'                              ESTADO APURE','RL',1,'L');
+$pdf->Cell(0,2,'                              ALCALDIA DEL MUNICIPIO "SAN FERNANDO"','RL',1,'L');
+$pdf->Cell(0,2,'                              OFICINA MUNICIPAL DE CATASTRO','RL',1,'L');
+$pdf->Cell(0,2,'                              FICHA CATASTRAL','RL',1,'L');
+$pdf->Cell(0,2,'                              ','BRL',1,'L');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(65,3,'','L',0,'L');
+$pdf->Cell(65,3,'A - DATOS GENERALES','RL',0,'C');
+$pdf->Cell(0,3,'','R',1,'L');
+
+$pdf->Cell(130,2,'','TRL',0,'L');
+$pdf->Cell(0,2,'','TR',1,'L');
+
+$pdf->Cell(30,3,'CONTROL ARCHIVO','L',0,'C');
+$pdf->Cell(15,3,$sisap->mascara_cuatro($datos[0]["cod_control_archivo"]),'TRBL',0,'C');//---CONTROL ARCHIVO
+$pdf->Cell(20,3,'','',0,'C');
+
+$pdf->Cell(30,3,'FICHA CATASTRAL NRO.','',0,'C');
+$pdf->Cell(30,3,$sisap->mascara_cuatro($datos[0]["cod_ficha"]),'TRBL',0,'L');//--FICHA CATASTRAL NRO
+$pdf->Cell(5,3,'','R',0,'C');
+
+$pdf->Cell(35,3,'INSCRIPCIÓN CATASTRAL NRO.','',2,'C');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(35,2,'  FECHA: '.$sisap->Cfecha($datos[0]["fecha_inscripcion"],"D/M/A"),'',0,'L');//--FECHA
+$pdf->SetXY($varX+35,$varY-3);
+$pdf->Cell(35,3,$sisap->mascara_cuatro($datos[0]["cod_inscripcion"]),'TRBL',0,'L');//--INSCRIPCIÓN CATASTRAL NRO
+$pdf->Cell(0,3,'','R',1,'C');
+
+$pdf->Cell(130,2,'','RL',0,'L');
+$pdf->Cell(0,2,'','R',1,'L');
+
+
+
+
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'B - CÓDIGO ANTERIOR','TBRL',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(21,3,'','RBL',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'SEC','RB',0,'C');
+$pdf->Cell(21,3,'MAN','RB',0,'C');
+$pdf->Cell(21,3,'PAR','RB',0,'C');
+$pdf->Cell(21,3,'SBP','RB',0,'C');
+$pdf->Cell(21,3,'NIV','RB',0,'C');
+$pdf->Cell(0,3,'UND','RB',1,'C');
+
+$pdf->Cell(21,3,'','RBL',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');
+$pdf->Cell(21,3,'','RB',0,'C');//--SEC
+$pdf->Cell(21,3,'','RB',0,'C');//--MAN
+$pdf->Cell(21,3,'','RB',0,'C');//--PAR
+$pdf->Cell(21,3,'','RB',0,'C');//--SBP
+$pdf->Cell(21,3,'','RB',0,'C');//--NIV
+$pdf->Cell(0,3,'','RB',1,'C');//---UND
+
+
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'C - CÓDIGO CATASTRAL','TBRL',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(21,3,'EDO','RBL',0,'C');
+$pdf->Cell(21,3,'MUN','RB',0,'C');
+$pdf->Cell(21,3,'PRR','RB',0,'C');
+$pdf->Cell(21,3,'ÁMB','RB',0,'C');
+$pdf->Cell(21,3,'SEC','RB',0,'C');
+$pdf->Cell(21,3,'MAN','RB',0,'C');
+$pdf->Cell(21,3,'PAR','RB',0,'C');
+$pdf->Cell(21,3,'SBP','RB',0,'C');
+$pdf->Cell(21,3,'NIV','RB',0,'C');
+$pdf->Cell(0,3,'UND','RB',1,'C');
+
+$datos[0]["cod_act_edo"]=$datos[0]["cod_act_edo"]<10 ? "0".$datos[0]["cod_act_edo"] : $datos[0]["cod_act_edo"];
+$datos[0]["cod_act_mun"]=$datos[0]["cod_act_mun"]<10 ? "0".$datos[0]["cod_act_mun"] : $datos[0]["cod_act_mun"];
+$datos[0]["cod_act_prr"]=$datos[0]["cod_act_prr"]<10 ? "0".$datos[0]["cod_act_prr"] : $datos[0]["cod_act_prr"];
+$datos[0]["cod_act_amb"]=$datos[0]["cod_act_amb"]<10 ? "0".$datos[0]["cod_act_amb"] : $datos[0]["cod_act_amb"];
+$datos[0]["cod_act_sec"]=$datos[0]["cod_act_sec"]<10 ? "0".$datos[0]["cod_act_sec"] : $datos[0]["cod_act_sec"];
+$datos[0]["cod_act_man"]=$datos[0]["cod_act_man"]<10 ? "0".$datos[0]["cod_act_man"] : $datos[0]["cod_act_man"];
+$datos[0]["cod_act_par"]=$datos[0]["cod_act_par"]<10 ? "0".$datos[0]["cod_act_par"] : $datos[0]["cod_act_par"];
+$datos[0]["cod_act_sbp"]=$datos[0]["cod_act_sbp"]<10 ? "0".$datos[0]["cod_act_sbp"] : $datos[0]["cod_act_sbp"];
+$datos[0]["cod_act_niv"]=$datos[0]["cod_act_niv"]<10 ? "0".$datos[0]["cod_act_niv"] : $datos[0]["cod_act_niv"];
+$datos[0]["cod_act_und"]=$datos[0]["cod_act_und"]<10 ? "0".$datos[0]["cod_act_und"] : $datos[0]["cod_act_und"];
+///--
+
+$pdf->Cell(10,3,$datos[0]["cod_act_edo"][0],'RL',0,'C');//--EDO 2
+$pdf->Cell(11,3,$datos[0]["cod_act_edo"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_mun"][0],'R',0,'C');//--MUN 2
+$pdf->Cell(11,3,$datos[0]["cod_act_mun"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_prr"][0],'R',0,'C');//--PRR 2
+$pdf->Cell(11,3,$datos[0]["cod_act_prr"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_amb"][0],'R',0,'C');//--ÁMB 2
+$pdf->Cell(11,3,$datos[0]["cod_act_amb"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_sec"][0],'R',0,'C');//--SEC 2
+$pdf->Cell(11,3,$datos[0]["cod_act_sec"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_man"][0],'R',0,'C');//--MAN 2
+$pdf->Cell(11,3,$datos[0]["cod_act_man"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_par"][0],'R',0,'C');//--PAR 2
+$pdf->Cell(11,3,$datos[0]["cod_act_par"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_sbp"][0],'R',0,'C');//--SBP 2
+$pdf->Cell(11,3,$datos[0]["cod_act_sbp"][1],'R',0,'C');
+
+$pdf->Cell(10,3,$datos[0]["cod_act_niv"][0],'R',0,'C');//--NIV 2
+$pdf->Cell(11,3,$datos[0]["cod_act_niv"][1],'R',0,'C');
+
+$pdf->Cell(9,3,$datos[0]["cod_act_und"][0],'R',0,'C');//--UND 2
+$pdf->Cell(0,3,$datos[0]["cod_act_und"][1],'R',1,'C');
+
+
+$pdf->Cell(0,0,'','T',1,'C');
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'D - DIRECCIÓN DEL INMUEBLE','TBRL',1,'C');
+$dir[1]=$datos[0]["tilde_ciudad"]==1 ? "X" : "";
+$dir[2]=$datos[0]["tilde_localidad"]==1 ? "X" : "";
+$dir[3]=$datos[0]["tilde_urbanizacion"]==1 ? "X" : "";
+$dir[4]=$datos[0]["tilde_conjunto_residencial"]==1 ? "X" : "";
+$dir[5]=$datos[0]["tilde_barrio"]==1 ? "X" : "";
+$dir[6]=$datos[0]["tilde_sector"]==1 ? "X" : "";
+$pdf->SetFont('vera','',5);
+$pdf->Cell(52,3,'PARROQUIA: '.$datos[0]["deno_parroquia2"],'RBL',0,'L');//--PARROQUIA
+$pdf->Cell(11,3,'CIUDAD','RB',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[1],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'LOCALIDAD','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[2],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'URB','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[3],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'CONJ. RESD','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[4],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'BARRIO','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[5],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'SECTOR','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir[6],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["nombre"],'RB',1,'C');//--UND 3
+
+$dir2[1]=$datos[0]["tilde_av_uno"]==1 ? "X" : "";
+$dir2[2]=$datos[0]["tilde_clle_uno"]==1 ? "X" : "";
+$dir2[3]=$datos[0]["tilde_crr_uno"]==1 ? "X" : "";
+$dir2[4]=$datos[0]["tilde_trav_uno"]==1 ? "X" : "";
+$dir2[5]=$datos[0]["tilde_prol_uno"]==1 ? "X" : "";
+$dir2[6]=$datos[0]["tilde_crrt_uno"]==1 ? "X" : "";
+$dir2[7]=$datos[0]["tilde_cjn_uno"]==1 ? "X" : "";
+$dir2[8]=$datos[0]["tilde_psje_uno"]==1 ? "X" : "";
+$dir2[9]=$datos[0]["tilde_blv_uno"]==1 ? "X" : "";
+$dir2[10]=$datos[0]["tilde_vda_uno"]==1 ? "X" : "";
+$dir2[11]=$datos[0]["tilde_esc_uno"]==1 ? "X" : "";
+$dir2[12]=$datos[0]["tilde_snd_uno"]==1 ? "X" : "";
+$dir2[13]=$datos[0]["tilde_tcal_uno"]==1 ? "X" : "";
+$dir2[14]=$datos[0]["tilde_cno_uno"]==1 ? "X" : "";
+
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir2[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_uno"],'TBRL',1,'L');
+
+$dir3[1]=$datos[0]["tilde_av_dos"]==1 ? "X" : "";
+$dir3[2]=$datos[0]["tilde_clle_dos"]==1 ? "X" : "";
+$dir3[3]=$datos[0]["tilde_crr_dos"]==1 ? "X" : "";
+$dir3[4]=$datos[0]["tilde_trav_dos"]==1 ? "X" : "";
+$dir3[5]=$datos[0]["tilde_prol_dos"]==1 ? "X" : "";
+$dir3[6]=$datos[0]["tilde_crrt_dos"]==1 ? "X" : "";
+$dir3[7]=$datos[0]["tilde_cjn_dos"]==1 ? "X" : "";
+$dir3[8]=$datos[0]["tilde_psje_dos"]==1 ? "X" : "";
+$dir3[9]=$datos[0]["tilde_blv_dos"]==1 ? "X" : "";
+$dir3[10]=$datos[0]["tilde_vda_dos"]==1 ? "X" : "";
+$dir3[11]=$datos[0]["tilde_esc_dos"]==1 ? "X" : "";
+$dir3[12]=$datos[0]["tilde_snd_dos"]==1 ? "X" : "";
+$dir3[13]=$datos[0]["tilde_tcal_dos"]==1 ? "X" : "";
+$dir3[14]=$datos[0]["tilde_cno_dos"]==1 ? "X" : "";
+
+
+$pdf->Cell(15,3,'ENTRE','RL',0,'L');//--ENTRE
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir3[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir3[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_dos"],'TBRL',1,'L');
+
+$dir4[1]=$datos[0]["tilde_av_tres"]==1 ? "X" : "";
+$dir4[2]=$datos[0]["tilde_clle_tres"]==1 ? "X" : "";
+$dir4[3]=$datos[0]["tilde_crr_tres"]==1 ? "X" : "";
+$dir4[4]=$datos[0]["tilde_trav_tres"]==1 ? "X" : "";
+$dir4[5]=$datos[0]["tilde_prol_tres"]==1 ? "X" : "";
+$dir4[6]=$datos[0]["tilde_crrt_tres"]==1 ? "X" : "";
+$dir4[7]=$datos[0]["tilde_cjn_tres"]==1 ? "X" : "";
+$dir4[8]=$datos[0]["tilde_psje_tres"]==1 ? "X" : "";
+$dir4[9]=$datos[0]["tilde_blv_tres"]==1 ? "X" : "";
+$dir4[10]=$datos[0]["tilde_vda_tres"]==1 ? "X" : "";
+$dir4[11]=$datos[0]["tilde_esc_tres"]==1 ? "X" : "";
+$dir4[12]=$datos[0]["tilde_snd_tres"]==1 ? "X" : "";
+$dir4[13]=$datos[0]["tilde_tcal_tres"]==1 ? "X" : "";
+$dir4[14]=$datos[0]["tilde_cno_tres"]==1 ? "X" : "";
+
+
+$pdf->Cell(15,3,'Y','RL',0,'L');//--ENTRE
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir4[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir4[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_tres"],'TBRL',1,'L');
+
+$dir5[1]=$datos[0]["tilde_edif_uno"]==1 ? "X" : "";
+$dir5[2]=$datos[0]["tilde_apto_uno"]==1 ? "X" : "";
+$dir5[3]=$datos[0]["tilde_qta_uno"]==1 ? "X" : "";
+$dir5[4]=$datos[0]["tilde_casa_uno"]==1 ? "X" : "";
+$dir5[5]=$datos[0]["tilde_rancho_uno"]==1 ? "X" : "";
+$dir5[6]=$datos[0]["tilde_cc_uno"]==1 ? "X" : "";
+$dir5[7]=$datos[0]["tilde_local_uno"]==1 ? "X" : "";
+$dir5[8]=$datos[0]["tilde_oficina_uno"]==1 ? "X" : "";
+$dir5[9]=$datos[0]["tilde_otro_uno"]==1 ? "X" : "";
+
+$pdf->Cell(11,3,'EDIF.','RLB',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[1],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'APTO','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[2],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'QTA','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[3],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'CASA','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[4],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'RANCHO','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[5],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'C.C','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[6],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'LOCAL C.','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[7],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'OFIC.','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5[8],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'OTRO','RB',0,'C');//--UND 3
+$pdf->Cell(0,3,$datos[0]["tipo_vivienda"],'RB',1,'C');//--UND 3
+
+
+$pdf->Cell(0,3,'','TBRL',1,'C');
+
+$pdf->Cell(160,3,'NOMBRE:'.$datos[0]["nombre_inmueble"],'RBL',0,'L');//--NOMBRE
+$pdf->Cell(0,3,'NRO. CÍVICO:'.$datos[0]["numero_civico"],'RB',1,'L');//--NRO. CÍVICO
+$pdf->Cell(40,3,'TELF:'.$datos[0]["telefono_inmueble"],'RL',0,'L');//--TELF
+$pdf->Cell(0,3,'PTO / REF. '.$datos[0]["punto_referencia_inmueble"],'R',1,'L');//--PTO / REF
+
+$per[1]=$datos[0]["personalidad_juridica"]==1 ? "X" : "";
+$per[2]=$datos[0]["personalidad_juridica"]==2 ? "X" : "";
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'E - DATOS DEL OCUPANTE','TBRL',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(160,3,'NOMBRES Y APELLIDOS -RAZÓN SOCIAL: '.$datos[0]["nombre_ocupante"],'RBL',0,'L');//--NOMBRES Y APELLIDOS -RAZÓN SOCIAL
+$pdf->Cell(25,3,'PN  '.$per[1],'RB',0,'L');//--PN
+$pdf->Cell(0,3,'PJ '.$per[2],'RB',1,'L');//--PJ
+
+$pdf->Cell(40,3,'CÉDULA / RIF. '.$datos[0]["cedula_rif"],'RBL',0,'L');//--CÉDULA / RIF
+$pdf->Cell(75,3,'CIUDAD / LOCALIDAD: '.$datos[0]["localidad_ocupante"],'RB',0,'L');//--CIUDAD / LOCALIDAD
+$pdf->Cell(15,3,'URB','RB',0,'L');
+$pdf->Cell(15,3,'BARRIO','RB',0,'L');
+$pdf->Cell(15,3,'SECTOR','RB',0,'L');
+$pdf->Cell(0,3,' '.$datos[0]["urb_barrio_sector_ocupante"],'RB',1,'L');
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'F - DATOS DEL PROPIETARIO / REP. LEGAL / ADMINISTRADOR','TBRL',1,'C');
+
+$dir2b[1]=$datos[0]["tilde_av_cuatro"]==1 ? "X" : "";
+$dir2b[2]=$datos[0]["tilde_clle_cuatro"]==1 ? "X" : "";
+$dir2b[3]=$datos[0]["tilde_crr_cuatro"]==1 ? "X" : "";
+$dir2b[4]=$datos[0]["tilde_trav_cuatro"]==1 ? "X" : "";
+$dir2b[5]=$datos[0]["tilde_prol_cuatro"]==1 ? "X" : "";
+$dir2b[6]=$datos[0]["tilde_crrt_cuatro"]==1 ? "X" : "";
+$dir2b[7]=$datos[0]["tilde_cjn_cuatro"]==1 ? "X" : "";
+$dir2b[8]=$datos[0]["tilde_psje_cuatro"]==1 ? "X" : "";
+$dir2b[9]=$datos[0]["tilde_blv_cuatro"]==1 ? "X" : "";
+$dir2b[10]=$datos[0]["tilde_vda_cuatro"]==1 ? "X" : "";
+$dir2b[11]=$datos[0]["tilde_esc_cuatro"]==1 ? "X" : "";
+$dir2b[12]=$datos[0]["tilde_snd_cuatro"]==1 ? "X" : "";
+$dir2b[13]=$datos[0]["tilde_tcal_cuatro"]==1 ? "X" : "";
+$dir2b[14]=$datos[0]["tilde_cno_cuatro"]==1 ? "X" : "";
+
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir2b[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir2b[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_cuatro"],'TBRL',1,'L');
+
+$dir3b[1]=$datos[0]["tilde_av_cinco"]==1 ? "X" : "";
+$dir3b[2]=$datos[0]["tilde_clle_cinco"]==1 ? "X" : "";
+$dir3b[3]=$datos[0]["tilde_crr_cinco"]==1 ? "X" : "";
+$dir3b[4]=$datos[0]["tilde_trav_cinco"]==1 ? "X" : "";
+$dir3b[5]=$datos[0]["tilde_prol_cinco"]==1 ? "X" : "";
+$dir3b[6]=$datos[0]["tilde_crrt_cinco"]==1 ? "X" : "";
+$dir3b[7]=$datos[0]["tilde_cjn_cinco"]==1 ? "X" : "";
+$dir3b[8]=$datos[0]["tilde_psje_cinco"]==1 ? "X" : "";
+$dir3b[9]=$datos[0]["tilde_blv_cinco"]==1 ? "X" : "";
+$dir3b[10]=$datos[0]["tilde_vda_cinco"]==1 ? "X" : "";
+$dir3b[11]=$datos[0]["tilde_esc_cinco"]==1 ? "X" : "";
+$dir3b[12]=$datos[0]["tilde_snd_cinco"]==1 ? "X" : "";
+$dir3b[13]=$datos[0]["tilde_tcal_cinco"]==1 ? "X" : "";
+$dir3b[14]=$datos[0]["tilde_cno_cinco"]==1 ? "X" : "";
+
+
+$pdf->Cell(15,3,'ENTRE','RL',0,'L');//--ENTRE
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir3b[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir3b[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir3b[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_cinco"],'TBRL',1,'L');
+
+$dir4b[1]=$datos[0]["tilde_av_seis"]==1 ? "X" : "";
+$dir4b[2]=$datos[0]["tilde_clle_seis"]==1 ? "X" : "";
+$dir4b[3]=$datos[0]["tilde_crr_seis"]==1 ? "X" : "";
+$dir4b[4]=$datos[0]["tilde_trav_seis"]==1 ? "X" : "";
+$dir4b[5]=$datos[0]["tilde_prol_seis"]==1 ? "X" : "";
+$dir4b[6]=$datos[0]["tilde_crrt_seis"]==1 ? "X" : "";
+$dir4b[7]=$datos[0]["tilde_cjn_seis"]==1 ? "X" : "";
+$dir4b[8]=$datos[0]["tilde_psje_seis"]==1 ? "X" : "";
+$dir4b[9]=$datos[0]["tilde_blv_seis"]==1 ? "X" : "";
+$dir4b[10]=$datos[0]["tilde_vda_seis"]==1 ? "X" : "";
+$dir4b[11]=$datos[0]["tilde_esc_seis"]==1 ? "X" : "";
+$dir4b[12]=$datos[0]["tilde_snd_seis"]==1 ? "X" : "";
+$dir4b[13]=$datos[0]["tilde_tcal_seis"]==1 ? "X" : "";
+$dir4b[14]=$datos[0]["tilde_cno_seis"]==1 ? "X" : "";
+
+
+$pdf->Cell(15,3,'Y','RL',0,'L');//--ENTRE
+$pdf->Cell(9,3,'AV','RL',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[1],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CLLE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[2],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CRR','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[3],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'TRAV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[4],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'PROL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[5],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'CRRT','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[6],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CJN','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[7],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'PSJE','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[8],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'BLV','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[9],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'VDA','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[10],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(8,3,'ESC','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[11],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'SND','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(5,3,$dir4b[12],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'TCAL','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(6,3,$dir4b[13],'R',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(9,3,'CNO','R',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,$dir4b[14],'R',1,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,$datos[0]["direccion_seis"],'TBRL',1,'L');
+
+$dir5b[1]=$datos[0]["tilde_edif_dos"]==1 ? "X" : "";
+$dir5b[2]=$datos[0]["tilde_apto_dos"]==1 ? "X" : "";
+$dir5b[3]=$datos[0]["tilde_qta_dos"]==1 ? "X" : "";
+$dir5b[4]=$datos[0]["tilde_casa_dos"]==1 ? "X" : "";
+$dir5b[5]=$datos[0]["tilde_rancho_dos"]==1 ? "X" : "";
+$dir5b[6]=$datos[0]["tilde_cc_dos"]==1 ? "X" : "";
+$dir5b[7]=$datos[0]["tilde_local_dos"]==1 ? "X" : "";
+$dir5b[8]=$datos[0]["tilde_oficina_dos"]==1 ? "X" : "";
+$dir5b[9]=$datos[0]["tilde_otro_dos"]==1 ? "X" : "";
+
+$pdf->Cell(11,3,'EDIF.','RLB',0,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[1],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'APTO','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[2],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'QTA','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[3],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(12,3,'CASA','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[4],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'RANCHO','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[5],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'C.C','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[6],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'LOCAL C.','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[7],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'OFIC.','RB',0,'C');//--UND 3
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(7,3,$dir5b[8],'RB',0,'C');//--UND 3
+$pdf->SetFont('vera','',5);
+$pdf->Cell(11,3,'OTRO','RB',0,'C');//--UND 3
+$pdf->Cell(0,3,$dir5b[9],'RB',1,'C');//--UND 3
+
+
+$pdf->Cell(0,3,'','TBRL',1,'C');
+
+$pdf->Cell(160,3,'NOMBRE:','RBL',0,'L');//--NOMBRE
+$pdf->Cell(0,3,'NRO. CÍVICO:','RB',1,'L');//--NRO. CÍVICO
+$pdf->Cell(40,3,'TELF:','RL',0,'L');//--TELF
+$pdf->Cell(0,3,'PTO / REF.','R',1,'L');//--PTO / REF
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'G - DATOS DEL TERRENO','TBRL',1,'C');
+
+$pdf->Cell(40,3,'1. TOPOLOGÍA','RBL',0,'C');
+$pdf->Cell(40,3,'2. ACCESO','RB',0,'C');
+$pdf->Cell(40,3,'7. TENENCIA TERRENO','RB',0,'C');
+$pdf->Cell(0,3,'9. USO ACTUAL','RB',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(30,3,'PLANO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][0]),'RB',0,'C');
+$pdf->Cell(30,3,'CALLE PAVIMENTADA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][0]),'RB',0,'C');
+$pdf->Cell(30,3,'PROPIEDAD','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][0]),'RB',0,'C');
+$pdf->Cell(35,3,'RESIDENCIAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][0]),'RB',0,'C');
+$pdf->Cell(30,3,'AGROINDUSTRIAL','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][11]),'RB',1,'C');
+
+$pdf->Cell(30,3,'SOBRE NIVEL','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][1]),'RB',0,'C');
+$pdf->Cell(30,3,'CALLE ENGRANZONADA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][1]),'RB',0,'C');
+$pdf->Cell(30,3,'ARRENDAMIENTO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][1]),'RB',0,'C');
+$pdf->Cell(35,3,'COMERCIAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][1]),'RB',0,'C');
+$pdf->Cell(30,3,'AGROFORESTAL','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][12]),'RB',1,'C');
+
+$pdf->Cell(30,3,'BAJO NIVEL','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][2]),'RB',0,'C');
+$pdf->Cell(30,3,'CALLE DE TIERRA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][2]),'RB',0,'C');
+$pdf->Cell(30,3,'COMODATO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][2]),'RB',0,'C');
+$pdf->Cell(35,3,'INDUSTRIAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][2]),'RB',0,'C');
+$pdf->Cell(30,3,'AGRÍCOLA','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][13]),'RB',1,'C');
+
+$pdf->Cell(30,3,'BAJO NIVEL','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][3]),'RB',0,'C');
+$pdf->Cell(30,3,'CALLE DE TIERRA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][3]),'RB',0,'C');
+$pdf->Cell(30,3,'COMODATO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][3]),'RB',0,'C');
+$pdf->Cell(35,3,'INDUSTRIAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][3]),'RB',0,'C');
+$pdf->Cell(30,3,'AGRÍCOLA','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][14]),'RB',1,'C');
+
+$pdf->Cell(30,3,'CORTE','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][4]),'RB',0,'C');
+$pdf->Cell(30,3,'ESCALERA PAVIMENTO','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][4]),'RB',0,'C');
+$pdf->Cell(30,3,'ANTICRESIS','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][4]),'RB',0,'C');
+$pdf->Cell(35,3,'RECREATIVO / DEPORTIVO','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][4]),'RB',0,'C');
+$pdf->Cell(30,3,'PECUARIO','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][15]),'RB',1,'C');
+
+$pdf->Cell(30,3,'RELLENO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][5]),'RB',0,'C');
+$pdf->Cell(30,3,'ESCALERA DE TIERRA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_acceso"][5]),'RB',0,'C');
+$pdf->Cell(30,3,'ENFITEUSIS','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][5]),'RB',0,'C');
+$pdf->Cell(35,3,'ASISTENCIAL / SALUD','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][5]),'RB',0,'C');
+$pdf->Cell(30,3,'FORESTAL','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][16]),'RB',1,'C');
+
+
+$pdf->Cell(30,3,'INCLINADO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_topo"][6]),'RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'USUFRUCTO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][6]),'RB',0,'C');
+$pdf->Cell(35,3,'EDUCACIONAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][6]),'RB',0,'C');
+$pdf->Cell(30,3,'MINERO','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][17]),'RB',1,'C');
+
+$pdf->Cell(30,3,'IRREGULAR','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'DERECHO DE USO','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][7]),'RB',0,'C');
+$pdf->Cell(35,3,'TURÍSTICO','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][7]),'RB',0,'C');
+$pdf->Cell(30,3,'SIN USO','RB',0,'L');
+$pdf->Cell(0,3,x($datos[0]["tilde_uso"][18]),'RB',1,'C');
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'DERECHO DE HAB.','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_tenencia"][8]),'RB',0,'C');
+$pdf->Cell(35,3,'SOCIAL / CULTURAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][8]),'RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'GUBERNAMENTAL / INSTITUCIONAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][9]),'RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'RELIGIOSO','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][10]),'RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'PESQUERO','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_uso"][11]),'RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,3,'3. FORMA','RBL',0,'C');
+$pdf->Cell(40,3,'4. UBICACIÓN','RB',0,'C');
+$pdf->Cell(40,3,'8. RÉG. PROPIEDAD','RB',0,'C');
+$pdf->Cell(0,3,'10. SERVICIOS PÚBLICOS','RB',1,'C');
+
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(30,3,'REGULAR','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_forma"][0]),'RB',0,'C');
+$pdf->Cell(30,3,'CONVENCIONAL','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_ubica"][0]),'RB',0,'C');
+$pdf->Cell(30,3,'EJIDO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'ACUEDUCTO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'TELÉFONO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'IRREGULAR','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_forma"][1]),'RB',0,'C');
+$pdf->Cell(30,3,'ESQUINA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_ubica"][1]),'RB',0,'C');
+$pdf->Cell(30,3,'MUNICIPAL PROPIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'CLOACAS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'COBERTURA CELULAR','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'MUY IRREGULAR','RBL',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_forma"][2]),'RB',0,'C');
+$pdf->Cell(30,3,'INTERIOR DE MANZANA','RB',0,'L');
+$pdf->Cell(10,3,x($datos[0]["tilde_ubica"][2]),'RB',0,'C');
+$pdf->Cell(30,3,'NACIONAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'DRENAJE ARTIFICIAL','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'CABLE TV','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,3,'5. ENTORNO FÍSICO','RBL',0,'C');
+$pdf->Cell(40,3,'6. MEJORAS DEL TERRENO','RB',0,'C');
+$pdf->SetFont('vera','',5);
+$pdf->Cell(30,3,'BALDIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'ELECTRICIDAD RESIDENCIAL','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'CORREO Y TELÉGRAFO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'ZONA URBANIZADA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'MURO DE CONTENCIÓN','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'ESTATAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'ELECTRICIDAD INDUSTRIAL','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'GAS','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'ZONA NO URBANIZADA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'NIVELACIÓN','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'PRIV. INDUSTRIAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'ALUMBRADO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'ASEO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'RIO / QUEBRADA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'CERCADO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'PRIV. CONDOMINIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'VIALIDAD','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'ESCUELAS','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'BARRANCO / TALUD','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'POZO SÉPTICO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'PAVIMENTO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'MEDICATURAS','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'OTRO:','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'LAGUNAS ARTIFICIALES','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'ACERA','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'RIESGO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(35,3,'TRANSPORTE','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(30,5,' OBSERVACIONES:','RL',0,'L');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(175,1,"",'',2,'C');
+$pdf->SetFont('vera','',5);
+$pdf->MultiCell(174,2,"".$datos[0]["observaciones_ficha"],'','L');//--OBSERVACIONES
+$varX = $varX+175;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,5,'','R',1,'C');
+$pdf->Cell(0,0,'','T',1,'C');
+
+
+
+
+
+
+
+
+
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'H - DATOS GENERALES DE LA CONSTRUCCIÓN','TBRL',1,'C');
+
+$pdf->Cell(80,3,'1. TIPO','RBL',0,'C');
+$pdf->Cell(40,3,'2. DESCRIPCIÓN DEL USO','RB',0,'C');
+$pdf->Cell(45,3,'3. TENENCIA CONSTRUCCIÓN','RB',0,'C');
+$pdf->Cell(0,3,'4. RÉGIMEN DE PROPIEDAD','RB',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(30,3,'QUINTA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--QUINTA
+$pdf->Cell(30,3,'LOCAL COMERCIAL','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--LOCAL COMERCIAL
+$pdf->Cell(30,3,'UNIFAMILIAR','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--UNIFAMILIAR
+$pdf->Cell(35,3,'PROPIEDAD','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--PROPIEDAD
+$pdf->Cell(30,3,'MUNICIPAL PROPIO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--MUNICIPAL PROPIO
+
+$pdf->Cell(30,3,'CASA - QUINTA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CASA - QUINTA
+$pdf->Cell(30,3,'GALPÓN','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--GALPÓN
+$pdf->Cell(30,3,'BIFAMILIAR','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--BIFAMILIAR
+$pdf->Cell(35,3,'ARRENDAMIENTO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--ARRENDAMIENTO
+$pdf->Cell(30,3,'NACIONAL','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--NACIONAL
+
+$pdf->Cell(30,3,'CHALET','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CHALET
+$pdf->Cell(30,3,'VAQUERAS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--VAQUERAS
+$pdf->Cell(30,3,'MULTIFAMILIAR','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--MULTIFAMILIAR
+$pdf->Cell(35,3,'COMODATO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--COMODATO
+$pdf->Cell(30,3,'ESTADAL','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--ESTADAL
+
+
+$pdf->Cell(30,3,'TONW HOUSE','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--TONW HOUSE
+$pdf->Cell(30,3,'COCHINERAS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--COCHINERAS
+$pdf->Cell(30,3,'COMERCIO AL DETAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--COMERCIO AL DETAL
+$pdf->Cell(35,3,'ANTICRESIS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--ANTICRESIS
+$pdf->Cell(30,3,'PRIV. INDIVIDUAL','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--PRIV. INDIVIDUAL
+
+
+$pdf->Cell(30,3,'CASA TRADICIONAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CASA TRADICIONAL
+$pdf->Cell(30,3,'CORRALES Y ANEXOS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CORRALES Y ANEXOS
+$pdf->Cell(30,3,'COMERCIO AL MAYOR','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--COMERCIO AL MAYOR
+$pdf->Cell(35,3,'ENFITEUSIS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--ENFITEUSIS
+$pdf->Cell(30,3,'PRIV. CONDOMINIO','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--PRIV. CONDOMINIO
+
+
+$pdf->Cell(30,3,'CASA CONVENCIONAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CASA CONVENCIONAL
+$pdf->Cell(30,3,'BEBEDEROS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--BEBEDEROS
+$pdf->Cell(30,3,'MERCADO LIBRE','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--MERCADO LIBRE
+$pdf->Cell(35,3,'USUFRUCTO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--USUFRUCTO
+$pdf->Cell(30,3,'OTRO:','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');//--OTRO
+
+
+$pdf->Cell(30,3,'CASA ECONÓMICA','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CASA ECONÓMICA
+$pdf->Cell(30,3,'COMEDEROS','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--COMEDEROS
+$pdf->Cell(30,3,'OFICINAS','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--OFICINAS
+$pdf->Cell(35,3,'DERECHO DE USO','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--DERECHO DE USO
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'RANCHO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--RANCHO
+$pdf->Cell(30,3,'TANQUES','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--TANQUES
+$pdf->Cell(30,3,'INDUSTRIAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--INDUSTRIAL
+$pdf->Cell(35,3,'DERECHO DE HABITACIÓN','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--DERECHO DE HABITACIÓN
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'EDIFICIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--EDIFICIO
+$pdf->Cell(30,3,'OTROS:','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--OTROS
+$pdf->Cell(30,3,'SERVICIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--SERVICIO
+$pdf->Cell(35,3,'OTRO:','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--OTRO
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->Cell(30,3,'APARTAMENTO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--APARTAMENTO
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'AGROPECUARIO','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--AGROPECUARIO
+$pdf->Cell(35,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Cell(30,3,'CENTRO COMERCIAL','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--CENTRO COMERCIAL
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'OTRO:','RBL',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');//--OTRO
+$pdf->Cell(35,3,'','RB',0,'L');
+$pdf->Cell(10,3,'','RB',0,'C');
+$pdf->Cell(30,3,'','RB',0,'L');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(104,4,'I - ESTRUCTURA','TRL',0,'C');
+$pdf->Cell(2,4,'','TRL',0,'C');
+$pdf->Cell(0,4,'','TRL',1,'C');
+
+$pdf->Cell(52,4,'1 - SOPORTE','TRL',0,'C');
+$pdf->Cell(52,4,'2 - TECHO','TL',0,'C');
+$pdf->Cell(2,4,'','TRL',0,'C');
+$pdf->Cell(0,4,'J - CUBIERTA','RL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(42,3,'CONCRETO ARMADO','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'CONCRETO ARMADO','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'MADERA TEJA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'ACEROLIT','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(42,3,'METÁLICA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'METÁLICA','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'PLACA TEJA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'PALMA','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(42,3,'MADERA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'MADERA','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'PLATABANDA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'OTRO:','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(42,3,'PAREDES DE CARGA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'VARAS','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'TEJAS / CAÑA BRAVA','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(42,3,'PREFABRICADO','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'CHERCHAS','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'ASBESTO','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(42,3,'MACHONES','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'OTRO:','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'ALUMINIO','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+$pdf->Cell(42,3,'OTRO:','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(42,3,'','TR',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(2,3,'','TRL',0,'C');
+$pdf->Cell(40,3,'ZINC','TRL',0,'L');
+$pdf->Cell(10,3,'','TR',0,'C');
+$pdf->Cell(40,3,'','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'K - DATOS COMPLEMENTARIOS DE LA CONSTRUCCIÓN','TRL',1,'C');
+
+$pdf->Cell(104,4,'1. - PAREDES','TRL',0,'C');
+$pdf->Cell(0,4,'2. - ESTADO CONSEVACIÓN','TR',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(52,3,'1.1. - TIPO','TRL',0,'C');
+$pdf->Cell(52,3,'1.2. - ACABADO','TR',0,'C');
+$pdf->Cell(92,3,'EXCELENTE','TR',0,'C');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+$pdf->Cell(25,3,'BLOQUE DE CEMENTO','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'VIDRIO','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'FRISO LISO','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(92,3,'BUENA','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(25,3,'BLOQUE DE ARCILLA','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'MADERA ACERRADO','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'FRISO RúSTICO','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(92,3,'REGULAR','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(25,3,'LADRILLO','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'SIN PAREDES','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'SIN FRISO','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(92,3,'MALO','TR',0,'L');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(25,3,'ADOBE','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'OTRO:','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'OBRA LIMPIA','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(0,3,'3. OTROS DATOS','TR',0,'C');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+
+$pdf->Cell(25,3,'TAPIA','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'OTRO:','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(55,3,'ANO CONSTRUCCIÓN','TR',0,'L');
+$pdf->Cell(0,3,'ANO REFACCIÓNE ','TR',1,'C');
+
+
+$pdf->Cell(25,3,'BAHAREQUE','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'% REFACCIÓN','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(55,3,'ANO CONSTRUCCIÓN','TR',0,'L');
+$pdf->Cell(0,3,'ANO REFACCIÓN','TR',1,'C');
+
+
+$pdf->Cell(25,3,'PREFABRICADA','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'','TRL',0,'L');
+$pdf->Cell(10,3,'','TRL',0,'C');
+$pdf->Cell(25,3,'','TRL',0,'L');
+$pdf->Cell(9,3,'','TRL',0,'C');
+$pdf->Cell(55,3,'NRO. DE NIEVES','TR',0,'L');
+$pdf->Cell(0,3,'NRO. DE EDIFICACIONES','TR',1,'C');
+
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'L - DATOS DEL REGISTRO PÚBLICO','TRBL',1,'C');
+
+$pdf->Cell(25,3,'NÚMERO','RBL',0,'C');
+$pdf->Cell(25,3,'FOLIO','RB',0,'C');
+$pdf->Cell(25,3,'TOMO','RB',0,'C');
+$pdf->Cell(25,3,'PROTOCOLO','RB',0,'C');
+$pdf->Cell(25,3,'FECHA','RB',0,'C');
+$pdf->Cell(50,3,'AREA (M2)','RB',0,'C');
+$pdf->Cell(0,3,'MONTO (BS)','RB',1,'C');
+
+
+$pdf->Cell(25,3,'12','RL',0,'C');
+$pdf->Cell(25,3,'12','R',0,'C');
+$pdf->Cell(25,3,'12','R',0,'C');
+$pdf->Cell(25,3,'1','R',0,'C');
+$pdf->Cell(25,3,'2','R',0,'C');
+$pdf->Cell(25,3,'TERRENO','RB',0,'C');
+$pdf->Cell(25,3,'CONSTRUCCIÓN','RB',0,'C');
+$pdf->Cell(0,3,'2','R',1,'C');
+
+
+$pdf->Cell(25,3,'','RBL',0,'C');
+$pdf->Cell(25,3,'','RB',0,'C');
+$pdf->Cell(25,3,'','RB',0,'C');
+$pdf->Cell(25,3,'','RB',0,'C');
+$pdf->Cell(25,3,'','RB',0,'C');
+$pdf->Cell(25,3,'12','RB',0,'C');
+$pdf->Cell(25,3,'12','RB',0,'C');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+
+$pdf->SetFont('vera','B',4);
+$pdf->Cell(0,4,'M - VALORACIÓN ECONÓMICA','TRBL',1,'C');
+$pdf->Cell(0,4,'1 - TERRENO','TRBL',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(25,3,'ÁREA(M)','RL',0,'C');
+$pdf->Cell(25,3,'VALOR UNITARIO','R',0,'C');
+$pdf->Cell(25,3,'','R',0,'C');
+$pdf->Cell(50,3,'FACTOR DE AJUSTE','R',0,'C');
+$pdf->Cell(50,3,'VALOR AJUSTADO','R',0,'C');
+$pdf->Cell(0,3,'VALOR TOTAL','R',1,'C');
+
+$pdf->Cell(25,2,'','RBL',0,'C');
+$pdf->Cell(25,2,'(BS / M)','RB',0,'C');
+$pdf->Cell(25,2,'SECTOR','RB',0,'C');
+$pdf->Cell(25,2,'ÁREA','TRB',0,'C');
+$pdf->Cell(25,2,'FORMA','TRB',0,'C');
+$pdf->Cell(50,2,'(BS / M)','RB',0,'C');
+$pdf->Cell(0,2,'VALOR TOTAL','RB',1,'C');
+
+$pdf->Cell(25,4,'','RBL',0,'C');
+$pdf->Cell(25,4,'','RB',0,'C');
+$pdf->Cell(25,4,'','RB',0,'C');
+$pdf->Cell(25,4,'','RB',0,'C');
+$pdf->Cell(25,4,'','RB',0,'C');
+$pdf->Cell(50,4,'','RB',0,'C');
+$pdf->Cell(0,4,'','RB',1,'C');
+
+
+$pdf->SetFont('vera','B',4);
+$pdf->Cell(0,4,'2 - CONSTRUCCIÓN','TRBL',1,'C');
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(33,4,'TIPOLOGÍA','RBL',0,'C');
+$pdf->Cell(33,4,'ÁREA(M)','RB',0,'C');
+$pdf->Cell(33,4,'VALOR(M)','RB',0,'C');
+$pdf->Cell(33,4,'% DEPRECIACIÓN','RB',0,'C');
+$pdf->Cell(33,4,'VALOR ACTUAL (BS)','RB',0,'C');
+$pdf->Cell(0,4,'VALOR TOTAL (BS)','RB',1,'C');
+
+$pdf->Cell(33,4,'','RBL',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(0,4,'','R',1,'C');
+
+$pdf->Cell(33,4,'','RBL',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(0,4,'','R',1,'C');
+
+$pdf->Cell(33,4,'','RBL',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(0,4,'','R',1,'C');
+
+$pdf->Cell(33,4,'','RBL',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(33,4,'','RB',0,'C');
+$pdf->Cell(0,4,'','R',1,'C');
+
+$pdf->Cell(33,4,'ÁREA TOTAL','L',0,'R');
+$pdf->Cell(33,4,'','RBL',0,'C');
+$pdf->Cell(99,4,'CONSTRUCCIÓN','',0,'R');
+$pdf->Cell(0,4,'','RBL',1,'C');
+
+$pdf->Cell(33,4,'','L',0,'R');
+$pdf->Cell(33,4,'','',0,'C');
+$pdf->Cell(99,4,'INMUEBLE','',0,'R');
+$pdf->Cell(0,4,'','RL',1,'C');
+
+$pdf->Cell(0,4,'','TRBL',1,'C');
+
+$pdf->Cell(33,20,'OBSERVACIONES','RL',0,'R');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(172,1,"",'',2,'C');
+$pdf->SetFont('vera','',5);
+$pdf->MultiCell(171,2,"".$datos[0]["observaciones_generales"],'','L');//--OBSERVACIONES
+$varX = $varX+172;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,20,'','R',1,'C');
+$pdf->Cell(0,0,'','T',1,'C');
+
+/////////////////////////////////////////////////////////////7
+
+$pdf->AddPage();
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'N - UBICACIÓN DE LA PARCELA','TRBL',1,'C');
+$pdf->Cell(0,2,'','RBL',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,3,'1 - DATOS GENERALES','RL',1,'C');
+
+
+$pdf->Cell(130,2,'','TRL',0,'L');
+$pdf->Cell(0,2,'','TR',1,'L');
+
+
+$pdf->Cell(30,3,'CONTROL ARCHIVO','L',0,'C');
+$pdf->Cell(5,3,'','TRBL',0,'L');//---CONTROL ARCHIVO
+$pdf->Cell(30,3,'','',0,'C');
+
+
+$pdf->Cell(30,3,'FICHA CATASTRAL NRO.','',0,'C');
+$pdf->Cell(30,3,'','TRBL',0,'L');//--FICHA CATASTRAL NRO
+$pdf->Cell(5,3,'','R',0,'C');
+
+
+$pdf->Cell(35,3,'INSCRIPCIÓN CATASTRAL NRO.','',2,'C');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(35,2,'  FECHA: 21/10/2008','',0,'L');//--FECHA
+$pdf->SetXY($varX+35,$varY-3);
+$pdf->Cell(35,3,'','TRBL',0,'L');//--INSCRIPCIÓN CATASTRAL NRO
+$pdf->Cell(0,3,'','R',1,'C');
+
+
+$pdf->Cell(130,2,'','RL',0,'L');
+$pdf->Cell(0,2,'','R',1,'L');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'2 - DATOS DE UBICACIÓN','TRBL',1,'C');
+
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,3,'CÓDIGO CATASTRAL ÁMBITO URBANO','RBL',1,'C');
+
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(21,3,'EDO','RBL',0,'C');
+$pdf->Cell(21,3,'MUN','RB',0,'C');
+$pdf->Cell(21,3,'PRR','RB',0,'C');
+$pdf->Cell(21,3,'ÁMB','RB',0,'C');
+$pdf->Cell(21,3,'SEC','RB',0,'C');
+$pdf->Cell(21,3,'MAN','RB',0,'C');
+$pdf->Cell(21,3,'PAR','RB',0,'C');
+$pdf->Cell(21,3,'SBP','RB',0,'C');
+$pdf->Cell(21,3,'NIV','RB',0,'C');
+$pdf->Cell(0,3,'UND','RB',1,'C');
+
+$pdf->Cell(10,3,'','RL',0,'C');//--EDO 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--MUN 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--PRR 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--ÁMB 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--SEC 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--MAN 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--PAR 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--SBP 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(10,3,'','R',0,'C');//--NIV 2
+$pdf->Cell(11,3,'','R',0,'C');
+
+$pdf->Cell(9,3,'','R',0,'C');//--UND 2
+$pdf->Cell(0,3,'','R',1,'C');
+
+
+$pdf->Cell(0,4,'','TRL',1,'C');
+
+
+$pdf->Cell(21,3,'EDO','RBL',0,'C');
+$pdf->Cell(21,3,'MUN','RB',0,'C');
+$pdf->Cell(21,3,'PRR','RB',0,'C');
+$pdf->Cell(21,3,'ÁMB','RB',0,'C');
+$pdf->Cell(21,3,'SEC','RB',0,'C');
+$pdf->Cell(21,3,'MAN','RB',0,'C');
+$pdf->Cell(21,3,'PAR','RB',0,'C');
+$pdf->Cell(21,3,'SBP','RB',0,'C');
+$pdf->Cell(21,3,'NIV','RB',0,'C');
+$pdf->Cell(0,3,'UND','RB',1,'C');
+
+$pdf->Cell(7,3,'','RL',0,'C');//--EDO 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--MUN 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--PRR 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--ÁMB 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--SEC 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--MAN 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--PAR 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--SBP 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(7,3,'','R',0,'C');//--NIV 2
+$pdf->Cell(7,3,'','R',0,'C');//--
+$pdf->Cell(7,3,'','R',0,'C');//--
+
+$pdf->Cell(6,3,'','R',0,'C');//--UND 2
+$pdf->Cell(6,3,'','R',0,'C');//--
+$pdf->Cell(0,3,'','R',1,'C');//--
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'LINDEROS ACTUALES','TRBL',1,'C');
+
+$pdf->Cell(21,4,' NORTE:','RBL',0,'L');
+$pdf->Cell(0,4,'','RB',1,'C');//--LINDERO NORTE
+
+$pdf->Cell(21,4,' SUR:','RBL',0,'L');
+$pdf->Cell(0,4,'','RB',1,'C');//--LINDERO SUR
+
+$pdf->Cell(21,4,' ESTE:','RBL',0,'L');
+$pdf->Cell(0,4,'','RB',1,'C');//--LINDERO ESTE
+
+$pdf->Cell(21,4,' OESTE:','RBL',0,'L');
+$pdf->Cell(0,4,'','RB',1,'C');//--LINDERO OESTE
+
+$pdf->Cell(0,4,'','RBL',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'COORDENADAS UTM (REGVEN)','TRBL',1,'C');
+
+$pdf->Cell(65,4,'NORTE (M)','RBL',0,'L');
+$pdf->Cell(65,4,'ESTE (M)','RB',0,'L');
+$pdf->Cell(0,4,'HUSO','RB',1,'C');
+
+$pdf->Cell(65,4,'','RBL',0,'L');//--NORTE (M)
+$pdf->Cell(65,4,'','RB',0,'L');//--ESTE (M)
+$pdf->Cell(0,4,'','RB',1,'C');//--HUSO
+
+$pdf->Cell(0,1,'','RL',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,'4. - CROQUIS DE LEVANTAMIENTO PARCELARIO','TRBL',1,'C');
+
+$pdf->Cell(0,100,'','RBL',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(33,20,'OBSERVACIONES','RL',0,'C');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(172,1,"",'',2,'C');
+$pdf->SetFont('vera','',5);
+$pdf->MultiCell(171,2,"CUMPLE CON TODOS LOS REQUISITOS EXIGIDOS POR LA LEY BAJO LA CUAL SE RIGE ESTA MUNICIPALIDAD SAFASFSAFASFGGA",'','L');//--OBSERVACIONES
+$varX = $varX+172;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,20,'','R',1,'C');
+$pdf->Cell(0,0,'','T',1,'C');
+
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(60,6,'FECHA DE PRIMERA VISITA:','RBL',0,'L');//--FECHA DE PRIMERA VISITA
+$pdf->Cell(72,3,'ELABORADO POR','RB',0,'C');
+$pdf->Cell(0,3,'REVISADO POR','RB',1,'C');
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$varX = $varX+60;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(40,3,'NOMBRE','RB',0,'C');
+$pdf->Cell(32,3,'C.I.','RB',0,'C');
+
+$pdf->Cell(40,3,'NOMBRE','RB',0,'C');
+$pdf->Cell(0,3,'CI','RB',1,'C');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(60,6,'FECHA DE LEVANTAMIENTO:','RBL',0,'L');//--FECHA DE LEVANTAMIENTO
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,6,'ALBERTO JOSE','RB',0,'L');//--NOMBRE ELABORADO POR
+$pdf->Cell(32,6,'15.555.555','RB',0,'C');//--CI ELABORADO POR
+$pdf->Cell(40,6,'ALBERTO MANUIT','RB',0,'L');//--NOMBRE REVISADO POR
+$pdf->Cell(0,6,'16.555.555','RB',1,'C');//--CI REVISADO POR
+
+}
+
+}
+$pdf->Output();//Poner nombre y la opcion D
+?>

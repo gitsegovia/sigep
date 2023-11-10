@@ -1,0 +1,356 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>SIGEP -  CONCEJOS COMUNALES</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="icon" href="<?php echo $this->webroot . 'favicon.ico';?>" type="image/x-icon" />
+<link rel="shortcut icon" href="<?php echo $this->webroot . 'favicon.ico';?>" type="image/x-icon" />
+<?php print $javascript->link('footer/reloj') ?>
+<?php include("scripts_css.thtml"); ?>
+
+<script language="JavaScript" type="text/javascript" src="/js/scriptaculous/prototype.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/scriptaculous/scriptaculous.js"></script>
+
+<?php $url = $this->webroot . $this->themeWeb . IMAGES_URL;?>
+
+
+<script language="JavaScript">
+
+<!--
+
+var MenuPrincipal = [
+
+		[null,'Consejos comunales',null,null,'',
+
+<?php if($_SESSION["nom_usuario"]=="ADMIN_CONSEJO"  || $_SESSION["nom_usuario"]=="ADMIN_CONCEJO"  || $_SESSION["nom_usuario"]=="ADMIN"){ ?>
+			[null,'Tipo de directiva',/ccnp01_tipo_directiva/,'principal','',],
+			[null,'Cargos de directivos',/ccnp01_cargos_directivos/,'principal','',],
+			[null,'Ubicaciones geográficas',null,null,'',
+				[null,'República', '/cugp01republica/index2','principal',''],
+				[null,'Estados', '/cugp01estados/index2','principal',''],
+				[null,'Municipios', '/cugp01municipios/index2','principal',''],
+				[null,'Parroquias', '/cugp01parroquias/index2','principal',''],
+				[null,'Centros poblados', '/cugp01centropoblados/index2','principal','']
+			],
+			[null,'Consejos comunales',/ccnp01_concejo_comunal/,'principal','',],
+			[null,'Creacion usuarios',/ccnp00_usuarios_comunas/,'principal','',]
+<?php }else{ ?>
+			[null,'Directiva consejos comunales',/ccnp01_directiva/,'principal','',],
+			[null,'Tipo de requerimientos',/ccnp01_tipo_requerimientos/,'principal','',],
+			[null,'Requerimientos de la población',/ccnp01_requerimientos_poblacion/,'principal','',],
+			[null,'Formulación de proyectos',/ccnp01_formulacion_de_proyecto/,'principal','',],
+			[null,'Ubicaciones geográficas',null,null,'',
+				<? /* [null,'Calles o Avenidas', '/cugp01vialidad/index2','principal',''], */ ?>
+				[null,'Sector', '/cugp01sector/index2','principal',''],
+				[null,'Calles', '/cugp01censocalle/index2','principal','']
+			],
+			<? /* [null,'Censo poblacional',/ccnp03_censo_poblacional/,'principal','',], */ ?>
+			[null,'Estudio Demográfico y Socio Económico',/ccnp03_censo_poblacional1/,'principal','',]
+<?php } ?>
+		],
+	['<img src="/img/regresar_modulo.png" border="0" title="Regresar a Modulos" width="24" height="24">','', '/modulos/','no_ajax',''],
+	['<img src="/img/stock_exit.png" border="0" title="Cerrar Session" width="24" height="24">','', '/usuarios/salir_concejo','no_ajax','']
+];
+
+--></script>
+
+<script language="JavaScript" type="text/javascript">
+  window.onload = function() {
+<?php if($_SESSION["ANO_CERRADO_EJECUCION"]!=date('Y')){ ?>
+	verifica_cierre_ano_ejecucion_msj();
+<?php } ?>
+		set();
+		set_acept();
+     document.onkeypress = nav_next_prev;
+     <?=VERSION==1?'':'clock();';?>
+  }
+</script>
+
+</head>
+
+<!-- onLoad="set();" -->
+
+<body><!--<div class="div_fondo_modulos"><?= $html->image('fondo_prueba.jpg',array('width'=>'100%', 'height'=>'100%'))?></div>-->
+
+
+<input id="capa_ventana" type="hidden">
+<input type='hidden'  name='inicio_barra'     id='inicio_barra'     value="0"/>
+<input type='hidden'  name='titulo_barra'     id='titulo_barra'     value="0"/>
+
+<br><br><br><br><br>
+<div id="contenedor">
+<?php
+echo '<div id="mini_loading" style="display:none;">';
+echo $html->image("cargando.gif", array("alt"=>"Loading"));
+echo '</div>';
+
+?>
+<?if(defined('VERSION')==true && VERSION==2){?>
+<div id="top">
+<div id="top_izq" class="top_izq_2"></div>
+<div id="top_centro" class="top_centro_2"><div class="titulo_top_sup"><?= $sisap->cambiar(strtoupper($session->read('entidad_federal')))?></div>
+<div class="titulo_top_inf">Sistema Integrado de Gesti&uoacute;n para Entidades P&uacute;blicas</div></div>
+<div id="top_der" class="top_der_2"></div>
+<div id="menu_sisap_1" class="menu_sisap_1">
+<script language="JavaScript">
+<!--
+	cmDraw ('menu_sisap_1', MenuPrincipal, 'hbr', cmThemeOffice, 'ThemeOffice');
+-->
+</script>
+</div>
+<div id="identificador_usuario">
+<?= strtoupper($session->read('nom_usuario'))?><img src="/img/usuario.png" border="0" title="Usuario <?= strtoupper($session->read('nom_usuario'))?>" align="top" width="24" height="22">
+  </div>
+
+
+			<!-- <div id="msj_cancelar" style="display:none;"></div>
+			<div id="msj_aceptar" style="display:none;"></div> -->
+			<div id="valida_codigo" style="display:none;"></div>
+
+
+<!--
+Effect.DropOut('box1');
+Efectos: Appear, Blind, Slide
+Effect.toggle('msj_cancelar', 'appear', {duration:3});
+-->
+
+</div>
+<div id="menu_sisap_inactivo" class="menu_sisap_inactivo0"></div>
+
+<div id="msj_cancelar" style="display:none;">
+	<div id="box">
+		<?= $html->image('check_rojo.png',array('width'=>19, 'height'=>17, 'border'=>0))?>
+        <input id="cancel" type="button" title="Cerrar" onClick="Effect.toggle('msj_cancelar', 'appear');"/>
+	</div>
+	<div id="box1">
+	</div>
+</div>
+
+<div id="msj_aceptar" style="display:none;">
+	<div id="box_acept">
+		<?= $html->image('check_verde.png',array('width'=>19, 'height'=>17, 'border'=>0))?>
+        <input id="cancel" type="button" title="Cerrar" onClick="Effect.toggle('msj_aceptar', 'appear');"/>
+	</div>
+	<div id="box2">
+	</div>
+</div>
+
+<?}else{?>
+<div id="top">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+     <td width="9"><?= $html->image('top-sigep_r1_c1.png',array('width'=>229, 'height'=>72))?></td>
+     <td style="background-image:url(<?=$url?>top-sigep_r1_c2.png); background-repeat:repeat-x;">
+        <table border="0" width="100%" cellpadding="0" cellspacing="0" align="center">
+           <tr>
+              <td height="35">&nbsp;</td>
+              <td class="titulo_top_sup"><?= strtoupper($session->read('entidad_federal'))?></td>
+              <td>&nbsp;</td>
+          </tr>
+           <tr>
+              <td height="35" width="38">V 1.0</td>
+              <td class="titulo_top_inf" valign="top">Sistema Integrado de Gesti&uoacute;n para Entidades P&uacute;blicas</td>
+              <td>&nbsp;</td>
+           </tr>
+         </table>
+     </td>
+     <td width="9"><?= $html->image('top-sigep_r1_c4.png',array('width'=>21, 'height'=>72))?></td>
+  </tr>
+</table>
+<table width="99%" align="center" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td width="9"><?= $html->image('menu-sigep_r1_c1.png', array('alt'=>'top',  'width'=>'9', 'height'=>'36'))?></d>
+<td style="background-image:url(<?=$url?>menu-sigep_r1_c2.png); background-repeat:repeat-x">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" >
+    <tr>
+      <td width="5"><?= $html->image('blank.gif ', array('alt'=>'top',  'width'=>'5', 'height'=>'36'))?></td>
+      <td>
+<?php
+            //$modulo=strtolower($session->read('Modulo2'));
+
+           //include("$modulo.thtml");
+           if(!defined('VERSION') || VERSION==1){
+               if($permitido==true)include($modulo."_v1.thtml");
+               else include("negar_menu_v1.thtml");
+            }
+           ?>
+      </td>
+      <td align="right" style="padding-right:5px;" width="185">USUARIO: <span class="nom_usuario"><?= strtoupper($session->read('nom_usuario'))?></span></td>
+    </tr>
+  </table>
+</td>
+<td width="11"><?= $html->image('menu-sigep_r1_c4.png', array('alt'=>'top',  'width'=>'11', 'height'=>'36'))?></td>
+</tr>
+</table>
+<table width="99%" border="0" align="center">
+	<tr>
+		<td width="1" align="center">
+			<?=$html->image('blank.gif',array('width'=>'1','height'=>'30'))?>
+		</td>
+		<td colspan="4">
+			<div id="msj_cancelar" style="display:none;"></div>
+			<div id="msj_aceptar" style="display:none;"></div>
+			<div id="valida_codigo" style="display:none;"></div>
+		</td>
+	</tr>
+</table>
+</div>
+
+<?}?>
+
+
+
+<?php
+echo '<div id="loading_animado" style="display:none;">';
+ echo '<div id="transparenciaMensaje">';
+  echo $html->image("loading_animation.gif", array("alt"=>"Loading"));
+ echo '</div>';
+echo '</div>';
+?>
+<div id="water_mark">
+<img src="/img/water_mark_sisap.png" border="0" align="top">
+</div>
+<div id="principal" class="<?=VERSION==1?'principal_v1':'principal';?>" align="center" onClick="c_msj2();">
+
+
+<div id="contenido_tabla_NOTA" style="display:none;">
+ <table width="620" border="0" class="tabla_msj" cellpadding="0" cellspacing="0"><tr><td class="th_msj"><center><img src="/img/alerta_nota.png" title=" AVISO "/></center></td><td valign="top" class="th_msj" style="text-align:justify;"><br> ATENCI&Oacute;N: SE LES INFORMA A TODOS LOS USUARIOS, QUE HA SIDO APERTURADO EL EJERCICIO FISCAL 2009, POR LO TANTO NO SE PODR&Aacute; EFECTUAR NINGUNA EJECUCI&Oacute;N PRESUPUESTARIA DEL EJERCICIO FISCAL 2008.
+<br><br><i class="td_msj"> </i><br><br></td><td class="th_msj">&nbsp;</td></tr></table>
+</div>
+<script>
+       //Control.Modal.open(document.getElementById('contenido_tabla_NOTA').innerHTML);
+</script>
+
+<?
+//}
+?>
+<?php if ($session->check('Message.flash')){$session->flash();} echo $content_for_layout; ?></div>
+
+
+
+</div>
+</div>
+
+<?if(VERSION==2){?>
+<?
+///echo $ajax->remoteTimer(array('url'=>'/include/msj/index_msj.php?tipo=verifica_msj='.$session->read('nom_usuario').'=no','update'=>'lugar_msj','frequency'=>'15'));
+
+
+if(VERSION_BUTTON==2){
+
+?>
+
+<span class="continuar_input_admin" title="Continuar"> </span>
+<span class="guardar_input2_admin" title="Guardar"> </span>
+<span class="modificar_input_admin" title="Modificar"> </span>
+<span class="eliminar_input_admin" title="Eliminar / Anualar"> </span>
+<span class="consultar_input_admin" title="Consultar"> </span>
+<span class="buscar_input_admin" title="Buscar"> </span>
+<span class="primero_input_admin" title="Primero"> </span>
+<span class="anterior_input_admin" title="Anterior"> </span>
+<span class="siguiente_input_admin" title="Siguiente"> </span>
+<span class="ultimo_input_admin" title="Ultimo"> </span>
+<span class="generar_input_admin" title="Generar reporte"> </span>
+<span class="regresar_input_admin" title="Regresar"> </span>
+<span class="salir_input_admin" title="Salir"> </span>
+
+<?  }?>
+
+<div id="lugar_msj"></div>
+<div id="sfWebDebug">
+      <div id="sfWebDebugBar" class="sfWebDebugWarning">
+             <table width="98%" border="0" align="center"><tr>
+
+             <td width="6%"  id="MenuAplicacion">
+
+<script language="JavaScript">
+<!--
+	//cmDraw ('MenuAplicacion', MenuPrincipal, 'har', cmThemeOffice, 'ThemeOffice');
+-->
+</script>
+      &nbsp;        </td>
+<td width="16%" style="padding-top:0px;">
+  <!--<table border="0" cellpadding="0" cellspacing="0"><tr><td style="padding-top:0px;"><img src="/img/usuario.png" border="0" title="Usuario <?= strtoupper($session->read('nom_usuario'))?>" width="24" height="22"></td><td><span style="color:#000; margin-top:1px;"><?= strtoupper($session->read('nom_usuario'))?></span></td></tr></table>-->
+  </td>
+             <td width="60%">
+			      <table  align="center">
+			        <tr>
+			           <td><div id="1"></div></td>
+			           <td><div id="2"></div></td>
+			           <td><div id="3"></div></td>
+			           <td><div id="4"></div></td>
+			           <td><div id="5"></div></td>
+			           <td><div id="55"></div></td>
+			           <td><div id="56"></div></td>
+			           <td><div id="6"></div></td>
+			           <td><div id="7"></div></td>
+			           <td><div id="8"></div></td>
+			         </tr>
+			      </table>
+			    </td>
+          <td  style="padding-right:0px;border-right:#000000 1px solid; border-left:#000000 1px solid;" width="9%" align="right">
+
+           <span id="cantidad_msj"><?php echo $html->image("evolution-1.4.png", array("alt"=>"","width"=>"24", "height"=>"24")); ?>(0)</span>
+           		 <input type="hidden" value=''  id="fecha_menu" >
+           		<? /*$html->imageTag($path='date.png', $alt ="Calendario", $htmlAttributes = array("onClick"=>"displayCalendar(document.all.fecha_menu,'dd/mm/yyyy',this,null,null,true)", 'style'=>'margin: 0 0 0 0; padding: 0 0 0 0;', 'border'=>'0', 'width'=>'24',"height"=>"24"), $return = false)*/?>
+              </td>
+            <td id="reloj" width="10%" align="right"></td></tr></table>
+  </div>
+</div>
+<?}?>
+<div id="c_usuarios" style="display:none;"></div>
+<div id="contenido_programa_ventana" style="display:none;"></div>
+<input type="hidden" name="ANO_CERRADO_EJECUCION" value="<?=$_SESSION["ANO_CERRADO_EJECUCION"]?>" id="ANO_CERRADO_EJECUCION" readOnly/>
+<input type="hidden" name="MES_CERRADO_EJECUCION" value="<?=$_SESSION["MES_CERRADO_EJECUCION"]?>" id="MES_CERRADO_EJECUCION" readOnly/>
+<input type="hidden" name="ANO_ACTUAL_SERVIDOR" value="<?=date('Y')?>" id="ANO_ACTUAL_SERVIDOR" readOnly/>
+
+
+<?php include("scripts_js.thtml"); ?>
+
+<?php
+
+	if ($session->check('passw_usuario')){
+		$clavepwu = $session->read('passw_usuario');
+		if($clavepwu != null){
+			$varpw_clave = $sisap->validar_cclave($clavepwu);
+		}
+	}
+
+	if(isset($varpw_clave) && $varpw_clave[1] === false){
+?>
+
+<script>
+    doc  = '<div id="cuerpo_ventana_porcentaje" style="background-color:#FFF;">';
+    doc += '<table width="100%" border="0"  class="admin_porcentaje_barra">';
+	doc += '<tr><td  align="right" id="f" width="380"><br></td></tr>';
+	doc += '<tr><td  align="center"id="a"><br></td></tr>';
+	doc += '<tr><td  align="right" id="b"><br><br></td></tr>';
+
+	doc += '<tr><td  align="left">';
+	doc += '<table width="100%">';
+	doc += '<tr><td id="c_1" align="left" width="90%"></td><td id="c_2" align="right" valign="top" width="10%"></td></tr>';
+	doc += '</table>';
+	doc += '</td></tr>';
+
+	doc += '<tr><td  align="left"  id="d">';
+
+	doc += '<table width="100%" class="barra_porcentaje_border">';
+	doc += '<tr><td>';
+	doc += '</td></tr>';
+	doc += '</table>';
+
+	doc += '</td></tr>';
+	doc += '<tr><td  align="right" id="e"><br></td></tr>';
+	doc += '</table>';
+
+  Control.Modal.open(doc, {overlayCloseOnClick:false});
+  ver_documento('/ccnp00_usuarios_comunas/mensaje_clave/','cuerpo_ventana_porcentaje');
+</script>
+
+<?php
+	echo "<script>codigo_ventana('/ccnp00_usuarios_comunas/cambiar_clave/adv/adv', '450px', '250px', '* Cambiar clave usuario *');</script>";
+	}
+?>
+
+</body>
+</html>
+

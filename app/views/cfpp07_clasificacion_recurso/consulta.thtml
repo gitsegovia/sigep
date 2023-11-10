@@ -1,0 +1,112 @@
+<?
+$sisap->CssSelect();
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+if(isset($ANO) && $ANO<=2011){
+	$var_a = 'Laee';
+	$var_b = 'Fides';
+}else{
+	$var_a = 'Fci';
+	$var_b = 'Mpps';
+}
+
+	// $sisap->radioTagRemote("cfpp07_clasificacion_recurso/tipo_recurso", array('1'=>'Ordinario', '2'=>'Coordinado','3'=>$var_a,'4'=>$var_b,'5'=>'Ingresos Extraordinarios','6'=>'Ingresos Propios'), array('url1'=>'/cfpp07_clasificacion_recurso/radio/', 'update1'=>'principal_cfpp07_clasificacion_recurso','id'=>'radio'), null, null);
+
+?>
+<?php
+
+  $i=0;
+
+	foreach( $datos as $dato){
+
+		$tipo_recurso[$i]=  $dato['cfpd07_clasificacion_recurso']['tipo_recurso'];
+		$clasificacion_recurso[$i]= $sisap->add_c_c($dato['cfpd07_clasificacion_recurso']['clasificacion_recurso']);
+		$denominacion[$i]=  $dato['cfpd07_clasificacion_recurso']['denominacion'];
+
+		$i++;
+	}
+
+$totalPages_Recordset1 = $i - 1;
+$totalPages_Recordset1 = abs($totalPages_Recordset1) ;
+$totalPages_Recordset1 = floor($totalPages_Recordset1);
+
+if(isset($pagina_actual)){$pageNum_Recordset1 = $pagina_actual; }else{$pageNum_Recordset1 = 0;}
+
+
+$siguiente = $pageNum_Recordset1 + 1;
+$anterior = $pageNum_Recordset1 - 1;
+
+	if($i>0){
+?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr>
+		<th colspan="3" align="center">Tipo de Recurso</th>
+	</tr>
+	<tr>
+		<td  colspan="3" align="center">
+		<?= $sisap->radioTagRemote("cfpp07_plan_inversion/tipo_recurso", $sisap->tipoPresupuesto(1), array('disabled'=>"disabled",'id'=>'radio'), null, $opc=$tipo_recurso[$pageNum_Recordset1]);?>
+		</td>
+	</tr>
+<tr>
+		<td width='10%' align="center">Seleccione</td>
+		<td width='10%' align="center">Código Clasificación</td>
+		<td width='80%' align="center">Denominación de la Clasificación del recurso</td>
+	</tr>
+<tr>
+	<td align="center">
+		<div id="st_tipo">
+			<?=  $sisap->selectTagRemote('cfpp07_clasificacion_recurso/cod_ramo', null,  array('disabled'=>"disabled",'value1'=>'otros', 'opcion1'=>'agregar'),  '',array('disabled'=>"disabled",'onchange1'=>'/cfpp07_clasificacion_recurso/selec_tipo/', 'update1'=>'principal_cfpp07_clasificacion_recurso', 'id'=>'select_1'  , true), null, true); ?>
+		</div>
+	</td>
+	<td align="center">
+		<?= $html->input('cfpp07_clasificacion_recurso/clasificacion_recurso', array("style"=>"text-align:center", 'value'=>$sisap->add_c_c($clasificacion_recurso[$pageNum_Recordset1]), 'id'=>'clasificacion_recurso','onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4', 'readonly'=>'readonly',"class"=>"inputtext"))?>
+	</td>
+	<td align="center">
+		<?= $html->input('cfpp07_clasificacion_recurso/denominacion', array('value'=>$denominacion[$pageNum_Recordset1], 'id'=>'denominacion', 'readonly'=>'readonly',"class"=>"inputtext"))?>
+	</td>
+</tr>
+
+</table>
+
+<table width='100%'  border='0' cellpadding='0' cellspacing='0' aling="center">
+<tr  height="40px">
+	<td align="center">
+ <?php  if ($pageNum_Recordset1 > 0) {   $opcion = " "; }else{ $opcion = 'disabled' ;}  ?>
+           <?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/anterior', array ( 'value'=>'Primero' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07_clasificacion_recurso/consulta/0', 'update1'=>'principal_cfpp07_clasificacion_recurso')) ?>
+		   <?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07_clasificacion_recurso/consulta/'.$anterior.'', 'update1'=>'principal_cfpp07_clasificacion_recurso')) ?>
+       </span>
+       <span class="pagenav">
+       <?php if ($pageNum_Recordset1 < $totalPages_Recordset1) {   $opcion = " "; }else{ $opcion =  'disabled';}  ?>
+	       <?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07_clasificacion_recurso/consulta/'.$siguiente.'', 'update1'=>'principal_cfpp07_clasificacion_recurso')) ?>
+	       <?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/siguiente', array ( 'value'=>'Último' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07_clasificacion_recurso/consulta/'.$totalPages_Recordset1.'', 'update1'=>'principal_cfpp07_clasificacion_recurso')) ?>
+       </span>
+
+
+        <?= $sisap->buttonTagRemote('/cfpp07_clasificacion_recurso/editar/',   array ('type'=>'button', 'value'=>'Modificar'), array('url1' => '/cfpp07_clasificacion_recurso/editar2/'.$pageNum_Recordset1.'/'.$tipo_recurso[$pageNum_Recordset1].'/'.$clasificacion_recurso[$pageNum_Recordset1],   'update1'=>'principal_cfpp07_clasificacion_recurso' ))?>
+		<?= $sisap->buttonTagRemote('/cfpp07_clasificacion_recurso/eliminar/', array ('type'=>'button', 'value'=>'Eliminar'),  array('url1' => '/cfpp07_clasificacion_recurso/eliminar2/'.$pageNum_Recordset1.'/'.$tipo_recurso[$pageNum_Recordset1].'/'.$clasificacion_recurso[$pageNum_Recordset1], 'update1'=>'principal_cfpp07_clasificacion_recurso' ))?>
+
+
+<?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/consultar', array ('value'=>'Salir'), array('url1' => '/cfpp07_clasificacion_recurso/index/', 'update1'=>'principal'))?>
+
+	</td>
+</tr>
+</table>
+
+
+<?php }else{  ?>
+
+
+
+<table width='700'  border='0' cellpadding='0' cellspacing='0'  style='margin-top:10px;'>
+<tr><td><?=  $sisap->mensajes_error('No Existen Datos', 'cancelar');  ?></td></tr>
+</table>
+
+<?= $sisap->buttonTagRemote('cfpp07_clasificacion_recurso/consultar', array ('value'=>'Salir'), array('url1' => '/cfpp07_clasificacion_recurso/index/', 'update1'=>'principal'))?>
+
+
+
+<?php  } ?>

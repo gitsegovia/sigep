@@ -1,0 +1,241 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer(){
+	    $this->SetY(-15);
+	    $this->SetFont('vera','B',6);
+	    $this->Cell(150,8," ",0,0,'R');
+	    $this->Cell(0,15,"FORMA: 2000",0,0,'R');
+	}
+
+
+	function Header()
+	{
+        $this->top_reporte_formulacion(array("INFORMACIÓN GENERAL DE LA ENTIDAD FEDERAL"), array("Y"=>"6", "X"=>"30", "Z"=>"13"), array("Y"=>"20", "X"=>"354"));
+	}//fin funtion
+
+}//fin clases
+
+
+
+if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"Información general de la Entidad Federal",NULL,"750");?>
+
+
+ <form name='data[cfpp08]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion_gob2014/forma_2000/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO:
+<input name="data[cfpp08][ano]"  value="<?= $year?>" id="ano_formular"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  /> FORMA: 2000
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+$pdf = new fpdfview('L','mm','EXTRAOFICE', true);
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(30);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 5);
+    $pdf->AddPage();
+
+foreach($datos_inst as $x){
+
+	$presupuesto=$x['cfpd08_ident_inst']['ejercicio_fiscal'];
+	$base_legal=$x['cfpd08_ident_inst']['base_legal_gob'];
+	$domicilio=$x['cfpd08_ident_inst']['domicilio_legal_gob'];
+	$telefono=$x['cfpd08_ident_inst']['telefonos_gob'];
+	$dir_internet=$x['cfpd08_ident_inst']['pagina_web_gob'];
+	$fax=$x['cfpd08_ident_inst']['fax_gob'];
+	$codigo=$x['cfpd08_ident_inst']['codigo_postal_gob'];
+	$gobernador=$x['cfpd08_ident_inst']['nombre_gobernador'];
+	$contralor=$x['cfpd08_ident_inst']['nombre_contralor'];
+	$domicilio_contraloria=$x['cfpd08_ident_inst']['domicilio_legal_contra'];
+	$telefono_contraloria=$x['cfpd08_ident_inst']['telefonos_contra'];
+	$pagina_contraloria=$x['cfpd08_ident_inst']['pagina_web_contra'];
+	$fax_contraloria=$x['cfpd08_ident_inst']['fax_contra'];
+	$presi_concejo=$x['cfpd08_ident_inst']['nombre_presi_conce'];
+	$secretario_consejo_legislativo=$x['cfpd08_ident_inst']['nombre_secre_conce'];
+	$domicilio_consejo_legislativo=$x['cfpd08_ident_inst']['domicilio_legal_conce'];
+	$telefono_consejo_legislativo=$x['cfpd08_ident_inst']['telefonos_conce'];
+	$pagina_consejo_legislativo=$x['cfpd08_ident_inst']['pagina_web_conce'];
+	$fax_consejo_legislativo=$x['cfpd08_ident_inst']['fax_conce'];
+
+
+
+
+//Creacion del objeto de la clase heredada
+
+
+
+
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $presupuesto;
+$_SESSION['titulo'] = $titulo_a;
+
+
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,4,"BASE LEGAL:",'TLR',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,8,' '.$base_legal,'TLRB',1);
+
+$pdf->SetFont('vera','B',11);
+$pdf->Ln(2);
+$pdf->Cell(0,7,"IDENTIFICACIÓN DE LOS ÓRGANOS DEL PODER PÚBLICO ESTADAL:",'TLRB',1,'L',true);
+$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,5,"GOBERNACIÓN:",'TLRB',1,'L', true);
+$pdf->Ln(2);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"DOMICILIO LEGAL:",'TLRB',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,6,' '.$domicilio,'LRB',1);
+$pdf->SetFont('vera','B',8);
+
+$pdf->SetFont('vera','B',7);
+
+$pdf->Cell(90,4,"TELÉFONOS",'LB',0,'C');
+$pdf->Cell(110,4,"PÁGINA WEB",'LB',0,'C');
+$pdf->Cell(90,4,"FAX",'LB',0,'C');
+$pdf->Cell(0,4,"CÓDIGO POSTAL",'LRB',0,'C');
+$pdf->Ln();
+
+$pdf->SetFont('vera','',8);
+//$pdf->Cell(50,20," $ciudad",'LR',0);
+$pdf->Cell(90,6,' '.$telefono,'LR',0,'C');
+$pdf->Cell(110,6,' '.$dir_internet,'R',0,'C');
+$pdf->Cell(90,6,' '.$fax,'LR',0,'C');
+$pdf->Cell(0,6,' '.$codigo,'LR',0,'C');
+$pdf->Ln();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"NOMBRES Y APELLIDOS DEL GOBERNADOR (RA)",'TLR',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,6,' '.$gobernador,'LRB',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,6,"PERSONAL DIRECTIVO DE LA GOBERNACIÓN Y ÓRGANOS AUXILIARES:",'TLRB',1);
+$pdf->Cell(90,4,"DIRECCIÓN ADMINISTRATIVA",'LB',0,'C');
+$pdf->Cell(110,4,"NOMBRES Y APELLIDOS",'LB',0,'C');
+$pdf->Cell(90,4,"CORREO ELECTRÓNICO",'LB',0,'C');
+$pdf->Cell(0,4,"TELÈFONO",'LRB',0,'C');
+$pdf->Ln();
+
+foreach($datos_directivos as $dire){
+	$direccion_admintra = $dire['cfpd08_ident_dir_inst']['direccion_adm'];
+	$nombre_director    = $dire['cfpd08_ident_dir_inst']['nombres_apellidos'];
+	$correo_director    = $dire['cfpd08_ident_dir_inst']['correo_electronico'];
+	$telefono_director  = $dire['cfpd08_ident_dir_inst']['telefonos'];
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(90,6,$direccion_admintra,'LB',0,'L');
+$pdf->Cell(110,6,$nombre_director,'LB',0,'L');
+$pdf->Cell(90,6,$correo_director,'LB',0,'C');
+$pdf->Cell(0,6,$telefono_director,'LRB',1,'C');
+		}
+
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,5,"CONTRALORÍA ESTADAL:",'TLRB',1,'L', true);
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"NOMBRES Y APELLIDOS DEL CONTRALOR (A)",'TLRB',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,6,' '.$contralor,'LR',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"DOMICILIO LEGAL:",'TLR',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,6,' '.$domicilio_contraloria,'LRB',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(120,4,"TELÈFONOS",'LB',0,'C');
+$pdf->Cell(120,4,"PÁGINA WEB",'LB',0,'C');
+$pdf->Cell(0,4,"FAX",'LBR',0,'C');
+$pdf->Ln();
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(120,8, $telefono_contraloria,'LRB',0,'C');
+$pdf->Cell(120,8, $pagina_contraloria,'LRB',0,'C');
+$pdf->Cell(0,8, $fax_contraloria,'LRB',1,'C');
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,5,"CONSEJO LEGISLATIVO:",'TLRB',1,'L', true);
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"NOMBRES Y APELLIDOS DEL PRESIDENTE (A)",'TLRB',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,8,' '.$presi_concejo,'LRB',1);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"NOMBRES Y APELLIDOS DEL SECRETARIO (A)",'LR',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,8,' '.$secretario_consejo_legislativo,'LRB',1);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"DOMICILIO LEGAL:",'LR',1);
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,8,' '.$domicilio_consejo_legislativo,'LRB',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(120,4,"TELÉFONOS",'LB',0,'C');
+$pdf->Cell(120,4,"PÁGINA WEB",'LB',0,'C');
+$pdf->Cell(0,4,"FAX",'LBR',0,'C');
+$pdf->Ln();
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(120,8, $telefono_consejo_legislativo,'LRB',0,'C');
+$pdf->Cell(120,8, $pagina_consejo_legislativo,'LRB',0,'C');
+$pdf->Cell(0,8, $fax_consejo_legislativo,'LBR',1,'C');
+
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,5,"CONSEJO ESTADAL DE PLANIFICACIÓN Y POLÍTICAS PÚBLICAS:",'TLBR',1,'L', true);
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(120,4,"NOMBRE Y APELLIDOS DE LOS MIEMBROS",'TLRB',0,'L');
+$pdf->Cell(120,4,"TELÉFONO",'TLRB',0,'C');
+$pdf->Cell(0,4,"CORREO ELECTRÓNICO",'TLRB',1,'C');
+
+foreach($datos_conce_plan as $plan){
+	$miembro_conce  = $plan['cfpd08_ident_clp']['nombres_apellidos'];
+	$correo_conce   = $plan['cfpd08_ident_clp']['correo_electronico'];
+	$telefono_conce = $plan['cfpd08_ident_clp']['telefonos'];
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(120,6,$miembro_conce,'LRB',0,'L');
+$pdf->Cell(120,6,$telefono_conce,'LRB',0,'L');
+$pdf->Cell(0,6,$correo_conce,'LRB',1,'C');
+		}
+
+
+
+}//fin del foreach
+
+$pdf->OutPut('forma_2000_'.date("d-m-Y").'.pdf','D');
+
+} ?>

@@ -1,0 +1,73 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+?>
+
+
+<form name='data[ccnp01_justificacion_proyecto]'  method = "post" id='registroasignacion'>
+		<div id="funcion"></div>
+
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro"><td align="center">RESUMEN DE LAS ACTIVIDADES</td></tr>
+</table>
+<br>
+
+<div id="carga_material"  style="height:500px; overflow:auto;" >
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+    <tr>
+    	<td align="center" width="80%">Descripción de la Actividad</td>
+    	<td align="center" width="20%">Monto de la Actividad</td>
+    </tr>
+
+     <?
+     $MONTO_TOTAL=0;
+     if($datos!=null){
+		    for($i=0;$i<count($datos);$i++){
+			    	if($i%2==0){
+			    		$color="#CDF2FF";
+			    	}else{
+			    		$color="#DAEBFF";
+			    	}
+					$monto_unitario=0;
+			    	$monto_unitario=$datos[$i][0]['total_equipos']+$datos[$i][0]['total_materiales']+$datos[$i][0]['total_manoobra'];
+			    	$costo_actividad=$monto_unitario*$datos[$i][0]['cantidad'];
+			    	$total_iva=($costo_actividad*$datos[$i][0]['porcentaje_iva'])/100;
+			    	$total=$costo_actividad+$total_iva;
+			    	$MONTO_TOTAL+=$total;
+			  ?>
+
+		   <tr bgcolor="<?=$color?>">
+		    	<td  ><?=$datos[$i][0]['denominacion']?></td>
+		    	<td align="right" ><?=$sisap->Formato2($total)?></td>
+		    </tr>
+
+		   <? }
+     }else{
+     	$color="#CDF2FF"; ?>
+     	<tr bgcolor="#DAEBFF">
+	    	<td align="center" >&nbsp;</td>
+	    	<td align="center" >&nbsp;</td>
+	    </tr>
+  <?   } ?>
+   	<tr bgcolor="<?=$color?>">
+		<td  align="right">COSTO TOTAL DEL PROYECTO:</td>
+		<td align="right" ><?=$sisap->Formato2($MONTO_TOTAL) ?></td>
+	</tr>
+
+</table>
+
+
+</div>
+
+        <?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/ccnp01_concejo_comunales_entrada/vacio', 'update1'=>'principal'))?>
+
+</form>
+

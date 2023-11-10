@@ -1,0 +1,116 @@
+<?php
+set_time_limit(0);
+/*
+ * Proyecto: SIGEP
+ * Archivo: consumo_productos_pdf.thtml
+ * Fecha de creacion: 11/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+
+		$this->top_reporte("CONSUMO DE PRODUCTOS", null, null, array("Y"=>"10", "X"=>"15", "Z"=>"13"), array("Y"=>"17", "X"=>"185"));
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(20,3,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(75,3,"",'TRL',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"CANTIDAD",'TR',0,'C');
+		$this->Cell(30,3,"",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+        $this->Cell(20,2,"SISTEMA",'RBL',0,'C');
+		$this->Cell(75,2,"DENOMINACIÓN DEL PRODUCTO",'RBL',0,'C');
+		$this->Cell(20,2,"COD. S.N.C.",'RBL',0,'C');
+		$this->Cell(20,2,"PROMEDIO",'RBL',0,'C');
+		$this->Cell(30,2,"PRECIO PROMEDIO",'RBL',0,'C');
+		$this->Cell(0,2,"TOTAL CONSUMO",'RBL',1,'C');
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 6);
+
+
+
+/*
+* Luis Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$total_cantidad = $total_precio = $consumo_total = 0;
+foreach($datos as $row){
+
+	$producto = $row[$index]['denominacion'];
+	$cantidad_promedio = $row[$index]['cantidad_promedio'];
+	$cantidad = explode('.',$cantidad_promedio);
+	if($cantidad[1]=='000'){
+		$cantidad_promedio2 = $cantidad[0];
+	}else{
+		$cantidad_promedio2 = $sisap->Formato_3_out($cantidad_promedio);
+	}
+	$precio_promedio = $row[$index]['precio_promedio'];
+	$total_consumo = $row[$index]['total_consumo'];
+	$expresion =strtoupper($row[$index]['expresion']);
+	$cod_snc = trim($row[$index]['cod_snc']);
+	$codigo_prod_serv = $row[$index]['codigo_prod_serv'];
+	$total_cantidad += $cantidad_promedio;
+	$total_precio += $precio_promedio;
+	$consumo_total += $total_consumo;
+
+	$char = strlen($producto);
+	if($char < 140){
+		$height = 6;
+	}elseif($char >= 140 && $char < 210){
+		$height = 8;
+	}elseif($char >= 210){
+		$height = 11;
+	}
+
+    $pdf->Cell(20,$height,$codigo_prod_serv,'RBL',0,'C');//--[codigo_prod_serv]
+	$pdf->Cell(1,$height,"",'BL',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(74,1,"",'T',2,'C');
+    $pdf->MultiCell(73,2,$producto.' - '.$expresion,'','L');//--[DENOMINACION PRODUCTO]
+    $varX = $varX+74;
+    $pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,$height,$cod_snc,'RBL',0,'C');//--[COD S.N.C]
+	$pdf->Cell(20,$height,$cantidad_promedio2,'RBL',0,'R');//--[CANTIDAD PROMEDIO]
+	$pdf->Cell(30,$height,$sisap->Formato2($precio_promedio),'RBL',0,'R');//-[PRECIO PROMEDIO]
+	$pdf->Cell(0,$height,$sisap->Formato2($total_consumo),'RBL',1,'R');//----[TOTAL CONSUMO]
+	$pdf->Cell(0,0,"",'T',1,'C');
+}
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(95,4,"TOTALES  ",'RBL',0,'R');
+$pdf->Cell(20,4,'','BL',0,'R');
+$pdf->Cell(30,4,'','B',0,'R');
+$pdf->Cell(0,4,$sisap->Formato2($consumo_total),'RB',1,'R');
+
+$pdf->Output('reporte_consumo_productos_'.date('d/m/y').'.pdf', 'D');
+?>

@@ -1,0 +1,50 @@
+<?php
+set_time_limit(0);
+
+if(isset($DATA)){
+
+vendor ('Writer');
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('Hoja 1');
+$worksheet->setInputEncoding('utf-8');
+/*
+$worksheet->setColumn(0, 0, 10, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(1, 1, 10, $format = null, $hidden = 0, $level = 0);*/
+$worksheet->setColumn(6, 6, 50, $format = null, $hidden = 0, $level = 0);
+
+    $var_filas[]=array("Tipo Nomina","Tipo Transaccion","Codigo Transaccion","Codigo Cargo","Codigo Ficha","Cedula I.","Nombre Completo","Monto Original","Monto Cuota","Numero de Cuotas a Cancelar");
+    $nombre='Archivo_N'.mascara($cod_tipo_nomina,3).'_CT'.$cod_tipo_transaccion.'_T'.mascara($cod_transaccion,3);
+    $fila_celda=0;
+    foreach($DATA as  $D){
+    	extract($D[0]);
+                            $fila_celda++;
+                            $cols[0]=$cod_tipo_nomina;
+						    $cols[1]=$cod_tipo_transaccion;
+						    $cols[2]=$cod_transaccion;
+						    $cols[3]=$cod_cargo;
+						    $cols[4]=$cod_ficha;
+						    $cols[5]=$cedula_identidad;
+						    $cols[6]=$nombre_completo;
+						    $cols[7]=0;
+						    $cols[8]=0;
+						    $cols[9]=0;
+						    $var_filas[]=$cols;
+
+	}//fin foreach cfpd05
+$var_date=date('dmY_His');
+$archivo = $nombre.'_'.$var_date.'.xls';
+foreach($var_filas as $key => $value) {
+  $i = 0;
+    foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      //$excel->write($sheet1, $key+1, $i, $fieldvalue);
+      	$worksheet->writeString($key, $i, $fieldvalue);
+      $i++;
+  }
+
+}
+$workbook->send($archivo);
+$workbook->close();
+
+
+}
+?>

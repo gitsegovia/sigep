@@ -1,0 +1,241 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla_modulos("",true,'Trabajadores Repetidos en Nóminas',"","950","cnmp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_personal/trabajadores_repetidos/si'); ?>" >
+
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$titulo_A="Trabajadores Repetidos en Nóminas";
+    	$titulo_B="";
+    	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"331", "Z"=>"12"));
+
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(17,4,'Cedula Id.','TLR',0,'C');
+		$this->Cell(27,4,'Primer Apellido','TR',0,'C');
+		$this->Cell(27,4,'Segundo Apellido','TR',0,'C');
+		$this->Cell(27,4,'Primer Nombre','TR',0,'C');
+		$this->Cell(27,4,'Segundo Nombre','TR',0,'C');
+		$this->Cell(58,4,'Dependencia','TR',0,'C');
+		$this->Cell(50,4,'Nómina','TR',0,'C');
+		$this->Cell(12,4,'Código','TR',0,'C');
+		$this->Cell(12,4,'Código','TR',0,'C');
+		$this->Cell(45,4,'Denominación Cargo','TR',0,'C');
+		$this->Cell(20,4,'Sueldo o','TR',0,'C');
+		$this->Cell(0,4,'Frecuencia','TR',1,'C');
+
+
+		$this->Cell(17,3,'','LRB',0,'C');
+		$this->Cell(27,3,'','RB',0,'C');
+		$this->Cell(27,3,'','RB',0,'C');
+		$this->Cell(27,3,'','RB',0,'C');
+		$this->Cell(27,3,'','RB',0,'C');
+		$this->Cell(58,3,'','RB',0,'C');
+		$this->Cell(50,3,'','RB',0,'C');
+		$this->Cell(12,3,'Cargo','RB',0,'C');
+		$this->Cell(12,3,'Ficha','RB',0,'C');
+		$this->Cell(45,3,'','RB',0,'C');
+		$this->Cell(20,3,'Salario','RB',0,'C');
+		$this->Cell(0,3,'de Pago','RB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$cedula=rand().rand().rand();
+if($datos!=null){
+//pr($datos);
+	for($i=0;$i<count($datos);$i++){
+
+$long=strlen(mascara($datos[$i][0]['cod_tipo_nomina'],3)." - ".$datos[$i][0]['denominacion_nomina']);
+
+		$cedula1=$datos[$i][0]['cedula_identidad'];
+		if($cedula!=$cedula1){
+			$cedula=$cedula1;
+
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(17,7,$datos[$i][0]['cedula_identidad'],'BLR',0,'C');
+			$pdf->Cell(27,7,$datos[$i][0]['primer_apellido'],'BR',0,'L');
+			$pdf->Cell(27,7,$datos[$i][0]['segundo_apellido'],'BR',0,'L');
+			$pdf->Cell(27,7,$datos[$i][0]['primer_nombre'],'BR',0,'L');
+			$pdf->Cell(27,7,$datos[$i][0]['segundo_nombre'],'BR',0,'L');
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(57,1,'','',2,'C');
+			$pdf->MultiCell(57,2,mascara($datos[$i][0]['cod_dep'],4)." - ".$datos[$i][0]['denominacion_dependencia'],'','J');
+			$varX = $varX+57;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(1,7,'','BR',0,'C');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,2,mascara($datos[$i][0]['cod_tipo_nomina'],3)." - ".$datos[$i][0]['denominacion_nomina'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(12,7,mascara($datos[$i][0]['cod_cargo'],4),'BRL',0,'C');
+			$pdf->Cell(12,7,mascara($datos[$i][0]['cod_ficha'],4),'BR',0,'C');
+
+//			$pdf->Cell(45,7,$datos[$i][0]['cod_puesto']." - ".$datos[$i][0]['demonimacion_puesto'],'BR',0,'C');
+			$pdf->Cell(1,7,'','B',0,'C');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(44,1,'','',2,'C');
+			$pdf->MultiCell(44,2,$datos[$i][0]['cod_puesto']." - ".$datos[$i][0]['demonimacion_puesto'],'','J');
+			$varX = $varX+44;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+
+			$pdf->Cell(20,7,$sisap->Formato2($datos[$i][0]['sueldo_basico']),'BRL',0,'R');
+			if($datos[$i][0]['frecuencia_cobro']==1){
+				$frecuencia='DIARIO';
+			}else if($datos[$i][0]['frecuencia_cobro']==2){
+				$frecuencia='SEMANAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==3){
+				$frecuencia='QUINCENAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==4){
+				$frecuencia='MENSUAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==5){
+				$frecuencia='BIMENSUAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==6){
+				$frecuencia='TRIMESTRAL';
+			}
+			$pdf->Cell(0,7,$frecuencia,'BR',1,'C');
+
+
+
+
+			$pdf->Cell(0,0,'','T',1,'C');
+		}else{
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(17,7,'','BLR',0,'C');
+			$pdf->Cell(27,7,'','BR',0,'C');
+			$pdf->Cell(27,7,'','BR',0,'C');
+			$pdf->Cell(27,7,'','BR',0,'C');
+			$pdf->Cell(27,7,'','BR',0,'C');
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(57,1,'','',2,'C');
+			$pdf->MultiCell(57,2,mascara($datos[$i][0]['cod_dep'],4)." - ".$datos[$i][0]['denominacion_dependencia'],'','J');
+			$varX = $varX+57;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(1,7,'','BR',0,'C');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,2,mascara($datos[$i][0]['cod_tipo_nomina'],3)." - ".$datos[$i][0]['denominacion_nomina'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(12,7,mascara($datos[$i][0]['cod_cargo'],4),'BRL',0,'C');
+			$pdf->Cell(12,7,mascara($datos[$i][0]['cod_ficha'],4),'BR',0,'C');
+
+//			$pdf->Cell(45,7,$datos[$i][0]['cod_puesto']." - ".$datos[$i][0]['demonimacion_puesto'],'BR',0,'C');
+			$pdf->Cell(1,7,'','B',0,'C');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(44,1,'','',2,'C');
+			$pdf->MultiCell(44,2,$datos[$i][0]['cod_puesto']." - ".$datos[$i][0]['demonimacion_puesto'],'','J');
+			$varX = $varX+44;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+
+			$pdf->Cell(20,7,$sisap->Formato2($datos[$i][0]['sueldo_basico']),'BRL',0,'R');
+			if($datos[$i][0]['frecuencia_cobro']==1){
+				$frecuencia='DIARIO';
+			}else if($datos[$i][0]['frecuencia_cobro']==2){
+				$frecuencia='SEMANAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==3){
+				$frecuencia='QUINCENAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==4){
+				$frecuencia='MENSUAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==5){
+				$frecuencia='BIMENSUAL';
+			}else if($datos[$i][0]['frecuencia_cobro']==6){
+				$frecuencia='TRIMESTRAL';
+			}
+			$pdf->Cell(0,7,$frecuencia,'BR',1,'C');
+
+			$pdf->Cell(0,0,'','T',1,'C');
+		}
+
+
+	}
+
+
+
+
+}else{
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(17,7,'','BLR',0,'C');
+	$pdf->Cell(27,7,'','BR',0,'C');
+	$pdf->Cell(27,7,'','BR',0,'C');
+	$pdf->Cell(27,7,'','BR',0,'C');
+	$pdf->Cell(27,7,'','BR',0,'C');
+	$pdf->Cell(58,7,'','BR',0,'C');
+	$pdf->Cell(50,7,'','BR',0,'C');
+	$pdf->Cell(12,7,'','BR',0,'C');
+	$pdf->Cell(12,7,'','BR',0,'C');
+	$pdf->Cell(45,7,'','BR',0,'C');
+	$pdf->Cell(20,7,'','BR',0,'C');
+	$pdf->Cell(0,7,'','BR',1,'C');
+
+
+}
+
+
+
+
+
+$pdf->Output('Trabajadores_Repetidos_Nóminas'."_".date('d-m-Y').'.pdf','D');
+
+}
+?>

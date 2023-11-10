@@ -1,0 +1,231 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla("",true,"SOLICITUDES Y AYUDAS DE ACUERDO A SU UBICACIÓN GEOGRÁFICA","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[organismo]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/casd01_ubicacion_geografica/si'); ?>" onsubmit="return casd01_reporte_solicitudes()" >
+
+	<?= $html->radio('casp01/tipo_peticion', array('1'=>'Nacional','2'=>'Instituci&oacute;n', '3'=>'Dependencia'), null, array('value'=>'2'))?>
+
+<br><br>
+	<center>PERIODO DE LA INFORMACIÓN</center>
+	<br>
+	<?= $sisap->radioTagRemote('casp01/periodo', array('1'=>'Todo', '2'=>'Año especifico','3'=>'Por rango de fechas'), array('url1'=>'/reporte_e/casd01_ubicacion_geografica/periodo', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'periodo'),null,$opc='1');?>
+
+	<br>
+	<div id="cargador"></div>
+
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+<? }else if(isset($muestra)){
+	if($muestra==2){ ?>
+		<br>
+			<center>Año:<input name="data[casp01][ano]"  value="" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  /></center>
+  <?}else if($muestra==3){ ?>
+		<br>
+	<table width="50%">
+		<tr>
+			<td align="right">Desde:</td>
+			<td> <?= $sisap->input_fecha('casp01','fecha_inicial','fecha_inicial');?> </td>
+			<td align="right">Hasta: </td>
+			<td><?= $sisap->input_fecha('casp01','fecha_final','fecha_final');?> </td>
+		</tr>
+	</table>
+  <?}?>
+
+
+
+<? }else if(isset($ir) && $ir=="si"){
+
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$this->top_reporte($titulo_A = "SOLICITUDES Y AYUDAS DE ACUERDO A SU UBICACIÓN GEOGRÁFICA", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"185", "Z"=>"12"));
+
+		$this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',8);
+
+		$this->Cell(0,0,"",'T',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(30,4,"",'RL',0,'C');
+		$this->Cell(30,4,"",'R',0,'C');
+		$this->Cell(35,4,"",'R',0,'C');
+		$this->Cell(35,4,"CENTRO",'R',0,'C');
+		$this->Cell(20,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(20,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(0,4,"",'R',1,'C');
+
+		$this->Cell(30,1,"ESTADO",'RL',0,'C');
+		$this->Cell(30,1,"MÚNICIPIO",'R',0,'C');
+		$this->Cell(35,1,"PARROQUIA",'R',0,'C');
+		$this->Cell(35,1,"POBLADO",'R',0,'C');
+		$this->Cell(20,1,"SOLICITUDES",'R',0,'C');
+		$this->Cell(20,1,"AYUDAS",'R',0,'C');
+		$this->Cell(0,1,"MONTO",'R',1,'C');
+
+		$this->Cell(30,1,"",'RL',0,'C');
+		$this->Cell(30,1,"",'R',0,'C');
+		$this->Cell(35,1,"",'R',0,'C');
+		$this->Cell(35,1,"",'R',0,'C');
+		$this->Cell(20,1,"",'R',0,'C');
+		$this->Cell(20,1,"",'R',0,'C');
+		$this->Cell(0,1,"",'R',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+$total_solicitudes=0;
+$total_ayudas=0;
+$total_monto=0;
+$height=7;
+for($i=0;$i<count($datos);$i++){
+
+	if($datos[$i][0]['numero_solicitudes']==0){
+		$num_solicitudes='';
+	}else{
+		$num_solicitudes=$datos[$i][0]['numero_solicitudes'];
+	}
+
+	if($datos[$i][0]['numero_ayudas']==0){
+		$ayudas='';
+	}else{
+		$ayudas=$datos[$i][0]['numero_ayudas'];
+	}
+		$pdf->SetFont('vera','',5);
+if($datos[$i][0]['cod_estado']!=0 && $datos[$i][0]['cod_municipio']==0 && $datos[$i][0]['cod_parroquia']==0 && $datos[$i][0]['cod_centro_poblado']==0){
+		$total_solicitudes+=$datos[$i][0]['numero_solicitudes'];
+		$total_ayudas+=$datos[$i][0]['numero_ayudas'];
+		$total_monto+=$datos[$i][0]['monto_ayudas'];
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(30,$height,$datos[$i][0]['denominacion'],'RTL',0,'L');
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(30,$height,"",'RT',0,'C');
+		$pdf->Cell(35,$height,"",'RT',0,'C');
+		$pdf->Cell(35,$height,"",'RT',0,'C');
+		$pdf->Cell(20,$height,$num_solicitudes,'RT',0,'C');
+		$pdf->Cell(20,$height,$ayudas,'RT',0,'C');
+		if($datos[$i][0]['monto_ayudas']==0){
+			$monto='';
+		}else{
+			$monto=$sisap->Formato2($datos[$i][0]['monto_ayudas']);
+		}
+		$pdf->Cell(0,$height,$monto,'RT',1,'R');
+
+}else if($datos[$i][0]['cod_estado']!=0 && $datos[$i][0]['cod_municipio']!=0 && $datos[$i][0]['cod_parroquia']==0 && $datos[$i][0]['cod_centro_poblado']==0){
+		$pdf->Cell(30,$height,"",'RTL',0,'C');
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(30,$height,$datos[$i][0]['denominacion'],'RT',0,'L');
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(35,$height,"",'RT',0,'C');
+		$pdf->Cell(35,$height,"",'RT',0,'C');
+		$pdf->Cell(20,$height,$num_solicitudes,'RT',0,'C');
+		$pdf->Cell(20,$height,$ayudas,'RT',0,'C');
+		if($datos[$i][0]['monto_ayudas']==0){
+			$monto='';
+		}else{
+			$monto=$sisap->Formato2($datos[$i][0]['monto_ayudas']);
+		}
+		$pdf->Cell(0,$height,$monto,'RT',1,'R');
+
+}else if($datos[$i][0]['cod_estado']!=0 && $datos[$i][0]['cod_municipio']!=0 && $datos[$i][0]['cod_parroquia']!=0 && $datos[$i][0]['cod_centro_poblado']==0){
+		$pdf->Cell(30,$height,"",'RTL',0,'C');
+		$pdf->Cell(30,$height,"",'RT',0,'L');
+		$pdf->SetFont('vera','B',5);
+
+		$pdf->Cell(35,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(35,2,$datos[$i][0]['denominacion'],'','L');//DENOMINACION
+		$varX =$varX+35;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(35,$height,"",'LRT',0,'C');
+		$pdf->Cell(20,$height,$num_solicitudes,'RT',0,'C');
+		$pdf->Cell(20,$height,$ayudas,'RT',0,'C');
+		if($datos[$i][0]['monto_ayudas']==0){
+			$monto='';
+		}else{
+			$monto=$sisap->Formato2($datos[$i][0]['monto_ayudas']);
+		}
+		$pdf->Cell(0,$height,$monto,'RT',1,'R');
+
+}else if($datos[$i][0]['cod_estado']!=0 && $datos[$i][0]['cod_municipio']!=0 && $datos[$i][0]['cod_parroquia']!=0 && $datos[$i][0]['cod_centro_poblado']!=0){
+		$pdf->Cell(30,$height,"",'RTL',0,'C');
+		$pdf->Cell(30,$height,"",'RT',0,'L');
+		$pdf->Cell(35,$height,"",'RT',0,'L');
+
+		$pdf->Cell(35,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(35,2,$datos[$i][0]['denominacion'],'','L');//DENOMINACION
+		$varX =$varX+35;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(20,$height,$num_solicitudes,'LRT',0,'C');
+		$pdf->Cell(20,$height,$ayudas,'RT',0,'C');
+		if($datos[$i][0]['monto_ayudas']==0){
+			$monto='';
+		}else{
+			$monto=$sisap->Formato2($datos[$i][0]['monto_ayudas']);
+		}
+		$pdf->Cell(0,$height,$monto,'RT',1,'R');
+
+}
+	$pdf->Cell(0,0,"",'T',1,'R');
+
+}//FIN FOR
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(130,$height,"TOTALES:",'LRTB',0,'R');
+	$pdf->Cell(20,$height,$total_solicitudes,'RTB',0,'R');
+	$pdf->Cell(20,$height,$total_ayudas,'RTB',0,'R');
+	$pdf->Cell(0,$height,$sisap->Formato2($total_monto),'RTB',1,'R');
+
+
+
+
+
+$pdf->Output('Solicitudes_ayudas_acuerdo_ubicacion_geografica'.'.pdf','D');
+
+}?>

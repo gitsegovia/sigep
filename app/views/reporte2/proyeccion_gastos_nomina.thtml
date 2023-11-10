@@ -1,0 +1,738 @@
+<?php
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+set_time_limit(0);
+           $_SESSION["cod_sector"]="";
+	        $_SESSION["deno_sector"]="";
+	        $_SESSION["cod_programa"]="";
+	        $_SESSION["deno_programa"]="";
+	        $_SESSION["cod_sub_prog"]="";
+	        $_SESSION["deno_sub_prog"]="";
+	        $_SESSION["cod_proyecto"]="";
+	        $_SESSION["deno_proyecto"]="";
+	        $_SESSION["cod_activ_obra"]="";
+	        $_SESSION["deno_activ_obra"]="";
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+/*
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-12);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8,'Página '.$this->PageNo(),0,0,'R');
+    $this->Cell(0,18,"",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}*/
+
+function Header()
+{
+	$meses=array('01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
+    $this->top_reporte("PROYECCIÓN DE GASTOS DE PERSONAL", "MES ".$meses[$_SESSION["mes_solicitado"]], "PRESUPUESTO: ".$_SESSION['ejercicio'], array("Y"=>"6", "X"=>"31", "Z"=>"12"), array("Y"=>"32", "X"=>"330"));
+
+		$this->Cell(33,4,"",'TBRL',0,'C');
+		$this->Cell(17,4,"CÓDIGO",'TBRL',0,'C');
+		$this->Cell(0,4,"D E N O M I N A C I Ó N",'TBRL',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(33,4,"SECTOR",'RBL',0,'L');
+		$this->SetFont('vera','B',6);
+		$this->Cell(17,4,$_SESSION["cod_sector"],'RBL',0,'C');//-----------------------[COD. SECTOR]
+		$this->Cell(0,4,$_SESSION["deno_sector"],'RBL',1,'L');//------------------------[DENO SECTOR]
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(33,4,"PROGRAMA",'RBL',0,'L');
+		$this->SetFont('vera','B',6);
+		$this->Cell(17,4,$_SESSION["cod_programa"],'RBL',0,'C');//-----------------------[COD. PROGRAMA]
+		$this->Cell(0,4,$_SESSION["deno_programa"],'RBL',1,'L');//------------------------[DENO PROGRAMA]
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(33,4,"SUBPROGRAMA",'RBL',0,'L');
+		$this->SetFont('vera','B',6);
+		$this->Cell(17,4,$_SESSION["cod_sub_prog"],'RBL',0,'C');//-----------------------[COD. SUBPROGRAMA]
+		$this->Cell(0,4,$_SESSION["deno_sub_prog"],'RBL',1,'L');//------------------------[DENO SUBP]
+	    if($_SESSION["cod_proyecto"]!=0){
+		$this->SetFont('vera','B',6);
+		$this->Cell(33,4,"PROYECTO",'RBL',0,'L');
+		$this->SetFont('vera','B',6);
+		$this->Cell(17,4,$_SESSION["cod_proyecto"],'RBL',0,'C');//-----------------------[COD. PROYECTO]
+		$this->Cell(0,4,$_SESSION["deno_proyecto"],'RBL',1,'L');//------------------------[DENO PROYECTO]
+	    }
+		$this->SetFont('vera','B',6);
+		$this->Cell(33,4,"ACTIVIDAD U OBRA",'RBL',0,'L');
+		$this->SetFont('vera','B',6);
+		$this->Cell(17,4,$_SESSION["cod_activ_obra"],'RBL',0,'C');//-----------------------[COD. ACTIVIDAD]
+		$this->Cell(0,4,$_SESSION["deno_activ_obra"],'RBL',1,'L');//------------------------[DENO ACTIVIDAD]
+/*
+	        $this->SetFont('vera','B',6);
+			$this->Cell(33,4,"UNIDAD EJECUTORA",'BL',0,'L');
+			$this->SetFont('vera','B',6);
+			$this->Cell(17,4,"",'RB',0,'C');//-----------------------[COD. UNID. EJECUTORA]
+			$this->Cell(0,4,$var[16],'RBL',1,'L');//------------------------[DENO UNID. EJECUTORA]
+			$this->Ln();
+*/
+		$this->SetFont('vera','B',7);
+		$this->Cell(50,4,"CÓDIGOS",'TRBL',0,'C');
+		$this->Cell(164,4,"",'TR',0,'C');
+		$this->Cell(25,4,"",'TR',0,'C');
+
+		$this->Cell(21,4,"",'TR',0,'C');//------------[Aumento]
+		$this->Cell(21,4,"",'TR',0,'C');//--------[Disminución]
+		$this->Cell(23,4,"",'TR',0,'C');//---------[total Asignacion]
+		$this->Cell(21,4,"",'TR',0,'C');//-----[Pre compromiso]
+		$this->Cell(0,4,"",'TR',1,'C');//---------[compromiso]
+
+		$this->Cell(9,3,"",'RL',0,'C');
+		$this->Cell(8,3,"",'R',0,'C');
+		$this->Cell(8,3,"",'R',0,'C');
+		$this->Cell(8,3,"",'R',0,'C');
+		$this->Cell(8,3,"",'R',0,'C');
+		$this->Cell(9,3,"",'R',0,'C');
+
+		$this->Cell(164,3,"",'R',0,'C');
+		$this->Cell(25,3,"",'R',0,'C');
+
+		$this->Cell(21,3,"",'R',0,'C');//------------[Aumento]
+		$this->Cell(21,3,"",'R',0,'C');//--------[Disminución]
+		$this->SetFont('vera','B',5);
+		$this->Cell(23,3,"MONTO DE LA ",'R',0,'C');//---------[total Asignacion]
+		$this->Cell(21,3,"",'R',0,'C');//-----[Pre compromiso]
+		$this->Cell(0,3,"",'R',1,'C');//---------[compromiso]
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(9,3.5,"",'RL',0,'C');
+		$this->Cell(8,3.5,"",'R',0,'C');
+		$this->Cell(8,3.5,"",'R',0,'C');
+		$this->Cell(8,3.5,"SUB",'R',0,'C');
+		$this->Cell(8,3.5,"",'R',0,'C');
+		$this->Cell(9,3.5,"CÓDIGO",'R',0,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(164,3.5,"D E N O M I N A C I Ó N",'R',0,'C');
+		$this->SetFont('vera','B',5);
+		$this->Cell(25,3.5,"ASIGNACIÓN",'R',0,'C');
+
+		$this->Cell(21,3.5,"",'R',0,'C');//------------[Aumento]
+		$this->Cell(21,3.5,"",'R',0,'C');//--------[Disminución]
+		$this->Cell(23,3.5,"NÓMINA del mes",'R',0,'C');//---------[total Asignacion]
+		$this->Cell(21,3.5,"PROYECCIÓN",'R',0,'C');//-----[Pre compromiso]
+		$this->Cell(0,3.5,"DISPONIBILIDAD",'R',1,'C');//---------[compromiso]
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(9,3,"PART.",'RLB',0,'C');
+		$this->Cell(8,3,"GEN.",'RB',0,'C');
+		$this->Cell(8,3,"ESP.",'RB',0,'C');
+		$this->Cell(8,3,"ESP.",'RB',0,'C');
+		$this->Cell(8,3,"ORDI.",'RB',0,'C');
+		$this->Cell(9,3,"OBRA",'RB',0,'C');
+		$this->Cell(164,3,"",'RB',0,'C');
+		$this->Cell(25,3,"AJUSTADA",'RB',0,'C');
+		$this->Cell(21,3,"COMPROMISOS",'RB',0,'C');//------------[Aumento]
+		$this->Cell(21,3,"DISPONIBILIDAD",'RB',0,'C');//--------[Disminución]
+		$this->Cell(23,3,$meses[$_SESSION["mes_solicitado"]],'RB',0,'C');//---------[total Asignacion]
+		$this->Cell(21,3,"DEL GASTO",'RB',0,'C');//-----[Pre compromiso]
+		$this->Cell(0,3,"O DEFICIT",'RB',1,'C');//---------[compromiso]
+
+  }//fin funtion
+}//fin clases
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+
+
+
+
+
+$fpdf = new fpdfview('L','mm','Legal');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(30);
+$fpdf->SetLeftMargin(4);
+$fpdf->SetRightMargin(4);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+//$fpdf->AddPage();
+
+
+$totaltotal=0;
+//-------------------------------------------------------
+           for($ss_i=1;$ss_i<=5;$ss_i++){
+	            $totales[$ss_i]['total_asignacion']=0;
+				$totales[$ss_i]['compromiso']=0;
+				$totales[$ss_i]['disponibilidad']=0;
+				$totales[$ss_i]['monto_cuota']=0;
+				$totales[$ss_i]['proyeccion_gasto']=0;
+				$totales[$ss_i]['dispo_deficit']=0;
+            }
+    $entrada=0;
+            $cod_sector=0;
+            $cod_programa=0;
+            $cod_sub_prog=0;
+            $cod_proyecto=0;
+            $cod_activ_obra=0;
+foreach($distintos_sectores as $ds){
+	$var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+
+
+	foreach($cfpd05 as $denos_cfpd05){
+		if($var[1]==$denos_cfpd05[$modelo]["cod_sector"] && $var[2]==$denos_cfpd05[$modelo]["cod_programa"] && $var[3]==$denos_cfpd05[$modelo]["cod_sub_prog"] && $var[4]==$denos_cfpd05[$modelo]["cod_proyecto"] && $var[5]==$denos_cfpd05[$modelo]["cod_activ_obra"]){
+			$var[11]=$denos_cfpd05[$modelo]["deno_sector"];
+	        $var[12]=$denos_cfpd05[$modelo]["deno_programa"];
+	        $var[13]=$denos_cfpd05[$modelo]["deno_sub_prog"];
+	        $var[14]=$denos_cfpd05[$modelo]["deno_proyecto"];
+	        $var[15]=$denos_cfpd05[$modelo]["deno_activ_obra"];
+
+
+            if($entrada==0){
+            $cod_sector=$var[1];
+            $cod_programa=$var[2];
+            $cod_sub_prog=$var[3];
+            $cod_proyecto=$var[4];
+            $cod_activ_obra=$var[5];
+            $entrada=1;
+           }
+           if(($cod_sector!=$var[1] || ($cod_sector==$var[1] && $cod_programa!=$var[2]) || ($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog!=$var[3]) || ($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog==$var[3] && $cod_activ_obra!=$var[5])) && $Ytotal>=170){
+
+           }else{
+           	$_SESSION["cod_sector"]=$sisap->AddCero3($var[1]);
+	        $_SESSION["deno_sector"]=$var[11];
+	        $_SESSION["cod_programa"]=$sisap->AddCero3($var[2]);
+	        $_SESSION["deno_programa"]=$var[12];
+	        $_SESSION["cod_sub_prog"]=$sisap->AddCero3($var[3]);
+	        $_SESSION["deno_sub_prog"]=$var[13];
+	        $_SESSION["cod_proyecto"]=$sisap->AddCero3($var[4]);
+	        $_SESSION["deno_proyecto"]=$var[14];
+	        $_SESSION["cod_activ_obra"]=$sisap->AddCero3($var[5]);
+	        $_SESSION["deno_activ_obra"]=$var[15];
+           }
+
+
+
+	        if($cod_sector!=$var[1]){
+            $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Actividad ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[5]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[5]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[5]['dispo_deficit']),'TRB',1,'R');//
+		    ///
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sub-Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[4]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[4]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[4]['dispo_deficit']),'TRB',1,'R');//
+		    ///
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[3]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[3]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[3]['dispo_deficit']),'TRB',1,'R');//
+		    ////
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sector ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[2]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[2]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[2]['dispo_deficit']),'TRB',1,'R');//
+		    $Ytotal=$fpdf->GetY();
+		    for($ss_i=2;$ss_i<=5;$ss_i++){
+	            $totales[$ss_i]['total_asignacion']=0;
+				$totales[$ss_i]['compromiso']=0;
+				$totales[$ss_i]['disponibilidad']=0;
+				$totales[$ss_i]['monto_cuota']=0;
+				$totales[$ss_i]['proyeccion_gasto']=0;
+				$totales[$ss_i]['dispo_deficit']=0;
+            }
+			$cod_sector=$var[1];
+            $cod_programa=$var[2];
+            $cod_sub_prog=$var[3];
+            $cod_proyecto=$var[4];
+            $cod_activ_obra=$var[5];
+        }
+
+        if($cod_sector==$var[1] && $cod_programa!=$var[2]){
+            $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Actividad ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[5]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[5]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[5]['dispo_deficit']),'TRB',1,'R');//
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sub-Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[4]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[4]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[4]['dispo_deficit']),'TRB',1,'R');//
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[3]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[3]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[3]['dispo_deficit']),'TRB',1,'R');//
+            $Ytotal=$fpdf->GetY();
+
+		    for($ss_i=3;$ss_i<=5;$ss_i++){
+	            $totales[$ss_i]['total_asignacion']=0;
+				$totales[$ss_i]['compromiso']=0;
+				$totales[$ss_i]['disponibilidad']=0;
+				$totales[$ss_i]['monto_cuota']=0;
+				$totales[$ss_i]['proyeccion_gasto']=0;
+				$totales[$ss_i]['dispo_deficit']=0;
+            }
+        }
+
+        if($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog!=$var[3]){
+            $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Actividad ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[5]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[5]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[5]['dispo_deficit']),'TRB',1,'R');//
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sub-Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[4]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[4]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[4]['dispo_deficit']),'TRB',1,'R');//
+            $Ytotal=$fpdf->GetY();
+            for($ss_i=4;$ss_i<=5;$ss_i++){
+	            $totales[$ss_i]['total_asignacion']=0;
+				$totales[$ss_i]['compromiso']=0;
+				$totales[$ss_i]['disponibilidad']=0;
+				$totales[$ss_i]['monto_cuota']=0;
+				$totales[$ss_i]['proyeccion_gasto']=0;
+				$totales[$ss_i]['dispo_deficit']=0;
+            }
+
+
+
+        }
+
+        if($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog==$var[3] && $cod_activ_obra!=$var[5]){
+            $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Actividad ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[5]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[5]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[5]['dispo_deficit']),'TRB',1,'R');//
+
+		    $totales[5]['total_asignacion']=0;
+			$totales[5]['compromiso']=0;
+			$totales[5]['disponibilidad']=0;
+			$totales[5]['monto_cuota']=0;
+			$totales[5]['proyeccion_gasto']=0;
+			$totales[5]['dispo_deficit']=0;
+
+
+        }
+	        break;
+	   }//fin if
+	}//fin for
+
+
+    if($var[4]!=0){
+    	$var[16]=" ";
+    }else{
+    	$var[16]=" ";
+    }
+    $var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+	        $_SESSION["cod_sector"]=$var[1];
+	        $_SESSION["deno_sector"]=$var[11];
+	        $_SESSION["cod_programa"]=$var[2];
+	        $_SESSION["deno_programa"]=$var[12];
+	        $_SESSION["cod_sub_prog"]=$var[3];
+	        $_SESSION["deno_sub_prog"]=$var[13];
+	        $_SESSION["cod_proyecto"]=$var[4];
+	        $_SESSION["deno_proyecto"]=$var[14];
+	        $_SESSION["cod_activ_obra"]=$var[5];
+	        $_SESSION["deno_activ_obra"]=$var[15];
+    $fpdf->AddPage();
+/////////////////////////////
+
+	$fpdf->SetFont('vera','',7);
+    $var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+	$var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+
+
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd[$modelo]['cod_sector'];
+		$var2[2]=$vcfpd[$modelo]['cod_programa'];
+		$var2[3]=$vcfpd[$modelo]['cod_sub_prog'];
+		$var2[4]=$vcfpd[$modelo]['cod_proyecto'];
+		$var2[5]=$vcfpd[$modelo]['cod_activ_obra'];
+		$var2[6]=$vcfpd[$modelo]['cod_partida'];
+		$var2[7]=$vcfpd[$modelo]['cod_generica'];
+		$var2[8]=$vcfpd[$modelo]['cod_especifica'];
+		$var2[9]=$vcfpd[$modelo]['cod_sub_espec'];
+		$var2[10]=$vcfpd[$modelo]['cod_auxiliar'];
+		/*$var2[11]=$vcfpd[$modelo]['total_asignacion'];
+        $var2["compromiso"]      = $vcfpd[$modelo]['compromiso_anual'];
+        $var2["disponibilidad"]  = $vcfpd[$modelo]['disponibilidad'];
+        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+        $var2["dispo_deficit"]   = $vcfpd[$modelo]['disponibilidad']-$var2["proyeccion_gasto"];
+        */
+        switch($mes){
+        	case '01':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['enerom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '02':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['febrerom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '03':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['marzom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '04':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['abrilm'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '05':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['mayom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '06':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['juniom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '07':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['juliom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '08':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul']+$vcfpd[$modelo]['aumento_ago'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul']+$vcfpd[$modelo]['disminucion_ago'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul']+$vcfpd[$modelo]['compromiso_ago'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['agostom'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '09':
+        	       $var2["aumento"]=            $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul']+$vcfpd[$modelo]['aumento_ago']+$vcfpd[$modelo]['aumento_sep'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul']+$vcfpd[$modelo]['disminucion_ago']+$vcfpd[$modelo]['disminucion_sep'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul']+$vcfpd[$modelo]['compromiso_ago']+$vcfpd[$modelo]['compromiso_sep'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['septiembrem'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '10':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul']+$vcfpd[$modelo]['aumento_ago']+$vcfpd[$modelo]['aumento_sep']+$vcfpd[$modelo]['aumento_oct'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul']+$vcfpd[$modelo]['disminucion_ago']+$vcfpd[$modelo]['disminucion_sep']+$vcfpd[$modelo]['disminucion_oct'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul']+$vcfpd[$modelo]['compromiso_ago']+$vcfpd[$modelo]['compromiso_sep']+$vcfpd[$modelo]['compromiso_oct'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['octubrem'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '11':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul']+$vcfpd[$modelo]['aumento_ago']+$vcfpd[$modelo]['aumento_sep']+$vcfpd[$modelo]['aumento_oct']+$vcfpd[$modelo]['aumento_nov'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul']+$vcfpd[$modelo]['disminucion_ago']+$vcfpd[$modelo]['disminucion_sep']+$vcfpd[$modelo]['disminucion_oct']+$vcfpd[$modelo]['disminucion_nov'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul']+$vcfpd[$modelo]['compromiso_ago']+$vcfpd[$modelo]['compromiso_sep']+$vcfpd[$modelo]['compromiso_oct']+$vcfpd[$modelo]['compromiso_nov'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['noviembrem'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        	case '12':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene']+$vcfpd[$modelo]['aumento_feb']+$vcfpd[$modelo]['aumento_mar']+$vcfpd[$modelo]['aumento_abr']+$vcfpd[$modelo]['aumento_may']+$vcfpd[$modelo]['aumento_jun']+$vcfpd[$modelo]['aumento_jul']+$vcfpd[$modelo]['aumento_ago']+$vcfpd[$modelo]['aumento_sep']+$vcfpd[$modelo]['aumento_oct']+$vcfpd[$modelo]['aumento_nov']+$vcfpd[$modelo]['aumento_dic'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene']+$vcfpd[$modelo]['disminucion_feb']+$vcfpd[$modelo]['disminucion_mar']+$vcfpd[$modelo]['disminucion_abr']+$vcfpd[$modelo]['disminucion_may']+$vcfpd[$modelo]['disminucion_jun']+$vcfpd[$modelo]['disminucion_jul']+$vcfpd[$modelo]['disminucion_ago']+$vcfpd[$modelo]['disminucion_sep']+$vcfpd[$modelo]['disminucion_oct']+$vcfpd[$modelo]['disminucion_nov']+$vcfpd[$modelo]['disminucion_dic'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['asignacion_anual']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_ene']+$vcfpd[$modelo]['compromiso_feb']+$vcfpd[$modelo]['compromiso_mar']+$vcfpd[$modelo]['compromiso_abr']+$vcfpd[$modelo]['compromiso_may']+$vcfpd[$modelo]['compromiso_jun']+$vcfpd[$modelo]['compromiso_jul']+$vcfpd[$modelo]['compromiso_ago']+$vcfpd[$modelo]['compromiso_sep']+$vcfpd[$modelo]['compromiso_oct']+$vcfpd[$modelo]['compromiso_nov']+$vcfpd[$modelo]['compromiso_dic'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]-$var2["compromiso"];
+			        //u$var2["disponibilidad_ant"]=    $vcfpd[$modelo]['diciembrem'];
+			        $var2[11]=$var2["total_asignacion"];
+			        $var2["monto_cuota"]     = $vcfpd[$modelo]['monto_cuota'];
+			        $var2["proyeccion_gasto"]= $vcfpd[$modelo]['monto_cuota']*(12-$_SESSION["mes_solicitado"]);
+			        $var2["dispo_deficit"]   = $var2["disponibilidad"]-$var2["proyeccion_gasto"];
+        	break;
+        }//fin switch
+
+
+
+
+
+
+		if($var2[10]!=0){
+            $var2[12]=$vcfpd[$modelo]["deno_auxiliar"];
+		}else{
+			$var2[12]=$vcfpd[$modelo]["deno_sub_espec"];
+		}
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+	     $x = $fpdf->GetY();
+
+
+          	  	     if($var[1]==$var2[1] && $var[2]==$var2[2] && $var[3]==$var2[3] && $var[4]==$var2[4] && $var[5]==$var2[5]){
+          	  	     	$var2[12]= preg_replace("/\r\n|\r/", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("  ", " ", $var2[12]);
+          	  	     	$var2[12] = str_replace("\n", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("\r", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("  ", " ", $var2[12]);
+          	  	     	$cant_l=strlen(trim($var2[12]));
+
+					     if($cant_l<=115){
+				              $alto=4.3;
+					     }else if($cant_l>115 && $cant_l<=230){
+					     	 $alto=7.8;
+					     }else if($cant_l>230 && $cant_l<=345){
+					     	 $alto=12.5;
+					     }else if($cant_l>345){
+					     	 $alto=19;
+					     }
+                            $fpdf->SetFont('vera','',6);
+						    $fpdf->Cell(9,$alto,$var2[6],'TRLB',0,'C');//-------------[PARTIDA]
+						    $fpdf->Cell(8,$alto,$var2[7],'TRB',0,'C');//--------------[GENERICA]
+						    $fpdf->Cell(8,$alto,$var2[8],'TRB',0,'C');//--------------[ESP.]
+						    $fpdf->Cell(8,$alto,$var2[9],'TRB',0,'C');//--------------[SUB. ESP.]
+						    $fpdf->Cell(8,$alto,$var2[10],'TRB',0,'C');//-------------[ORDINARIA]
+						    $fpdf->Cell(9,$alto,"",'TRB',0,'C');//--------------------[COD. OBRA]
+						    $varX = $fpdf->GetX();
+						    $varY = $fpdf->GetY();
+						    $fpdf->Cell(164,1,"",'T',2,'C');
+						    $fpdf->MultiCell(164,3,$var2[12]."",'','J');//-----------[DENOMINACION TODO]
+						    $varX = $varX+164;
+						    $fpdf->SetXY($varX,$varY);
+
+						    $fpdf->Cell(25,$alto,$sisap->Formato2($var2[11]),'TLRB',0,'R');//------[Asignacion anual]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["compromiso"]),'TRB',0,'R');//-------------------[Aumento]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["disponibilidad"]),'TRB',0,'R');//-------------------[Disminución]
+							$fpdf->Cell(23,$alto,$sisap->Formato2($var2["monto_cuota"]),'TRB',0,'R');//-------------------[total Asignacion]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["proyeccion_gasto"]),'TRB',0,'R');//-------------------[Pre compromiso]
+							$fpdf->Cell(0,$alto,$sisap->Formato2($var2["dispo_deficit"]),'TRLB',1,'R');//-------------------[compromiso]
+							$Ytotal=$fpdf->GetY();
+						    $fpdf->Cell(0,0,"",'T',1,'C');
+
+						    $cod_sector=$var2[1];
+				            $cod_programa=$var2[2];
+				            $cod_sub_prog=$var2[3];
+				            $cod_proyecto=$var2[4];
+				            $cod_activ_obra=$var2[5];
+                                for($ss_i=1;$ss_i<=5;$ss_i++){
+						            $totales[$ss_i]['total_asignacion']+=$var2[11];
+									$totales[$ss_i]['compromiso']+=$var2["compromiso"];
+									$totales[$ss_i]['disponibilidad']+=$var2["disponibilidad"];
+									$totales[$ss_i]['monto_cuota']+=$var2["monto_cuota"];
+									$totales[$ss_i]['proyeccion_gasto']+=$var2["proyeccion_gasto"];
+									$totales[$ss_i]['dispo_deficit']+=$var2["dispo_deficit"];
+					            }
+
+				   }
+
+	}//fin foreach cfpd05
+
+
+}//fin foreach distintos_sectores
+$fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Actividad ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[5]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[5]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[5]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[5]['dispo_deficit']),'TLRB',1,'R');//
+		    ///
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sub-Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[4]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[4]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[4]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[4]['dispo_deficit']),'TLRB',1,'R');//
+		    ///
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Programa ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[3]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[3]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[3]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[3]['dispo_deficit']),'TLRB',1,'R');//
+		    ////
+		    $Ytotal=$fpdf->GetY();
+		    $fpdf->SetFont('vera','B',9);
+		    $fpdf->Cell(214,8,"Total Sector ",'TRBL',0,'R');
+		    $fpdf->SetFont('vera','B',6);
+		    $fpdf->Cell(25,8,$sisap->Formato2($totales[2]['total_asignacion']),'TLRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['compromiso']),'TRB',0,'R');
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['disponibilidad']),'TRB',0,'R');//
+			$fpdf->Cell(23,8,$sisap->Formato2($totales[2]['monto_cuota']),'TRB',0,'R');//
+			$fpdf->Cell(21,8,$sisap->Formato2($totales[2]['proyeccion_gasto']),'TRB',0,'R');//
+			$fpdf->Cell(0,8,$sisap->Formato2($totales[2]['dispo_deficit']),'TRLB',1,'R');//
+		    $Ytotal=$fpdf->GetY();
+
+
+$fpdf->SetFont('vera','B',9);
+    $fpdf->Cell(214,8,"Total",'TRBL',0,'R');
+    $fpdf->SetFont('vera','B',6);
+    $fpdf->Cell(25,8,$sisap->Formato2($totales[1]['total_asignacion']),'TLRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['compromiso']),'TRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['disponibilidad']),'TRB',0,'R');//
+	$fpdf->Cell(23,8,$sisap->Formato2($totales[1]['monto_cuota']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['proyeccion_gasto']),'TRB',0,'R');//
+	$fpdf->Cell(0,8,$sisap->Formato2($totales[1]['dispo_deficit']),'TLRB',1,'R');//
+//$fpdf->SetFont('vera','B',9);
+//$fpdf->Cell(230,8,"T O T A L E S        ",'TRBL',0,'R');
+//$fpdf->Cell(0,8,$sisap->Formato2($totaltotal),'TLRB',1,'R');//-----[Asignacion anual]
+//$fpdf->SetFont('vera','B',6);
+//$fpdf->Cell(0,6,"FORMA: 2.032",'',1,'R');
+$fpdf->OutPut('Proyeccion_gastos_'.date("d-m-Y").".pdf",'D');
+?>

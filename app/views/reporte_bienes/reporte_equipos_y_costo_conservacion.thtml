@@ -1,0 +1,294 @@
+<?php
+/*
+ * Created on 02/02/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ if(isset($var) && $var=="no"){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"EQU&Iacute;POS Y COSTOS DE CONSERVACI&Oacute;N","","950");?>
+
+<form name="data[inventario_inmueble]" method="post" id='form' action="<?php echo $html->url('/reporte_bienes/reporte_equipos_y_costo_conservacion/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		<tr><td align="center"><?= $sisap->radio_consolidado('inventario_inmueble/consolidacion_reporte', null, '&nbsp;', true)  ?></td></tr>
+		<tr>
+			<td align="center"><?= $html->selectTag('inventario_inmueble/ano', $array_ano, $selected = $ano, $selectAttr = array('style'=>'width:10%'),  $optionAttr = array(), $showEmpty = true, $return = false);  ?></td>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td align="center">
+				<?= $sisap->radioTagRemote("inventario_inmueble/radio_muebles", array('1'=>'Todos los bienes muebles', '2'=>'Uno específico'), array('url1'=>'/reporte_bienes/busqueda_mueble_especifico/', 'update1'=>'td-busqueda_muebles', 'id'=>'radio_muebles'), null, $opc=1); ?>
+			</td>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td align="center" id="td-busqueda_muebles">
+				&nbsp;
+			</td>
+		</tr>
+	</table>
+	<br />
+	<div id="vacio"></div>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/inventario_inmueble/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="si"){
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$this->top_reporte($titulo_A = "EQUÍPOS Y COSTOS DE CONSERVACIÓN", null, null, array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"250"));
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+$cant_registros = count($datos);
+if($cant_registros==0){
+	$pdf->AddPage();
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,35,'NO SE ENCONTRARÓN REGISTROS PARA SU BUSQUEDA','TRBL',1,'C');
+}else{
+
+	$num_id2 = "";
+	for($i=0; $i<$cant_registros; $i++){
+
+		$num_id1 = $datos[$i][0]['numero_identificacion'];
+		if($num_id1 != $num_id2){
+			$pdf->AddPage();
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(130,5,'UBICACIÓN GEOGRÁFICA','TRL',0,'C');
+			$pdf->Cell(0,5,'UBICACIÓN ADMINISTRATIVA','TR',1,'C');
+
+			$pdf->Cell(30,4,'','TRL',0,'C');
+			$pdf->Cell(15,4,'CÓDIGO','TR',0,'C');
+			$pdf->Cell(85,4,'DENOMINACIÓN','TR',0,'C');
+			$pdf->Cell(30,4,'','TR',0,'C');
+			$pdf->Cell(15,4,'CÓDIGO','TR',0,'C');
+			$pdf->Cell(0,4,'DENOMINACIÓN','TR',1,'C');
+
+			//--------------ESTADO--------------//
+			$pdf->Cell(30,6,'ESTADO','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_estado']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(85,1,"",'T',2,'C');
+			$pdf->MultiCell(84,3,$datos[$i][0]['deno_estado'],'','L');//--[DENO. ESTADO]
+			$varX = $varX+85;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'ENTIDAD PROPIETARIA','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_institucion']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(84,1,"",'T',2,'C');
+			$pdf->MultiCell(83,3,$datos[$i][0]['deno_institucion'],'','L');//--[DENO. ESTADO]
+			$varX = $varX+84;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,"",'TR',1,'L');
+
+			//--------------MUNICIPIO--------------//
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'MUNICIPIO','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_municipio']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(85,1,"",'T',2,'C');
+			$pdf->MultiCell(84,3,$datos[$i][0]['deno_municipio'],'','L');//--[DENO. MUNICIPIO]
+			$varX = $varX+85;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'ENTIDAD ASIGNADA','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_dependencia']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(84,1,"",'T',2,'C');
+			$pdf->MultiCell(83,3,$datos[$i][0]['deno_dependencia'],'','L');//--[DENO. DEPENDENCIA]
+			$varX = $varX+84;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,"",'TR',1,'L');
+
+			//--------------PARROQUIA--------------//
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'PARROQUIA','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_parroquia']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(85,1,"",'T',2,'C');
+			$pdf->MultiCell(84,3,$datos[$i][0]['deno_parroquia'],'','L');//--[DENO. PARROQUIA]
+			$varX = $varX+85;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'SERVICIO','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_secretaria']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(84,1,"",'T',2,'C');
+			$pdf->MultiCell(83,3,$datos[$i][0]['deno_secretaria'],'','L');//--[DENO. SECRETARIA]
+			$varX = $varX+84;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,"",'TR',1,'L');
+
+			//--------------CENTRO POBLADO--------------//
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'CENTRO POBLADO','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_centro']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(85,1,"",'T',2,'C');
+			$pdf->MultiCell(84,3,$datos[$i][0]['deno_centro'],'','L');//--[DENO. CENTRO]
+			$varX = $varX+85;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'UNIDAD DE TRABAJO','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_direccion']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(84,1,"",'T',2,'C');
+			$pdf->MultiCell(83,3,$datos[$i][0]['deno_direccion'],'','L');//--[DENO. DIRECCION]
+			$varX = $varX+84;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,"",'TR',1,'L');
+
+			//---------------CIUDAD--------------//
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'CIUDAD','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_municipio']),'TR',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(85,1,"",'T',2,'C');
+			$pdf->MultiCell(84,3,$datos[$i][0]['conocido'],'','L');//--[DENO. CIUDAD]
+			$varX = $varX+85;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,6,'OFICINA','TRL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,6,$sisap->AddCero2($datos[$i][0]['cod_oficina']),'TR',0,'C');//--[COD. OFICINA]
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(84,1,"",'T',2,'C');
+			$pdf->MultiCell(83,3,$datos[$i][0]['deno_oficina'],'','L');//--[DENO. OFICINA]
+			$varX = $varX+84;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,"",'TR',1,'L');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(95,5,'DENOMINACIÓN DEL EQUIPO','TRBL',0,'C');
+			$pdf->Cell(80,5,'TIPO DE USO','TRB',0,'C');
+			$pdf->Cell(0,5,'RESPONSABLE','TRB',1,'C');
+
+			$pdf->Cell(1,8,'','L',0,'C');
+			    $pdf->SetFont('vera','',5);
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(94,1,"",'',2,'C');
+			    $pdf->MultiCell(93,2,$datos[$i][0]['denominacion'],'','L');//--[DENOMINACION]
+			    $varX = $varX+94;
+			    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(1,8,'','L',0,'C');
+			    $pdf->SetFont('vera','',5);
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(79,1,"",'',2,'C');
+			    $pdf->MultiCell(79,2,"",'','L');//--[RESPONSABLE]
+			    $varX = $varX+79;
+			    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,8,'','RL',1,'C');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(20,3,'','TRL',0,'C');
+			$pdf->Cell(30,3,'TIPO','TR',0,'C');
+			$pdf->Cell(30,3,'','TR',0,'C');
+			$pdf->Cell(15,3,'','TR',0,'C');
+			$pdf->Cell(25,3,'PRECIO','TR',0,'C');
+			$pdf->Cell(25,3,'MONTO','TR',0,'C');
+			$pdf->Cell(20,3,'TIEMPO DE','TR',0,'C');
+			$pdf->Cell(50,3,'','TR',0,'C');
+			$pdf->Cell(0,3,'','TR',1,'C');
+
+			$pdf->Cell(20,3,'FECHA','RBL',0,'C');
+			$pdf->Cell(30,3,'REFACCIÓN','RB',0,'C');
+			$pdf->Cell(30,3,'REPUESTO','RB',0,'C');
+			$pdf->Cell(15,3,'CANTIDAD','RB',0,'C');
+			$pdf->Cell(25,3,'UNITARIO','RB',0,'C');
+			$pdf->Cell(25,3,'TOTAL','RB',0,'C');
+			$pdf->Cell(20,3,'GARANTIA','RB',0,'C');
+			$pdf->Cell(50,3,'TIENDA O TALLER','RB',0,'C');
+			$pdf->Cell(0,3,'TÉCNICO O MÉCANICO','RB',1,'C');
+		}
+
+			$pdf->SetFont('vera','',6);
+			$datos[$i][0]['dia'] < 10 ? $dia="0".$datos[$i][0]['dia'] : $dia=$datos[$i][0]['dia'] ;
+			$datos[$i][0]['mes'] < 10 ? $mes="0".$datos[$i][0]['mes'] : $mes=$datos[$i][0]['mes'] ;
+			$pdf->Cell(20,8,$dia."/".$mes."/".$datos[$i][0]['ano'],'RL',0,'C');
+			    $pdf->SetFont('vera','',5);
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(29,1,"",'',2,'C');
+			    $pdf->MultiCell(29,2,$datos[$i][0]['deno_reparacion'],'','L');//--[REFACCION]
+			    $varX = $varX+29;
+			    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(1,8,'','R',0,'L');
+			    $pdf->SetFont('vera','',5);
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(30,1,"",'',2,'C');
+			    $pdf->MultiCell(29,2,$datos[$i][0]['deno_repuesto'],'','L');//--[REPUESTO]
+			    $varX = $varX+30;
+			    $pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15,8,$datos[$i][0]['cantidad'],'RL',0,'C');
+			$pdf->Cell(25,8,$sisap->Formato2($datos[$i][0]['costo_unitario']),'R',0,'R');
+			$total_reparacion = $datos[$i][0]['cantidad'] * $datos[$i][0]['costo_unitario'];
+			$pdf->Cell(25,8,$sisap->Formato2($total_reparacion),'R',0,'R');
+			$pdf->Cell(20,8,$datos[$i][0]['tiempo_garantia'],'R',0,'C');
+			    $pdf->SetFont('vera','',5);
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(50,1,"",'',2,'C');
+			    $pdf->MultiCell(49,2,$datos[$i][0]['tienda_taller'],'','L');//--[TIENDA O TALLER]
+			    $varX = $varX+50;
+			    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,8,$datos[$i][0]['tecnico_mecanico'],'RL',1,'L');
+			$pdf->Cell(0,0,'','T',1,'L');
+
+			$num_id2 = $datos[$i][0]['numero_identificacion'];
+
+	}//fin for $datos.
+}
+$pdf->Output('Equipos_y_costos_conservacion_'.date('d-m-Y').'.pdf','D');
+}
+?>

@@ -1,0 +1,198 @@
+-- Table: cnmd10_individual_dias
+
+-- DROP TABLE cnmd10_individual_dias;
+
+CREATE TABLE cnmd10_individual_dias
+(
+  cod_presi integer NOT NULL, -- Código de la presidencia
+  cod_entidad integer NOT NULL, -- Código de la entidad
+  cod_tipo_inst integer NOT NULL, -- Código tipo de Institución
+  cod_inst integer NOT NULL, -- Código de la Institución
+  cod_dep integer NOT NULL, -- Código de la entidad
+  cod_tipo_nomina integer NOT NULL, -- Código tipo de nómina
+  cod_tipo_transaccion integer NOT NULL, -- Código tipo de transacción...
+  cod_transaccion integer NOT NULL, -- Código de transacción
+  cod_frecuencia integer NOT NULL, -- Código de frecuencia...
+  cod_condicion integer NOT NULL,
+  codi_tipo_transaccion integer, -- Código tipo de transacción
+  codi_transaccion integer, -- Código de transacción
+  activar_frecuencia_eventual integer NOT NULL, -- 1.- Si...
+  CONSTRAINT cnmd10_individual_dias_pkey PRIMARY KEY (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina, cod_tipo_transaccion, cod_transaccion),
+  CONSTRAINT cnmd10_individual_dias_1 FOREIGN KEY (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina)
+      REFERENCES cnmd01 (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE
+)
+WITH (OIDS=FALSE);
+ALTER TABLE cnmd10_individual_dias OWNER TO sisap;
+COMMENT ON TABLE cnmd10_individual_dias IS 'Escenarios de control - Asignaciones - Cancelacion de dias especiales a trabajadores';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_presi IS 'Código de la presidencia';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_entidad IS 'Código de la entidad';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_tipo_inst IS 'Código tipo de Institución';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_inst IS 'Código de la Institución';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_dep IS 'Código de la entidad';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_tipo_nomina IS 'Código tipo de nómina';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_tipo_transaccion IS 'Código tipo de transacción
+Siempre debe ser "1"';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_transaccion IS 'Código de transacción';
+COMMENT ON COLUMN cnmd10_individual_dias.cod_frecuencia IS 'Código de frecuencia
+1.- Fijo
+2.- Eventual
+Por defecto "1"';
+COMMENT ON COLUMN cnmd10_individual_dias.codi_tipo_transaccion IS 'Código tipo de transacción';
+COMMENT ON COLUMN cnmd10_individual_dias.codi_transaccion IS 'Código de transacción';
+COMMENT ON COLUMN cnmd10_individual_dias.activar_frecuencia_eventual IS '1.- Si
+2.- No
+Por defecto "2"';
+
+-- Table: cnmd10_individual_dias_cantidad
+
+-- DROP TABLE cnmd10_individual_dias_cantidad;
+
+CREATE TABLE cnmd10_individual_dias_cantidad
+(
+  cod_presi integer NOT NULL, -- Código de la presidencia
+  cod_entidad integer NOT NULL, -- Código de la entidad
+  cod_tipo_inst integer NOT NULL, -- Código tipo de Institución
+  cod_inst integer NOT NULL, -- Código de la Institución
+  cod_dep integer NOT NULL, -- Código de la dependencia
+  cod_tipo_nomina integer NOT NULL, -- Código tipo de nómina
+  cod_cargo integer NOT NULL, -- Código del cargo
+  cod_ficha integer NOT NULL, -- Código de la ficha
+  cod_tipo_transaccion integer NOT NULL, -- Código tipo de transacción...
+  cod_transaccion integer NOT NULL, -- Código de transacción
+  cantidad numeric(7,2) NOT NULL, -- Cantidad
+  CONSTRAINT cnmd10_individual_dias_cantidad_pkey PRIMARY KEY (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina, cod_cargo, cod_ficha, cod_tipo_transaccion, cod_transaccion),
+  CONSTRAINT cnmd10_individual_dias_cantidad_1 FOREIGN KEY (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina, cod_tipo_transaccion, cod_transaccion)
+      REFERENCES cnmd10_individual_dias (cod_presi, cod_entidad, cod_tipo_inst, cod_inst, cod_dep, cod_tipo_nomina, cod_tipo_transaccion, cod_transaccion) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE
+)
+WITH (OIDS=FALSE);
+ALTER TABLE cnmd10_individual_dias_cantidad OWNER TO sisap;
+COMMENT ON TABLE cnmd10_individual_dias_cantidad IS 'Registra la cantidad de horas trabajadas para los escenarios individuales';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_presi IS 'Código de la presidencia';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_entidad IS 'Código de la entidad';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_tipo_inst IS 'Código tipo de Institución';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_inst IS 'Código de la Institución';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_dep IS 'Código de la dependencia';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_tipo_nomina IS 'Código tipo de nómina';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_cargo IS 'Código del cargo';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_ficha IS 'Código de la ficha';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_tipo_transaccion IS 'Código tipo de transacción
+1.- Asignación
+2.- Deducción
+Por defecto "1"';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cod_transaccion IS 'Código de transacción';
+COMMENT ON COLUMN cnmd10_individual_dias_cantidad.cantidad IS 'Cantidad';
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE VIEW v_todos_escenarios AS
+(((((((((((((((((((((((((((((((( SELECT cnmd10_aportes_patronales.cod_presi, cnmd10_aportes_patronales.cod_entidad, cnmd10_aportes_patronales.cod_tipo_inst, cnmd10_aportes_patronales.cod_inst, cnmd10_aportes_patronales.cod_dep, cnmd10_aportes_patronales.cod_tipo_nomina, cnmd10_aportes_patronales.cod_tipo_transaccion, cnmd10_aportes_patronales.cod_transaccion
+   FROM cnmd10_aportes_patronales
+UNION
+ SELECT cnmd10_comunes_52semanas_porcentaje_ded.cod_presi, cnmd10_comunes_52semanas_porcentaje_ded.cod_entidad, cnmd10_comunes_52semanas_porcentaje_ded.cod_tipo_inst, cnmd10_comunes_52semanas_porcentaje_ded.cod_inst, cnmd10_comunes_52semanas_porcentaje_ded.cod_dep, cnmd10_comunes_52semanas_porcentaje_ded.cod_tipo_nomina, cnmd10_comunes_52semanas_porcentaje_ded.cod_tipo_transaccion, cnmd10_comunes_52semanas_porcentaje_ded.cod_transaccion
+   FROM cnmd10_comunes_52semanas_porcentaje_ded)
+UNION
+ SELECT cnmd10_comunes_asignacion_bolivares_sexo.cod_presi, cnmd10_comunes_asignacion_bolivares_sexo.cod_entidad, cnmd10_comunes_asignacion_bolivares_sexo.cod_tipo_inst, cnmd10_comunes_asignacion_bolivares_sexo.cod_inst, cnmd10_comunes_asignacion_bolivares_sexo.cod_dep, cnmd10_comunes_asignacion_bolivares_sexo.cod_tipo_nomina, cnmd10_comunes_asignacion_bolivares_sexo.cod_tipo_transaccion, cnmd10_comunes_asignacion_bolivares_sexo.cod_transaccion
+   FROM cnmd10_comunes_asignacion_bolivares_sexo)
+UNION
+ SELECT cnmd10_comunes_asignacion_porcentaje_sexo.cod_presi, cnmd10_comunes_asignacion_porcentaje_sexo.cod_entidad, cnmd10_comunes_asignacion_porcentaje_sexo.cod_tipo_inst, cnmd10_comunes_asignacion_porcentaje_sexo.cod_inst, cnmd10_comunes_asignacion_porcentaje_sexo.cod_dep, cnmd10_comunes_asignacion_porcentaje_sexo.cod_tipo_nomina, cnmd10_comunes_asignacion_porcentaje_sexo.cod_tipo_transaccion, cnmd10_comunes_asignacion_porcentaje_sexo.cod_transaccion
+   FROM cnmd10_comunes_asignacion_porcentaje_sexo)
+UNION
+ SELECT cnmd10_comunes_bolivares_asignacion.cod_presi, cnmd10_comunes_bolivares_asignacion.cod_entidad, cnmd10_comunes_bolivares_asignacion.cod_tipo_inst, cnmd10_comunes_bolivares_asignacion.cod_inst, cnmd10_comunes_bolivares_asignacion.cod_dep, cnmd10_comunes_bolivares_asignacion.cod_tipo_nomina, cnmd10_comunes_bolivares_asignacion.cod_tipo_transaccion, cnmd10_comunes_bolivares_asignacion.cod_transaccion
+   FROM cnmd10_comunes_bolivares_asignacion)
+UNION
+ SELECT cnmd10_comunes_bolivares_deduccion.cod_presi, cnmd10_comunes_bolivares_deduccion.cod_entidad, cnmd10_comunes_bolivares_deduccion.cod_tipo_inst, cnmd10_comunes_bolivares_deduccion.cod_inst, cnmd10_comunes_bolivares_deduccion.cod_dep, cnmd10_comunes_bolivares_deduccion.cod_tipo_nomina, cnmd10_comunes_bolivares_deduccion.cod_tipo_transaccion, cnmd10_comunes_bolivares_deduccion.cod_transaccion
+   FROM cnmd10_comunes_bolivares_deduccion)
+UNION
+ SELECT cnmd10_comunes_dia_asignacion.cod_presi, cnmd10_comunes_dia_asignacion.cod_entidad, cnmd10_comunes_dia_asignacion.cod_tipo_inst, cnmd10_comunes_dia_asignacion.cod_inst, cnmd10_comunes_dia_asignacion.cod_dep, cnmd10_comunes_dia_asignacion.cod_tipo_nomina, cnmd10_comunes_dia_asignacion.cod_tipo_transaccion, cnmd10_comunes_dia_asignacion.cod_transaccion
+   FROM cnmd10_comunes_dia_asignacion)
+UNION
+ SELECT cnmd10_comunes_dia_deduccion.cod_presi, cnmd10_comunes_dia_deduccion.cod_entidad, cnmd10_comunes_dia_deduccion.cod_tipo_inst, cnmd10_comunes_dia_deduccion.cod_inst, cnmd10_comunes_dia_deduccion.cod_dep, cnmd10_comunes_dia_deduccion.cod_tipo_nomina, cnmd10_comunes_dia_deduccion.cod_tipo_transaccion, cnmd10_comunes_dia_deduccion.cod_transaccion
+   FROM cnmd10_comunes_dia_deduccion)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_presi, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_entidad, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_inst, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_dep, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_bolivares_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_bolivares_asig)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_presi, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_entidad, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_inst, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_dep, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_bolivares_ded.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_bolivares_ded)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_dias_asig.cod_presi, cnmd10_comunes_escala_antiguedad_dias_asig.cod_entidad, cnmd10_comunes_escala_antiguedad_dias_asig.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_dias_asig.cod_inst, cnmd10_comunes_escala_antiguedad_dias_asig.cod_dep, cnmd10_comunes_escala_antiguedad_dias_asig.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_dias_asig.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_dias_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_dias_asig)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_dias_ded.cod_presi, cnmd10_comunes_escala_antiguedad_dias_ded.cod_entidad, cnmd10_comunes_escala_antiguedad_dias_ded.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_dias_ded.cod_inst, cnmd10_comunes_escala_antiguedad_dias_ded.cod_dep, cnmd10_comunes_escala_antiguedad_dias_ded.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_dias_ded.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_dias_ded.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_dias_ded)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_presi, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_entidad, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_inst, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_dep, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_porcentaje_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_porcentaje_asig)
+UNION
+ SELECT cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_presi, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_entidad, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_tipo_inst, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_inst, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_dep, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_tipo_nomina, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_tipo_transaccion, cnmd10_comunes_escala_antiguedad_porcentaje_ded.cod_transaccion
+   FROM cnmd10_comunes_escala_antiguedad_porcentaje_ded)
+UNION
+ SELECT cnmd10_comunes_escala_mes_dia_asig.cod_presi, cnmd10_comunes_escala_mes_dia_asig.cod_entidad, cnmd10_comunes_escala_mes_dia_asig.cod_tipo_inst, cnmd10_comunes_escala_mes_dia_asig.cod_inst, cnmd10_comunes_escala_mes_dia_asig.cod_dep, cnmd10_comunes_escala_mes_dia_asig.cod_tipo_nomina, cnmd10_comunes_escala_mes_dia_asig.cod_tipo_transaccion, cnmd10_comunes_escala_mes_dia_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_mes_dia_asig)
+UNION
+ SELECT cnmd10_comunes_escala_sueldo_bolivares_asig.cod_presi, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_entidad, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_tipo_inst, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_inst, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_dep, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_tipo_nomina, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_tipo_transaccion, cnmd10_comunes_escala_sueldo_bolivares_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_sueldo_bolivares_asig)
+UNION
+ SELECT cnmd10_comunes_escala_sueldo_bolivares_ded.cod_presi, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_entidad, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_tipo_inst, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_inst, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_dep, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_tipo_nomina, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_tipo_transaccion, cnmd10_comunes_escala_sueldo_bolivares_ded.cod_transaccion
+   FROM cnmd10_comunes_escala_sueldo_bolivares_ded)
+UNION
+ SELECT cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_presi, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_entidad, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_tipo_inst, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_inst, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_dep, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_tipo_nomina, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_tipo_transaccion, cnmd10_comunes_escala_sueldo_porcentaje_asig.cod_transaccion
+   FROM cnmd10_comunes_escala_sueldo_porcentaje_asig)
+UNION
+ SELECT cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_presi, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_entidad, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_tipo_inst, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_inst, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_dep, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_tipo_nomina, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_tipo_transaccion, cnmd10_comunes_escala_sueldo_porcentaje_ded.cod_transaccion
+   FROM cnmd10_comunes_escala_sueldo_porcentaje_ded)
+UNION
+ SELECT cnmd10_comunes_porcentaje_asignacion.cod_presi, cnmd10_comunes_porcentaje_asignacion.cod_entidad, cnmd10_comunes_porcentaje_asignacion.cod_tipo_inst, cnmd10_comunes_porcentaje_asignacion.cod_inst, cnmd10_comunes_porcentaje_asignacion.cod_dep, cnmd10_comunes_porcentaje_asignacion.cod_tipo_nomina, cnmd10_comunes_porcentaje_asignacion.cod_tipo_transaccion, cnmd10_comunes_porcentaje_asignacion.cod_transaccion
+   FROM cnmd10_comunes_porcentaje_asignacion)
+UNION
+ SELECT cnmd10_comunes_porcentaje_deduccion.cod_presi, cnmd10_comunes_porcentaje_deduccion.cod_entidad, cnmd10_comunes_porcentaje_deduccion.cod_tipo_inst, cnmd10_comunes_porcentaje_deduccion.cod_inst, cnmd10_comunes_porcentaje_deduccion.cod_dep, cnmd10_comunes_porcentaje_deduccion.cod_tipo_nomina, cnmd10_comunes_porcentaje_deduccion.cod_tipo_transaccion, cnmd10_comunes_porcentaje_deduccion.cod_transaccion
+   FROM cnmd10_comunes_porcentaje_deduccion)
+UNION
+ SELECT cnmd10_comunes_puestos_bolivares_asig.cod_presi, cnmd10_comunes_puestos_bolivares_asig.cod_entidad, cnmd10_comunes_puestos_bolivares_asig.cod_tipo_inst, cnmd10_comunes_puestos_bolivares_asig.cod_inst, cnmd10_comunes_puestos_bolivares_asig.cod_dep, cnmd10_comunes_puestos_bolivares_asig.cod_tipo_nomina, cnmd10_comunes_puestos_bolivares_asig.cod_tipo_transaccion, cnmd10_comunes_puestos_bolivares_asig.cod_transaccion
+   FROM cnmd10_comunes_puestos_bolivares_asig)
+UNION
+ SELECT cnmd10_comunes_puestos_bolivares_ded.cod_presi, cnmd10_comunes_puestos_bolivares_ded.cod_entidad, cnmd10_comunes_puestos_bolivares_ded.cod_tipo_inst, cnmd10_comunes_puestos_bolivares_ded.cod_inst, cnmd10_comunes_puestos_bolivares_ded.cod_dep, cnmd10_comunes_puestos_bolivares_ded.cod_tipo_nomina, cnmd10_comunes_puestos_bolivares_ded.cod_tipo_transaccion, cnmd10_comunes_puestos_bolivares_ded.cod_transaccion
+   FROM cnmd10_comunes_puestos_bolivares_ded)
+UNION
+ SELECT cnmd10_comunes_puestos_porcentaje_asig.cod_presi, cnmd10_comunes_puestos_porcentaje_asig.cod_entidad, cnmd10_comunes_puestos_porcentaje_asig.cod_tipo_inst, cnmd10_comunes_puestos_porcentaje_asig.cod_inst, cnmd10_comunes_puestos_porcentaje_asig.cod_dep, cnmd10_comunes_puestos_porcentaje_asig.cod_tipo_nomina, cnmd10_comunes_puestos_porcentaje_asig.cod_tipo_transaccion, cnmd10_comunes_puestos_porcentaje_asig.cod_transaccion
+   FROM cnmd10_comunes_puestos_porcentaje_asig)
+UNION
+ SELECT cnmd10_comunes_puestos_porcentaje_ded.cod_presi, cnmd10_comunes_puestos_porcentaje_ded.cod_entidad, cnmd10_comunes_puestos_porcentaje_ded.cod_tipo_inst, cnmd10_comunes_puestos_porcentaje_ded.cod_inst, cnmd10_comunes_puestos_porcentaje_ded.cod_dep, cnmd10_comunes_puestos_porcentaje_ded.cod_tipo_nomina, cnmd10_comunes_puestos_porcentaje_ded.cod_tipo_transaccion, cnmd10_comunes_puestos_porcentaje_ded.cod_transaccion
+   FROM cnmd10_comunes_puestos_porcentaje_ded)
+UNION
+ SELECT cnmd10_comunes_sueldo_sugerido.cod_presi, cnmd10_comunes_sueldo_sugerido.cod_entidad, cnmd10_comunes_sueldo_sugerido.cod_tipo_inst, cnmd10_comunes_sueldo_sugerido.cod_inst, cnmd10_comunes_sueldo_sugerido.cod_dep, cnmd10_comunes_sueldo_sugerido.cod_tipo_nomina, cnmd10_comunes_sueldo_sugerido.cod_tipo_transaccion, cnmd10_comunes_sueldo_sugerido.cod_transaccion
+   FROM cnmd10_comunes_sueldo_sugerido)
+UNION
+ SELECT cnmd10_control_de_escenarios.cod_presi, cnmd10_control_de_escenarios.cod_entidad, cnmd10_control_de_escenarios.cod_tipo_inst, cnmd10_control_de_escenarios.cod_inst, cnmd10_control_de_escenarios.cod_dep, cnmd10_control_de_escenarios.cod_tipo_nomina, cnmd10_control_de_escenarios.cod_tipo_transaccion, cnmd10_control_de_escenarios.cod_transaccion
+   FROM cnmd10_control_de_escenarios)
+UNION
+ SELECT cnmd10_individual_bolivares.cod_presi, cnmd10_individual_bolivares.cod_entidad, cnmd10_individual_bolivares.cod_tipo_inst, cnmd10_individual_bolivares.cod_inst, cnmd10_individual_bolivares.cod_dep, cnmd10_individual_bolivares.cod_tipo_nomina, cnmd10_individual_bolivares.cod_tipo_transaccion, cnmd10_individual_bolivares.cod_transaccion
+   FROM cnmd10_individual_bolivares)
+UNION
+ SELECT cnmd10_individual_bolivares_cantidad.cod_presi, cnmd10_individual_bolivares_cantidad.cod_entidad, cnmd10_individual_bolivares_cantidad.cod_tipo_inst, cnmd10_individual_bolivares_cantidad.cod_inst, cnmd10_individual_bolivares_cantidad.cod_dep, cnmd10_individual_bolivares_cantidad.cod_tipo_nomina, cnmd10_individual_bolivares_cantidad.cod_tipo_transaccion, cnmd10_individual_bolivares_cantidad.cod_transaccion
+   FROM cnmd10_individual_bolivares_cantidad)
+UNION
+ SELECT cnmd10_individual_porcentaje_horas.cod_presi, cnmd10_individual_porcentaje_horas.cod_entidad, cnmd10_individual_porcentaje_horas.cod_tipo_inst, cnmd10_individual_porcentaje_horas.cod_inst, cnmd10_individual_porcentaje_horas.cod_dep, cnmd10_individual_porcentaje_horas.cod_tipo_nomina, cnmd10_individual_porcentaje_horas.cod_tipo_transaccion, cnmd10_individual_porcentaje_horas.cod_transaccion
+   FROM cnmd10_individual_porcentaje_horas)
+UNION
+ SELECT cnmd10_individual_porcentaje_horas_cantidad.cod_presi, cnmd10_individual_porcentaje_horas_cantidad.cod_entidad, cnmd10_individual_porcentaje_horas_cantidad.cod_tipo_inst, cnmd10_individual_porcentaje_horas_cantidad.cod_inst, cnmd10_individual_porcentaje_horas_cantidad.cod_dep, cnmd10_individual_porcentaje_horas_cantidad.cod_tipo_nomina, cnmd10_individual_porcentaje_horas_cantidad.cod_tipo_transaccion, cnmd10_individual_porcentaje_horas_cantidad.cod_transaccion
+   FROM cnmd10_individual_porcentaje_horas_cantidad)
+UNION
+ SELECT a.cod_presi, a.cod_entidad, a.cod_tipo_inst, a.cod_inst, a.cod_dep, a.cod_tipo_nomina, a.cod_tipo_transaccion, a.cod_transaccion
+   FROM cnmd10_aportes_patronales a)
+UNION
+ SELECT a.cod_presi, a.cod_entidad, a.cod_tipo_inst, a.cod_inst, a.cod_dep, a.cod_tipo_nomina, a.cod_tipo_transa_patrono AS cod_tipo_transaccion, a.cod_transa_patrono AS cod_transaccion
+   FROM cnmd10_aportes_patronales a)
+UNION
+ SELECT cnmd10_individual_dias_cantidad.cod_presi, cnmd10_individual_dias_cantidad.cod_entidad, cnmd10_individual_dias_cantidad.cod_tipo_inst, cnmd10_individual_dias_cantidad.cod_inst, cnmd10_individual_dias_cantidad.cod_dep, cnmd10_individual_dias_cantidad.cod_tipo_nomina, cnmd10_individual_dias_cantidad.cod_tipo_transaccion, cnmd10_individual_dias_cantidad.cod_transaccion
+   FROM cnmd10_individual_dias_cantidad;
+
+ALTER TABLE v_todos_escenarios OWNER TO sisap;

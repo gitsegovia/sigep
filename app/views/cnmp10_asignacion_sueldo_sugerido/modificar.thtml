@@ -1,0 +1,94 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+}
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+?>
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tr_negro">
+  <tr bgcolor="#333" style:"position:fixed">
+    <td class="td4" width="10%">C&oacute;digo transacci&oacute;n</td>
+    <td class="td4" width="60%">Denominaci&oacute;n de la transacci&oacute;n</td>
+    <td class="td4" width="20%">Sueldo sugerido</td>
+    <td class="td4" width="10%">---</td>
+  </tr>
+
+<?php
+if(isset($datos2) && $datos2!=null){//print_r($datos);
+	$i=0;
+	$j=0;
+	foreach($denominaciones as $x){
+		$deno[$j] = $x['cnmd03_transacciones']['denominacion'];
+		$codigo[$j] = $x['cnmd03_transacciones']['cod_transaccion'];
+		$j++;
+	}
+	foreach($datos2 as $row){
+		$cod_nomina = $row['cnmd10_comunes_sueldo_sugerido']['cod_tipo_nomina'];
+		$cod_trans = $row['cnmd10_comunes_sueldo_sugerido']['cod_transaccion'];
+		$sugerido = $row['cnmd10_comunes_sueldo_sugerido']['sueldo_sugerido'];
+		$codi = $row['cnmd10_comunes_sueldo_sugerido']['codi_transaccion'];
+		$condicion1 = $row['cnmd10_comunes_sueldo_sugerido']['codi_tipo_transaccion'];
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr id="<?=$i?>" class="textNegro2" bgcolor="<?=$color?>">
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/cod_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center', 'readonly'=>'readonly', 'value'=>mascara_tres($cod_trans)), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/deno_trans'.$i, $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>denominacion($deno, $codigo,$cod_trans)), false);?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/monto_f'.$i, $htmlAttributes = array('style'=>'text-align:center','value'=>$sisap->formato2($sugerido), 'readonly'=>'readonly'), false); ?>
+</td>
+
+<td class="td2center">
+	<?= $ajax->link($html->image('eye.png', array('border'=>'0')), '/cnmp10_asignacion_sueldo_sugerido/ver/'.$cod_nomina.'/'.$cod_trans.'/'.$codi.'/'.$condicion1, array('update'=>'cnmp10_asignacion_sueldo_sugerido', 'title'=>'Ver'), null, false, true); ?>
+	<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp10_asignacion_sueldo_sugerido/eliminar/'.$cod_nomina.'/'.$cod_trans, array('update'=>'datos', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$i');"), "Realmente desea Eliminar este escenario?", false, true); ?>
+</td>
+</tr>
+<?php
+$i++;
+}
+}else{
+
+
+?>
+<tr bgcolor="#CDF2FF">
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/cod_trans', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/deno_trans', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''), false);?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_sueldo_sugerido/monto_f', $htmlAttributes = array('style'=>'text-align:right','value'=>'', 'readonly'=>'readonly'), false); ?>
+</td>
+<td class="td2center">
+---
+</td>
+
+</tr>
+<?php
+}
+?>
+</table>
+<br><br><br><br>

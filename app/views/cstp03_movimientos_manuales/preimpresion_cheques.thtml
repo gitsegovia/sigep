@@ -1,0 +1,104 @@
+<?php
+
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CHEQUES MOVIMIENTOS BANCARIOS <br> <br>Usuario: ".$user,null,"950");?>
+<?= $sisap->OpenTable("950"); ?>
+<form name="data[cstp03_movimientos_manuales]" method="POST" id="form1" action="<?php echo $html->url('/cstp03_movimientos_manuales/generar_cheque_mov_manuales/'); ?>" onSubmit="return valida_reporte_cheques_movmanuales();">
+<table width="100%" border="0" cellspacing="1">
+    <tr>
+      	<td align="center">CHEQUES POR IMPRIMIR PARA EL USUARIO <b><?=strtoupper($user)?><b></td></tr>
+    <tr>
+	    <td>&nbsp;</td></tr>
+    <tr>
+        <td>
+	    	<div id="distribuir" style="height:150px; overflow:auto;">
+			<table width="100%" cellspacing="0" cellpadding="0" id="grid">
+					<tr class="tr_negro"><td colspan="5" class="td2center" height="22">COLA DE IMPRESIÓN</td></tr>
+					<tr class="tr_negro">
+					    <td class="td4" height="22">A&ntilde;o movimiento</td>
+					    <td class="td4">Código Entidad Bancaria</td>
+					    <td class="td4">Cuenta Bancaria</td>
+					    <td class="td4">Número cheque</td>
+					    <td class="td4">Imprimir</td>
+					</tr>
+
+					<?php
+						$i = 0;
+						$denoent="";
+						foreach($datos as $cheque){
+
+						foreach($entidad as $ent){
+							if($cheque['cstd04_cheque_poremitir']['cod_entidad_bancaria'] == $ent['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+								$denoent=$ent['cstd01_entidades_bancarias']['denominacion'];
+							}
+						}
+
+							if($i%2==0){
+					?>
+								<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+								    <td class="td2center" height="22"><?= $cheque['cstd04_cheque_poremitir']['ano_movimiento'] ?></td>
+								    <td class="td2center"><?= $denoent ?></td>
+								    <td class="td2center"><?= $cheque['cstd04_cheque_poremitir']['cuenta_bancaria'] ?></td>
+								    <td class="td2center"><?= $sisap->mascara_ocho($cheque['cstd04_cheque_poremitir']['numero_cheque']) ?></td>
+								    <td class="td2center">&nbsp;</td>
+								</tr>
+
+
+					<?php }else{ ?>
+
+
+								<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+								   <td class="td2center" height="22"><?= $cheque['cstd04_cheque_poremitir']['ano_movimiento'] ?></td>
+								   <td class="td2center"><?= $denoent ?></td>
+								   <td class="td2center"><?= $cheque['cstd04_cheque_poremitir']['cuenta_bancaria'] ?></td>
+								   <td class="td2center"><?= $sisap->mascara_ocho($cheque['cstd04_cheque_poremitir']['numero_cheque']) ?></td>
+								   <td class="td2center">&nbsp;</td>
+								</tr>
+					<?php
+							}
+							$i++;
+
+						}//fin foreach
+					?>
+	 		</table>
+ 		</td>
+ 	</tr>
+</table>
+<br />
+
+<?php
+if($tipo_cheques!=null){
+	echo "<span style='display:none'>";
+	echo $html->radio('cstp03_movimientos_manuales/preimpreso', array('1'=>'Formato Libre', '2'=>'Formato PreImpreso'), "&nbsp;&nbsp;", array('value'=>$tipo_cheques));
+	echo "</span>";
+}else{
+	echo $html->radio('cstp03_movimientos_manuales/preimpreso', array('1'=>'Formato Libre', '2'=>'Formato PreImpreso'), "&nbsp;&nbsp;", array('value'=>''));
+}
+?>
+
+<input type="hidden" value="1" name="data[cstp03_movimientos_manuales][forma_orientacion]" id="forma_orientacion" />
+
+<br />
+<br />
+<br />
+
+<?php
+	if($i==0){$disable="disabled";}else{$disable="";}
+
+	if((int)$tipo_cheques==1){ /** VA AL FORMATO GENERICO: */
+?>
+
+	<input type="button" id="send_window_pdf_impress" <?= $disable = $disable?> onClick="javascript:codigo_ventana('/cstp03_movimientos_manuales/ventana_pdf_impresion_cheque', '600px', '500px', '* Generar Cheque *');" style="z-index:10000;" class="generar_input" title="Generar" />
+
+<?php }else{ // VA AL FORMATO PREIMPRESO: ?>
+
+	<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>$disable)); ?>&nbsp;&nbsp;
+
+<?php } ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Ir a Movimientos Bancarios', 'id'=>'regresar'), array('url1' => '/cstp03_movimientos_manuales/', 'update1'=>'principal'))?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+<?= $sisap->CloseTable(); ?>

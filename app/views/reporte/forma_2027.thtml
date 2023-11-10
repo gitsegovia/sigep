@@ -1,0 +1,243 @@
+<?php
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['ejercicio_1'] = '';
+$_SESSION['ejercicio_2'] = '';
+$_SESSION['ejercicio_3'] = '';
+$_SESSION['titulo'] = '';
+$_SESSION['cod_sector_deno']='';
+$_SESSION['cod_programa_deno'] = '';
+$_SESSION['cod_sector']='';
+$_SESSION['cod_programa'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+
+
+class fpdfview extends TCPDF  {
+
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.027 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+function Header(){
+
+$this->image_escudo(14,22,18);
+$this->SetFont('vera','B',10);
+$this->Cell(20,6,"",'TL',0);
+$this->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);
+$this->Cell(25,4,"",'L',0);
+$this->SetFont('vera','',9);
+$this->Cell(0,4,$_SESSION['titulo_a'],'R',1);
+$this->SetFont('vera','B',12);
+$this->Cell(30,10,"",'L',0);
+$this->MultiCell(0,5,"RELACIÓN DE ORGANISMOS ADSCRITOS A LA GOBERNACIÓN",'R','C');
+$this->SetFont('vera','',7);
+$this->Cell(30,3,"",'L',0);
+$this->Cell(0,3,"(BOLÍVAR FUERTE)",'R',1,'C');
+$this->SetFont('vera','',9);
+$this->Cell(22,5,"",'BL',0);
+$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);
+$this->Ln(7);
+
+
+$this->SetFont('vera','B',8);
+$this->Cell(55,7,"NOMBRE DEL",'TRL',0,'C');
+$this->Cell(30,7,"Nro. DE GACETA",'TR',0,'C');
+$this->Cell(50,7,"ACTIVIDAD",'TR',0,'C');
+$this->Cell(0,7,"MONTO (En ".MONEDA2.".)",'TRB',1,'C');
+
+$this->Cell(55,5,"ORGANISMO",'RL',0,'C');
+$this->Cell(30,5,"O REGISTRO",'R',0,'C');
+$this->Cell(50,5,"QUE REALIZA",'R',0,'C');
+$this->Cell(84,5,"ACORDADO",'RB',0,'C');
+$this->Cell(0,5,"ESTIMADO",'RB',1,'C');
+
+$this->Cell(55,4,"",'RBL',0,'C');
+$this->Cell(30,4,"",'RB',0,'C');
+$this->Cell(50,4,"",'RB',0,'C');
+$this->Cell(28,4,"  Año: ".$_SESSION['ejercicio_3'],'RB',0,'L');
+$this->Cell(28,4,"  Año: ".$_SESSION['ejercicio_2'],'RB',0,'L');
+$this->Cell(28,4,"  Año: ".$_SESSION['ejercicio_1'],'RB',0,'L');
+$this->Cell(0,4," Año: ".$_SESSION['ejercicio'] ,'RB',1,'L');
+
+
+ }//fin function
+
+
+}//fin class
+
+
+if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RELACIÓN DE ORGANISMOS ADSCRITOS A LA GOBERNACIÓN",NULL,"750"); ?>
+
+<div id="actualizar"></div>
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/forma_2027/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cfpp05][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+
+<? $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true) ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+$a=0;
+$b=0;
+
+foreach($arrd05 as $var_1){ $a++;
+
+$var_arrd05[$a]['cod_dep']           =    $var_1['arrd05']['cod_dep'];
+$var_arrd05[$a]['denominacion']      =    $var_1['arrd05']['denominacion'];
+
+$var_arrd05[$a]['denominacion'] = str_replace("\n", ' ',$var_arrd05[$a]['denominacion']);
+
+$var_arrd05[$a]['gaceta_registro']   =    $var_1['arrd05']['gaceta_registro'];
+$var_arrd05[$a]['actividad']         =    $var_1['arrd05']['actividad'];
+
+}//fin foreach
+
+
+foreach($datos as $var_2){ $b++;
+
+$var_cfpd05[$b]['cod_dep']                =    $var_2['cfpd05']['cod_dep'];
+$var_cfpd05[$b]['ano']                    =    $var_2['cfpd05']['ano'];
+$var_cfpd05[$b]['asignacion_anual']       =    $var_2[0]['asignacion_anual'];
+
+
+}//fin foreach
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMargin(10);
+$pdf->SetRightMargin(10);
+
+
+$pdf->SetFont('vera','B',10);
+
+$_SESSION['ejercicio']=$ejercicio;
+$_SESSION['ejercicio_1']=$ejercicio-1;
+$_SESSION['ejercicio_2']=$ejercicio-2;
+$_SESSION['ejercicio_3']=$ejercicio-3;
+
+
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['titulo_a'] = $titulo_a;
+
+$pdf->AddPage();
+
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+
+$total_a_total = 0;
+$total_b_total = 0;
+$total_c_total = 0;
+$total_d_total = 0;
+
+
+
+for($i=1; $i<=$a; $i++){
+
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(1,18,"",'TL',0);
+	$varX = $pdf->GetX();//asigno X
+	$varY = $pdf->GetY();//asigno Y
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(53,3,"",'T',2,'C');
+	$pdf->MultiCell(53,4,$var_arrd05[$i]['denominacion'],'','C');
+	$varX = $varX+53;//le sumo a X 55 del Cell debido a que lo capture antes.
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->Cell(1,18,"",'TR',0);//lateral
+
+
+
+	$pdf->Cell(30,18,$var_arrd05[$i]['gaceta_registro'],'TLR',0,'C');
+
+
+	$varX = $pdf->GetX();//asigno X
+	$varY = $pdf->GetY();//asigno Y
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(49,1,"",'T',2,'C');
+	$pdf->MultiCell(49,4,$var_arrd05[$i]['actividad'],'','C');
+	$varX = $varX+49;//le sumo a X 50 del Cell debido a que lo capture antes.
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->Cell(1,18,"",'TR',0);//lateral
+
+for($ii=1; $ii<=$b; $ii++){
+
+if($var_cfpd05[$ii]['ano']==$ejercicio     && $var_cfpd05[$ii]['cod_dep']==$var_arrd05[$i]['cod_dep']){$total_d=$var_cfpd05[$ii]['asignacion_anual'];}//fin if
+if($var_cfpd05[$ii]['ano']==($ejercicio-1) && $var_cfpd05[$ii]['cod_dep']==$var_arrd05[$i]['cod_dep']){$total_c=$var_cfpd05[$ii]['asignacion_anual'];}//fin if
+if($var_cfpd05[$ii]['ano']==($ejercicio-2) && $var_cfpd05[$ii]['cod_dep']==$var_arrd05[$i]['cod_dep']){$total_b=$var_cfpd05[$ii]['asignacion_anual'];}//fin if
+if($var_cfpd05[$ii]['ano']==($ejercicio-3) && $var_cfpd05[$ii]['cod_dep']==$var_arrd05[$i]['cod_dep']){$total_a=$var_cfpd05[$ii]['asignacion_anual'];}//fin if
+
+
+}//fin for
+
+
+	$pdf->Cell(28,18,$sisap->Formato2($total_a),'TRL',0,'R');
+	$pdf->Cell(28,18,$sisap->Formato2($total_b),'TR',0,'R');
+	$pdf->Cell(28,18,$sisap->Formato2($total_c),'TR',0,'R');
+	$pdf->Cell(0,18, $sisap->Formato2($total_d),'TR',1,'R');
+
+$pdf->Cell(0,0,'','T',1);
+
+$total_a_total += $total_a;
+$total_b_total += $total_b;
+$total_c_total += $total_c;
+$total_d_total += $total_d;
+
+}//fin for
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(135,4,"T O T A L    ",'TRBL',0,'R');
+$pdf->Cell(28,4,$sisap->Formato2($total_a_total) ,'TRB',0,'R');
+$pdf->Cell(28,4,$sisap->Formato2($total_b_total) ,'TRB',0,'R');
+$pdf->Cell(28,4,$sisap->Formato2($total_c_total) ,'TRB',0,'R');
+$pdf->Cell(0,4, $sisap->Formato2($total_d_total) ,'TRB',1,'R');
+
+$pdf->OutPut('forma_2027_'.date("d-m-Y"),'D');
+
+
+}//fin else
+
+
+?>

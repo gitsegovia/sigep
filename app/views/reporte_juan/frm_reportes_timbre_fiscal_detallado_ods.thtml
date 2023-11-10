@@ -1,0 +1,129 @@
+<?php
+	if($opcion==1){
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+	$sisap->CssSelect();
+?>
+<?= $sisap->Tabla('',true,"RETENCIÓN DE TIMBRE FISCAL DETALLADO","Hoja de cálculo","950");?>
+<?= $sisap->OpenTable("950"); ?>
+<form name="data[reporte_juan]" method="POST" id="form1" action="<?php echo  $html->url('/reporte_juan/frm_reportes_timbre_fiscal_detallado_ods/2'); ?>">
+Año: <input name="data[reporte_juan][year]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+<div id="retencion_timbrefiscal_acumulado">
+		<table width="30%" border="0" cellspacing="0">
+		    	   <tr>
+		    	       <td width="40" align="center">Fecha desde</td>
+		    	       <td width="40" align="center">Fecha hasta</td>
+		    	   </tr>
+		    	   <tr>
+		    	       <td width="40" align="center"><?= $sisap->input_fecha('reporte_juan', 'fecha_desde', 'fecha_desde') ?></td>
+		    	       <td width="40" align="center"><?= $sisap->input_fecha('reporte_juan', 'fecha_hasta', 'fecha_hasta') ?></td>
+		    	   </tr>
+		</table>
+	<br>
+	<br>
+	<input type="submit" name="name" value="" id="b_generar" class="ods_input"/>
+	<?= $sisap->buttonTagRemote('/reporte_juan/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+</div>
+</form>
+<?= $sisap->CloseTable(); ?>
+<?php }else{
+set_time_limit(0);
+vendor ('Writer');
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('Hoja 1');
+$worksheet->setInputEncoding('utf-8');
+$worksheet->setColumn(0, 0, 15, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(1, 1, 15, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(2, 2, 15, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(3, 5, 30, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(6, 6, 50, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(7, 11, 35, $format = null, $hidden = 0, $level = 0);
+$nombre='relacion_de_impuestos_1_x_1000_';
+
+    $var_filas[0]=array(""=>elimina_acentos($entidad_federal));
+   	$var_filas[1]=array(""=>up(elimina_acentos($titulo_a)));
+   	$var_filas[2]=array(""=>'(RELACION MENSUAL DE IMPUESTOS (TIMBRE FISCAL))');
+   	$var_filas[3]=array(" ");
+   	$var_filas[4]=array(" ");
+   	$var_filas[5]=array("SELECCION EL TIPO E INSTRUMENTO");
+   	$fila_celda=6;
+	$totaltotal=0;
+
+	$cols[0]="ORD. PAGO";
+    $cols[1]="CHEQUE";
+    $cols[2]="OTROS";
+    $cols[3]="NUMERO DE INSTRUMENTO";
+    $cols[4]="ENTIDAD FINANCIERA";
+    $cols[5]="FECHA";
+    $cols[6]="NOMBRE DEL CONTRIBUYENTE";
+    $cols[7]="RIF";
+    $cols[8]="BASE IMPONIBLE";
+    $cols[9]="MONTO IMPUESTO";
+    $cols[10]="OPERAC. ANULADAS  REVERSADAS";
+    $var_filas[$fila_celda]=$cols;
+    $total = 0;
+    $cuenta_bancaria_monto = 0;
+foreach($datos_ordenpago as $orden){
+foreach($datos_cuerpo_timbre as $timbre){
+	if($orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$timbre['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+		$fila_celda++;
+        $total=$total+$timbre['cstd07_retenciones_cuerpo_timbre']['monto'];
+        $cuenta_bancaria_monto += $timbre['cstd07_retenciones_cuerpo_timbre']['monto'];
+        $cols[0] = 'X';
+		$cols[1] = '';
+		$cols[2] = '';
+
+		$cols[3] = $sisap->mascara_ocho($timbre['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']);
+		$cols[4] = '';
+		$cols[5] = $sisap->cambia_fecha($timbre['cstd07_retenciones_cuerpo_timbre']['fecha_proceso_registro']);
+		$cols[6] = $orden['cepd03_ordenpago_cuerpo']['beneficiario'];
+		$cols[7] = $orden['cepd03_ordenpago_cuerpo']['rif']=="0"?$orden['cepd03_ordenpago_cuerpo']['cedula_identidad']:$orden['cepd03_ordenpago_cuerpo']['rif'];
+		foreach($datos_ordenpago_facturas as $ve_aux2){
+			if($ve_aux2['cepd03_ordenpago_facturas']['ano_orden_pago']==$timbre['cstd07_retenciones_cuerpo_timbre']['ano_orden_pago']  &&  $ve_aux2['cepd03_ordenpago_facturas']['numero_orden_pago']==$timbre['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+			$cols[8] = $sisap->Formato2($ve_aux2[0]['monto_sub_total']);
+			$bandera = 1;
+			}else{
+			}
+		}//fin foreach
+		if($bandera==0){
+			    $cols[8] = $$sisap->Formato2(0);
+		}
+		$cols[9] = $sisap->Formato2($timbre['cstd07_retenciones_cuerpo_timbre']['monto']);
+		$cols[10] = '';
+		$var_filas[$fila_celda]=$cols;
+  	}//fin if
+}//fin for
+}//fin for
+///////////////////////////77
+/////////////////////////////
+ $fila_celda++;
+ $fila_celda++;
+                            $cols[0]  = '';
+						    $cols[1]  = '';//$titulo_x[$lx];
+						    $cols[2]  = "";
+						    $cols[3]  = "";
+						    $cols[4]  = "";
+						    $cols[5]  = "";
+						    $cols[6]  = "";
+						    $cols[7]  = "";
+						    $cols[8]  = "TOTALES: ";
+						    $cols[9]  = $sisap->Formato2($total);
+						    $cols[10] = "";
+						    $cols[11] = "";
+						    $var_filas[$fila_celda]=$cols;
+$var_date=date('His').'_'.rand();
+$archivo = $nombre.'_'.$var_date.'.xls';
+//$another_format3 =& $workbook->addFormat();
+//$another_format3->setBold(1);
+foreach($var_filas as $key => $value) {
+  $i = 0;
+    foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      //$excel->write($sheet1, $key+1, $i, $fieldvalue);
+      	$worksheet->writeString($key+1, $i, $fieldvalue);
+      $i++;
+  }
+
+}
+$workbook->send($archivo);
+$workbook->close();
+} ?>

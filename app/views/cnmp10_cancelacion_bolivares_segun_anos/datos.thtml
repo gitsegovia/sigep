@@ -1,0 +1,92 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+}
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+?>
+
+<br/>
+
+<table width="100%" border="1" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro" style:"position:fixed">
+    <td class="td4" width="8%">C&oacute;digo Transacci&oacute;n</td>
+    <td class="td4">Denominaci&oacute;n de la Transacci&oacute;n</td>
+    <td class="td4">Monto a Asignar</td>
+    <td class="td4" width="10%">---</td>
+  </tr>
+
+<?php
+if(isset($datos)){
+	$i=0;
+	$j=0;
+	foreach($deno_trans as $x){
+		$deno[$j] = $x['cnmd03_transacciones']['denominacion'];
+		$codigo[$j] = $x['cnmd03_transacciones']['cod_transaccion'];
+		$j++;
+	}
+	foreach($datos as $row){
+		$cod_trans = $row['cnmd10_bolivares_asig']['cod_transaccion'];
+		$monto = $row['cnmd10_bolivares_asig']['monto'];
+		$codi = $row['cnmd10_bolivares_asig']['codi_transaccion'];
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr id="<?=$i?>" class="textNegro2" bgcolor="<?=$color?>">
+<td class="td2center">
+	<?= $html->input('cnmp10_comunes_bolivares_asig/cod_trans'.$i, $htmlAttributes = array('size'=>'3', 'readonly'=>'readonly', 'value'=>mascara_tres($cod_trans)), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_comunes_bolivares_asig/deno_trans'.$i, $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>denominacion($deno, $codigo,$cod_trans)), false);?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_comunes_bolivares_asig/monto'.$i, $htmlAttributes = array('value'=>$sisap->formato2($monto), 'readonly'=>'readonly'), false); ?>
+</td>
+<td class="td2center">
+	<?= $ajax->link($html->image('eye.png', array('border'=>'0')), '/cnmp10_comunes_bolivares_asig/ver/'.$cod_nomina.'/'.$cod_trans.'/'.$codi, array('update'=>'principal_cnmp10_comunes_bolivares_asig', 'title'=>'Ver'), null, false, true); ?>
+	<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp10_comunes_bolivares_asig/eliminar/'.$cod_nomina.'/'.$cod_trans, array('update'=>'del', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$i');"), "Realmente desea Eliminar este escenario?", false, true); ?>
+</td>
+</tr>
+<?php
+$i++;
+}
+}else{
+
+
+?>
+<tr>
+<td class="td2center">
+---
+</td>
+<td class="td2center">
+---
+</td>
+<td class="td2center">
+---
+</td>
+<td class="td2center"	>
+---
+</td>
+</tr>
+<?php
+}
+?>
+</table>

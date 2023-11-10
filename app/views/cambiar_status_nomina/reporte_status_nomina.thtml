@@ -1,0 +1,111 @@
+<?php
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'P', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("STATUS ACTUAL DE NÓMINAS"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"189"));
+
+            $this->SetFont('vera', 'B', 7);
+            $this->Cell(20, 3, 'CÓDIGO', 'RTL', 0, 'C');
+            $this->Cell(80, 3, '', 'RT', 0, 'C');
+            $this->Cell(20, 3, '', 'RT', 0, 'C');
+            $this->Cell(20, 3, 'PRE', 'RT', 0, 'C');
+            $this->Cell(20, 3, 'CORRIDA', 'RT', 0, 'C');
+            $this->Cell(20, 3, 'EMISIÓN', 'RT', 0, 'C');
+            $this->Cell(0, 3, 'ORDEN', 'RT', 1, 'C');
+
+			$this->Cell(20, 3, 'NÓMINA', 'RBL', 0, 'C');
+            $this->Cell(80, 3, 'DENOMINACIÓN DE LA NÓMINA', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'CERRADA', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'NÓMINA', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'DEFINITIVA', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'INFORMES', 'RB', 0, 'C');
+            $this->Cell(0, 3, 'DE PAGO', 'RB', 1, 'C');
+        }
+
+        function Footer() {
+        }
+
+    function tam_celda($total_char){
+		if($total_char<40){
+			$heigth = 6;
+		}elseif($total_char>=40 && $total_char<80){
+			$heigth = 12;
+		}elseif($total_char>=80 && $total_char<120){
+			$heigth = 18;
+		}elseif($total_char>=120 && $total_char<160){
+			$heigth = 24;
+		}elseif($total_char>=160 && $total_char<200){
+			$heigth = 30;
+		}elseif($total_char>=200 && $total_char<240){
+			$heigth = 36;
+		}elseif($total_char>=240 && $total_char<280){
+			$heigth = 42;
+		}elseif($total_char>=280 && $total_char<320){
+			$heigth = 48;
+		}elseif($total_char>=320 && $total_char<360){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+    } // End Of fpdfview ext. TCPDF Class
+
+    $pdf = new fpdfview('P', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+	if(!empty($datos_status)){
+	foreach($datos_status as $rdatos_status){
+		$nomina = str_replace("\n", "", $rdatos_status[0]['nomina']);
+		$total_char = strlen($nomina);
+		$theigth = $pdf->tam_celda($total_char);
+
+
+				$pdf->Cell(20, $theigth, mascara_tres($rdatos_status[0]['cod_tipo_nomina']), 'LR', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(80, 1, "", '', 2, '');
+                $pdf->MultiCell(80, 3, $nomina, '', 'L'); // --------[NOMINA]
+                $varX = $varX + 80;
+                $pdf->SetXY($varX, $varY);
+
+                $pdf->Cell(20, $theigth, $rdatos_status[0]['cierre'], 'LR', 0, 'C');
+		    	$pdf->Cell(20, $theigth, $rdatos_status[0]['prenomina'], 'R', 0, 'C');
+		    	$pdf->Cell(20, $theigth, $rdatos_status[0]['corrida'], 'R', 0, 'C');
+		    	$pdf->Cell(20, $theigth, $rdatos_status[0]['emision'], 'R', 0, 'C');
+				$pdf->Cell(0, $theigth, $rdatos_status[0]['ordenes'], 'R', 1, 'C');
+				$pdf->Cell(0, 0, "", 'T', 1, 'L');
+	} // END FOREACH
+
+		$pdf->SetFont('vera', 'B', 12);
+		$pdf->Cell(0, 7, "TOTAL DE NÓMINAS: ". $sisap->zero(count($datos_status)), 'RBL', 1, 'R');
+
+	}else{
+		$pdf->SetFont('vera', 'B', 14);
+		$pdf->Ln(8);
+		$pdf->Cell(0, 28, "NO SE ENCONTRARON DATOS ...", 'TRBL', 1, 'C');
+	} // END ELSE IF !EMPTY
+
+    $pdf->Output('reporte_status_nomina.pdf', 'D');
+
+?>

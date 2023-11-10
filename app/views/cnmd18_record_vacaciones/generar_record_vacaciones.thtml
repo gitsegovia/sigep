@@ -1,0 +1,459 @@
+<?php
+set_time_limit(0);
+vendor('tcpdfs/tcpdf');
+
+	function smes($mes){
+		switch ($mes) {
+            case "01": {
+                    $var = "Enero";
+                }break;
+            case "02": {
+                    $var = "Febrero";
+                }break;
+            case "03": {
+                    $var = "Marzo";
+                }break;
+            case "04": {
+                    $var = "Abril";
+                }break;
+            case "05": {
+                    $var = "Mayo";
+                }break;
+            case "06": {
+                    $var = "Junio";
+                }break;
+            case "07": {
+                    $var = "Julio";
+                }break;
+            case "08": {
+                    $var = "Agosto";
+                }break;
+            case "09": {
+                    $var = "Septiembre";
+                }break;
+            case "10": {
+                    $var = "Octubre";
+                }break;
+            case "11": {
+                    $var = "Noviembre";
+                }break;
+            case "12": {
+                    $var = "Diciembre";
+                }break;
+            default: $var = "";
+            		 break;
+        }//fin
+
+        return $var;
+	}
+
+
+    function fecha_constancia($var=null) {
+        $fecha = $var;
+        $mes = '';
+        $year = '';
+        if ($fecha != '') {
+            $year = $fecha[0] . $fecha[1] . $fecha[2] . $fecha[3];
+            $mes = $fecha[5] . $fecha[6];
+            $dia = $fecha[8] . $fecha[9];
+        }//fin
+
+		$var = smes($mes);
+
+        $var_aux = '<b>'. $dia . '</b> días del mes de <b>' . strtoupper($var) . '</b> de <b>' . $year.'</b>';
+
+        return $var_aux;
+    }
+
+
+	function strtoupper_str($var=null){
+
+		$var = strtoupper($var);
+
+	       $var = str_replace("ñ","Ñ", $var);
+	       $var = str_replace("á","Á", $var);
+	       $var = str_replace("é","É", $var);
+	       $var = str_replace("í","Í", $var);
+	       $var = str_replace("ó","Ó", $var);
+	       $var = str_replace("ú","Ú", $var);
+
+		return $var;
+
+	}//fin function
+
+	function strtolower_str($var=null){
+
+		$var = strtolower($var);
+
+	       $var = str_replace("Ñ","ñ", $var);
+	       $var = str_replace("Á","á", $var);
+	       $var = str_replace("É","é", $var);
+	       $var = str_replace("Í","í", $var);
+	       $var = str_replace("Ó","ó", $var);
+	       $var = str_replace("Ú","ú", $var);
+
+		return $var;
+
+	}//fin function
+
+
+	class fpdfview extends TCPDF {
+
+	    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+	        $this->TCPDF($orientation, $unit, $format);
+	    }
+
+	    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+	        return $this->Output($name, $destination);
+	    }
+
+	    function Footer() {
+
+	    }
+
+	     function Header() {
+
+	    }
+	}
+	//fin clase
+
+
+$pdf = new fpdfview('P', 'mm', 'Letter');
+
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(15);
+$pdf->SetRightMargin(15);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+$pdf->AddPage();
+
+
+$pdf->SetFont('helvetica', 'BIU', 13);
+
+
+// set JPEG quality
+$pdf->setJPEGQuality(75);
+
+
+$url = $this->themeWeb . IMAGES_URL . "logos_constancia/";
+
+if(!empty($datos_imgs[0][0]['tipo_logo_derecho'])){
+	$logo_derecho = $url.'logo_derecho_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_derecho, 12, 5, 30, 30);
+}
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_izquierdo'])){
+	$logo_izquierdo = $url.'logo_izquierdo_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_izquierdo, 165, 5, 30, 30);
+}
+
+
+$pdf->Ln(12);
+
+$pdf->Cell(0, 8, "RECORD DE VACACIONES", '', 1, 'C');
+$pdf->Cell(0, 4, "", '', 1, 'C');
+
+
+$direccion = ucwords(strtolower_str($deno_inst[0][0]['direccion']));
+$cod_area = $deno_inst[0][0]['cod_area'];
+
+
+if(!empty($deno_inst[0][0]['telefonos'])){
+	if(!empty($cod_area)){
+		$telefono = 'Teléfono: '.$cod_area."-".$deno_inst[0][0]['telefonos'];
+	}else{
+		$telefono = 'Teléfono: '.$deno_inst[0][0]['telefonos'];
+	}
+}else{
+	$telefono = '';
+}
+
+
+
+if(!empty($republica)){ // PAIS
+	$deno_republica = ucwords(strtolower_str($republica[0][0]['denominacion']));
+}else{
+	$deno_republica = 'Venezuela';
+}
+
+
+
+if(!empty($estado)){ // ESTADO
+	$deno_estado = 'Estado '.ucwords(strtolower_str($estado[0][0]['denominacion']));
+}else{
+	$deno_estado = '';
+}
+
+
+
+if(!empty($cod_zona)){ // ZONA POSTAL
+	$zona_postal = $cod_zona[0][0]['zona_postal'];
+	$conocido = ucwords(strtolower_str($cod_zona[0][0]['conocido']));
+}else{
+	$zona_postal = '';
+	$conocido = '';
+}
+
+
+// VARs INFORMACION PIE DE PAG.:
+
+	$art_footer = "Art. 26 de la Ley de Infogobierno (Gaceta Oficial No. 40.274 de fecha 17/10/2013)";
+	$direc_footer = $direccion .", ". $deno_estado . ", " . $zona_postal ." ". $deno_republica . ". ". $telefono;
+
+/**
+* Cabecera del documento y datos personales del empleado
+**/
+
+$pdf->SetFont('helvetica', 'B', 8);
+
+$pdf->Cell(68, 7, 'APELLIDO(S) Y NOMBRE(S)', 'LTR', 0, 'C');
+$pdf->Cell(61, 7, 'CEDULA DE IDENTIDAD', 'TR', 0, 'C');
+$pdf->Cell(51, 7, 'FECHA DE INGRESO', 'TR', 1, 'C');
+
+foreach ($data as $data0) {
+	if($data0[0]['condicion_actividad_ficha'] == 1){
+		$pdf->SetFont('helvetica', '', 8);
+
+		$pdf->Cell(68, 7, $data0[0]['primer_apellido']." ".substr($data0[0]['segundo_apellido'], 0, 1).". ".
+			$data[0][0]['primer_nombre']." ".substr($data0[0]['segundo_nombre'].".", 0, 1), 'LTR', 0, 'C');
+
+		$pdf->Cell(61, 7, $data0[0]['cedula_identidad'], 'TR', 0, 'C');
+		$pdf->Cell(51, 7, date_format(date_create($data0[0]['fecha_ingreso']), 'd-m-Y'), 'TR', 1, 'C');
+
+		$pdf->SetFont('helvetica', 'B', 8);
+		$pdf->Cell(68, 7, 'UBICACION', 'LTR', 0, 'C');
+		$pdf->Cell(61, 7, 'TIPO DE NOMINA', 'TR', 0, 'C');
+		$pdf->Cell(51, 7, 'CARGO', 'TR', 1, 'C');
+
+		$pdf->SetFont('helvetica', '', 7);
+		$pdf->MultiCell($w=68, $h=7, $data0[0]['deno_cod_direccion'], $border='TRLB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+		$pdf->MultiCell($w=61, $h=7, $data0[0]['denominacion_nomina'], $border='TRB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+		$pdf->MultiCell($w=51, $h=7, $data0[0]['demonimacion_puesto'], $border='TRB', $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+	}
+}
+/**
+* Inicio de datos de record de vacaciones
+**/
+
+$pdf->SetFont('helvetica', '', 6);
+$pdf->Cell(16, 7, 'PERIODOS', 'RL', 0, 'C');
+$pdf->Cell(52, 7, 'CAMBIO CARGO', 'R', 0, 'C');
+$pdf->MultiCell($w=25, $h=7, 'D&Iacute;AS CORRESPONDIENTES', $border='R', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+$pdf->MultiCell($w=18, $h=7, 'VAC. DIFRUTADAS', $border='R', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+$pdf->MultiCell($w=18, $h=7, 'VAC. PENDIENTE', $border='R', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+$pdf->MultiCell($w=18, $h=7, 'D&Iacute;AS. VAC. DISF. MAS', $border='R', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+$pdf->MultiCell($w=18, $h=7, 'D&Iacute;AS PENDIENTES', $border='R', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='C', $fitcell=false);
+$pdf->Cell(15, 7, '# FOLIO', 'R', 1, 'C');
+
+$deno = '';
+$cantidad_dias_pendientes = 0;
+$altoFilas = 0;
+
+$cant = 0;
+	foreach ($records as $record) : 
+
+		$pdf->Cell(8, 7, $record['cnmd18_record_vacaciones']['periodo_inicio'], 'TRLB', 0, 'C');
+		$pdf->Cell(8, 7, $record['cnmd18_record_vacaciones']['periodo_fin'], 'TB', 0, 'C');
+		
+		foreach ($data as $data1):
+			if($record['cnmd18_record_vacaciones']['periodo_inicio'] < date('Y', strtotime($data1[0]['fecha_condicion'])))
+			{
+					if($deno != $data1[0]['demonimacion_puesto']){
+						$deno = $data1[0]['demonimacion_puesto']; 
+					
+						$pdf->MultiCell($w=52, $h=7, $data1[0]['demonimacion_puesto'], $border='TLRB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+					}else{
+						$pdf->MultiCell($w=52, $h=7, "", $border='TLRB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+					}
+					break;
+			}
+		endforeach;
+				
+		    		
+		$pdf->Cell(25, 7, $record['cnmd18_record_vacaciones']['dias_correspondientes'], 'TRB', 0, 'C');
+
+		$pdf->Cell(18, 7, ($record['cnmd18_record_vacaciones']['vac_disfrutadas'] == 1) ? 'SI' : 'NO', 'TRB', 0, 'C');
+
+		$pdf->Cell(18, 7, ($record['cnmd18_record_vacaciones']['vac_pendiente'] == 1) ? 'SI' : 'NO', 'TRB', 0, 'C');
+
+		$pdf->Cell(18, 7, $record['cnmd18_record_vacaciones']['dias_vac_disf_mas'], 'TRB', 0, 'C');
+		$pdf->Cell(18, 7, $record['cnmd18_record_vacaciones']['dias_pendientes'], 'TRB', 0, 'C');
+		$pdf->Cell(15, 7, $record['cnmd18_record_vacaciones']['num_folio'], 'TRB', 1, 'C');
+
+		$altoFilas +=7;
+
+		if($altoFilas == 126){
+			$cant +=1;
+			if($cant < 2){
+
+				// Colocando Sello y Firma
+
+				if(!empty($datos_imgs[0][0]['tipo_imagen_sello_firma'])){
+
+					$imagen_sello_firma = $url.'imagen_sello_firma_'.$cod_imagen.'.jpeg';
+					$pdf->Image($imagen_sello_firma, 65, 215, 100, 100);
+
+				}else{
+
+					if(!empty($datos_imgs[0][0]['tipo_imagen_sello'])){
+						$imagen_sello_firma = $url.'imagen_sello_'.$cod_imagen.'.jpeg';
+						$pdf->Image($imagen_sello_firma, 50, 215, 50, 50);
+					}
+
+					if(!empty($datos_imgs[0][0]['tipo_imagen_firma'])){
+						$imagen_sello_firma = $url.'imagen_firma_'.$cod_imagen.'.jpeg';
+						$pdf->Image($imagen_sello_firma, 105, 205, 50, 50);
+					}
+				}
+
+				$pdf->Cell(0, 182-$altoFilas, "", '', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 12);
+				$pdf->Cell(0, 8, $datos_firma[0]['cnmd06_constancia_firmante']['funcionario_firmante'], '', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 9);
+				$pdf->Cell(0, 6, $datos_firma[0]['cnmd06_constancia_firmante']['cargo_firmante'], '', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 8);
+				$pdf->Cell(0, 5, $datos_firma[0]['cnmd06_constancia_firmante']['resolucion'], '', 1, 'C');
+
+
+				$pdf->Ln(-6);
+
+				$pdf->Cell(0, 2, "", 'T', 1, 'C');
+
+				$pdf->SetFont('helvetica', '', 7);
+				$pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+
+				$pdf->SetFont('helvetica', 'B', 7);
+				$pdf->MultiCell($w=0, $h=5, $direc_footer, $border=0, $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+				$altoFilas = 0;
+
+				$pdf->AddPage();
+			}
+		}
+		$cantidad_dias_pendientes = $cantidad_dias_pendientes + $record['cnmd18_record_vacaciones']['dias_pendientes'];
+	endforeach;
+	
+	/*for ($i=0; $i < 40; $i++) { 
+		$altoFilas +=7;
+		$pdf->Cell(15, 7, $altoFilas, 'TRB', 1, 'C');
+		if($altoFilas == 140 ){
+			$cant +=1;
+			if($cant < 2){
+
+				// Colocando Sello y Firma
+
+				if(!empty($datos_imgs[0][0]['tipo_imagen_sello_firma'])){
+
+					$imagen_sello_firma = $url.'imagen_sello_firma_'.$cod_imagen.'.jpeg';
+					$pdf->Image($imagen_sello_firma, 65, 215, 100, 100);
+
+				}else{
+
+					if(!empty($datos_imgs[0][0]['tipo_imagen_sello'])){
+						$imagen_sello_firma = $url.'imagen_sello_'.$cod_imagen.'.jpeg';
+						$pdf->Image($imagen_sello_firma, 50, 215, 50, 50);
+					}
+
+					if(!empty($datos_imgs[0][0]['tipo_imagen_firma'])){
+						$imagen_sello_firma = $url.'imagen_firma_'.$cod_imagen.'.jpeg';
+						$pdf->Image($imagen_sello_firma, 105, 205, 50, 50);
+					}
+				}
+
+				$pdf->Cell(0, 182-$altoFilas, "", 'TRBL', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 12);
+				$pdf->Cell(0, 8, $datos_firma[0]['cnmd06_constancia_firmante']['funcionario_firmante'], '', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 9);
+				$pdf->Cell(0, 6, $datos_firma[0]['cnmd06_constancia_firmante']['cargo_firmante'], '', 1, 'C');
+
+				$pdf->SetFont('helvetica', 'B', 8);
+				$pdf->Cell(0, 5, $datos_firma[0]['cnmd06_constancia_firmante']['resolucion'], '', 1, 'C');
+
+
+				$pdf->Ln(-6);
+
+				$pdf->Cell(0, 2, "", 'T', 1, 'C');
+
+				$pdf->SetFont('helvetica', '', 7);
+				$pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+
+				$pdf->SetFont('helvetica', 'B', 7);
+				$pdf->MultiCell($w=0, $h=5, $direc_footer, $border=0, $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+				$altoFilas = 0;
+
+				$pdf->AddPage();
+			}
+		}
+	}*/
+
+	$pdf->Cell(147, 7, 'TOTAL DE DIAS DE VACACIONES PENDIENTES', 'TRBL', 0, 'C');
+	$pdf->Cell(18, 7, $cantidad_dias_pendientes, 'TRB', 0, 'C');
+	$pdf->Cell(15, 7, '---', 'TRB', 1, 'C');
+
+	$pdf->Cell(0, 2, "", '', 1, 'C');
+	$pdf->Cell(105, 3, "NOTA:", '', 1, 'L');
+	$pdf->Cell(105, 3, "SOLO REFLEJA LAS BOLETAS DE VACACIONES QUE ESTAN ARCHIVADA EN EL EXPEDIENTE.", '', 1, 'L');
+	$pdf->Cell(105, 3, "QUE HAN SIDO CONSIGNADA EN LA DIRECCION  GENERAL DE RECURSOS  HUMANOS.", '', 1, 'L');
+	$pdf->Cell(105, 3, "ELABORADO: 19/05/2017", '', 1, 'L');
+	
+
+	/**
+	* Fin de record de vacaciones
+	**/
+
+	// Colocando Sello y Firma
+
+	if(!empty($datos_imgs[0][0]['tipo_imagen_sello_firma'])){
+
+		$imagen_sello_firma = $url.'imagen_sello_firma_'.$cod_imagen.'.jpeg';
+		$pdf->Image($imagen_sello_firma, 65, 215, 100, 100);
+
+	}else{
+
+		if(!empty($datos_imgs[0][0]['tipo_imagen_sello'])){
+			$imagen_sello_firma = $url.'imagen_sello_'.$cod_imagen.'.jpeg';
+			$pdf->Image($imagen_sello_firma, 50, 215, 50, 50);
+		}
+
+		if(!empty($datos_imgs[0][0]['tipo_imagen_firma'])){
+			$imagen_sello_firma = $url.'imagen_firma_'.$cod_imagen.'.jpeg';
+			$pdf->Image($imagen_sello_firma, 105, 205, 50, 50);
+		}
+	}
+
+
+	//$pdf->Ln(48);
+	($cant == 0) ? $pdf->Cell(0, 162-$altoFilas, "", '', 1, 'C') : $pdf->Cell(0, 222-$altoFilas, "", '', 1, 'C');
+	
+
+
+	$pdf->SetFont('helvetica', 'B', 12);
+	$pdf->Cell(0, 8, $datos_firma[0]['cnmd06_constancia_firmante']['funcionario_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 9);
+	$pdf->Cell(0, 6, $datos_firma[0]['cnmd06_constancia_firmante']['cargo_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 8);
+	$pdf->Cell(0, 5, $datos_firma[0]['cnmd06_constancia_firmante']['resolucion'], '', 1, 'C');
+
+
+	$pdf->Ln(-6);
+
+	$pdf->Cell(0, 2, "", 'T', 1, 'C');
+
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+
+	$pdf->SetFont('helvetica', 'B', 7);
+	$pdf->MultiCell($w=0, $h=5, $direc_footer, $border=0, $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+	$pdf->Output('record_vacaciones_'.date("d-m-Y").".pdf",'D');
+?>

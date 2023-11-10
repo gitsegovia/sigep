@@ -1,0 +1,127 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+<? if(!isset($vacio)){
+	?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+    <tr class="tr_negro">
+    	<td align="center" width="10%">Renglón</td>
+    	<td align="center" width="60%">Descripción de la mano de obra</td>
+    	<td align="center" width="20%">Costo Bs</td>
+    	<td align="center" width="10%">Acción</td>
+    </tr>
+
+
+  <?php
+//  pr($_SESSION["items1"]);
+$monto=0;
+ if(isset($_SESSION ["items3"]) && $_SESSION ["items3"]!=array() ){
+
+
+ 	$i=0;
+ 	$j=0;
+    foreach($_SESSION ["items3"] as $codigos){
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "obra_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=4;$x++){
+    	$linea=$codigos[0];
+    	if($x==0){
+    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+    	}else if($x==1){
+    		echo "<td>".$codigos[$x]."</td>";
+    	}else if($x==2){
+			echo "<td align=\"right\">".$codigos[$x]."</td>";
+			$monto+=$codigos[$x];
+    	}
+
+}
+ ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/ccnp01_recursos_necesarios/eliminar_items_obra/'.$codigos['id'], array('update'=>'carga_obra','title'=>'Eliminar mano de obra'),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+ </tr>
+  <?
+   	$i++;
+
+    }//fin foreach
+    }
+ }else{
+ 	for($x=0;$x<=3;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ 	$color="#DAEBFF";
+ 	$_SESSION ["items3"]=null;
+ }
+?>
+<tr bgcolor="<?=$color?>">
+	<td colspan="2" align="right">TOTAL MANO DE OBRA:</td>
+	<td align="right" ><?=$sisap->Formato2($monto) ?></td>
+	<input type="hidden" id="total_obra" value="<?=$monto?>"/>
+	<td align="right">&nbsp;</td>
+</tr>
+</table>
+<? $linea=$linea+1; ?>
+<script>
+	document.getElementById('renglon_obra').value=<?=$linea?>;
+	document.getElementById('descripcion_obra').value='';
+	document.getElementById('costo_obra').value='';
+
+	document.getElementById('cantidad').value='';
+	document.getElementById('costo_actividad').value='';
+	document.getElementById('iva').value='';
+	document.getElementById('total_costo_actividad').value='';
+
+	if(document.getElementById('total_equipos') && !document.getElementById('total_material')){
+			var n=eval(document.getElementById('total_obra').value)+eval(document.getElementById('total_equipos').value);
+			n=redondear(n, 2);
+			document.getElementById('monto_unitario').value=n;
+	}else if(document.getElementById('total_material') && !document.getElementById('total_equipos')){
+			var n=eval(document.getElementById('total_obra').value)+eval(document.getElementById('total_material').value);
+			n=redondear(n, 2);
+			document.getElementById('monto_unitario').value=n;
+	}else if(document.getElementById('total_equipos') && document.getElementById('total_obra')){
+			var n=eval(document.getElementById('total_equipos').value)+eval(document.getElementById('total_material').value)+eval(document.getElementById('total_obra').value);
+			n=redondear(n, 2);
+			document.getElementById('monto_unitario').value=n;
+	}else{
+			var n=eval(document.getElementById('total_obra').value);
+			n=redondear(n, 2);
+			document.getElementById('monto_unitario').value=n;
+	}
+	moneda('monto_unitario');
+</script>
+<center>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/ccnp01_recursos_necesarios/limpiar_lista_obra/', 'update1'=>'carga_obra')); ?>
+</center>
+<div id="del"></div>
+</div>
+<? } ?>
+<input type="hidden" id="familia" value="<?=$x?>"/>
+

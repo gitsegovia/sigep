@@ -1,0 +1,325 @@
+<?php
+if(!$pdf){
+?>
+
+	<?$sisap->Tabla_modulos("",true,"FORMATO POAI-2","","950","cpop");?>
+
+	<?php $sisap->OpenTable("950"); ?>
+
+	<form name='data[reporte_formato_poai_2]' method = "post" id='form1' action="<?= $html->url('/cpop00_reportes/reporte_formato_2/1'); ?>">
+
+       <table>
+            <tbody>
+                <tr>
+                    <td>EJERCICIO PRESUPUESTARIO:</td>
+                    <td>
+                    <?= $html->input('reporte_formato_poai_2/ano', array('size'=>'4' , 'id'=>'ano', 'onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:16','value'=>$ano));?>
+
+                    </td>
+                     <?php 
+              if ($cod_dep==1) {?>
+
+               <td>DEPENDENCIA: <?= $cod_dep_set ?> </td>               
+               <td>
+                 <?=  $html->selectTag('reporte_formato_poai_2/select_dependencia', $listadependencia, null, array('id' =>'select_dependencia', 'class' => 'campoText', 'style' => 'border:1px solid cyan;'), null, true)?>
+               </td>
+              
+                <?php }
+              ?>
+                </tr>
+				<!-- <tr>
+					<td style="width:100%">
+						<div id="organigrama" style="margin-left:auto;margin-right:auto;text-align:center;height:600px; width:99%;">
+							<iframe src="http://organigrama.guarico.gob.ve/?institucion=<?=$cod_dep?>" height="600px" width="99%">
+							</iframe>
+						</div>
+					</td>
+				</tr> -->
+            </tbody>
+        </table>
+
+
+      
+    <?= $html->submit('Generar'); ?>
+
+    </form>
+
+ <?= $sisap->buttonTagRemote('reporte_formato_poai_2/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+    <?php echo $sisap->CloseTable(); ?>
+
+<?php
+}else{
+
+	$_SESSION['ano'] = $ano;
+$_SESSION['nombre_dependencia'] = $nombre_dependencia;
+
+    vendor('utf8_tcpdf/tcpdf');
+    set_time_limit(300);
+    class fpdfview extends TCPDF {
+
+        function top_reporte2($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true){
+                   $escudo_array      = top_reporte_escudo($consolidado);
+                   $escudo            = $escudo_array["escudo"];
+                   $entidad_federal   = $escudo_array["entidad_federal"];
+                   $dependencia       = str_replace("(U.L.A)", "", $escudo_array["dependencia"]);
+
+                   if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+                   if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+                   if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+                            $this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"]);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(14,4,"",'TL',0);
+                            $this->Cell(0,4,$entidad_federal,'TR',1);
+                            $this->Cell(14,3,"",'L',0);
+                            $this->SetFont('vera','',7);
+                            $this->Cell(0,3,$dependencia,'R',1);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(0,3,"",'RL',1,'C');
+                            $this->Cell(0,5,$titulo_varios[0],'RL',1,'C');
+                            $this->SetFont('vera','B',7);
+                            if(count($titulo_varios)>1){
+                               for($it=1;$it<count($titulo_varios);$it++){
+                                   $this->Cell(0,5,$titulo_varios[$it],'RL',1,'C');
+                               }
+                            }
+
+                            $this->Cell(0,1,"",'RLB',1,'C');
+                                $this->SetFont('vera','B',5);
+                                if(isset($posicion_pie_pagina["Y"])){
+                                    $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"],'PAGINA: '.$this->PageNo().'/TPAG');
+                                    $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: '.date("d/m/Y"));
+                                    $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+6, 'HORA: '.date("h:i a"));
+                                }//fin if
+                            $this->Ln(3);
+       }//function
+       
+        function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput ($name = '', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Footer(){
+            $this->SetY(-15);
+            $this->SetFont('vera','B',6);
+     //       $this->Cell(150,8," ",0,0,'R');
+       		$this->Cell(100,18,"FORMATO: POAI-".$_SESSION['ano']."-2",0,0,'L');
+
+            $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'R');
+        }
+
+
+        function Header()
+        {
+            //$this->top_reporte("IDENTIFICACIÓN DE LA ENTIDAD FEDERAL", null, null, array("Y"=>"17", "X"=>"20", "Z"=>"11"), null, false);
+            $this->top_reporte2(array('POAI '.$_SESSION['ano'], '2.-Estructura Orgánica de la Institución'), array("Y"=>"11", "X"=>"16", "Z"=>"11"), array("Y"=>"17", "X"=>"186"));
+        }//fin funtion
+
+/**
+ * DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO
+ */
+	var $widths;
+	var $aligns;
+
+	function SetWidths($w){
+		//Set the array of column widths
+		$this->widths=$w;
+	}
+
+	function SetAligns($a){
+		//Set the array of column alignments
+		$this->aligns=$a;
+	}
+
+	function cambiarNLine($cadena) {
+		$cadena = str_replace("à","A", $cadena);
+		$cadena = str_replace("è","E", $cadena);
+		$cadena = str_replace("ì","I", $cadena);
+		$cadena = str_replace("ò","O", $cadena);
+		$cadena = str_replace("ù","U", $cadena);
+		$cadena = str_replace("á","A", $cadena);
+		$cadena = str_replace("é","E", $cadena);
+		$cadena = str_replace("í","I", $cadena);
+		$cadena = str_replace("ó","O", $cadena);
+		$cadena = str_replace("ú","U", $cadena);
+		$cadena = str_replace("ñ","N", $cadena);
+
+		$cadena = str_replace("À", "A", $cadena);
+		$cadena = str_replace("È", "E", $cadena);
+		$cadena = str_replace("Ì", "I", $cadena);
+		$cadena = str_replace("Ò", "O", $cadena);
+		$cadena = str_replace("Ù", "U", $cadena);
+		$cadena = str_replace("Á", "A", $cadena);
+		$cadena = str_replace("É", "E", $cadena);
+		$cadena = str_replace("Í", "I", $cadena);
+		$cadena = str_replace("Ó", "O", $cadena);
+		$cadena = str_replace("Ú", "U", $cadena);
+		$cadena = str_replace("Ñ", "N", $cadena);
+		return $cadena;
+	}
+
+	function Row($data){
+		//Calculate the height of the row
+		$nb=0;
+		for($i=0;$i<count($data);$i++){
+			$nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+		}
+		$h=5*$nb;
+		//Issue a page break first if needed
+		$this->CheckPageBreak($h);
+		//Draw the cells of the row
+		for($i=0;$i<count($data);$i++){
+			$w=$this->widths[$i];
+			$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+			//Save the current position
+			$x=$this->GetX();
+			$y=$this->GetY();
+			//Draw the border
+			$this->Rect($x,$y,$w,$h);
+			//Print the text
+			$this->MultiCell($w,5,$data[$i],0,$a);
+			//Put the position to the right of the cell
+			$this->SetXY($x+$w,$y);
+		}
+		//Go to the next line
+		$this->Ln($h);
+	}
+
+	function CheckPageBreak($h){
+		//If the height h would cause an overflow, add a new page immediately
+		if($this->GetY()+$h>$this->PageBreakTrigger)
+		$this->AddPage($this->CurOrientation);
+	}
+
+	function NbLines($w,$txt){
+		//Computes the number of lines a MultiCell of width w will take
+		$cw=&$this->CurrentFont['cw'];
+		if($w==0){
+			$w=$this->w-$this->rMargin-$this->x;
+		}
+
+		$wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+
+		$contenido=str_replace("\r",'',$txt);
+		$contenido=$this->cambiarNLine($contenido);
+		$numero_letras=strlen($contenido);
+
+		if($numero_letras>0 and $contenido[$numero_letras-1]=="\n"){
+			$numero_letras--;
+		}
+
+		$espacios=-1;
+		$i=0; $j=0; $l=0;
+		$numero_lineas=1;
+
+		while($i<$numero_letras){
+			$caracter=$contenido[$i];
+
+			if($caracter=="\n"){
+				$i++;
+				$espacios=-1;
+				$j=$i;
+				$l=0;
+				$numero_lineas++;
+				continue;
+			}
+
+			if($caracter==' '){
+				$espacios=$i;
+			}
+
+			$unicode = $this->UTF8StringToArray($caracter);
+			$l+=$cw[$unicode[0]];
+			if($l>$wmax){
+				if($espacios==-1){
+					if($i==$j){
+						$i++;
+					}
+				}else{
+					$i=$espacios+1;
+				}
+
+				$espacios=-1;
+				$j=$i;
+				$l=0;
+				$numero_lineas++;
+			}else{
+				$i++;
+			}
+		}
+
+		return $numero_lineas;
+	}
+
+/**
+ * FIN DE LA DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO
+ */
+
+    }//fin clases
+
+    $pdf = new fpdfview('L','mm','Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(10);
+    $pdf->SetRightMargin(10);
+    $pdf->SetAutoPageBreak(true, 10);
+
+    $pdf->AddPage();
+
+    //$pdf->SetFont('helvetica', 'BIU', 13);
+
+	// set JPEG quality
+	//$pdf->setJPEGQuality(75);
+	// URL imagenes cargadas en el servidor
+
+    $pdf->SetFont('vera','B',7);
+
+ 	if(!empty($datos_organigrama['cpod03_organigrama']['fundamento_legal']) ){
+
+ 
+
+    $pdf->Cell(0,7,"2.1.- Organigrama de: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),0,1,'L');
+
+	$url = "http://data-recargas.guarico.gob.ve/api/download-tree-image/".$cod_dep;
+    $img_folder = $this->themeWeb . IMAGES_URL . "organigramas_poai/".$cod_dep.".png";
+    $img_folder_2 = $this->themeWeb . IMAGES_URL . "organigramas_poai/".$cod_dep.".jpg";
+	file_put_contents($img_folder, file_get_contents($url));
+	$imagePng = imagecreatefrompng($img_folder);
+	$bg = imagecreatetruecolor(imagesx($imagePng), imagesy($imagePng));
+	imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+	imagealphablending($bg, TRUE);
+	imagecopy($bg, $imagePng, 0, 0, 0, 0, imagesx($imagePng), imagesy($imagePng));
+	imagedestroy($imagePng);
+	$quality = 100; // 0 = worst / smaller file, 100 = better / bigger file 
+	imagejpeg($bg, $img_folder_2, $quality);
+	imagedestroy($bg);
+    $imagen_sello_firma = "http://data-recargas.guarico.gob.ve/api/download-tree-image/".$cod_dep;  //$url.'organigrama_'.$ano."_".$cod_imagen.'.jpeg';
+    
+		// $pdf->Image($imagen_sello_firma, 10, 47, 260, 146);
+	  $pdf->Image($img_folder_2, 10, 47, 260, 146);      
+
+
+		//Image($file, $x, $y, $w=0, $h=0, $type='', $link='')
+		//$varX = $fpdf->GetX();
+		//$varY = $fpdf->GetY();
+		$pdf->SetXY(10,194);
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(0,7,"2.2.- Fundamento Legal: ".$datos_organigrama['cpod03_organigrama']['fundamento_legal'],0,1);
+    
+
+	}else{
+	    $pdf->SetFont('vera','B',7);
+
+	    $pdf->Cell(0,6,"NO POSEE NINGUN ORGANIGRAMA CARGADO",1,0,'C');
+	}
+
+
+
+	$pdf->Output('formato_poai_'.$ano."_2",'D');
+
+}
+?>

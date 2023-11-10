@@ -1,0 +1,159 @@
+<div style="height:60px; overflow-y:scroll;">
+	<table width="100%" cellspacing="0" cellpadding="0" id="grid" class=" tablacompromiso tablacompromiso2">
+		<tr class="tr_negro">
+	    	<td align="center" width="10%">C&oacute;digo</td>
+			<td align="center" width="80%">Denominaci&oacute;n de la propaganda</td>
+			<td align="center" width="10%">Número</td>
+	  	</tr>
+
+
+		<tr bgcolor="#CDF2FF" class="textNegro2">
+			<td class="td2center" height="22"  width="2"><?= mascara2($codigo) ?></td>
+			<td class="td2"><?= $denominacion ?></td>
+			<td class="td2center"><?=  mascara2($numero) ?></td>
+		</tr>
+	</table>
+</div>
+
+<br>
+
+<div id="cargar_recargo">
+		<div style="height:110px; overflow-y:scroll;">
+						<table width="100%" cellspacing="0" cellpadding="0" id="grid" class=" tablacompromiso tablacompromiso2">
+								<tr class="tr_negro">
+							    	<td align="center" width="10%">C&oacute;digo</td>
+									<td align="center" width="78%">Denominaci&oacute;n de los recargo</td>
+								    <td align="center" width="12%">Porcentaje</td>
+						    		<td align="center" width="10%">Agregar</td>
+						    		<td align="center" width="10%">Eliminar</td>
+					          	</tr>
+		 <?php
+
+		                  $contar = 0;
+		                  $i  = 0;
+		                  $total_porcentaje = 0;
+		                  $recargo_aux = split(",", $recargo);
+					      if(!empty($cod_recargo)){
+					  	     foreach($cod_recargo as $ve){
+                                $op = 1;
+					  	     	if($i%2==0){ $color="#CDF2FF";  }else{ $color="#DAEBFF"; }
+		                             $contar++;
+					  	     		 $i++;
+					  	     	?>
+					            <tr bgcolor="<?= $color ?>"  id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+									    <td class="td2center"><?= $sisap->AddCero2($ve['shd300_recargos']['cod_recargo']) ?></td>
+									    <td class="td2"><?= $ve['shd300_recargos']['denominacion']?></td>
+									    <td class="td2center"><?= $sisap->Formato2($ve['shd300_recargos']['porcentaje']) ?></td>
+									    <?php
+                                         for($a_recargo=0; $a_recargo<count($recargo_aux); $a_recargo++){
+                                             if($ve['shd300_recargos']['cod_recargo']==$recargo_aux[$a_recargo]){
+                                               $op=2;
+//                                               $total_porcentaje += $ve['shd300_recargos']['porcentaje'];
+                                               $codigo_recargo    = $ve['shd300_recargos']['cod_recargo'];
+                                               $total_porcentaje += $_SESSION["recargo"][$codigo][$numero."_".$codigo_recargo]["porcentaje"];
+                                               break;
+                                             }
+                                         }
+                                        ?>
+									    <?php if($op==1){?>
+											    <td class="td2center" height="22">
+											      <?php echo $ajax->link($html->image('edit_add.png',array('border'=>0, "height"=>"24px", "width"=>"24px")), '/shp300_propaganda/recargo_propaganda/1/'.$codigo."/".$ve['shd300_recargos']['cod_recargo']."/".$numero, array('update'=>'cargar_recargo','title'=>'Agregar'),'',false,true); ?>
+											    </td>
+											    <td class="td2center" height="22"></td>
+									      <?php }else{ ?>
+									      	    <td class="td2center" height="22"></td>
+											    <td class="td2center" height="22">
+											      <?php echo $ajax->link($html->image('delete.png',array('border'=>0, "height"=>"24px", "width"=>"24px")), '/shp300_propaganda/recargo_propaganda/2/'.$codigo."/".$ve['shd300_recargos']['cod_recargo']."/".$numero, array('update'=>'cargar_recargo','title'=>'Eliminar'),'',false,true); ?>
+											    </td>
+									      <?php } ?>
+
+
+
+
+							  </tr>
+					  	    <?php
+
+					  	     }//fin for
+
+
+					      }else{ ?>
+
+								    <tr bgcolor="#CDF2FF" class="textNegro2">
+									    <td class="td2center" height="22"  width="2">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									</tr>
+
+					      <?php }//fin else
+
+                              if($total_porcentaje!=0){$total_porcentaje = $total_porcentaje/100;}
+
+					      ?>
+				         </table>
+		</div>
+<input type="hidden" name="data[shp300_propaganda][porcentaje_recargo]"    id="porcentaje_recargo"       value="<?= $total_porcentaje ?>" />
+</div>
+
+<br>
+
+
+<input type="hidden" name="data[shp300_propaganda][cod_tipo]"              id="cod_tipo"                 value="<?= $codigo ?>" />
+<input type="hidden" name="data[shp300_propaganda][monto_articulo]"        id="monto_articulo"           value="<?= $monto ?>" />
+<input type="hidden" name="data[shp300_propaganda][deno_tipo]"             id="deno_tipo"                value="<?= $denominacion ?>" />
+<input type="hidden" name="data[shp300_propaganda][num_tipo]"              id="num_tipo"                 value="<?= $numero ?>" />
+<input type="hidden" name="data[shp300_propaganda][tipo_unidad]"           id="tipo_unidad"              value="<?= $tipo_unidad ?>" />
+
+
+
+<?php if($tipo_unidad==2){ $readonly = "readonly"; ?>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="15%">Espesor</td>
+		<td align="center" width="10%"><input type="text" name="data[shp300_propaganda][espesor]" value="" maxlength="25" id="espesor" onblur="precio_unitario('espesor');"  onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" /></td>
+	    <td align="center" width="15%">Largo ML</td>
+	    <td align="center" width="10%"><input type="text" name="data[shp300_propaganda][largo]"   value="" maxlength="25" id="largo"   onblur="calcular_area_propaganda();"  onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" onfocus="if(this.value=='0,000'){this.value='';}"/></td>
+	    <td align="center" width="15%">Alto ML</td>
+	    <td align="center" width="10%"><input type="text" name="data[shp300_propaganda][alto]"    value="" maxlength="25" id="alto"    onblur="calcular_area_propaganda();"  onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" onfocus="if(this.value=='0,000'){this.value='';}"/></td>
+	    <td align="center" width="15%">Area M2</td>
+	    <td align="center" width="10%"><input type="text" name="data[shp300_propaganda][area]"    value="" maxlength="25" id="area"    onKeyPress="return solonumeros(event);" class="inputtext" style="text-align:center" readonly/></td>
+	</tr>
+</table>
+<br>
+<?php }else{$readonly = "";} ?>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="20%">Cantidad o area M2</td>
+		<td align="center" width="20%">Monto anual</td>
+	    <td align="center" width="20%">Monto adicional</td>
+	    <td align="center" width="20%">Total a cobrar anual</td>
+	    <td align="center" width="20%">Fecha de registro</td>
+	</tr>
+	<tr>
+	    <td align="center"><input type="text" name="data[shp300_propaganda][cantidad_area2]"  value=""     maxlength="25" id="cantidad_area2"  onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" onblur="calcular_area_propaganda_cantidad();" <?= $readonly ?>/></td>
+	    <td align="center"><input type="text" name="data[shp300_propaganda][monto_mensual]"   value="0,00" maxlength="25" id="monto_mensual"   onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" readonly onChange="moneda('monto_mensual');"/></td>
+	    <td align="center"><input type="text" name="data[shp300_propaganda][monto_adicional]" value="0,00" maxlength="25" id="monto_adicional" onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" readonly onChange="moneda('monto_adicional');" /></td>
+	    <td align="center"><input type="text" name="data[shp300_propaganda][total_mensual]"   value="0,00" maxlength="25" id="total_mensual"   onKeyPress="return solonumeros_con_punto(event);" class="inputtext" style="text-align:center" readonly onChange="moneda('total_mensual');" /></td>
+	    <td align="center"><?$sisap->input_fecha("shp300_propaganda","fecha_registro","fecha_registro", date("d/m/Y"));?></td>
+	</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center" width="95%">Ubicaci&oacute;n</td>
+	    <td align="center" width="5%">---</td>
+	</tr>
+	<tr>
+	    <td align="center">
+	      <?= $html->textarea('shp300_propaganda/ubicacion', array('cols' => '2', 'value'=>"", 'id' =>'ubicacion', "class"=>"inputtext"),  false) ?>
+	    </td>
+	    <td align="center"><?= $sisap->submitTagRemote('Aceptar', array("funcion"=>"funcion_valida_propaganda_2", 'url1' => '/shp300_propaganda/agregar_grilla', 'update1'=>'todo_grilla')); ?></td>
+	</tr>
+</table>
+
+<script>
+$("guardar_input").disabled=true;
+$("grilla_publicidad").style.display = "none";
+$("grilla_publicidad2").style.display = "block";
+</script>

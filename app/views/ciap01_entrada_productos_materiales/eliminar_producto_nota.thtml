@@ -1,0 +1,79 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+				<tr align="center">
+					<td width="15%">Código Producto</td>
+					<td width="38%">Denominación del Producto</td>
+					<td width="10%">Cantidad</td>
+					<td width="15%">Precio Unitario</td>
+					<td width="15%">Total</td>
+					<td width="7%">Agregar</td>
+				</tr>
+
+		<?php
+		 	$i=0;
+		 	$j=0;
+		    foreach($_SESSION ["items2"] as $codigos){
+
+		    	if($i%2==0){
+		    		$color="#CDF2FF";
+		    	}else{
+		    		$color="#DAEBFF";
+		    	}
+
+		if($codigos[0]!=null){
+		?>
+		  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+		   <?
+		    for($x=0;$x<=7;$x++){
+		    	if($x==3){
+		    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+		    	}else if($x==4){
+		    		echo "<td>".$codigos[$x].' - '.deno_unidad2($cscd01_unidad_medida, $codigos[5])."</td>";
+		    	}else if($x==7){
+		    		echo "<td align=\"right\">".$sisap->Formato2($codigos[$x])."</td>";
+		    	}else if($x==6){
+		    		echo "<td align=\"center\">".$sisap->Formato_6_out($codigos[$x])."</td>";
+		    	}
+		$total=($codigos[6]*$codigos[7]);
+		}
+		 ?>
+		   <td align="right"><?=$sisap->Formato2($total) ?></td>
+		   <td align="center"><?= $ajax->link($html->image('expandall.png',array('border'=>0)), '/ciap01_entrada_productos_materiales/eliminar_producto_nota/'.$codigos['id'], array('update'=>'carga_agregar','title'=>'Agregar producto'),'Realmente desea agregar este producto a la lista?',false,true) ?></td>
+		 </tr>
+		  <?
+		   	$i++;
+
+		    }//fin foreach
+
+		    } ?>
+</table>
+
+
+<script language="JavaScript" type="text/javascript">
+
+	ver_documento('/ciap01_entrada_productos_materiales/agregar_productos_nota','carga_nota');
+
+</script>

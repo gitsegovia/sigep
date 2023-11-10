@@ -1,0 +1,348 @@
+<? if(isset($ir) && $ir=="si"){ ?>
+<?$sisap->Tabla_modulos("",true,"ANALÍTICO DE SOLICITUD DE RECURSOS POR CÓDIGO PRESUPUESTARIO","","950","csrp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[organismo]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/analitico_solicitud_recurso/no'); ?>" onsubmit="return valida_reporte_dep_csrd01_2();" >
+<input name="data[organismo][ano]"  value="<?= $year?>" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  />
+<br><br>
+
+<? if($_SESSION['SScoddep']==1){ ?>
+	<?= $sisap->radioTagRemote('organismo/tipo_peticion', array('1'=>'Todas las dependencias', '2'=>'Una en particular'), array('url1'=>'/reporte_e/analitico_solicitud_recurso/peticion/', 'update1'=>'carga_radio','value'=>'','disabled'=>'','id'=>'peticion'),null,null);?>
+<? }else{ ?>
+	<?= $sisap->radioTagRemote('organismo/tiempo', array('1'=>'Todo el año', '2'=>'Un mes especifico'), array('url1'=>'/reporte_e/analitico_solicitud_recurso/tiempo/', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'tiempo'),null,$opc='1');?>
+<div id="cargador"></div>
+<? } ?>
+
+	<div id="carga_radio"></div>
+
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($peticion)){ ?>
+
+
+	<? if(isset($peticion2)){ ?>
+		<?= $sisap->radioTagRemote('organismo/tiempo', array('1'=>'Todo el año', '2'=>'Un mes especifico'), array('url1'=>'/reporte_e/analitico_solicitud_recurso/tiempo/', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'tiempo'),null,$opc='1');?>
+				<div id="cargador"></div>
+			<br>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+				<tr>
+					<td width="20%">Dependencia</td>
+					<td width="20%">
+						<?=  $sisap->selectTagRemote('organismo/cod_dep', isset($dependencias)?$dependencias:array(),null,  '', array('onchange1'=>'/reporte_e/analitico_solicitud_recurso/dep', 'update1'=>'carga','onchange2'=>'/reporte_e/analitico_solicitud_recurso/select', 'update2'=>'actividad','id'=>'depen',true), null, true); ?>
+					</td>
+					<td width="60%" id="carga"><?= $html->input('organismo/cod_nomina', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'deno'), false); ?></td>
+				</tr>
+				<tr>
+					<td width="20%" >Actividad</td>
+					<td id="actividad">
+						<select></select>
+					</td>
+					<td align="center">
+						---
+					</td>
+				</tr>
+			</table>
+			<br><br>
+	<? }else if(isset($peticion1)){ ?>
+			<?= $sisap->radioTagRemote('organismo/tiempo', array('1'=>'Todo el año', '2'=>'Un mes especifico'), array('url1'=>'/reporte_e/analitico_solicitud_recurso/tiempo/', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'tiempo'),null,$opc='1');?>
+	<div id="cargador"></div>
+	<? } ?>
+
+<? }else if(isset($tiempo)){ ?>
+		<?if(isset($tiempo1)){?>
+
+		<?}else if(isset($tiempo2)){ ?>
+
+				<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+				<tr>
+					<td width="10%" align="center">Mes:</td>
+					<td width="15%">
+						<?= $sisap->selectTagRemote('organismo/mes_solicitud', $mes,  null,  null, array('onchange1'=>'/csrp01_solicitud_recurso/mostrar/select', 'update1'=>'vacio', 'id'=>'mes_1', 'onChange'=>'vacio'  , true), null, true);?>
+					</td>
+				</tr>
+				</table>
+		<? } ?>
+
+
+
+<? }else if(isset($ir) && $ir=="no"){
+//require_once('../tcpdf.php');
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		/*$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,15,12);
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,2,"",'LRT',1);
+		$this->Cell(0,5,"",'LR',1);
+		//$this->Cell(11,5,"Fecha:",'',0);
+		//$this->Cell(0,5,date("d/m/Y"),'R',1);
+		//$this->Cell(0,10,"",'LR',1);
+		$this->SetFont('vera','B',6);
+		//$this->Cell(81,4,"DEPENDENCIA",'L','O','L');//AQUI LA DEPENDENCIA
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,6,"",'LR','1','C');
+
+		$this->Cell(0,6,"DISTRIBUCIÓN DE LOS RECURSOS HUMANOS POR CARGOS, SUELDOS Y DEMÁS REMUNERACIONES",'LBR',1,'C');
+
+
+		$this->SetFont('vera','B',8);
+		$varX_aux = $this->GetX() + 170;
+		$varY_aux = $this->GetY() - 16;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(1);
+
+
+		$varX_aux = $this->GetX() + 5;
+		$varY_aux = $this->GetY() - 2;
+		$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,"DEPENDENCIA");//AQUI DEPENDENCIA
+*/
+	/*
+	$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,14,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(15,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,10,"ANALÍTICO DE SOLICITUD DE RECURSOS POR CÓDIGO PRESUPUESTARIO",'RL',1,'C');
+		$this->Cell(0,1,"",'RLB',1,'C');
+		$this->Ln(3);
+
+		$varX_aux = $this->GetX() + 240;
+		$varY_aux = $this->GetY() - 19;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+
+		$this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',8);
+
+		$this->Cell(0,0,"",'T',1,'C');
+		*/
+		
+		$titulo_A = "ANALÍTICO DE SOLICITUD DE RECURSOS POR CÓDIGO PRESUPUESTARIO";
+		$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(45,4,"CODIGO PRESUPUESTARIO",'RL',0,'C');
+		$this->Cell(16,4,"FECHA",'R',0,'C');
+		$this->Cell(15,4,"NÚMERO",'R',0,'C');
+		$this->Cell(26,4,"MONTO",'R',0,'C');
+		$this->Cell(35,4,"TIPO DE RECURSO",'R',0,'C');
+		$this->Cell(30,4,"BANCO",'R',0,'C');
+		$this->Cell(30,4,"CUENTA",'R',0,'C');
+		$this->Cell(22,4,"NÚMERO",'R',0,'C');
+		$this->Cell(16,4,"FECHA",'R',0,'C');
+		$this->Cell(0,4,"MONTO",'R',1,'C');
+
+		$this->Cell(45,1,"",'RL',0,'C');
+		$this->Cell(16,1,"",'R',0,'C');
+		$this->Cell(15,1,"SOLICITUD",'R',0,'C');
+		$this->Cell(26,1,"",'R',0,'C');
+		$this->Cell(35,1,"",'R',0,'C');
+		$this->Cell(30,1,"",'R',0,'C');
+		$this->Cell(30,1,"",'R',0,'C');
+		$this->Cell(22,1,"CHEQUE",'R',0,'C');
+		$this->Cell(16,1,"",'R',0,'C');
+		$this->Cell(0,1,"",'R',1,'C');
+
+		$this->Cell(45,1,"",'RLB',0,'C');
+		$this->Cell(16,1,"",'RB',0,'C');
+		$this->Cell(15,1,"",'RB',0,'C');
+		$this->Cell(26,1,"",'RB',0,'C');
+		$this->Cell(35,1,"",'RB',0,'C');
+		$this->Cell(30,1,"",'RB',0,'C');
+		$this->Cell(30,1,"",'RB',0,'C');
+		$this->Cell(22,1,"",'RB',0,'C');
+		$this->Cell(16,1,"",'RB',0,'C');
+		$this->Cell(0,1,"",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+	$i=0;
+	$j=0;
+	$sum_total=0;
+	$aux=0;
+	$muestra_partidas=0;
+	$GENERAL=0;
+	$acum=0;
+foreach($datos as $x){
+	$num_solicitud=$sisap->AddCero3($x['v_csrd01_analitico_solicitud_recurso']['numero_solicitud']);
+	$monto_entregado_partida=$x['v_csrd01_analitico_solicitud_recurso']['monto_entregado_partidas'];
+	$fecha_solicitud=$sisap->cambia_fecha($x['v_csrd01_analitico_solicitud_recurso']['fecha_solicitud']);
+	$deno_recurso=$x['v_csrd01_analitico_solicitud_recurso']['deno_recurso'];
+	$deno_banco=$x['v_csrd01_analitico_solicitud_recurso']['deno_banco'];
+	$cuenta=$x['v_csrd01_analitico_solicitud_recurso']['cuenta_bancaria'];
+	$num_cheque=$sisap->mascara_ocho($x['v_csrd01_analitico_solicitud_recurso']['numero_cheque']);
+	$fecha_cheque=$sisap->cambia_fecha($x['v_csrd01_analitico_solicitud_recurso']['fecha_cheque']);
+	$monto_entregado=$x['v_csrd01_analitico_solicitud_recurso']['monto_entregado'];
+
+	$cod_sector=$x['v_csrd01_analitico_solicitud_recurso']['cod_sector'];
+    $cod_programa=$x['v_csrd01_analitico_solicitud_recurso']['cod_programa'];
+    $cod_sub_prog=$x['v_csrd01_analitico_solicitud_recurso']['cod_sub_prog'];
+	$cod_proyecto=$x['v_csrd01_analitico_solicitud_recurso']['cod_proyecto'];
+	$cod_activ_obra=$x['v_csrd01_analitico_solicitud_recurso']['cod_activ_obra'];
+	$cod_partida=$x['v_csrd01_analitico_solicitud_recurso']['cod_partida'];
+	$cod_generica=$x['v_csrd01_analitico_solicitud_recurso']['cod_generica'];
+	$cod_especifica=$x['v_csrd01_analitico_solicitud_recurso']['cod_especifica'];
+	$cod_sub_espec=$x['v_csrd01_analitico_solicitud_recurso']['cod_sub_espec'];
+	$cod_auxiliar=$x['v_csrd01_analitico_solicitud_recurso']['cod_auxiliar'];
+
+	$dep=$x['v_csrd01_analitico_solicitud_recurso']['cod_dep'];
+
+	$muestra_partidas=$sisap->AddCero3($cod_sector).".".$sisap->AddCero3($cod_programa).".".$sisap->AddCero3($cod_sub_prog).".".$sisap->AddCero3($cod_proyecto).".".$sisap->AddCero3($cod_activ_obra).".".$sisap->AddCero3($cod_partida).".".$sisap->AddCero3($cod_generica).".".$sisap->AddCero3($cod_especifica).".".$sisap->AddCero3($cod_sub_espec).".".$sisap->mascara_cuatro($cod_auxiliar);
+
+		$pdf->SetFont('vera','',6);
+		$height=6;
+
+		if($i==0){
+			$sum_total+=$monto_entregado_partida;
+			$aux2=$muestra_partidas;
+			$pdf->SetFont('vera','B',7);
+			if($_SESSION['SScoddep']==1){
+				$pdf->Cell(0,6,$x['v_csrd01_analitico_solicitud_recurso']['denominacion_dep'],'BRL',1,'L');
+			}
+
+			$aux_dep=$dep;
+		}else if($muestra_partidas!=$aux2){
+			$mon_aux=$sum_total;
+			$sum_total=0;
+			$acum+=$mon_aux;
+			$sum_total+=$monto_entregado_partida;
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(0,0,"",'',1,'R');
+			$pdf->Cell(76,6,"TOTAL:",'BL',0,'R');
+			$pdf->Cell(26,6,$sisap->Formato2($mon_aux),'RBL',0,'R');
+			$pdf->Cell(35,6,"",'B',0,'R');
+			$pdf->Cell(0,6,"",'RB',1,'R');
+			if($aux_dep!=$dep){
+				$pdf->Cell(76,6,"TOTAL GENERAL:",'BL',0,'R');
+				$pdf->Cell(26,6,$sisap->Formato2($acum),'RBL',0,'R');
+				$pdf->Cell(35,6,"",'B',0,'R');
+				$pdf->Cell(0,6,"",'RB',1,'R');
+				$acum=0;
+				$pdf->AddPage();
+				if($_SESSION['SScoddep']==1){
+					$pdf->Cell(0,6,$x['v_csrd01_analitico_solicitud_recurso']['denominacion_dep'],'BRL',1,'L');
+				}
+				$aux_dep=$dep;
+			}
+
+//			$i=0;
+			$aux2=$muestra_partidas;
+		}else{
+			$sum_total+=$monto_entregado_partida;
+		}
+		$GENERAL+=$monto_entregado_partida;
+$pdf->SetFont('vera','',6);
+
+		$pdf->Cell(45,$height,$muestra_partidas,'RL',0,'L');
+		$pdf->Cell(16,$height,$fecha_solicitud,'R',0,'C');
+		$pdf->Cell(15,$height,$num_solicitud,'R',0,'C');
+		$pdf->Cell(26,$height,$sisap->Formato2($monto_entregado_partida),'R',0,'R');
+
+		//$pdf->Cell(35,$height,$deno_recurso,'RTB',0,'L');
+		//$pdf->Cell(14,$height,"",'RLT',0,'C');
+		$pdf->Cell(35,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(35,2,$deno_recurso,'','L');//DENOMINACION
+		$varX =$varX+35;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'L',0,'L');
+			$pdf->SetFont('vera','',6);
+		$pdf->Cell(29,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(29,2,$deno_banco,'','L');//DENOMINACION
+		$varX =$varX+29;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(30,$height,$cuenta,'LR',0,'C');
+		$pdf->Cell(22,$height,$num_cheque,'R',0,'C');
+		if($fecha_cheque=="01/01/1900"){
+			$pdf->Cell(16,$height,"",'R',0,'C');
+		}else{
+			$pdf->Cell(16,$height,$fecha_cheque,'R',0,'C');
+		}
+		$pdf->Cell(0,$height,$sisap->Formato2($monto_entregado),'R',1,'R');
+		$pdf->Cell(0,0,"",'T',1,'R');
+//		$aux=$muestra_partidas;
+//$sum_total+=$monto_entregado_partida;
+
+$i++;
+}//FIN FOR
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,0,"",'T',1,'R');
+$pdf->Cell(76,6,"TOTAL:",'BL',0,'R');
+$pdf->Cell(26,6,$sisap->Formato2($sum_total),'RBL',0,'R');
+$pdf->Cell(35,6,"",'B',0,'R');
+$pdf->Cell(0,6,"",'RB',1,'R');
+/////////////////////////////
+$pdf->Cell(76,6,"TOTAL GENERAL:",'BL',0,'R');
+$pdf->Cell(26,6,$sisap->Formato2($acum+$sum_total),'RBL',0,'R');
+$pdf->Cell(35,6,"",'B',0,'R');
+$pdf->Cell(0,6,"",'RB',1,'R');
+/*$pdf->Cell(235,6,"TOTAL:",'BL',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($sum_total),'RBL',1,'R');
+*/
+
+$pdf->Output('Analitico_solicitud_codigo_presupuestario'.date('d-m-Y').'.pdf','D');
+
+}else if(isset($dep)){ ?>
+<?= $html->input('organismo/cod_nomina', $htmlAttributes = array('value'=>$dep,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'cod_nomina'), false); ?>
+<? }else if(isset($activ)){ ?>
+<?=  $sisap->selectTagRemote('organismo/actividad', isset($activ)?$activ:array(),null,  '', array('onchange1'=>'/reporte_e/analitico_solicitud_recurso/boton', 'update1'=>'boton2','id'=>'actividad1',true), null, true); ?>
+<? }else if(isset($actividad)){ ?>
+<?= $html->input('organismo/cod_nomina', $htmlAttributes = array('value'=>$actividad,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'cod_nomina'), false); ?>
+<? }else if(isset($boton)){ ?>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+<? } ?>

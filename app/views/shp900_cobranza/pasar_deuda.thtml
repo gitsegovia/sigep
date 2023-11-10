@@ -1,0 +1,360 @@
+<?php
+
+
+           if($cod_ingreso==1){
+	 	$titulo_td="";
+	 }else if($cod_ingreso==2){
+	 	$titulo_td="Placa";
+	 }else if($cod_ingreso==3){
+	 	$titulo_td="";
+	 }else if($cod_ingreso==4){
+	 	$titulo_td="Ficha<br/>Catastral";
+	 }else if($cod_ingreso==5){
+	 	$titulo_td="";
+	 }else if($cod_ingreso==6){
+	 	$titulo_td="Número<br/>Solicitud";
+	 }else if($cod_ingreso==7){
+	 	$titulo_td="Número<br/>Solicitud";
+	 }else{
+	 	$titulo_td = "";
+	 }
+
+
+       if($opcion==1){ ?>
+
+
+					<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+						<tr align="center" class="tr_negro">
+							<td width="65"><?=$titulo_td;?></td>
+							<td width="40">Año</td>
+							<td width="40">Mes</td>
+							<td width="60">Número<br/>Planilla</td>
+							<td width="100">Deuda<br/>Vigente</td>
+							<td width="100">Monto<br/>Recargo</td>
+							<td width="100">Monto<br/>Multa</td>
+							<td width="100">Monto<br/>Intereses</td>
+							<td width="100">Monto<br/>Descuento</td>
+							<td>TOTAL</td>
+						</tr>
+					<?
+					if(isset($vector) && count($vector)>0){
+						$i=0;
+						$random=(int) rand();
+					    $CC=count($vector);
+					    $tdeuda_vigente=0;
+						$tmonto_recargo=0;
+						$tmonto_multa=0;
+						$tmonto_intereses=0;
+						$tmonto_descuento=0;
+						$total=0;
+						for($x=1;$x<=$y;$x++){
+							extract($vector[$x]);
+					    	$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+					    	$disa=$i==0?'':'disabled';
+					    	$fila = "fila_".$i.$random;
+					    	if($CC==1){
+					    		$click="void(0);";
+					    	}else{
+					    		if($CC==$i+1){
+					                $click="void(0);";
+					    		}else{
+					    			$click="$('pasar".($i+1)."_1').disabled=''";
+					    		}
+					    	}
+
+						?>
+						<tr align="center" bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);">
+						    <td><? if($titulo_td!=""){echo $cod_planilla_catastral_pla;}else{  "<br>"; } ?></td>
+							<td><?=$ano?></td>
+							<td><?=mascara($mes,2)?></td>
+							<td><?=mascara($numero_planilla,6)?></td>
+							<td align="right"><?=$sisap->Formato2($deuda_vigente);?></td>
+							<td align="right"><?=$sisap->Formato2($monto_recargo);?></td>
+							<td align="right"><?=$sisap->Formato2($monto_multa);?></td>
+							<td align="right"><?=$sisap->Formato2($monto_intereses);?></td>
+							<td align="right"><?=$sisap->Formato2($monto_descuento);?></td>
+							<td align="right"><?=$sisap->Formato2(($deuda_vigente+$monto_recargo+$monto_multa+$monto_intereses)-$monto_descuento);?></td>
+						</tr>
+					<?
+					    $tdeuda_vigente+=$deuda_vigente;
+						$tmonto_recargo+=$monto_recargo;
+						$tmonto_multa+=$monto_multa;
+						$tmonto_intereses+=$monto_intereses;
+						$tmonto_descuento+=$monto_descuento;
+
+
+
+					    $i++;
+						}
+						$total=($tdeuda_vigente+$tmonto_recargo+$tmonto_multa+$tmonto_intereses)-$tmonto_descuento;
+						$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+						$meses = array(1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Deciembre');
+
+					?>
+						<tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" style="font-weight:bold;">
+							<td colspan="4" align="right" >
+							<script language="JavaScript" type="text/javascript">
+							   var i=<?=$i?>;
+							   var t='';
+							   if(i>1){
+							   	  t='+';
+							   }else{
+							   	  t='';
+							   }
+					           $('concepto_cobro').value = $('concepto_cobro').value + '' + t +' PLANILLA Nº:<?=mascara($numero_planilla,6)?> MES:<?=$meses[$mes]?> AÑO:<?=$ano?> ';
+					           $('vigente_bs').value='<?=$sisap->Formato2($tdeuda_vigente);?>';
+							   $('recargo_bs').value='<?=$sisap->Formato2($tmonto_recargo);?>';
+							   $('multa_bs').value='<?=$sisap->Formato2($tmonto_multa);?>';
+							   $('intereses_bs').value='<?=$sisap->Formato2($tmonto_intereses);?>';
+							   $('descuento_bs').value='<?=$sisap->Formato2($tmonto_descuento);?>';
+							   $('total').value='<?=$sisap->Formato2($total);?>';
+							   //distribucion_deuda();
+							   distribuir_montos();
+					        </script>
+
+							TOTALES:</td>
+							<td align="right"><?=$sisap->Formato2($tdeuda_vigente);?></td>
+							<td align="right"><?=$sisap->Formato2($tmonto_recargo);?></td>
+							<td align="right"><?=$sisap->Formato2($tmonto_multa);?></td>
+							<td align="right"><?=$sisap->Formato2($tmonto_intereses);?></td>
+							<td align="right"><?=$sisap->Formato2($tmonto_descuento);?></td>
+							<td align="right"><?=$sisap->Formato2($total);?></td>
+						</tr>
+						</table>
+					<script language="JavaScript" type="text/javascript">
+					 $('cod_ingreso').setAttribute('onFocus','blur();');
+					</script>
+					<?
+					}else{?>
+					  <tr align="center" bgcolor="#CDF2FF" id="fila" onclick="new Effect.Highlight(this);">
+					        <td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+					</table>
+					<?}?>
+
+
+<?php }else if($opcion==2){
+
+
+
+
+
+$contar = count($data2);
+
+
+
+
+				if($contar!=0){
+
+				?>
+									<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+										<tr align="center" class="tr_negro">
+											<td width="40">Año <br/> Declaración</td>
+												<td width="60">Número <br/>Declaración</td>
+												<td width="95">Año<br/>Convenio</td>
+												<td width="95">Número<br/>Convenio</td>
+												<td width="95">Monto<br/>Deuda</td>
+												<td width="95">Fecha<br/>Acordada</td>
+												<td width="95">Monto<br/>Convenio</td>
+												<td width="95">Deuda<br/>Pendiente</td>
+										</tr>
+									<?
+									if(isset($vector) && count($vector)>0){
+										$i=0;
+										$random=(int) rand();
+									    $CC=count($vector);
+										$tmonto_ingresos_declarados=0;
+										$tmonto_monto_impuesto     =0;
+										$total_a=0;
+										$total_b=0;
+										$total_c=0;
+										$total_d=0;
+										for($x=1;$x<=$y;$x++){
+											extract($vector[$x]);
+									    	$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+									    	$disa=$i==0?'':'disabled';
+									    	$fila = "fila_".$i.$random;
+									    	if($CC==1){
+									    		$click="void(0);";
+									    	}else{
+									    		if($CC==$i+1){
+									                $click="void(0);";
+									    		}else{
+									    			$click="$('pasar".($i+1)."_1').disabled=''";
+									    		}
+									    	}
+
+										?>
+										<tr align="center" bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);">
+											<td><?= $ano_declaracion ?></td>
+												<td align="center"><?=mascara_seis($numero_declaracion);?></td>
+												<td align="center"><?=$ano_convenimiento;?></td>
+												<td align="center"><?=mascara_seis($numero_convenimiento);?></td>
+												<td align="center"><?=$sisap->Formato2($monto_deuda);?></td>
+												<td align="right"><?=cambiar_formato_fecha($fecha_acordada_pago);?></td>
+												<td align="right"><?=$sisap->Formato2($monto_convenido);?></td>
+												<td align="right"><?=$sisap->Formato2($deuda_pendiente);?></td>
+										</tr>
+									<?	$total_a+=$monto_convenido;
+										$total_b+=$deuda_pendiente;
+									    $i++;
+										}
+										$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+									?>
+										<tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" style="font-weight:bold;">
+											<td colspan="6" align="right" >
+											<script language="JavaScript" type="text/javascript">
+											   var i=<?=$i?>;
+											   var t='';
+											   if(i>1){
+											   	  t='+';
+											   }else{
+											   	  t='';
+											   }
+									           $('concepto_cobro').value = $('concepto_cobro').value + '' + t +' CONVENIMIENTO DE PAGO Nº <?=mascara($numero_convenimiento,6)?> DE FECHA <?=cambiar_formato_fecha($fecha_acordada_pago);?>,  MOTIVADO A LA DECLARACIÓN JURADA DE INGRESOS BRUTOS Nº <?=mascara($numero_declaracion,6)?> FECHA DE DECLARACIÓN: <?=cambiar_formato_fecha($fecha_declaracion);?>, COMPRENDIDO ENTRE EL PERIODO DESDE:<?=cambiar_formato_fecha($periodo_desde);?> HASTA:<?=cambiar_formato_fecha($periodo_hasta);?> ';
+									           $('vigente_bs').value='<?=$sisap->Formato2($total_a);?>';
+									            $('total').value='<?=$sisap->Formato2($total_a);?>';
+											   distribuir_montos();
+									        </script>
+
+											TOTALES:</td>
+											<td align="right"><?=$sisap->Formato2($total_a);?></td>
+											<td align="right"><?=$sisap->Formato2($total_b);?></td>
+										</tr>
+										</table>
+									<script language="JavaScript" type="text/javascript">
+									 $('cod_ingreso').setAttribute('onFocus','blur();');
+									</script>
+									<?
+									}else{?>
+									  <tr align="center" bgcolor="#CDF2FF" id="fila" onclick="new Effect.Highlight(this);">
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+									</table>
+									<?}?>
+				<?php
+				}else{
+				?>
+									<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+										<tr align="center" class="tr_negro">
+											<td width="40">Año</td>
+											<td width="60">Número de<br/>Declaración</td>
+											<td width="95">Fecha de<br/>Declaración</td>
+											<td width="95">Periodo<br/>Desde</td>
+											<td width="95">Periodo<br/>Hasta</td>
+											<td width="95">Ingresos<br/>Declarados</td>
+											<td width="95">Monto<br/>Impuesto</td>
+											<td width="95">Monto<br/>Exonerado</td>
+											<td width="95">Impuesto<br/>a Pagar</td>
+										</tr>
+									<?
+									if(isset($vector) && count($vector)>0){
+										$i=0;
+										$random=(int) rand();
+									    $CC=count($vector);
+										$tmonto_ingresos_declarados=0;
+										$tmonto_monto_impuesto     =0;
+										$total_a=0;
+										$total_b=0;
+										$total_c=0;
+										$total_d=0;
+										for($x=1;$x<=$y;$x++){
+											extract($vector[$x]);
+									    	$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+									    	$disa=$i==0?'':'disabled';
+									    	$fila = "fila_".$i.$random;
+									    	if($CC==1){
+									    		$click="void(0);";
+									    	}else{
+									    		if($CC==$i+1){
+									                $click="void(0);";
+									    		}else{
+									    			$click="$('pasar".($i+1)."_1').disabled=''";
+									    		}
+									    	}
+										?>
+										<tr align="center" bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);">
+											<td><?=$ano_declaracion?></td>
+											<td align="center"><?=mascara_seis($numero_declaracion);?></td>
+											<td align="center"><?=cambiar_formato_fecha($fecha_declaracion);?></td>
+											<td align="center"><?=cambiar_formato_fecha($periodo_desde);?></td>
+											<td align="center"><?=cambiar_formato_fecha($periodo_hasta);?></td>
+											<td align="right"><?=$sisap->Formato2($ingresos_declarados);?></td>
+											<td align="right"><?=$sisap->Formato2($monto_impuesto);?></td>
+											<td align="right"><?=$sisap->Formato2($monto_exonerado);?></td>
+											<td align="right"><?=$sisap->Formato2($monto_impuesto - $monto_exonerado);?></td>
+										</tr>
+									<?
+										$tmonto_ingresos_declarados+=$ingresos_declarados;
+										$tmonto_monto_impuesto     +=$monto_impuesto;
+										$total_a+=$ingresos_declarados;
+										$total_b+=$monto_impuesto;
+										$total_c+=$monto_exonerado;
+										$total_d+=($monto_impuesto - $monto_exonerado);
+									    $i++;
+										}
+										$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+									?>
+										<tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" style="font-weight:bold;">
+											<td colspan="5" align="right" >
+											<script language="JavaScript" type="text/javascript">
+											   var i=<?=$i?>;
+											   var t='';
+											   if(i>1){
+											   	  t='+';
+											   }else{
+											   	  t='';
+											   }
+									           $('concepto_cobro').value = $('concepto_cobro').value + '' + t +' DECLARACIÓN JURADA DE INGRESOS BRUTOS Nº <?=mascara($numero_declaracion,6)?> FECHA DE DECLARACIÓN: <?=cambiar_formato_fecha($fecha_declaracion);?>, COMPRENDIDO ENTRE EL PERIODO DESDE:<?=cambiar_formato_fecha($periodo_desde);?> HASTA:<?=cambiar_formato_fecha($periodo_hasta);?> ';
+									           $('vigente_bs').value='<?=$sisap->Formato2($total_d);?>';
+									            $('total').value='<?=$sisap->Formato2($total_d);?>';
+											   distribuir_montos();
+									        </script>
+											TOTALES:</td>
+											<td align="right"><?=$sisap->Formato2($total_a);?></td>
+											<td align="right"><?=$sisap->Formato2($total_b);?></td>
+											<td align="right"><?=$sisap->Formato2($total_c);?></td>
+											<td align="right"><?=$sisap->Formato2($total_d);?></td>
+										</tr>
+										</table>
+									<script language="JavaScript" type="text/javascript">
+									 $('cod_ingreso').setAttribute('onFocus','blur();');
+									</script>
+									<?
+									}else{?>
+									  <tr align="center" bgcolor="#CDF2FF" id="fila" onclick="new Effect.Highlight(this);">
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+									</table>
+									<?}?>
+				<?php
+
+				}//fin else
+
+				?>
+
+<?php } ?>

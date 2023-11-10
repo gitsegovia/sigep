@@ -1,0 +1,246 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+?>
+
+
+
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"SALIDAS DE PRODUCTOS O MATERIALES DEL ALMACÉN","","900","ciap");?>
+
+<form name='data[capp01]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+		<tr align="center">
+			<td width="10%">Código</td>
+			<td width="55%">Denominación del Almacén</td>
+			<td width="10%">Año</td>
+			<td width="10%">Número<br>Salida</td>
+			<td width="15%">Fecha<br>Salida</td>
+		</tr>
+
+<? if($numero_salida==0) $salida=''; else $salida=mascara($numero_salida,6); ?>
+		<tr>
+			<td id="catalogo3"><?= $sisap->selectTagRemote('ciap01/cod_almacen',$almacenes,  array('value1'=>'otros'),$almacen, array('onchange1'=>'/ciap01_salida_productos_materiales/verifica/', 'update1'=>'principal','onchange2'=>'/ciap01_salida_productos_materiales/retorna_numero/'.$almacen.'/'.$numero_salida.'/', 'update2'=>'vacio','id'=>'select_1' , true), null, true);?></td>
+			<td align="center" id="carga_deno5"><?= $html->input('ciap01/denominacion1', $htmlAttributes = array('value'=>$deno_almacen,'style'=>'width:100%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" ><?= $html->input('ciap01/ano', $htmlAttributes = array('value'=>$ano,'style'=>'width:100%;text-align:center','id'=>'ano','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" ><?= $html->input('ciap01/numero_salida', $htmlAttributes = array('value'=>$salida,'style'=>'width:100%;text-align:center','id'=>'numero_salida','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" ><?php $sisap->input_fecha("ciap01","fecha_salida","fecha_salida",date('d/m/Y')); ?></td>
+		</tr>
+
+	</table>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td width="100%" colspan="2" class="tr_negro">DEPENDENCIA Y ALMACÉN RECEPTOR DE LOS PRODUCTOS O MATERIALES</td>
+		</tr>
+
+		<tr align="center">
+			<td width="10%">Código</td>
+			<td width="90%">Dependencia Receptora de los productos o materiales</td>
+		</tr>
+
+		<tr>
+			<td id="catalogo3"><?= $sisap->selectTagRemote('ciap01/dependencia',$lista_dependencia,  array('value1'=>'otros'),$cod_dependencia, array('onchange1'=>'/ciap01_salida_productos_materiales/denominacion/1/', 'update1'=>'carga_deno1','onchange2'=>'/ciap01_salida_productos_materiales/select/', 'update2'=>'carga_almacen','id'=>'select_2' , true), null, true);?></td>
+			<td align="center" id="carga_deno1"><?= $html->input('ciap01/denominacion1', $htmlAttributes = array('value'=>$dependencia,'style'=>'width:100%','id'=>'deno','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		</tr>
+
+		<tr align="center">
+			<td width="10%">Código</td>
+			<td width="90%">Almacén Receptor de los productos o materiales</td>
+		</tr>
+
+		<tr>
+			<td id="carga_almacen"><?= $sisap->selectTagRemote('ciap01/almacen_receptor',$almacenes,  array('value1'=>'otros'),$almacen, array('onchange1'=>'/ciap01_salida_productos_materiales/denominacion1/'.$cod_dependencia, 'update1'=>'carga_deno2','id'=>'select_3' , true), null, true);?></td>
+			<td align="center" id="carga_deno2"><?= $html->input('ciap01/denominacion1', $htmlAttributes = array('value'=>$deno_almacen,'style'=>'width:100%','id'=>'denominacion5','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		</tr>
+
+	</table>
+
+	<div id="carga_producto">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td width="15%">Código Producto</td>
+			<td width="65%">Denominación del Producto</td>
+			<td width="10%">Cantidad</td>
+			<td width="10%">Agregar</td>
+		</tr>
+
+		<tr align="center">
+			<td >
+			<?if($readonly=='readonly'){ ?>
+				<?= $sisap->input_buscar('ciap01/cod_producto',array( 'id'=>'buscar1','style'=>'text-align:center'),1,"Buscar", "/ciap01_salida_productos_materiales/buscar_producto/1", "750px", "333px" ); ?>
+			<? }else{ ?>
+				<?= $sisap->input_buscar('ciap01/cod_producto',array('disabled'=>'disabled', 'id'=>'buscar1','style'=>'text-align:center'),1,"Buscar", "/ciap01_salida_productos_materiales/buscar_producto/1", "750px", "333px" ); ?>
+			<? } ?>
+			</td>
+			<td  ><?= $html->input('ciap01/deno_producto', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'deno_producto','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td ><?= $sisap->inputTagRemote('ciap01/cantidad', array('value'=>'','url1'=>'/ciap01_salida_productos_materiales/verifica_cantidad/', 'update1'=>'vacio','id'=>'cantidad','style'=>'width:100%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+			<td align="center"><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'disabled','url1' => '/ciap01_salida_productos_materiales/agregar_producto/normal', 'update1'=>'grilla_producto')); ?></td>
+		</tr>
+
+	</table>
+</div>
+
+	<div id="grilla_producto"  style="height:150px; overflow:auto;" ></div>
+
+<?php
+/*
+<div id="detalles">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td width="100%" colspan="2" class="tr_negro">CLASIFICADOR SERVICIO NACIONAL DE CONTRATISTAS</td>
+		</tr>
+
+		<tr align="center">
+			<td width="15%">Código TIPO SNC</td>
+			<td width="85%">Denominación del Clasificador</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $html->input('ciap01/denominacion3', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'denominacion4','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td ><?= $html->input('ciap01/denominacion4', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'denominacion3','class'=>'inputtext','readonly'=>''), false); ?></td>
+		</tr>
+
+	</table>
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="50%" colspan="2">GRUPO SNC</td>
+			<td width="50%" colspan="2">SUBGRUPO SNC</td>
+		</tr>
+		<tr align="center">
+			<td width="10%">Código</td>
+			<td width="40%">Denominación del Grupo</td>
+			<td width="10%">Código</td>
+			<td width="40%">Denominación del Subgrupo</td>
+		</tr>
+
+		<tr>
+			<td><?= $html->input('ciap01/denominacion1', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'denominacion1','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" id="carga_deno1"><?= $html->input('ciap01/denominacion5', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'denominacion1','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" id="subgrupo1"><?= $html->input('ciap01/denominacion1', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'denominacion1','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" id="carga_deno2"><?= $html->input('ciap01/denominacion6', $htmlAttributes = array('value'=>'','style'=>'width:100%','id'=>'deno2','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		</tr>
+
+		<tr>
+			<td colspan="2" align="center" >Descripción:</td>
+			<td colspan="2" align="center" >Descripción:</td>
+		</tr>
+
+		<tr>
+			<td colspan="2" id="descrip1" align="center"><?= $html->textarea('ciap01/descripcion2', array('value'=>'','id'=>'descripcion_1', 'class'=>'inputtext', 'rows'=>'5','readonly'=>'readonly'))?></td>
+			<td colspan="2" id="descrip2" align="center"><?= $html->textarea('ciap01/descripcion3', array('value'=>'','id'=>'descripcion_2', 'class'=>'inputtext', 'rows'=>'5','readonly'=>'readonly'))?></td>
+		</tr>
+	</table>
+</div>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="80%">Recibido por</td>
+		<td align="center" width="20%">Cedula de Identidad</td>
+	</tr>
+
+	<tr>
+		<td align="center"><?= $html->input('ciap01/recibido_por', $htmlAttributes = array('style'=>'width:100%','value'=>'', 'readonly'=>''), false); ?></td>
+		<td align="center"><?= $html->input('ciap01/cedula', $htmlAttributes = array('style'=>'width:100%;text-align:center','value'=>'', 'readonly'=>'','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+	</tr>
+
+</table>
+
+*/ ?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="100%">OBSERVACIONES</td>
+		</tr>
+		<tr align="center">
+			<td width="100%"><?= $html->textarea('ciap01/observaciones', array('value'=>'','id'=>'observaciones', 'class'=>'inputtext', 'rows'=>'5','readonly'=>''))?></td>
+		</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr>
+		<td width="80%">&nbsp;Titular</td>
+		<td align="center" width="20%">Cedula de Identidad</td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->input('ciap01/titular', $htmlAttributes = array('style'=>'width:100%','value'=>'', 'readonly'=>''), false); ?></td>
+		<td align="center"><?= $html->input('ciap01/ci_titular', $htmlAttributes = array('style'=>'width:100%;text-align:center','value'=>'', 'readonly'=>'','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;Beneficiario</td>
+		<td align="center">Cedula de Identidad</td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->input('ciap01/beneficiario', $htmlAttributes = array('style'=>'width:100%','value'=>'', 'readonly'=>''), false); ?></td>
+		<td align="center"><?= $html->input('ciap01/ci_beneficiario', $htmlAttributes = array('style'=>'width:100%;text-align:center','value'=>'', 'readonly'=>'','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;Entregado por</td>
+		<td align="center">Cedula de Identidad</td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->input('ciap01/entregado_por', $htmlAttributes = array('style'=>'width:100%','value'=>'', 'readonly'=>''), false); ?></td>
+		<td align="center"><?= $html->input('ciap01/ci_entregado', $htmlAttributes = array('style'=>'width:100%;text-align:center','value'=>'', 'readonly'=>'','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;Recibido por</td>
+		<td align="center">Cedula de Identidad</td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->input('ciap01/recibido_por', $htmlAttributes = array('style'=>'width:100%','value'=>'', 'readonly'=>''), false); ?></td>
+		<td align="center"><?= $html->input('ciap01/ci_recibido', $htmlAttributes = array('style'=>'width:100%;text-align:center','value'=>'', 'readonly'=>'','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+	</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="20%">Fecha de Registro</td>
+		<td align="center" width="20%">Operador</td>
+		<td align="center" width="20%">Fecha de Anulación</td>
+		<td align="center" width="20%">Operador</td>
+	</tr>
+
+	<tr>
+		<td align="center" width="20%"><?= $html->input('ciap01/campo1', $htmlAttributes = array('style'=>'width:98%;text-align:center','value'=>date('d/m/Y'), 'readonly'=>'readonly'), false); ?></td>
+		<td align="center" width="20%"><?= $html->input('ciap01/campo2', $htmlAttributes = array('style'=>'width:98%','value'=>$_SESSION['nom_usuario'], 'readonly'=>'readonly'), false); ?></td>
+		<td align="center" width="20%"><?= $html->input('ciap01/campo3', $htmlAttributes = array('style'=>'width:98%;text-align:center','value'=>'', 'readonly'=>'readonly'), false); ?></td>
+		<td align="center" width="20%"><?= $html->input('ciap01/campo4', $htmlAttributes = array('style'=>'width:98%;text-align:center','value'=>'', 'readonly'=>'readonly'), false); ?></td>
+	</tr>
+
+</table>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="20%">Desea emitir el acta de entrega?<?= $sisap->radioTagRemote("ciap01/acta_entrega", array('1'=>'Si','2'=>'No'), array('id'=>'acta_entrega','disabled'=>''), null, 2); ?></td>
+	</tr>
+</table>
+
+
+
+	<?if($readonly=='readonly'){ ?>
+		<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal', 'url2' => '/ciap01_salida_productos_materiales/salir/'.$almacen.'/'.$salida, 'update2'=>'principal'))?>
+	<? }else{ ?>
+		<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+	<? } ?>
+	<?= $sisap->submitTagRemote('Consultar', array('funcion'=>'ciap01_productos_materiales_consulta','id'=>'consultar','url1' => '/ciap01_salida_productos_materiales/pre_consulta', 'update1'=>'principal', 'url2' => '/ciap01_salida_productos_materiales/salir/'.$almacen.'/'.$numero_salida, 'update2'=>'vacio')); ?>&nbsp;
+	<?= $sisap->submitTagRemote('guardar', array('id'=>'save','url1' => '/ciap01_salida_productos_materiales/guardar', 'update1'=>'vacio', 'disabled'=>'')); ?>
+
+
+
+<?=$sisap->CloseTable() ?>
+</form>
+<div id="vacio"></div>

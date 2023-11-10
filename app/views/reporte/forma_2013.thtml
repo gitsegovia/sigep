@@ -1,0 +1,343 @@
+<?php
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.013 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+
+	function Header()
+	{
+		$this->image_escudo(7,32,23);
+		$this->SetFont('vera','B',10);
+		$this->Cell(20,6,"",'TL',0);
+		$this->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);//---AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET)
+		$this->Cell(25,4,"",'L',0);
+		$this->SetFont('vera','',9);
+		$this->Cell(0,4,$_SESSION['titulo_a'],'R',1);//-----------------AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET)
+		$this->SetFont('vera','B',12);
+		$this->Cell(30,10,"",'L',0);
+		$this->MultiCell(0,5,"\n METAS DEL SECTOR,  PROGRAMA,  SUBPROGRAMA,  PROYECTO  Y  ACTIVIDAD",'R','C');
+		$this->SetFont('vera','',7);
+		$this->Cell(30,3,"",'L',0);
+		$this->Cell(0,3,"(EN BOLIVARES)",'R',1,'C');
+		$this->SetFont('vera','',9);
+		$this->Cell(22,5,"",'BL',0);
+		$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+		$this->Ln(7);
+
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"",'TLR',0);
+		$this->Cell(5,3,"",'TR',0);
+		$this->Cell(5,3,"",'TR',0);
+		$this->Cell(5,3,"",'TR',0);
+		$this->Cell(5,3,"A",'TR',1);
+
+		$varX = $this->GetX();//capturo X
+		$varY = $this->GetY();//capturo Y
+
+		$this->Cell(5,3,"",'RL',0);
+		$this->Cell(5,3,"",'R',0);
+		$this->Cell(5,3,"",'R',0);
+		$this->Cell(5,3,"",'R',0);
+		$this->Cell(5,3,"C",'R',1);
+
+		$this->Cell(5,3,"",'RL',0);
+		$this->Cell(5,3,"P",'R',0);
+		$this->Cell(5,3,"S",'R',0);
+		$this->Cell(5,3,"P",'R',0);
+		$this->Cell(5,3,"T",'R',1);
+
+		$this->Cell(5,3,"",'RL',0);
+		$this->Cell(5,3,"R",'R',0);
+		$this->Cell(5,3,"U",'R',0);
+		$this->Cell(5,3,"R",'R',0);
+		$this->Cell(5,3,"I",'R',1);
+
+		$this->Cell(5,3,"S",'RL',0);
+		$this->Cell(5,3,"O",'R',0);
+		$this->Cell(5,3,"B",'R',0);
+		$this->Cell(5,3,"O",'R',0);
+		$this->Cell(5,3,"V",'R',1);
+
+		$this->Cell(5,3,"E",'RL',0);
+		$this->Cell(5,3,"G",'R',0);
+		$this->Cell(5,3,".",'R',0);
+		$this->Cell(5,3,"Y",'R',0);
+		$this->Cell(5,3,"/",'R',1);
+
+
+
+		$this->Cell(5,3,"C",'RL',0);
+		$this->Cell(5,3,"R",'R',0);
+		$this->Cell(5,3,"P",'R',0);
+		$this->Cell(5,3,"E",'R',0);
+		$this->Cell(5,3,"O",'R',1);
+
+
+		$varX = $varX+25;//le sumo a X ---> 9.
+		$varY = $varY-3;//le resto a Y ---> 3.
+		$this->SetXY($varX,$varY);// cargo XY
+
+		$this->SetFont('vera','B',9);
+
+		$this->Cell(140,21,"",'TRL',0);
+		$this->Cell(50,21,"",'TR',0);
+
+		$this->Cell(30,21,"",'TR',0);
+		$this->Cell(0,21,"",'TR',1);
+
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"T",'RL',0);
+		$this->Cell(5,3,"A",'R',0);
+		$this->Cell(5,3,"R",'R',0);
+		$this->Cell(5,3,"C",'R',0);
+		$this->Cell(5,3,"B",'R',0);
+
+		$this->SetFont('vera','B',9);
+		$this->Cell(140,3,"DENOMINACIÓN",'R',0,'C');
+		$this->Cell(50,3,"UNIDAD",'R',0,'C');
+
+		$this->Cell(30,3,"CANTIDAD",'R',0,'C');
+		$this->Cell(0,3,"COSTO",'R',1,'C');
+
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"O",'RL',0);
+		$this->Cell(5,3,"M",'R',0);
+		$this->Cell(5,3,"O",'R',0);
+		$this->Cell(5,3,"T",'R',0);
+		$this->Cell(5,3,"R",'R',0);
+
+		$this->SetFont('vera','B',9);
+		$this->Cell(140,3,"",'R',0,'C');
+		$this->Cell(50,3,"DE MEDIDA",'R',0,'C');
+
+		$this->Cell(30,3,"PROGRAMADA",'R',0,'C');
+		$this->Cell(0,3,"FINANCIERO",'R',1,'C');
+
+		//--------------------------------------------
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"R",'RLB',0);
+		$this->Cell(5,3,"A",'RB',0);
+		$this->Cell(5,3,"G",'RB',0);
+		$this->Cell(5,3,"O",'RB',0);
+		$this->Cell(5,3,"A",'RB',0);
+
+		$this->SetFont('vera','B',9);
+		$this->Cell(140,3,"",'RB',0,'C');
+		$this->Cell(50,3,"",'RB',0,'C');
+
+		$this->Cell(30,3,"",'RB',0,'C');
+		$this->Cell(0,3,"",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+
+?><?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"METAS DEL SECTOR,  PROGRAMA,  SUBPROGRAMA,  PROYECTO  Y  ACTIVIDAD",NULL,"750");?>
+
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/forma_2013/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cfpp05][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);" style="text-align:center" /><br><br>
+
+<? $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true) ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+$i=0;
+$b=0;
+
+$var[1]['ano'] = 0;
+
+foreach($datos as $row){ $i++;
+
+	//$var[$i]['cod_dep']  =              	 $row['cfpd05']['cod_dep'];
+	$var[$i]['ano']  =              		 $row['cfpd05']['ano'];
+	$var[$i]['cod_sector']  =                $row['cfpd05']['cod_sector'];
+	$var[$i]['cod_programa']  =        		 $row['cfpd05']['cod_programa'];
+	$var[$i]['cod_sub_prog']  =        		 $row['cfpd05']['cod_sub_prog'];
+	$var[$i]['cod_proyecto']  =        		 $row['cfpd05']['cod_proyecto'];
+	$var[$i]['cod_activ_obra']  =     		 $row['cfpd05']['cod_activ_obra'];
+	$var[$i]['asignacion_anual']  =       	 $row[0]['asignacion_anual'];
+
+}//fin for
+
+
+foreach($cfpd09_metas_actividad as $row2){ $b++;
+
+	//$var2[$b]['cod_dep']  =                    $row2['cfpd09_metas_actividad']['cod_dep'];
+	$var2[$b]['cod_sector']  =                   $row2['cfpd09_metas_actividad']['cod_sector'];
+	$var2[$b]['cod_programa']  =        		 $row2['cfpd09_metas_actividad']['cod_programa'];
+	$var2[$b]['cod_sub_prog']  =        		 $row2['cfpd09_metas_actividad']['cod_sub_prog'];
+	$var2[$b]['cod_proyecto']  =        		 $row2['cfpd09_metas_actividad']['cod_proyecto'];
+	$var2[$b]['cod_activ_obra']  =     		     $row2['cfpd09_metas_actividad']['cod_activ_obra'];
+	$var2[$b]['metas']  =     		             $row2['cfpd09_metas_actividad']['metas'];
+	$var2[$b]['unidad_medida']  = 	             $row2['cfpd09_metas_actividad']['unidad_medida'];
+	$var2[$b]['cantidad']  = 	                 $row2['cfpd09_metas_actividad']['cantidad'];
+
+
+}//fin for
+
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['titulo_a'] = $titulo_a;
+$_SESSION['ejercicio'] = $var[1]['ano'];
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+
+for($ii=1; $ii<=$i; $ii++){
+
+    $deno = '';
+	$unidad = '';
+	$cantidad = '';
+
+for($jj=1; $jj<=$b; $jj++){
+ if($var[$ii]['cod_sector']==$var2[$jj]['cod_sector'] && $var[$ii]['cod_programa']==$var2[$jj]['cod_programa']  &&  $var[$ii]['cod_sub_prog']==$var2[$jj]['cod_sub_prog'] && $var[$ii]['cod_proyecto']==$var2[$jj]['cod_proyecto'] && $var[$ii]['cod_activ_obra']==$var2[$jj]['cod_activ_obra']){
+	$deno   = str_replace("\n", ' ',$var2[$jj]['metas']);
+	$unidad = $var2[$jj]['unidad_medida'];
+	$cantidad = $var2[$jj]['cantidad'];
+ }//fin if
+}//fin for
+
+$long = strlen($deno);
+		if($long<80){
+			$height = 11;
+		}elseif($long>=80 && $long<160){
+			$height = 14;
+		}elseif($long>=160 && $long<240){
+			$height = 17;
+		}elseif($long>=240 && $long<320){
+			$height = 20;
+		}elseif($long>=320 && $long<400){
+			$height = 23;
+		}elseif($long>=400 && $long<480){
+			$height = 26;
+		}elseif($long>=480 && $long<560){
+			$height = 29;
+		}elseif($long>=560 && $long<640){
+			$height = 31;
+		}elseif($long>=640 && $long<720){
+			$height = 34;
+		}elseif($long>=720 && $long<800){
+			$height = 37;
+		}elseif($long>=800 && $long<880){
+			$height = 40;
+		}elseif($long>=880 && $long<960){
+			$height = 43;
+		}elseif($long>=960 && $long<1040){
+			$height = 46;
+		}elseif($long>=1040 && $long<1120){
+			$height = 49;
+		}elseif($long>=1120 && $long<1200){
+			$height = 51;
+		}elseif($long>=1200 && $long<1280){
+			$height = 54;
+		}elseif($long>=1280 && $long<1360){
+			$height = 57;
+		}elseif($long>=1360 && $long<1440){
+			$height = 60;
+		}elseif($long>=1440 && $long<1500){
+			$height = 63;
+		}elseif($long>=1500 && $long<1580){
+			$height = 66;
+		}else{
+			$height = 69;
+		}
+
+	$_SESSION['ejercicio'] = $var[$ii]['ano'];
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(5,$height,$sisap->AddCero2($var[$ii]['cod_sector']),'TRL',0);//--------------------- COD. SECTOR
+	$pdf->Cell(5,$height,$sisap->AddCero2($var[$ii]['cod_programa']),'TR',0);//---------------------- COD. PROGRAMA
+	$pdf->Cell(5,$height,$sisap->AddCero2($var[$ii]['cod_sub_prog']),'TR',0);//---------------------- COD. ACTIV/PROYECTO
+	$pdf->Cell(5,$height,$sisap->AddCero2($var[$ii]['cod_proyecto']),'TR',0);//---------------------- COD. ACTIV/PROYECTO
+	$pdf->Cell(5,$height,$sisap->AddCero2($var[$ii]['cod_activ_obra']),'TR',0);//---------------------- COD. ACTIV/PROYECTO
+
+	$pdf->SetFont('vera','',7);
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(140,1,"",'',2,'C');
+	$pdf->MultiCell(140,3,$deno,'','L');//------------------ DENOMINACION
+	$varX = $varX+140;
+	$pdf->SetXY($varX,$varY);
+    $pdf->SetFont('vera','',5);
+	$pdf->Cell(50,$height,$unidad,'TRL',0,'C');//------------ UNIDAD DE MEDIDA
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,$height,$cantidad,'TR',0,'C');//---------- CANTIDAD PROGRAMADA
+	$pdf->Cell(0,$height,$sisap->Formato2($var[$ii]['asignacion_anual']),'TR',1,'R');//-------------- COSTO FINANCIERO
+	$pdf->Cell(0,0,"",'T',1);
+}//fin
+
+
+
+
+$pdf->OutPut('forma_2013_'.date("d-m-Y"),'D');
+
+
+
+}//fin else ?>

@@ -1,0 +1,472 @@
+<?php
+
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}//fin else
+
+
+
+
+
+
+
+
+
+
+
+ if(isset($datos_cheque_cuerpo)){
+  if($datos_cheque_cuerpo!=null){
+   foreach($datos_cheque_cuerpo as $ve2){
+
+
+
+
+$fecha = $ve2['cstd09_notadebito_cuerpo_pago']['fecha_debito'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$ve2['cstd09_notadebito_cuerpo_pago']['fecha_debito'] = $dia.'/'.$mes.'/'.$year;
+
+}//fin if
+
+
+
+$fecha_sin_cambiar = $ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_anulacion'];
+$fecha = $ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_anulacion'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_anulacion'] = $dia.'/'.$mes.'/'.$year;
+
+}//fin if
+
+
+
+if($ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_anulacion']=="01/01/1997"){$ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_anulacion']="00/00/0000";}
+
+
+
+
+?>
+
+
+
+<form name='data[cstp09_notadebito_nomina]'  method = "post" id='registrocompromiso'>
+
+
+
+<?$sisap->Tabla("",true,"Ordenes de pago - Nota de débito","","950")?>
+<?$sisap->OpenTable("950");?>
+
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center" width="200"><span id="partida_producto" class="mensaje_resaltado">Orden de pago año anterior?</span>
+		   <?= $sisap->radioTagRemote('cstp09_notadebito_nomina/pregunta_ejercicio2', array('1'=>'Si','2'=>'No'), array('id'=>'pregunta_ejercicio', "disabled"=>"disabled"), NULL, $ve2['cstd09_notadebito_cuerpo_pago']['ano_anterior'])?>
+           <input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['ano_anterior'] ?>" name="data[cstp09_notadebito_nomina][pregunta_ejercicio]" />
+        </td>
+	</tr>
+</table>
+
+
+
+<br>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+<?php /*
+
+<tr align="center"><td colspan="3">Buscar Cheque: <?= $sisap->inputTagRemote('cstp09_notadebito_nomina/buscar_numero_debito', array('url'=>'/cstp09_notadebito_nomina/consulta/', 'update'=>'principal', 'style'=>'text-align:left;',  'id'=>'select_obra_cod_obra', 'size'=>'20'))?> <br></td></tr>
+
+*/ ?>
+
+    <tr>
+    	<td width="10%">Selecci&oacute;n</td>
+    	<td align='center' width="6%">C&oacute;digo</td>
+    	<td>Denominaci&oacute;n de la Entidad Bancaria</td>
+    </tr>
+
+    <tr>
+    	 <td width="5%"><div id='st_tipo'><br></div>
+           </td>
+	    <td align='center'><div id="codigo_select_2" style="background-color:#FFF;color:#000;font-size:14;"><?= mascara_cuatro($ve2['cstd09_notadebito_cuerpo_pago']['cod_entidad_bancaria']) ?></div></td>
+	    <td><div id="deno_select_2" style="background-color:#FFF;color:#000;font-size:14;"><font color='black' style='text-transform:uppercase'><?= $denominacion_a ?></font></div></td>
+    </tr>
+
+    <tr>
+    	<td width="10%">Selecci&oacute;n</td>
+    	<td align='center' width="6%">C&oacute;digo</td>
+    	<td>Denominaci&oacute;n de la Sucursal Bancaria</td>
+    </tr>
+
+
+    <tr>
+	    <td align='center'><div id='st_sucursal'><br></div></td>
+	    <td align='center'><div id="codigo_select_3" style="background-color:#FFF;color:#000;font-size:14;"><?= mascara_cuatro($ve2['cstd09_notadebito_cuerpo_pago']['cod_sucursal']) ?></div></td>
+	    <td ><div id="deno_select_3" style="background-color:#FFF;color:#000;font-size:14;"><font color='black' style='text-transform:uppercase'><?= $denominacion_b ?></font></div></td>
+    </tr>
+
+<tr>
+	<br>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center" >
+	    	<td width="10%">Año</td>
+	    	<td>Cuenta Bancaria</td>
+	    	<td>Número Débito</td>
+	    	<td>Disponibilidad</td>
+			<td>Fecha </td>
+		</tr>
+	<tr>
+		<td align="center"><input name="data[cstp09_notadebito_nomina][ano]"  readonly style="text-align:center" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['ano_movimiento']?>" id="ano" size="3"  maxlength="4" onKeyPress="return solonumeros(event);" READONLY</td>
+	    <td width="5%"><div id='st_num_orden'><input name="data[cstp09_notadebito_nomina][beneficiario]" style="text-align:center" readonly value="<?= $sisap->AddCero2($ve2['cstd09_notadebito_cuerpo_pago']['cuenta_bancaria']) ?>" id="bene"  size="25" ></td></div></td>
+	    <td id="bene_capa">
+	       <?=  $sisap->selectTagRemote('cstp09_notadebito_nomina/entidad', $lista ,null,  $ve2['cstd09_notadebito_cuerpo_pago']['numero_debito'], array('onchange1'=>'/cstp09_notadebito_nomina/consulta', 'update1'=>'principal', 'id'=>'select_4'  , true), null, true); ?>
+	       <input name="data[cstp09_notadebito_nomina][numero_debito2]"  type="hidden"  readonly  style="text-align:center" value="<?= $sisap->mascara_ocho($ve2['cstd09_notadebito_cuerpo_pago']['numero_debito']) ?>" id="bene" class="inputtext" size="6">
+	    </td>
+	    <td id="monto_capa"><input name="data[cstp09_notadebito_nomina][monto]"            readonly  style="text-align:center;font-size:20"  value="<?= $sisap->Formato2($disponibilidad) ?>" class="inputtext"></td>
+	    <td id="monto_capa">
+	         <? $sisap->input_fecha("cstp09_notadebito_nomina","fecha","fecha", $ve2['cstd09_notadebito_cuerpo_pago']['fecha_debito']); ?>
+	    </td>
+	</tr>
+	<!--</table>-->
+	<tr>
+
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['cod_entidad_bancaria'] ?>"  name="data[cstp09_notadebito_nomina][cod_entidad_bancaria]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['cod_sucursal'] ?>"          name="data[cstp09_notadebito_nomina][cod_sucursal]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['ano_movimiento'] ?>"        name="data[cstp09_notadebito_nomina][ano_movimiento]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['cuenta_bancaria'] ?>"       name="data[cstp09_notadebito_nomina][cuenta_bancaria]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['numero_debito'] ?>"         name="data[cstp09_notadebito_nomina][numero_debito]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['cod_entidad_bancaria'] ?>"  name="data[cstp09_notadebito_nomina][cod_entidad_bancaria]">
+<input type="hidden" value="<?= $ve2['cstd09_notadebito_cuerpo_pago']['fecha_debito'] ?>"          name="data[cstp09_notadebito_nomina][fecha_debito]">
+
+	</tr>
+</table>
+<div id="numero"></div>
+<br>
+<div id="ordenes_agregadas"><?php include("agregar_orden_pago_session_guardar.thtml");?></div>
+
+
+<br>
+
+<table width="100%" border="0"  class="tablacompromiso tablacompromiso2">
+ <th colspan="5">IMPUTACIÓN PRESUPUESTARIA</th>
+</table>
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro">
+    <td class="td4" width="50">A&ntilde;o</td>
+    <td class="td4" width="50">Sector</td>
+    <td class="td4" width="50">Prog</td>
+    <td class="td4" width="50">Sub<br>Prog</td>
+    <td class="td4" width="50">Proy</td>
+    <td class="td4" width="90">Actividad<br> u Obra</td>
+    <td class="td4" width="50">Partida</td>
+    <td class="td4" width="50">Gener</td>
+    <td class="td4" width="50">Espec</td>
+    <td class="td4" width="50">Sub<br>Espec</td>
+    <td class="td4" width="90">Auxiliar</td>
+    <td class="td4" >Monto</td>
+</tr>
+
+
+<?php
+$total2 =0;
+$monto = 0;
+$aux_i = $i ;
+$i = 0;
+if(isset($datos_cheque_partidas)){
+  if($datos_cheque_partidas!=null){
+     foreach($datos_cheque_partidas as $ve){
+
+    	if($i%2==0){
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center"><?= $ve['cstd09_notadebito_partidas_pago']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cstd09_notadebito_partidas_pago']['cod_partida'], -2), substr($ve['cstd09_notadebito_partidas_pago']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cstd09_notadebito_partidas_pago']['cod_auxiliar']) ?></td>
+    <td class="td2" style="padding-right:5px; text-align:right"  align="center">
+          <input name="data[cepp03_pagos_nomina][<?= "monto_".$i ?>]" readonly  style="text-align:right"  type="text" size="25"  id="<?= "monto_".$i ?>" value="<?= $sisap->Formato2($ve['cstd09_notadebito_partidas_pago']['monto']) ?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}" />
+
+
+    </td>
+</tr>
+
+<?php
+
+   }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center"><?= $ve['cstd09_notadebito_partidas_pago']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cstd09_notadebito_partidas_pago']['cod_partida'], -2), substr($ve['cstd09_notadebito_partidas_pago']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cstd09_notadebito_partidas_pago']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cstd09_notadebito_partidas_pago']['cod_auxiliar']) ?></td>
+   <td class="td2" style="padding-right:5px; text-align:right"  align="center">
+          <input name="data[cepp03_pagos_nomina][<?= "monto_".$i ?>]"  readonly  style="text-align:right"  type="text" size="25"  id="<?= "monto_".$i ?>" value="<?= $sisap->Formato2($ve['cstd09_notadebito_partidas_pago']['monto']) ?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';} "/>
+
+    </td>
+</tr>
+
+       <?php
+
+
+    	}//fin else
+
+
+$monto = $ve['cstd09_notadebito_partidas_pago']['monto'];
+$monto = $sisap->Formato2($monto);
+$monto = $sisap->Formato1($monto);
+$total2 += $monto;
+
+
+
+
+$i++;
+
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+ </tr>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total2); ?></td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total2); ?></td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total2); ?></td>
+</tr>
+        <?
+}
+ }else{$total2 = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td class="td2" style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total2); ?></td>
+</tr>
+        <?
+
+
+  }
+
+ //$i--;
+
+?>
+
+</table>
+</div>
+
+
+
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+ <th colspan="5">CONCEPTO</th>
+ <tr>
+  <td align="center">
+   <?= $html->textarea('cstp09_notadebito_nomina/concepto', array('','rows'=>'3', 'value'=>"", 'id' =>'concepto','class'=>'inputtext', 'value'=>$ve2['cstd09_notadebito_cuerpo_pago']['concepto'] ),  false) ?>
+  </td>
+ </tr>
+</table>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3">
+<tr>
+ <td width="220">STATUS DE NOTA DE DÉBITO</td>
+ <td ><?= $html->radio('cstp09_notadebito_nomina/status_debito', $options = array('1'=>'Por emitir', '2'=>'Transito', '3'=>'Pagado'), $inbetween = null, $htmlAttributes = array('value'=>$ve2['cstd09_notadebito_cuerpo_pago']['status_debito'], 'id'=>'status_debito', 'disabled'=>'disabled'), $return = false); ?></td>
+ <td >COMPROBANTE EGRESO:<?= $ve2['cstd09_notadebito_cuerpo_pago']['numero_comprobante_egreso']?></td>
+</tr>
+</table>
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3">
+<tr>
+ <td width="220">CLASE BENEFICIARIO</td>
+ <td ><?= $html->radio('cstp09_notadebito_nomina/clase_beneficiario', $options = array('1'=>'Beneficiario', '2'=>'I.S.R.L', '3'=>'Timbre Fiscal', '4'=>'Impuesto municipal', '5'=>'I.V.A', '6'=>'Multa', '7'=>'Responsabilidad'), $inbetween = null, $htmlAttributes = array('value'=>$ve2['cstd09_notadebito_cuerpo_pago']['clase_beneficiario'], 'id'=>'clase_beneficiario', 'disabled'=>'disabled'), $return = false); ?></td>
+
+</tr>
+</table>
+
+
+
+<br>
+
+<?
+ $caja['fecha_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['fecha_proceso_registro'];
+ $caja['dia_asiento_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['dia_asiento_registro'];
+ $caja['mes_asiento_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['mes_asiento_registro'];
+ $caja['ano_asiento_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['ano_asiento_registro'];
+ $caja['numero_asiento_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['numero_asiento_registro'];
+ $caja['username_registro'] = $ve2['cstd09_notadebito_cuerpo_pago']['username_registro'];
+ $caja['ano_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['ano_anulacion'];
+ $caja['numero_acta_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['numero_anulacion'];
+ $caja['fecha_proceso_anulacion'] = $fecha_sin_cambiar;
+ $caja['dia_asiento_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['dia_asiento_anulacion'];
+ $caja['mes_asiento_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['mes_asiento_anulacion'];
+ $caja['ano_asiento_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['ano_asiento_anulacion'];
+ $caja['numero_asiento_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['numero_asiento_anulacion'];
+ $caja['username_anulacion'] = $ve2['cstd09_notadebito_cuerpo_pago']['username_anulacion'];
+ $caja['radio'] = 'cstd09_notadebito_cuerpo_pago/condicion_orden';
+ $caja['condicion_actividad'] = (int) $ve2['cstd09_notadebito_cuerpo_pago']['condicion_actividad'];
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+
+
+<br>
+
+
+<div id="anulacion">
+<?php
+if($ve2['cstd09_notadebito_cuerpo_pago']['condicion_actividad']=="2"){?>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr>
+    <td align="center">CONCEPTO DE ANULACI&Oacute;N </td>
+</tr>
+
+
+<tr>
+    <td align="center">
+<?= $html->textarea('cstp09_notadebito_nomina/concepto_anulacion', array('','rows'=>'6', 'value'=>$concepto_anulacion, 'id' =>'concepto_anulacion','class'=>'inputtext' ),  false) ?>
+    </td>
+</tr>
+</table>
+<?php } ?></div>
+
+
+<br>
+
+
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'validar_concepto_anulacion_cheque', 'url1' => '/cstp09_notadebito_nomina/guardar_anulacion2', 'update1'=>'principal', 'disabled'=>'disabled' , 'id'=>'guardar')); ?>
+
+<?= $sisap->buttonTagRemote('cstp09_notadebito_nomina/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled', 'id'=>'modificar'), array('url1' => '/cstp09_notadebito_nomina/consulta/', 'update1'=>'principal'))?>
+<?php if($ve2['cstd09_notadebito_cuerpo_pago']['condicion_actividad']=="1" && $ve2['cstd09_notadebito_cuerpo_pago']['clase_beneficiario']=="1"){ ?>
+
+   <?= $sisap->submitTagRemote('Anular', array('url1' => '/cstp09_notadebito_nomina/guardar_anulacion1', 'update1'=>'anulacion', 'id'=>'anular')); ?>
+
+<?php }else{ ?>
+
+   <?= $sisap->submitTagRemote('Anular', array('url1' => '/cstp09_notadebito_nomina/guardar_anulacion1', 'update1'=>'principal', 'disabled'=>'disabled', 'id'=>'anular')); ?>
+
+<?php }//fin else ?>
+
+<?= $sisap->buttonTagRemote('cstp09_notadebito_nomina/consultar', array ('value'=>'Buscar'), array('url1' => '/cstp09_notadebito_nomina/consulta_index/1', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/cstp09_notadebito_nomina/', 'update1'=>'principal')) ?>
+
+	<input type="button" onClick="javascript:window.location.href='/cstp09_notadebito_nomina/reporte_emision_nota_debito/<?=$ve2['cstd09_notadebito_cuerpo_pago']['ano_movimiento']?>/<?=$ve2['cstd09_notadebito_cuerpo_pago']['numero_debito']?>';" value="" class="generar_input" title="Generar" />
+
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+<?php
+
+
+
+   }//fin
+  }//fin
+ }//fin
+
+ ?>
+
+<br>

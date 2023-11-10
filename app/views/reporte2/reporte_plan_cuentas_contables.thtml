@@ -1,0 +1,155 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->top_reporte2(array('PLAN DE CUENTAS CONTABLES'), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(15,3,"TIPO",'TRL',0,'C');
+		$this->Cell(15,3,"",'TR',0,'C');
+		$this->Cell(15,3,"SUB",'TR',0,'C');
+		$this->Cell(15,3,"DIVISION",'TR',0,'C');
+		$this->Cell(20,3,"SUB DIV.",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(15,2,"CUENTA",'RBL',0,'C');
+		$this->Cell(15,2,"CUENTA",'RB',0,'C');
+		$this->Cell(15,2,"CUENTA",'RB',0,'C');
+		$this->Cell(15,2,"ESTADISTICA",'RB',0,'C');
+		$this->Cell(20,2,"ESTADISTICA",'RB',0,'C');
+		$this->Cell(0,2,"DESCRIPCIÓN DE LA CUENTA",'RB',1,'C');
+    }//fin funtion
+}//fin clase
+
+function mascara3($cod,$tipo){
+	$opc = strlen($cod);
+	if($tipo==1){
+		switch ($opc) {
+			case 1:	$cod = '000'.$cod;	break;
+			case 2:	$cod = '00'.$cod;	break;
+			case 3:	$cod = '0'.$cod;	break;
+			default: break;
+		}
+	}else{
+		switch ($opc) {
+			case 1:	$cod = '00'.$cod;	break;
+			case 2:	$cod = '0'.$cod;	break;
+			case 3:	$cod = $cod;		break;
+			default: break;
+		}
+	}
+	return $cod;
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',5);
+foreach($cod_tipo_cuenta as $cod_tp){
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(15,5,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+	$pdf->Cell(15,5,"",'RB',0,'C');
+	$pdf->Cell(15,5,"",'RB',0,'C');
+	$pdf->Cell(15,5,"",'RB',0,'C');
+	$pdf->Cell(20,5,"",'RB',0,'C');
+	$pdf->Cell(0,5,$cod_tp['ccfd01_tipo']['denominacion'],'RB',1,'L');
+
+
+	foreach($cod_cuenta as $cod_c){
+		if($cod_c['ccfd01_cuenta']['cod_tipo_cuenta']==$cod_tp['ccfd01_tipo']['cod_tipo_cuenta']){
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(15,5,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+			$pdf->Cell(15,5,$cod_c['ccfd01_cuenta']['cod_cuenta'],'RB',0,'C');
+			$pdf->Cell(15,5,"",'RB',0,'C');
+			$pdf->Cell(15,5,"",'RB',0,'C');
+			$pdf->Cell(20,5,"",'RB',0,'C');
+			$pdf->Cell(0,5,$cod_c['ccfd01_cuenta']['denominacion'],'RB',1,'L');
+
+
+
+			foreach($cod_subcuenta as $cod_sub_c){
+				if(($cod_sub_c['ccfd01_subcuenta']['cod_tipo_cuenta']==$cod_tp['ccfd01_tipo']['cod_tipo_cuenta']) && ($cod_sub_c['ccfd01_subcuenta']['cod_cuenta']==$cod_c['ccfd01_cuenta']['cod_cuenta'])){
+					$pdf->SetFont('vera','',6);
+					$pdf->Cell(15,5,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+					$pdf->Cell(15,5,$cod_c['ccfd01_cuenta']['cod_cuenta'],'RB',0,'C');
+					$pdf->Cell(15,5,mascara3($cod_sub_c['ccfd01_subcuenta']['cod_subcuenta'],'2'),'RB',0,'C');
+					$pdf->Cell(15,5,"",'RB',0,'C');
+					$pdf->Cell(20,5,"",'RB',0,'C');
+					$pdf->Cell(0,5,$cod_sub_c['ccfd01_subcuenta']['denominacion'],'RB',1,'L');
+
+
+					foreach($cod_division as $cod_div){
+						if(($cod_div['ccfd01_division']['cod_tipo_cuenta']==$cod_tp['ccfd01_tipo']['cod_tipo_cuenta']) && ($cod_div['ccfd01_division']['cod_cuenta']==$cod_c['ccfd01_cuenta']['cod_cuenta']) && ($cod_div['ccfd01_division']['cod_subcuenta']==$cod_sub_c['ccfd01_subcuenta']['cod_subcuenta'])){
+							if($cod_div['ccfd01_division']['cod_division']!=0){
+							  $pdf->SetFont('vera','',6);
+							  $pdf->Cell(15,5,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+							  $pdf->Cell(15,5,$cod_c['ccfd01_cuenta']['cod_cuenta'],'RB',0,'C');
+							  $pdf->Cell(15,5,mascara3($cod_sub_c['ccfd01_subcuenta']['cod_subcuenta'],'2'),'RB',0,'C');
+							  $pdf->Cell(15,5,mascara3($cod_div['ccfd01_division']['cod_division'],'1'),'RB',0,'C');
+							  $pdf->Cell(20,5,"",'RB',0,'C');
+							  $pdf->Cell(0,5,$cod_div['ccfd01_division']['denominacion'],'RB',1,'L');
+
+							}
+
+							foreach($cod_subdivision as $cod_sub_div){
+								if(($cod_sub_div['ccfd01_subdivision']['cod_tipo_cuenta']==$cod_tp['ccfd01_tipo']['cod_tipo_cuenta']) && ($cod_sub_div['ccfd01_subdivision']['cod_cuenta']==$cod_c['ccfd01_cuenta']['cod_cuenta']) && ($cod_sub_div['ccfd01_subdivision']['cod_subcuenta']==$cod_sub_c['ccfd01_subcuenta']['cod_subcuenta']) && ($cod_sub_div['ccfd01_subdivision']['cod_division']==$cod_div['ccfd01_division']['cod_division'])){
+/*
+								     $cant=strlen($cod_sub_div['ccfd01_subdivision']['denominacion']);
+					     			 if($cant<=85){
+				              		 $alto=5;
+					     			 }else if($cant>85 && $cant<=170){
+					     	 		 $alto=10;
+					     			 }else if($cant>171 && $cant<=255){
+					     	 		 $alto=15;
+					     			 }else if($cant>255){
+					     	 		 $alto=20;
+					     			 }
+					     			$pdf->SetFont('vera','',6);
+									$pdf->Cell(15,$alto,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+									$pdf->Cell(15,$alto,$cod_c['ccfd01_cuenta']['cod_cuenta'],'RB',0,'C');
+									$pdf->Cell(15,$alto,mascara3($cod_sub_c['ccfd01_subcuenta']['cod_subcuenta'],'2'),'RB',0,'C');
+									$pdf->Cell(15,$alto,mascara3($cod_div['ccfd01_division']['cod_division'],'1'),'RB',0,'C');
+									$pdf->Cell(20,$alto,mascara3($cod_sub_div['ccfd01_subdivision']['cod_subdivision'],'2'),'RB',0,'C');
+								  	$pdf->MultiCell(0,5,$cod_sub_div['ccfd01_subdivision']['denominacion'],'RB',1,'L');
+*/
+
+									$pdf->SetFont('vera','',6);
+									$pdf->Cell(15,5,$cod_tp['ccfd01_tipo']['cod_tipo_cuenta'],'RBL',0,'C');
+									$pdf->Cell(15,5,$cod_c['ccfd01_cuenta']['cod_cuenta'],'RB',0,'C');
+									$pdf->Cell(15,5,mascara3($cod_sub_c['ccfd01_subcuenta']['cod_subcuenta'],'2'),'RB',0,'C');
+									$pdf->Cell(15,5,mascara3($cod_div['ccfd01_division']['cod_division'],'1'),'RB',0,'C');
+									$pdf->Cell(20,5,mascara3($cod_sub_div['ccfd01_subdivision']['cod_subdivision'],'2'),'RB',0,'C');
+								  	$pdf->Cell(0,5,substr($cod_sub_div['ccfd01_subdivision']['denominacion'],0,85),'RB',1,'L');
+
+								}
+
+							}//foreach cod_subdivision
+
+						}
+					}//foreach cod_division
+
+				}
+			}//foreach cod_subcuenta
+
+		}
+	}//foreach cod_cuenta
+
+}//foreach cod_tipo_cuenta
+$pdf->Output('Plan_cuenta_contable_'.date("d-m-y_h:sa").".pdf",'D');
+?>

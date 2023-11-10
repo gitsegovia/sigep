@@ -1,0 +1,432 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+
+}elseif(isset($vista)){
+
+echo '<br>';
+	         if($vista=="1"){?>
+
+
+Año: <input name="data[cscp02_solicitud_cotizacion][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+
+
+<?php }else  if($vista=="2"){?>
+
+Año: <input name="data[cscp02_solicitud_cotizacion][ano]"  value="<?= $year?>" id="ano"  size="3"     maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número Desde:<input name="data[cscp02_solicitud_cotizacion][numero_a]"  value="" id="numero_a"  size="2"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número Hasta:<input name="data[cscp02_solicitud_cotizacion][numero_b]"  value="" id="numero_b"  size="2"  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php }else if($vista=="3"){?>
+
+
+Año: <input name="data[cscp02_solicitud_cotizacion][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número:<input name="data[cscp02_solicitud_cotizacion][numero_a]"  value="" id="numero_a"  size="2"  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php }//fin else
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+
+class fpdfview extends TCPDF{
+
+
+function Footer(){}
+
+
+function Header(){
+$numero = $_SESSION['NUMERO'];
+$fecha  = $_SESSION['FECHA'];
+        $this->image_escudo_sin_consolidado(12,8,10);
+		$this->SetFont('vera','B',6);
+		$this->Cell(82,1,"",'TL',0);
+		$this->Cell(70,1,"",'T',0);
+		$this->Cell(0,1,"",'TR',1);
+		$this->Cell(82,3,"                  ".$_SESSION["entidad_federal"],'L',0);
+		$this->Cell(70,3,"",'',0);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,3,"NRO: ".$numero,'R',1);
+		$this->SetFont('vera','B',6);
+		$this->Cell(82,3,"                  ".$_SESSION["dependencia"],'L',0);
+		$this->Cell(70,3,"",'',0,'C');
+		$this->Cell(0,3,"",'R',1);
+		$this->Cell(62,5,"",'L',0);
+		$this->SetFont('vera','B',7);
+		$this->Cell(90,5,"SOLICITUD DE COTIZACIÓN DE BIENES Ó SERVICIOS",'',0);
+		$this->Cell(0,5,"FECHA: ".$fecha,'R',1);
+}//fin header
+
+
+
+
+
+}//fin class
+
+
+
+
+ if(isset($ir)){ ?>
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"EmisiÓn de solicitud en formato genÉrico <br> <br>Usuario: ".$usuario,null,"950");?>
+
+
+ <form name='data[cfpp07]'  method = "post" id='form' action="<?php echo  $html->url('/reportes_cao000/cscp02_solicitud_cotizacion/si'); ?>" onSubmit="return cscp04_ordencompra_servicio_bienes();">
+
+
+
+<?= $sisap->OpenTable("950")?>
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+<tr class="tr_negro"><td colspan="2" class="td2center" height="22">Cola de Impresión</td></tr>
+<tr>
+    <td class="td4" width="50" height="22">A&ntilde;o de Solicitud</td>
+    <td class="td4" width="50">Número de Solicitud</td>
+</tr>
+<?php
+
+$i = 0;
+
+ if(isset($datos_cscd02_solicitud_numero_poremitir)){
+  if($datos_cscd02_solicitud_numero_poremitir!=null){
+    foreach($datos_cscd02_solicitud_numero_poremitir as $ve){
+
+    	if($i%2==0){ ?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $ve['cscd02_solicitud_numero_poremitir']['ano_solicitud'] ?></td>
+    <td class="td2center"><?= $sisap->mascara_ocho($ve['cscd02_solicitud_numero_poremitir']['numero_solicitud']) ?></td>
+</tr>
+
+<?php }else{ ?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $ve['cscd02_solicitud_numero_poremitir']['ano_solicitud'] ?></td>
+   <td class="td2center"><?= $sisap->mascara_ocho($ve['cscd02_solicitud_numero_poremitir']['numero_solicitud']) ?></td>
+</tr>
+
+<?php }//fine
+
+    	$i++;
+
+}//fin foreach
+
+
+if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+ <?php }else{ ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+<?php
+      }//fin
+   }//fin
+ }//fin
+?>
+</table>
+</div>
+
+<br>
+
+<?= $sisap->radioTagRemote('cscp02_solicitud_cotizacion/radio', array('1'=>'Vaciar cola de impresión','2'=>'Por rango', '3'=>'Una especifica'), array('url1'=>'/reportes_cao000/cscp02_solicitud_cotizacion/vista', 'update1'=>'opcion', 'id'=>'cscp02_solicitud_cotizacion_opcion'), NULL, null)?>
+
+<div id="opcion"></div>
+
+<br>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+
+<?php }else{
+
+
+
+$orden = 0;
+
+
+
+if(isset($datos_cscd02_solicitud_cuerpo)){
+
+
+
+
+$orden = 0;
+
+
+foreach($datos_cscd02_solicitud_encabezado as $aux_cscd02_solicitud_encabezado){$orden++;
+
+      $ano_solicitud[$orden]         =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['ano_solicitud'];
+      $numero_solicitud[$orden]      =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['numero_solicitud'];
+      $fecha_solicitud[$orden]       =   $sisap->cambia_fecha($aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['fecha_solicitud']);
+      $cod_dir_superior[$orden]      =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_dir_superior'];
+      $cod_coordinacion[$orden]      =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_coordinacion'];
+      $cod_secretaria[$orden]        =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_secretaria'];
+      $cod_direccion[$orden]         =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_direccion'];
+      $cod_division[$orden]          =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_division'];
+      $cod_departamento[$orden]      =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_departamento'];
+      $cod_oficina[$orden]           =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['cod_oficina'];
+      $uso_destino[$orden]           =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['uso_destino'];
+      $fecha_proceso[$orden]         =   $sisap->cambia_fecha($aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['fecha_proceso']);
+      $rif[$orden]                   =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['rif'];
+      $ano_cotizacion[$orden]        =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['ano_cotizacion'];
+      $numero_cotizacion[$orden]     =   $aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['numero_cotizacion'];
+
+
+$i[$orden] = 0;
+
+foreach($datos_cscd02_solicitud_cuerpo as $aux_cscd02_solicitud_cuerpo){
+if($aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['ano_solicitud'] == $ano_solicitud[$orden]   &&  $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['numero_solicitud'] == $numero_solicitud[$orden]){
+      $i[$orden]++;
+
+      $codigo_prod_serv[$orden][$i[$orden]]      =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['codigo_prod_serv'];
+      $descripcion[$orden][$i[$orden]]           =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['descripcion'];
+      $cod_medida[$orden][$i[$orden]]            =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['cod_medida'];
+      $cantidad[$orden][$i[$orden]]              =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['cantidad'];
+
+
+
+foreach($unidad_medida as $aux_unidad_medida){
+  if($aux_unidad_medida['cscd01_unidad_medida']['cod_medida'] == $cod_medida[$orden][$i[$orden]]){
+  	$cod_medida[$orden][$i[$orden]] = $aux_unidad_medida['cscd01_unidad_medida']['expresion'];
+  }//fin if
+}//fin foreach
+
+
+
+  }//fin if
+}//fin foreach
+
+
+
+
+}//fin foreach
+
+
+
+
+
+
+
+
+for($h=1; $h<=$orden; $h++){
+
+////// I  //////
+$i_pagina[$h] = $i[$h]/28;
+if(is_float($i_pagina[$h])){ $i_pagina[$h] = (intval($i_pagina[$h]) + 1); }
+////// FIN  I  //////
+
+
+$pagina_total[$h] = $i_pagina[$h];
+
+
+
+}//fin for
+
+
+
+
+
+}//fin if
+
+
+
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(8);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+
+for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+
+$listo = "no";
+
+$_SESSION['PAGINA_A'] = 0;
+$_SESSION['PAGINA_A_AUX'] = 1;
+
+
+$monto_aux = 0;
+$sub_total = 0;
+$total     = 0;
+$total_2   = 0;
+$total_aux = 0;
+$total_aux2 = 0;
+$pagina     = 1;
+
+ if($cod_obra[$aux_aux]!="" && $cod_obra[$aux_aux]!="0" && $cod_obra[$aux_aux]!=null){
+
+				while($listo=="no"){
+
+
+
+															$_SESSION['NUMERO']   =   $sisap->mascara_ocho($numero_solicitud[$aux_aux]);
+															$_SESSION['FECHA']    =   $fecha_solicitud[$aux_aux];
+
+
+															$pdf->AddPage();
+
+
+															$pdf->SetFont('vera','B',6);
+															$pdf->Cell(0,3,"",'TRLB',1,'C');
+
+
+
+
+															$pdf->Cell(25,4,"CÓDIGO DE OBRA: ",'TRL',0,'L');
+															$pdf->SetFont('vera','',6);
+															$pdf->Cell(0,4,"  ".$cod_obra[$aux_aux],'RB',1,'L');
+
+															$pdf->SetFont('vera','B',6);
+
+															$pdf->Cell(105,4,"UNIDAD SOLICITANTE: ",'TRL',0,'L');
+															$pdf->Cell(0,4,"ADSCRITO A LA SECRETARIA DE: ",'TR',1,'L');
+															$pdf->SetFont('vera','',6);
+															$pdf->Cell(105,4,"  ".$direccion[$aux_aux],'RLB',0,'L');
+															$pdf->Cell(0,4,"  ".$secretaria[$aux_aux],'RB',1,'L');
+
+															$pdf->SetFont('vera','B',7);
+															$pdf->Cell(10,5,"NRO.",'BRL',0,'C');
+															$pdf->Cell(145,5,"DESCRIPCIÓN",'BR',0,'C');
+															$pdf->Cell(20,5,"UNIDAD",'BR',0,'C');
+															$pdf->Cell(0,5,"CANTIDAD",'BR',1,'C');//----CANTIDAD PROD
+
+															for($ii=$_SESSION['PAGINA_A_AUX']; $ii<=($_SESSION['PAGINA_A_AUX']+14); $ii++){
+
+															$pdf->SetFont('vera','',6);
+
+															if(isset($descripcion[$aux_aux][$ii])){
+
+															$pdf->Cell(10,12,$ii,'RL',0,'C');
+															$pdf->Cell(1,12,"",'L',0);//margen izquierdo
+																$varX = $pdf->GetX();//capturo X
+																$varY = $pdf->GetY();//capturo Y
+																$pdf->Cell(144,0,"",'',2,'C');
+																$pdf->MultiCell(143,3,$descripcion[$aux_aux][$ii],'','L');//Concepto Orden de Pago
+																$varX = $varX+144;//le sumo a X ---> 148.
+																$pdf->SetXY($varX,$varY);// cargo XY
+															$pdf->Cell(20,12,$cod_medida[$aux_aux][$ii],'RL',0,'C');
+															$pdf->Cell(0,12,$sisap->Formato_redondear_input($cantidad[$aux_aux][$ii]),'R',1,'C');
+															$pdf->Cell(0,0,"",'T',1,'C');
+
+
+															}else{
+
+
+															$pdf->Cell(10,12,$ii,'RL',0,'C');
+															$pdf->Cell(1,12,"",'L',0);//margen izquierdo
+																$varX = $pdf->GetX();//capturo X
+																$varY = $pdf->GetY();//capturo Y
+																$pdf->MultiCell(143,3,"",'','L');//Concepto Orden de Pago
+																$varX = $varX+144;//le sumo a X ---> 148.
+																$pdf->SetXY($varX,$varY);// cargo XY
+															$pdf->Cell(20,12,"",'RL',0,'C');
+															$pdf->Cell(0,12,"",'R',1,'C');
+															$pdf->Cell(0,0,"",'T',1,'C');
+
+
+															}//fi else
+
+															$_SESSION['PAGINA_A'] = $ii;
+
+															}///fin for
+
+
+
+															$pdf->SetFont('vera','B',7);
+															$pdf->Cell(0,5,"CARÁCTERISTICAS, DESTINO Y USO QUE SE LE DARÁN A ESTOS BIENES O SERVICIOS",'BRL',1,'L');
+															$pdf->SetFont('vera','',6);
+															$pdf->Cell(1,17,"",'L',0);//margen izquierdo
+																$varX = $pdf->GetX();//capturo X
+																$varY = $pdf->GetY();//capturo Y
+															$pdf->MultiCell(194,3,$uso_destino[$aux_aux],'','L');
+																$varX = $varX+194;//le sumo a X ---> 148.
+																$pdf->SetXY($varX,$varY);// cargo XY
+															$pdf->Cell(0,17,"",'R',1);//margen derecho
+
+
+
+															$pdf->SetFont('vera','B',6);
+															$pdf->Cell(46,3,"SOLICITADO POR",'TBRL',0,'C');
+															$pdf->Cell(46,3,"RECIBIDO POR",'TBR',0,'C');
+															$pdf->Cell(46,3,"REVISADO POR",'TBR',0,'C');
+															$pdf->Cell(0,3,"APROBADO POR",'TBR',1,'C');
+
+															$pdf->Cell(46,12,"",'RL',0,'C');
+															$pdf->Cell(46,12,"",'R',0,'C');
+															$pdf->Cell(46,12,"",'R',0,'C');
+															$pdf->Cell(0,12,"",'R',1,'C');
+
+															$pdf->Cell(46,3,"FIRMA",'TBRL',0,'C');
+															$pdf->Cell(46,3,"FIRMA",'TBR',0,'C');
+															$pdf->Cell(46,3,"FIRMA",'TBR',0,'C');
+															$pdf->Cell(0,3,"FIRMA",'TBR',1,'C');
+
+															$pdf->Cell(0,5,"Pagina ".$pagina."/".$pagina_total[$aux_aux],'',1,'R');
+
+															 if($_SESSION['PAGINA_A']<=$i[$aux_aux]){
+															 	   $_SESSION['PAGINA_A_AUX'] = $_SESSION['PAGINA_A']+1;
+															       $pagina++;
+															}else{ $listo="si";}
+
+
+				     }//fin while
+     }//in if
+
+}//fin  del for hace cada solicitud
+
+
+
+
+
+
+
+
+
+$pdf->Output('solicitud_cotizacion'.date("d-m-Y"),'D');
+
+
+
+   }//fin
+}//fin else
+
+
+
+?>
+

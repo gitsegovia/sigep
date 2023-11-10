@@ -1,0 +1,256 @@
+<?php if($opcion==1){ ?>
+
+<?= $sisap->Tabla($entidad_federal, true, "Relaci&oacute;n Por Tipos de Ayudas", null, "850"); ?>
+
+<form name='data[casp01_atencion_social]' method = "post" id='form' action="<?php echo $html->url('/casp01_atencion_social/relacion_tipos_ayudas/'.$ir); ?>">
+
+<?= $sisap->OpenTable("850") ?>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td width="15%" align="center">Selecci&oacute;n</td>
+		<td width="10%" align="center">C&oacute;digo</td>
+		<td width="75%"align="center">Denominaci&oacute;n del Estado</td>
+	</tr>
+	<tr>
+		<td align="center"><?= $sisap->selectTagRemote('casp01_atencion_social/cod_estado', $estados, array('value1'=>'otros'), null, array('onchange1'=>'/casp01_atencion_social/ver_estado2', 'update1'=>'cmunicipios', 'id'=>'cod_estado', true), null, true); ?></td>
+		<td><input name="data[casp01_atencion_social][codt_estado]" id="codt_estado" maxlength="5" type="text" value="" class ="inputtext" style="text-align:center" readonly="readonly" onKeyPress="return solonumeros(event);" /></td>
+		<td><input name="data[casp01_atencion_social][denot_estado]" id="denot_estado" type="text" value="" class ="inputtext" readonly="readonly" /></td>
+	</tr>
+
+	<tr>
+		<td width="15%" align="center">Selecci&oacute;n</td>
+		<td width="10%" align="center">C&oacute;digo</td>
+		<td width="75%"align="center">Denominaci&oacute;n del Municipio</td>
+	</tr>
+
+	<tr>
+		<td align="center" id="cmunicipios"><?= $html->selectTag('casp01_atencion_social/cod_municipio', array(), null, array('id'=>'cod_municipio', "class"=>"inputtext")); ?></td>
+		<td><input name="data[casp01_atencion_social][codt_municipio]" id="codt_municipio" maxlength="5" type="text" value="" class ="inputtext" style="text-align:center" readonly="readonly" onKeyPress="return solonumeros(event);" /></td>
+		<td><input name="data[casp01_atencion_social][denot_municipio]" id="denot_municipio" type="text" value="" class ="inputtext" readonly="readonly" /></td>
+	</tr>
+</table>
+
+<div style="text-align:left;">
+<table width="60%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+	<tr>
+		<td align="right" width="30%">Rango de Fechas&nbsp;</td>
+		<td align="center" width="15%">Desde:<br /><?= $sisap->input_fecha("casp01_atencion_social", "fecha_desde", "fecha_desde", null); ?></td>
+		<td align="center" width="15%">Hasta:<br /><?= $sisap->input_fecha("casp01_atencion_social", "fecha_hasta", "fecha_hasta", null); ?></td>
+	</tr>
+	<tr>
+		<td align="right">Tipos de Ayudas&nbsp;</td>
+		<td align="center" colspan="2">
+			<?= $html->selectTag("casp01_atencion_social/tipo_ayuda", $tipos_ayudas, null, array('id'=>'tipo_ayuda', 'class'=>'inputtext')); ?>
+		</td>
+	</tr>
+</table>
+</div>
+
+<div id="funcion"></div>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/casp01_atencion_social/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+
+<?= $sisap->CloseTable(); ?>
+
+</form>
+
+
+
+<?php
+
+
+}else{
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+	if(!empty($datos)){
+		$_SESSION["deno_cod_estado"] = $datos[0][$modelo]['deno_cod_estado'];
+		$_SESSION["deno_cod_municipio"] = $datos[0][$modelo]['deno_cod_municipio'];
+		$_SESSION["cfecha_desde"] = $this->data["casp01_atencion_social"]["fecha_desde"];
+		$_SESSION["cfecha_hasta"] = $this->data["casp01_atencion_social"]["fecha_hasta"];
+		$_SESSION["ctipo_ayuda"] = $datos[0][$modelo]['denominacion'];
+	}else{
+		$_SESSION["deno_cod_estado"] = "";
+		$_SESSION["deno_cod_municipio"] = "";
+		$_SESSION["cfecha_desde"] = "";
+		$_SESSION["cfecha_hasta"] = "";
+		$_SESSION["ctipo_ayuda"] = "";
+	}
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'L', $unit = 'mm', $format = 'LEGAL') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("RELACIÓN POR TIPOS DE AYUDAS"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"328"));
+
+            $this->SetFont('vera', 'B', 7);
+
+            $this->Cell(55, 5, 'ESTADO', 'TRBL', 0, 'R');
+            $this->Cell(0, 5, "".$_SESSION["deno_cod_estado"], 'TBR', 1, 'L');
+
+            $this->Cell(55, 5, 'MUNICIPIO', 'RBL', 0, 'R');
+            $this->Cell(0, 5, $_SESSION["deno_cod_municipio"], 'BR', 1, 'L');
+
+            $this->Cell(55, 5, 'SOLICITUDES REALIZADAS EN FECHA', 'BRL', 0, 'R');
+
+            $this->Cell(12, 5, 'DESDE', 'BR', 0, 'R');
+            $this->Cell(20, 5, "".$_SESSION["cfecha_desde"], 'BR', 0, 'C');
+
+            $this->Cell(12, 5, 'HASTA', 'BR', 0, 'R');
+            $this->Cell(20, 5, "".$_SESSION["cfecha_hasta"], 'BR', 0, 'C');
+            $this->Cell(0, 5, "", 'BR', 1, 'C');
+
+            $this->Cell(55, 5, 'TIPO DE AYUDA', 'RL', 0, 'R');
+            $this->Cell(0, 5, "".$_SESSION["ctipo_ayuda"], 'R', 1, 'L');
+
+            $this->SetFont('vera', 'B', 6);
+            $this->Cell(30, 3, '', 'TRL', 0, 'C');
+            $this->Cell(25, 3, 'CÉDULA', 'TR', 0, 'C');
+            $this->Cell(64, 3, '', 'TR', 0, 'C');
+            $this->Cell(20, 3, 'FECHA', 'TR', 0, 'C');
+            $this->Cell(10, 3, '', 'TR', 0, 'C');
+            $this->Cell(27, 3, '', 'TR', 0, 'C');
+            $this->Cell(70, 3, '', 'TR', 0, 'C');
+            $this->Cell(20, 3, 'FECHA', 'TR', 0, 'C');
+            $this->Cell(0, 3, '', 'TR', 1, 'C');
+
+            $this->Cell(30, 3, 'NACIONALIDAD', 'RBL', 0, 'C');
+            $this->Cell(25, 3, 'IDENTIDAD', 'RB', 0, 'C');
+            $this->Cell(64, 3, 'NOMBRES Y APELLIDOS', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'NACIMIENTO', 'RB', 0, 'C');
+            $this->Cell(10, 3, 'EDAD', 'RB', 0, 'C');
+            $this->Cell(27, 3, 'GÉNERO', 'RB', 0, 'C');
+            $this->Cell(70, 3, 'AYUDA SOLICITADA', 'RB', 0, 'C');
+            $this->Cell(20, 3, 'SOLICITUD', 'RB', 0, 'C');
+            $this->Cell(0, 3, 'MISIÓN', 'RB', 1, 'C');
+        }
+
+        function Footer() {
+
+        }
+
+    function tam_celda($total_char){
+		if($total_char<80){
+			$heigth = 8;
+		}elseif($total_char>=80 && $total_char<160){
+			$heigth = 13;
+		}elseif($total_char>=160 && $total_char<240){
+			$heigth = 18;
+		}elseif($total_char>=240 && $total_char<320){
+			$heigth = 24;
+		}elseif($total_char>=320 && $total_char<400){
+			$heigth = 30;
+		}elseif($total_char>=400 && $total_char<480){
+			$heigth = 36;
+		}elseif($total_char>=480 && $total_char<560){
+			$heigth = 42;
+		}elseif($total_char>=560 && $total_char<640){
+			$heigth = 48;
+		}elseif($total_char>=640 && $total_char<720){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+    } // End Class
+
+    $pdf = new fpdfview('L', 'mm', 'LEGAL');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+
+if(!empty($datos)){
+    foreach($datos as $row_datos){
+		$ayuda = str_replace("\n", "", $row_datos[$modelo]['ayuda_solicitada']);
+		$nombres = str_replace("\n", "", $row_datos[$modelo]['apellidos_nombres']);
+		$mision = $row_datos[$modelo]['mision'];
+		$can_a = strlen($ayuda);
+		$can_b = strlen($nombres);
+		$can_c = strlen($mision);
+
+		$total_char = max($can_a, $can_b, $can_c);
+		$theigth = $pdf->tam_celda($total_char);
+
+    	$pdf->Cell(30, $theigth, $row_datos[$modelo]['nacionalidad'], 'RL', 0, 'C');
+    	$pdf->Cell(25, $theigth, $row_datos[$modelo]['cedula_identidad'], 'R', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", '', 0, 'L');
+                $pdf->Cell(64, 1, "", '', 2, 'L');
+                $pdf->MultiCell(63, 3, $nombres, '', 'L'); // --------[NOMBRES Y APELLIDOS]
+                $varX = $varX + 64;
+                $pdf->SetXY($varX, $varY);
+
+		$pdf->Cell(20, $theigth, $sisap->cambia_fecha($row_datos[$modelo]['fecha_nacimiento']), 'RL', 0, 'C');
+		$pdf->Cell(10, $theigth, $row_datos[$modelo]['edad'], 'R', 0, 'C');
+		$pdf->Cell(27, $theigth, $row_datos[$modelo]['genero'], 'R', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", '', 0, 'L');
+                $pdf->Cell(70, 1, "", '', 2, 'L');
+                $pdf->MultiCell(69, 3, $ayuda, '', 'L'); // --------[AYUDA SOLICITADA]
+                $varX = $varX + 70;
+                $pdf->SetXY($varX, $varY);
+
+		$pdf->Cell(20, $theigth, $sisap->cambia_fecha($row_datos[$modelo]['fecha_solicitud']), 'RL', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $pdf->Cell(0, 1, "", '', 2, 'L');
+                $pdf->MultiCell(0, 3, $mision, '', 'L'); // --------[MISION]
+                $varX = $varX;
+                $pdf->SetXY($varX, $varY);
+
+                $pdf->Cell(0, $theigth, "", 'R', 1, 'L');
+                $pdf->Cell(0, 0, "", 'T', 1, 'L');
+    } // Fin Foreach
+
+	$pdf->SetFont('vera', 'B', 8);
+	$pdf->Cell(30, 8, 'TOTAL PERSONAS:', '', 0, 'L');
+	$pdf->Cell(0, 8, count($datos), '', 1, 'L');
+} // Fin IF Empty
+
+else{
+            $pdf->SetFont('vera', 'B', 6);
+            $pdf->Cell(30, 5, '--', 'RL', 0, 'C');
+            $pdf->Cell(25, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(64, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(20, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(10, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(27, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(70, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(20, 5, '--', 'R', 0, 'C');
+            $pdf->Cell(0, 5, '--', 'R', 1, 'C');
+            $pdf->Cell(0, 0, "", 'T', 1, 'L');
+}
+
+	unset($_SESSION["deno_cod_estado"]);
+	unset($_SESSION["deno_cod_municipio"]);
+	unset($_SESSION["cfecha_desde"]);
+	unset($_SESSION["cfecha_hasta"]);
+	unset($_SESSION["ctipo_ayuda"]);
+
+    $pdf->Output('Relacion_Tipos_Ayudas.pdf', 'D');
+}
+?>

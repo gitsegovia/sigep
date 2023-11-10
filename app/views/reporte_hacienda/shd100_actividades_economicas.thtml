@@ -1,0 +1,141 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Actividades económicas según la ordenanza'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd100_actividades_economicas/2/'); ?>" >
+			<table border="0" >
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "Actividades económicas según la ordenanza", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(30,4,'Código','TRL',0,'C');
+		$this->Cell(90,4,'','TR',0,'C');
+		$this->Cell(25,4,'%','TR',0,'C');
+		$this->Cell(25,4,'Unidades','TR',0,'C');
+		$this->Cell(0,4,'Monto Mínimo','TR',1,'C');
+
+		$this->Cell(30,3,'Actividad','BRL',0,'C');
+		$this->Cell(90,3,'Denominación de la actividad','BR',0,'C');
+        $this->Cell(25,3,'Alicuota','BR',0,'C');
+        $this->Cell(25,3,'Tributarias','BR',0,'C');
+		$this->Cell(0,3,'Tributario','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+	for($i=0;$i<count($datos);$i++){
+
+		if($datos[$i][0]['alicuota']==0){ $alicuota=''; $pdf->SetFont('vera','B',6); }else{ $alicuota=$sisap->Formato2($datos[$i][0]['alicuota']); }
+		/////////////////////////////////////////
+		if($datos[$i][0]['unidades_tributarias']==0) $unidades_tributarias=''; else $unidades_tributarias=$datos[$i][0]['unidades_tributarias'];
+		////////////////////////////////////////
+		if($datos[$i][0]['minimo_tributable']==0) $minimo_tributable=''; else $minimo_tributable=$sisap->Formato2($datos[$i][0]['minimo_tributable']);
+
+
+		$pdf->Cell(30,8,$datos[$i][0]['cod_actividad'],'RL',0,'L');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(90,1,'','',2,'C');
+	    $pdf->MultiCell(90,2,$datos[$i][0]['denominacion_actividad'],'','L');
+	    $varX = $varX+90;
+	    $pdf->SetXY($varX,$varY);
+	    $pdf->Cell(25,8,$alicuota,'RL',0,'R');
+		$pdf->Cell(25,8,$unidades_tributarias,'R',0,'C');
+		$pdf->Cell(0,8,$minimo_tributable,'R',1,'R');
+		$pdf->Cell(0,0,'','T',1,'C');
+
+		$pdf->SetFont('vera','',6);
+
+	}
+
+}else{
+	$pdf->Cell(30,6,'','RBL',0,'C');
+	$pdf->Cell(90,6,' ','RB',0,'C');
+    $pdf->Cell(25,6,'','RB',0,'C');
+    $pdf->Cell(25,6,'','RB',0,'C');
+	$pdf->Cell(0,6,'','RB',1,'C');
+}
+
+$pdf->Output('Actividades_económicas_según_ordenanza_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

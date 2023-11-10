@@ -1,0 +1,509 @@
+<?
+if($opcion==1){
+
+?>
+
+<?= $sisap->Tabla('',true,'Disponibilidad presupuestaria  - Ejecuci&oacute;n','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_e/reporte_disponibilidad_por_subp/2'); ?>">
+
+
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true)  ?>
+
+
+<center>Indique Año de Ejecuci&oacute;n:
+<?= $sisap->inputTagRemote('reporte/ano', array('url'=>'/reporte2/escribir_ano', 'update'=>'st_seleccion_1','id'=>'ano', 'size'=>'6','value'=>$ano,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);",  'style'=>"text-align:center;"))?>
+<br><br>
+
+
+			<?
+			$meses=array('01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
+			if(isset($tipo_reporte) && $tipo_reporte!="reporte_balance_ejecucion"){
+								 if($tipo_reporte=="reporte_balance_ejecucion_hasta_mes"){
+						?>
+						Acumulado Hasta el Mes: <?=$html->selectTag('reporte/mes',$meses,date('m'),array("id"=>"mes","style"=>"width:150px;"))?>
+						<?
+							}else if($tipo_reporte=="reporte_balance_ejecucion_mes"){
+						?>
+
+
+						del Mes: <?=$html->selectTag('reporte/mes',$meses,date('m'),array("id"=>"mes","style"=>"width:150px;"))?>
+						<?
+							}
+			}
+			?>
+</center>
+<?
+$MUESTRAME=0;
+if(isset($MUESTRAME)){?>
+<br>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td colspan="3" align="center"><?= $html->radio('reporte/modo', array('1'=>'Completo', '2'=>'Por Categor&iacute;a','3'=>'Por Categor&iacute;a y Partida','4'=>'Por Partida','5'=>'Por Sub-Partidas'), " | ",array('value'=>3,'onClick'=>'condicion_balance_ejecucion();'))?></td></tr>
+  </table>
+
+<br>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+  <tr>
+    <th colspan="3" align="center">CATEGOR&Iacute;A PRESUPUESTARIA</th>
+  </tr>
+  <tr>
+    <td width="10%" align="center">&nbsp;</td>
+    <td width="10%" align="center">Selecci&oacute;n</td>
+    <td align="center">Denominaci&oacute;n</td>
+  </tr>
+  <tr>
+    <td>Sector</td>
+    <td id="st_seleccion_1"><?=  $sisap->selectTagRemote('reporte/cod_sector', $sector !='' ? $sector : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/reporte2/select3/programa', 'update1'=>'st_seleccion_2','onchange2'=>'/reporte2/mostrar3/sector', 'update2'=>'deno_seleccion_1','id'=>'seleccion_1','class'=>'select100', true), null, true); ?></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_1" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Programa</td>
+    <td id="st_seleccion_2"><select id="seleccion_2" class="select100"></select></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_2" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Sub-Programa</td>
+    <td id="st_seleccion_3"><select id="seleccion_3" ></select></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_3" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Proyecto</td>
+    <td id="st_seleccion_4"><select id="seleccion_4" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_4" class="textnegro">&nbsp;</div></td>
+  </tr>
+    <tr>
+    <td>Actividad u Obra</td>
+    <td id="st_seleccion_5"><select id="seleccion_5" ></select></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_5" class="textnegro">&nbsp;</div></td>
+  </tr>
+</table>
+<br>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <th colspan="3" align="center">CLASIFICADOR DE PARTIDAS</th>
+  </tr>
+  <tr>
+    <td width="10%" align="center">&nbsp;</td>
+    <td width="10%" align="center">Selecci&oacute;n</td>
+    <td align="center">Denominaci&oacute;n</td>
+  </tr>
+  <tr>
+    <td>Partida</td>
+    <td id="st_seleccion_6"><?=  $sisap->selectTagRemote('reporte/cod_partida', $partida !='' ? $partida : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/reporte2/select3/generica', 'update1'=>'st_seleccion_7','onchange2'=>'/reporte2/mostrar3/partida', 'update2'=>'deno_seleccion_6','id'=>'seleccion_6','class'=>'select100', true), null, true); ?></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_6" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Gen&eacute;rica</td>
+    <td id="st_seleccion_7"><select id="seleccion_7" ></select></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_7" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Espec&iacute;fica</td>
+    <td id="st_seleccion_8"><select id="seleccion_8" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_8" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Sub-Espec&iacute;fica</td>
+    <td id="st_seleccion_9"><select id="seleccion_9" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_9" class="textnegro">&nbsp;</div></td>
+  </tr>
+    <tr>
+    <td>Auxiliar</td>
+    <td id="st_seleccion_10"><select id="seleccion_10" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_10" class="textnegro">&nbsp;</div></td>
+  </tr>
+</table>
+<br>
+<?}?>
+<?
+      /*if($_SESSION["SScoddep"]==1){
+        echo $sisap->submitTagRemote('Generar en Excel', array('url1' => '/balance_excel/balance','id'=>'bt_balance', 'update1'=>'cargar_excel','id'=>'bt_generar_excel','disabled'=>'disabled'));
+      }else{
+      	echo $sisap->submitTagRemote('Generar en Excel', array('url1' => '/balance_excel/balance','id'=>'bt_balance', 'update1'=>'cargar_excel','id'=>'bt_generar_excel'));
+      }*/
+?>
+
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<br><br>
+<div id="cargar_excel"></div>
+</form>
+<?=$sisap->CloseTable()?>
+<div id="capa"></div>
+
+
+<?php }else{
+
+
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+/*
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-12);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8,'Página '.$this->PageNo(),0,0,'R');
+    $this->Cell(0,18,"",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}*/
+
+function Header()
+{
+	$this->top_reporte("Disponibilidad presupuestaria - EJECUCIÓN", "", "PRESUPUESTO: ".$_SESSION['ejercicio'], array("Y"=>"6", "X"=>"31", "Z"=>"12"), array("Y"=>"32", "X"=>"330"));
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(50,4,"",'TRL',0,'C');
+		$this->Cell(80,4,"",'TR',0,'C');
+		$this->Cell(25,4,"",'TR',0,'C');
+
+		$this->Cell(21,4,"",'TR',0,'C');//------------[Aumento]
+		$this->Cell(21,4,"",'TR',0,'C');//--------[Disminución]
+		$this->Cell(23,4,"",'TR',0,'C');//---------[total Asignacion]
+		$this->Cell(21,4,"",'TR',0,'C');//-----[Pre compromiso]
+		$this->Cell(21,4,"",'TR',0,'C');//---------[compromiso]
+		$this->Cell(21,4,"",'TR',0,'C');//------------[Causado]
+		$this->Cell(21,4,"",'TR',0,'C');//-------------[Pagado]
+		$this->Cell(21,4,"",'TR',0,'C');//--------------[Deuda]
+		$this->Cell(0,4,"",'TR',1,'C');//------[Disponibilidad]
+
+		$this->Cell(9,3,"",'L',0,'C');
+		$this->Cell(8,3,"",'',0,'C');
+		$this->Cell(8,3,"",'',0,'C');
+		$this->Cell(8,3,"",'',0,'C');
+		$this->Cell(8,3,"",'',0,'C');
+		$this->Cell(9,3,"",'',0,'C');
+
+		$this->Cell(80,3,"",'RL',0,'C');
+		$this->Cell(25,3,"",'R',0,'C');
+
+		$this->Cell(21,3,"",'R',0,'C');//------------[Aumento]
+		$this->Cell(21,3,"",'R',0,'C');//--------[Disminución]
+		$this->Cell(23,3,"",'R',0,'C');//---------[total Asignacion]
+		$this->Cell(21,3,"",'R',0,'C');//-----[Pre compromiso]
+		$this->Cell(21,3,"",'R',0,'C');//---------[compromiso]
+		$this->Cell(21,3,"",'R',0,'C');//------------[Causado]
+		$this->Cell(21,3,"",'R',0,'C');//-------------[Pagado]
+		$this->Cell(21,3,"",'R',0,'C');//--------------[Deuda]
+		$this->Cell(0,3,"",'R',1,'C');//------[Disponibilidad]
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(50,5,"CÓDIGO PRESUPUESTARIO",'RL',0,'C');
+		$this->Cell(80,5,"D E N O M I N A C I Ó N",'R',0,'C');
+		$this->Cell(25,5,"",'R',0,'C');
+
+		$this->Cell(21,5,"",'R',0,'C');//------------[Aumento]
+		$this->Cell(21,5,"",'R',0,'C');//--------[Disminución]
+		$this->Cell(23,5,"",'R',0,'C');//---------[total Asignacion]
+		$this->Cell(21,5,"",'R',0,'C');//-----[Pre compromiso]
+		$this->Cell(21,5,"",'R',0,'C');//---------[compromiso]
+		$this->Cell(21,5,"",'R',0,'C');//------------[Causado]
+		$this->Cell(21,5,"",'R',0,'C');//-------------[Pagado]
+		$this->Cell(21,5,"",'R',0,'C');//--------------[Deuda]
+		$this->Cell(0,5,"",'R',1,'C');//------[Disponibilidad]
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(9,3,"",'LB',0,'C');
+		$this->Cell(8,3,"",'B',0,'C');
+		$this->Cell(8,3,"",'B',0,'C');
+		$this->Cell(8,3,"",'B',0,'C');
+		$this->Cell(8,3,"",'B',0,'C');
+		$this->Cell(9,3,"",'RB',0,'C');
+		$this->Cell(80,3,"",'RB',0,'C');
+		$this->Cell(25,3,"ASIGNACIÓN",'RB',0,'C');
+
+		$this->Cell(21,3,"Aumento",'RB',0,'C');//------------[Aumento]
+		$this->Cell(21,3,"Disminución",'RB',0,'C');//--------[Disminución]
+		$this->Cell(23,3,"Total Asignación",'RB',0,'C');//---------[total Asignacion]
+		$this->Cell(21,3,"Pre compromiso",'RB',0,'C');//-----[Pre compromiso]
+		$this->Cell(21,3,"Compromiso",'RB',0,'C');//---------[compromiso]
+		$this->Cell(21,3,"Causado",'RB',0,'C');//------------[Causado]
+		$this->Cell(21,3,"Pagado",'RB',0,'C');//-------------[Pagado]
+		$this->Cell(21,3,"Deuda",'RB',0,'C');//--------------[Deuda]
+		$this->Cell(0,3,"Disponibilidad",'RB',1,'C');//------[Disponibilidad]
+
+  }//fin funtion
+}//fin clases
+
+
+$fpdf = new fpdfview('L','mm','Legal');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(30);
+$fpdf->SetLeftMargin(4);
+$fpdf->SetRightMargin(4);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+
+
+$fpdf->AddPage();
+
+
+
+
+$modelo = 0;
+
+		    $totales[5]['asignacion_anual']=0;
+			$totales[5]['aumento']=0;
+			$totales[5]['disminucion']=0;
+			$totales[5]['total_asignacion']=0;
+			$totales[5]['pre_compromiso']=0;
+			$totales[5]['compromiso']=0;
+			$totales[5]['causado']=0;
+			$totales[5]['pagado']=0;
+			$totales[5]['deuda']=0;
+			$totales[5]['disponibilidad']=0;
+
+
+		    $totales[4]['asignacion_anual']=0;
+			$totales[4]['aumento']=0;
+			$totales[4]['disminucion']=0;
+			$totales[4]['total_asignacion']=0;
+			$totales[4]['pre_compromiso']=0;
+			$totales[4]['compromiso']=0;
+			$totales[4]['causado']=0;
+			$totales[4]['pagado']=0;
+			$totales[4]['deuda']=0;
+			$totales[4]['disponibilidad']=0;
+
+
+
+
+			$totales[3]['asignacion_anual']=0;
+			$totales[3]['aumento']=0;
+			$totales[3]['disminucion']=0;
+			$totales[3]['total_asignacion']=0;
+			$totales[3]['pre_compromiso']=0;
+			$totales[3]['compromiso']=0;
+			$totales[3]['causado']=0;
+			$totales[3]['pagado']=0;
+			$totales[3]['deuda']=0;
+			$totales[3]['disponibilidad']=0;
+
+
+			$totales[2]['asignacion_anual']=0;
+			$totales[2]['aumento']=0;
+			$totales[2]['disminucion']=0;
+			$totales[2]['total_asignacion']=0;
+			$totales[2]['pre_compromiso']=0;
+			$totales[2]['compromiso']=0;
+			$totales[2]['causado']=0;
+			$totales[2]['pagado']=0;
+			$totales[2]['deuda']=0;
+			$totales[2]['disponibilidad']=0;
+
+
+			$totales[1]['asignacion_anual']=0;
+			$totales[1]['aumento']=0;
+			$totales[1]['disminucion']=0;
+			$totales[1]['total_asignacion']=0;
+			$totales[1]['pre_compromiso']=0;
+			$totales[1]['compromiso']=0;
+			$totales[1]['causado']=0;
+			$totales[1]['pagado']=0;
+			$totales[1]['deuda']=0;
+			$totales[1]['disponibilidad']=0;
+
+
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd[$modelo]['cod_sector'];
+		$var2[2]=$vcfpd[$modelo]['cod_programa'];
+		$var2[3]=$vcfpd[$modelo]['cod_sub_prog'];
+		$var2[4]=$vcfpd[$modelo]['cod_proyecto'];
+		$var2[5]=$vcfpd[$modelo]['cod_activ_obra'];
+
+
+		$var2[6]=$vcfpd[$modelo]['cod_partida'];
+		$var2[7]=$vcfpd[$modelo]['cod_generica'];
+		$var2[8]=$vcfpd[$modelo]['cod_especifica'];
+		$var2[9]=$vcfpd[$modelo]['cod_sub_espec'];
+		$var2[10]=$vcfpd[$modelo]['cod_auxiliar'];
+		$var2[11]=$vcfpd[$modelo]['asignacion_anual'];
+        $var2["aumento"]=           $vcfpd[$modelo]['aumento'];
+        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion'];
+        $var2["total_asignacion"]=  $vcfpd[$modelo]['total_asignacion'];
+        $var2["pre_compromiso"]=    $vcfpd[$modelo]['pre_compromiso'];
+        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_anual'];
+        $var2["causado"]=           $vcfpd[$modelo]['causado_anual'];
+        $var2["pagado"]=            $vcfpd[$modelo]['pagado_anual'];
+        $var2["deuda"]=             $vcfpd[$modelo]['deuda'];
+        $var2["disponibilidad"]=    $vcfpd[$modelo]['disponibilidad'];
+
+
+
+
+
+		if($var2[10]!=0){
+            $var2[12]=$vcfpd[$modelo]["deno_auxiliar"];
+		}else{
+			$var2[12]=$vcfpd[$modelo]["deno_sub_espec"];
+		}
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+	     $x = $fpdf->GetY();
+
+
+          	  	     	$var2[12]= preg_replace("/\r\n|\r/", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("  ", " ", $var2[12]);
+          	  	     	$var2[12] = str_replace("\n", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("\r", "", $var2[12]);
+          	  	     	$var2[12] = str_replace("  ", " ", $var2[12]);
+          	  	     	$cant_l=strlen(trim($var2[12]));
+
+					     if($cant_l<=58){
+				              $alto=4.3;
+					     }else if($cant_l>58 && $cant_l<=100){
+					     	 $alto=7.8;
+					     }else if($cant_l>100 && $cant_l<=180){
+					     	 $alto=12.5;
+					     }else if($cant_l>180 && $cant_l<=350){
+					     	 $alto=19;
+					     }else if($cant_l>350 && $cant_l<=450){
+					     	 $alto=23;
+					     }else{
+					     	 $alto=27;
+					     }
+                            $fpdf->SetFont('vera','',8);
+                            $codigo  = mascara($var2[1],2).".".mascara($var2[2],2).".".mascara($var2[3],2).".".mascara($var2[4],2).".".mascara($var2[5],2)."";
+                            $codigo .= "   ".$var2[6].".".mascara($var2[7],2).".".mascara($var2[8],2).".".mascara($var2[9],2).".".mascara($var2[10],4);
+                            $fpdf->SetFont('vera','',6);
+						    $fpdf->Cell(50,$alto,$codigo,'TRLB',0,'C');//-------------[PARTIDA]
+						    $varX = $fpdf->GetX();
+						    $varY = $fpdf->GetY();
+						    $fpdf->Cell(80,1,"",'T',2,'C');
+						    $fpdf->MultiCell(80,3,$var2[12],'','J');//-----------[DENOMINACION TODO]
+						    $varX = $varX+80;
+						    $fpdf->SetXY($varX,$varY);
+
+						    $fpdf->Cell(25,$alto,$sisap->Formato2($var2[11]),'TLRB',0,'R');//------[Asignacion anual]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["aumento"]),'TRB',0,'R');//-------------------[Aumento]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["disminucion"]),'TRB',0,'R');//-------------------[Disminución]
+							$fpdf->Cell(23,$alto,$sisap->Formato2($var2["total_asignacion"]),'TRB',0,'R');//-------------------[total Asignacion]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["pre_compromiso"]),'TRB',0,'R');//-------------------[Pre compromiso]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["compromiso"]),'TRB',0,'R');//-------------------[compromiso]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["causado"]),'TRB',0,'R');//-------------------[Causado]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["pagado"]),'TRB',0,'R');//-------------------[Pagado]
+							$fpdf->Cell(21,$alto,$sisap->Formato2($var2["deuda"]),'TRB',0,'R');//-------------------[Deuda]
+							$fpdf->Cell(0,$alto,$sisap->Formato2($var2["disponibilidad"]),'TRB',1,'R');//--------------------[Disponibilidad]
+							$Ytotal=$fpdf->GetY();
+						    $fpdf->Cell(0,0,"",'T',1,'C');
+
+						    $cod_sector=$var2[1];
+				            $cod_programa=$var2[2];
+				            $cod_sub_prog=$var2[3];
+				            $cod_proyecto=$var2[4];
+				            $cod_activ_obra=$var2[5];
+
+				    		    $totales[5]['asignacion_anual']+=$var2[11];
+								$totales[5]['aumento']+=$var2["aumento"];
+								$totales[5]['disminucion']+=$var2["disminucion"];
+								$totales[5]['total_asignacion']+=$var2["total_asignacion"];
+								$totales[5]['pre_compromiso']+=$var2["pre_compromiso"];
+								$totales[5]['compromiso']+=$var2["compromiso"];
+								$totales[5]['causado']+=$var2["causado"];
+								$totales[5]['pagado']+=$var2["pagado"];
+								$totales[5]['deuda']+=$var2["deuda"];
+								$totales[5]['disponibilidad']+=$var2["disponibilidad"];
+
+								$totales[4]['asignacion_anual']+=$var2[11];
+								$totales[4]['aumento']+=$var2["aumento"];
+								$totales[4]['disminucion']+=$var2["disminucion"];
+								$totales[4]['total_asignacion']+=$var2["total_asignacion"];
+								$totales[4]['pre_compromiso']+=$var2["pre_compromiso"];
+								$totales[4]['compromiso']+=$var2["compromiso"];
+								$totales[4]['causado']+=$var2["causado"];
+								$totales[4]['pagado']+=$var2["pagado"];
+								$totales[4]['deuda']+=$var2["deuda"];
+								$totales[4]['disponibilidad']+=$var2["disponibilidad"];
+
+								 $totales[3]['asignacion_anual']+=$var2[11];
+								 $totales[3]['aumento']+=$var2["aumento"];
+								 $totales[3]['disminucion']+=$var2["disminucion"];
+								 $totales[3]['total_asignacion']+=$var2["total_asignacion"];
+								 $totales[3]['pre_compromiso']+=$var2["pre_compromiso"];
+								 $totales[3]['compromiso']+=$var2["compromiso"];
+								 $totales[3]['causado']+=$var2["causado"];
+								 $totales[3]['pagado']+=$var2["pagado"];
+								 $totales[3]['deuda']+=$var2["deuda"];
+								 $totales[3]['disponibilidad']+=$var2["disponibilidad"];
+
+								  $totales[2]['asignacion_anual']+=$var2[11];
+								  $totales[2]['aumento']+=$var2["aumento"];
+								  $totales[2]['disminucion']+=$var2["disminucion"];
+								  $totales[2]['total_asignacion']+=$var2["total_asignacion"];
+								  $totales[2]['pre_compromiso']+=$var2["pre_compromiso"];
+								  $totales[2]['compromiso']+=$var2["compromiso"];
+								  $totales[2]['causado']+=$var2["causado"];
+								  $totales[2]['pagado']+=$var2["pagado"];
+								  $totales[2]['deuda']+=$var2["deuda"];
+								  $totales[2]['disponibilidad']+=$var2["disponibilidad"];
+
+								  $totales[1]['asignacion_anual']+=$var2[11];
+								  $totales[1]['aumento']+=$var2["aumento"];
+								  $totales[1]['disminucion']+=$var2["disminucion"];
+								  $totales[1]['total_asignacion']+=$var2["total_asignacion"];
+								  $totales[1]['pre_compromiso']+=$var2["pre_compromiso"];
+								  $totales[1]['compromiso']+=$var2["compromiso"];
+								  $totales[1]['causado']+=$var2["causado"];
+								  $totales[1]['pagado']+=$var2["pagado"];
+								  $totales[1]['deuda']+=$var2["deuda"];
+								  $totales[1]['disponibilidad']+=$var2["disponibilidad"];
+
+
+	}//fin foreach cfpd05
+
+
+
+$fpdf->SetFont('vera','B',9);
+    $fpdf->Cell(130,8,"Total",'TRBL',0,'R');
+    $fpdf->SetFont('vera','B',6);
+    $fpdf->Cell(25,8,$sisap->Formato2($totales[1]['asignacion_anual']),'TLRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['aumento']),'TRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['disminucion']),'TRB',0,'R');//
+	$fpdf->Cell(23,8,$sisap->Formato2($totales[1]['total_asignacion']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['pre_compromiso']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['compromiso']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['causado']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['pagado']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales[1]['deuda']),'TRB',0,'R');//
+    $fpdf->Cell(0,8,$sisap->Formato2($totales[1]['disponibilidad']),'TLRB',1,'R');//
+
+
+
+
+$fpdf->OutPut('disponibilidad_presupuestaria'.date("d-m-Y").".pdf",'D');
+
+
+
+
+ } ?>

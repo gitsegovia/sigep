@@ -1,0 +1,109 @@
+<?php
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	//$titulo_A = "BOLETIN DE NOTIFICACIÓN";
+       	//$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+    }
+
+    function recibo_hacienda($posicion=null, $data1=null,$sisap){
+
+	$img_dependencia_o='/var/www/imagen_solvencia.png';
+	$this->Image($img_dependencia_o,0,0,0);
+
+	$this->Cell(0,17,'','',1,'L');
+	$this->Cell(157,7,'','',0,'C');
+	$this->SetFont('vera','B',17);
+	$this->Cell(0,7,'00000001 ','',1,'L');///aqui numero de solvencia
+
+	$this->Cell(0,24,'','',1,'L');
+	$this->Cell(148,9,'','',0,'C');
+
+	$this->SetFont('vera','',10);
+	//Fecha de Expedicion
+	$this->Cell(9,9,'01','',0,'C');//Dia
+	$this->Cell(10,9,'12','',0,'C');//Mes
+	$this->Cell(13,9,'2010','',0,'C');//Año
+	//Fecha de Hasta
+	$this->Cell(9,9,'01','',0,'C');//Dia
+	$this->Cell(10,9,'01','',0,'C');//Mes
+	$this->Cell(0,9,'2010','',1,'C');//Año
+
+	//Conforme a disposiciones legales se expide este documento a:
+	$this->SetFont('vera','',8);
+	$this->Cell(43,17,'','',0,'L');
+	$this->Cell(30,17,'','',0,'L');
+	$this->Cell(0,17,'','',1,'L');
+
+
+	$this->Cell(0,5,'','',1,'L');
+
+
+///Ubicacion geografica
+	$this->SetFont('vera','',7);
+	$this->Cell(50,5,'San fernando','',0,'L');//Lugar
+	$this->Cell(31,5,'apure','',0,'L');//Estado
+	$this->Cell(36,5,'Municipio','',0,'L');//Municipio
+	$this->Cell(36,5,'Parroquia','',0,'L');//Parroquia
+	$this->Cell(0,5,'El Bostero','',1,'L');//Centro Poblado
+
+
+	$this->Cell(0,4,'','',1,'L');
+
+	//direccion
+	$this->SetFont('vera','',7);
+	$this->Cell(0,4,'Avenida francisco de miranda transversal 21, al lado del C.C. Apure','',1,'L');//Direccion
+
+
+	$this->Cell(0,4,'','',1,'L');
+
+	$la="vjnjaevkle hgvegoejiogj jegergj hgjg jgijergg j jgiejg   geigj jegvidj divjvj j erigj bvjdjidjv jdvjjdv dvjdjvijd jvdjvj djviodjvjdijv vjjv djbvidjfvi ";
+
+	$this->SetFont('vera','',7);
+	$this->Cell(1,40,"",'',0);
+			$varX = $this->GetX();
+			$varY = $this->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$this->Cell(101,1,"",'',2,'C');
+			$this->MultiCell(101,3,$la,'','L');//Direccion
+			$varX = $varX+101;
+			$this->SetXY($varX,$varY);
+
+	$this->Cell(0,11,'un tal tal que tal','',1,'L');//Direccion
+
+
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(0);
+$pdf->SetLeftMArgin(0);
+$pdf->SetRightMargin(0);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$data="array con los datos a imprimir...";
+//pr($datos1);
+//pr($datos2);
+$pdf->recibo_hacienda(1, null,$sisap);
+//$pdf->recibo_hacienda(2, $datos1,$sisap);
+
+
+$pdf->Output('recibo_solvencia_'.date("dmY-hi").'.pdf','D');//Poner nombre y la opcion D
+?>

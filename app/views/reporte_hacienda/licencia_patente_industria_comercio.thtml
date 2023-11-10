@@ -1,0 +1,266 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	//$titulo_A = "LIQUIDACIÓN PREVIA";
+       	//$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+$escudo_array      = top_reporte_escudo(2);
+$escudo            = $escudo_array["escudo"];
+// $escudo='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_1_3_50_13.jpg'
+$pdf->Image($escudo, 12, 18, 23, 23);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,5,'REPÚBLICA BOLIVARIANA DE VENEZUELA','',1,'C');
+$pdf->Cell(0,5,'ESTADO '.$deno_estado,'',1,'C');
+$pdf->Cell(0,5,$_SESSION['entidad_federal'],'',1,'C');
+$pdf->Cell(0,5,'DIRECCIÓN DE HACIENDA MUNICIPAL','',1,'C');
+
+
+$pdf->Ln(6);
+
+
+//----------- SOLICITUD --------------
+$nombre_representante_legal = $datos_solicitud[0]['v_shd100_solicitud']['nombres_apellidos'];
+$cedula_representante = $datos_solicitud[0]['v_shd100_solicitud']['cedula_identidad'];
+$registro_mercantil = $datos_solicitud[0]['v_shd100_solicitud']['registro_mercantil'];
+
+$horario=array('0'=>'01:00AM','1'=>'02:00AM','2'=>'03:00AM','3'=>'04:00AM','4'=>'05:00AM','5'=>'06:00AM','6'=>'07:00AM','7'=>'08:00AM','8'=>'09:00AM','9'=>'10:00AM','10'=>'11:00AM','11'=>'12:00AM',
+				'12'=>'01:00PM','13'=>'02:00PM','14'=>'03:00PM','15'=>'04:00PM','16'=>'05:00PM','17'=>'06:00PM','18'=>'07:00PM','19'=>'08:00PM','20'=>'09:00PM','21'=>'10:00PM','22'=>'11:00PM','23'=>'12:00PM');
+
+$hora_desde = $datos_solicitud[0]['v_shd100_solicitud']['horario_trab_desde'];
+$hora_hasta = $datos_solicitud[0]['v_shd100_solicitud']['horario_trab_hasta'];
+
+//----------- PATENTE ----------------
+$numero_patente = $datos_pantente[0]['v_shd100_patente']['numero_patente'];
+//$fecha_patente = $sisap->cambia_fecha($datos_pantente[0]['v_shd100_patente']['fecha_patente']);
+$fecha_patente = date('d/m/Y');
+$razon_social = $datos_pantente[0]['v_shd100_patente']['deno_razon'];
+$rif_contribuyente = $datos_pantente[0]['v_shd100_patente']['rif_cedula'];
+$direccion = $datos_pantente[0]['v_shd100_patente']['numero_casa'];
+
+$estado = $datos_pantente[0]['v_shd100_patente']['deno_estado'];
+$municipio = $datos_pantente[0]['v_shd100_patente']['deno_municipio'];
+$parroquia = $datos_pantente[0]['v_shd100_patente']['deno_parroquia'];
+$centro_poblado = $datos_pantente[0]['v_shd100_patente']['deno_centro_poblado'];
+$calle = $datos_pantente[0]['v_shd100_patente']['deno_calle'];
+$vereda = $datos_pantente[0]['v_shd100_patente']['deno_vereda'];
+
+$monto_mensual = $datos_pantente[0]['v_shd100_patente']['monto_mensual'];
+$monto_estimado_anual = $monto_mensual*12;
+$monto_estimado_trimestral = $monto_estimado_anual/4;
+
+//---------- ACTIVIDADES PATENTE ----------
+$deno_actividad='';
+$cod_clasificador_actividad='';
+$alicuota = isset($actividades_patente[0]['v_shd100_patente_actividades']['alicuota']) ? $actividades_patente[0]['v_shd100_patente_actividades']['alicuota'] : '';
+foreach($actividades_patente as $act){
+	$cod_clasificador_actividad .= mascara($act['v_shd100_patente_actividades']['cod_actividad'],2).' ';
+	$deno_actividad .= $act['v_shd100_patente_actividades']['deno_actividad'].'. ';
+}
+
+//$num_patente = $datos_pantente[0]['shd100_patente_actividades'][''];
+//$num_patente = $datos_pantente[0]['shd100_patente_actividades'][''];
+
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(120,4,'','',0);
+$pdf->Cell(0,4,'NRO DE LICENCIA','TRL',1,'C');
+
+$pdf->Cell(120,2,'','',0);
+$pdf->Cell(0,2,'','RL',1,'C');
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(10,4,'','',0);
+$pdf->Cell(110,5,'  COLOCAR LA PRESENTE EN UN LUGAR VISIBLE','',0);
+$pdf->Cell(0,5,$numero_patente,'RL',1,'C');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(120,5,'','',0);
+$pdf->Cell(20,5,' FECHA: ','TBL',0,'L');
+$pdf->Cell(0,5,' '.$fecha_patente,'TRB',1,'L');
+
+$pdf->Cell(120,4,'','',0);
+$pdf->Cell(0,5,'RENOVACIÓN ANUAL','RBL',1,'C');
+
+
+$pdf->Ln(8);
+
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(10,4,'','',0);
+$pdf->MultiCell(180,5,"LICENCIA PARA EL EJERCICIO DE ACTIVIDADES ECONÓMICAS DE INDUSTRIA, COMERCIO, SERVICIO O DE ÍNDOLE SIMILAR",'','C');
+
+
+$pdf->Ln(1);
+
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(120,6,'RAZÓN SOCIAL O DENOMINACIÓN','TRL',0,'L');
+$pdf->Cell(0,6,'RIF. DE CONTRIBUYENTE','TR',1,'L');
+$pdf->Cell(120,2,'','RL',0);
+$pdf->Cell(0,2,'','R',1);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(120,5,$razon_social,'RL',0);
+$pdf->Cell(0,5,$rif_contribuyente,'R',1);
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,'DIRECCION','TRBL',1,'C');
+$pdf->SetFont('vera','B',7);
+//$pdf->MultiCell(196,5,$direccion,'RL','L');
+$pdf->Cell(19,4,'ESTADO:','L',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(73,4,$estado,'',0);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(28,4,'CENTRO POBLADO:','',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,4,$centro_poblado,'R',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(19,4,'MUNICIPIO:','L',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(73,4,$municipio,'',0);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(28,4,'CALLE AVENIDA:','',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,4,$calle,'R',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(19,4,'PARROQUIA:','L',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(73,4,$parroquia,'',0);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(28,4,'VEREDA O EDIF:','',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,4,$vereda,'R',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(19,4,'','L',0);
+$pdf->Cell(73,4,'','',0);
+$pdf->Cell(28,4,'Nro. CASA/LOCAL:','',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,4,$direccion,'R',1);
+
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(0,6,'DATOS DEL REGISTRO MERCANTIL','TRL',1,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(1,10,'','L',0);
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(194,1,"",'',2,'C');
+	$pdf->MultiCell(194,3,$registro_mercantil,'','L');
+	$varX = $varX+194;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,10,'','R',1);
+//$pdf->Cell(60,5,'N:10','L',0);
+//$pdf->Cell(60,5,'TOMO: 133-A','',0);
+//$pdf->Cell(0,5,'FECHA 28 DE MAYO DE 1.996','R',1);
+
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(120,6,'NOMBRE DEL REPRESENTANTE LEGAL:','TRL',0,'L');
+$pdf->Cell(0,6,'CÉDULA DE IDENTIDAD:','TR',1,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(120,5,$nombre_representante_legal,'RL',0);
+$pdf->Cell(0,5,$cedula_representante,'R',1);
+
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(0,6,'ACTIVIDAD ECONÓMICA QUE REALIZA EL CONTRIBUYENTE:','TRL',1,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(1,18,'','L',0);
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(194,1,"",'',2,'C');
+	$pdf->MultiCell(193,4,$deno_actividad,'','L');
+	$varX = $varX+194;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,18,'','R',1);
+
+
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(120,6,'CÓDIGO DEL CLASIFICADOR DE ACTIVIDADES ECONÓMICAS:','TRL',0,'L');
+$pdf->Cell(19,6,'ALÍCUOTA:','TRL',0,'C');
+$pdf->Cell(0,6,'HORARIO:','TR',1,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(120,5,$cod_clasificador_actividad,'RL',0);
+$pdf->Cell(19,5,$alicuota.' %','RL',0,'C');
+
+
+//echo $hora_desde;
+//echo $hora_hasta;
+
+$pdf->Cell(26,5,'DESDE: '.$horario[$hora_desde],'',0);
+$pdf->Cell(0,5,'  HASTA: '.$horario[$hora_hasta],'R',1);
+
+$monto_estimado_anual = $monto_mensual*12;
+$monto_estimado_trimestral = $monto_estimado_anual/4;
+
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(120,6,'MONTO ANUAL PARA EL EJERCICIO ECONÓMICO '.date('Y').':','TRL',0,'L');
+$pdf->Cell(0,6,'MONTO A PAGAR TRIMESTRALMENTE:','TR',1,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(120,6,'Bs.F: '.$sisap->Formato2($monto_estimado_anual),'RBL',0);
+$pdf->Cell(0,6,'Bs.F: '.$sisap->Formato2($monto_estimado_trimestral),'RB',1);
+
+
+$pdf->Ln(8);
+$pdf->SetFont('vera','',8);
+
+
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==3 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==13){
+	// PARA LA ALCALDIA DE FREITES
+	$pdf->MultiCell(196,3,"DE CONFORMIDAD CON LO ESTABLECIDO EN EL ARTÍCULO 44 DE LA ORDENANZA DE IMPUESTOS SOBRE ACTIVIDADES Económicas de Industria, Comercio, Servicio o de índole similar, del Municipio Pedro María Freites del Estado Anzoátegui y cumplidos los requisitos exigidos en la misma, se concede la presente Licencia al contribuyente Sociedad Mercantil  $razon_social  En consecuencia, se prohibe el ejercicio de una actividad económica distinta a la autorizada, asi como el ejercicio de actividades que por su indole o situación alteren el orden público, perturben la tranquilidad de los vecinos",'','J');
+}else{
+	// PARA OTRAS ALCALDIAS
+	$pdf->MultiCell(196,3,"DE CONFORMIDAD CON LO ESTABLECIDO EN LA ORDENANZA DE IMPUESTOS SOBRE ACTIVIDADES Económicas de Industria, Comercio, Servicio o de índole similar, y cumplidos los requisitos exigidos en la misma, se concede la presente Licencia al contribuyente Sociedad Mercantil  $razon_social  En consecuencia, se prohibe el ejercicio de una actividad económica distinta a la autorizada, asi como el ejercicio de actividades que por su indole o situación alteren el orden público, perturben la tranquilidad de los vecinos",'','J');
+}
+
+
+$pdf->Ln(8);
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->MultiCell(196,3,'"EL incumplimiento de las dispocisiones legales establecidas en la Ordenanza de Impuestos sobre Actividades Económicas de Industria, Comercio, Servicios o de índole similar vigente dará lugar a la aplicación de las sanciones correspondientes".','','J');
+
+
+$pdf->Ln(10);
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,$nombre_firmante,'',1,'C');
+$pdf->Cell(0,5,$cargo_firmante,'',1,'C');
+$pdf->Cell(0,5,$resolucion,'',1,'C');
+
+$pdf->Output('licencia_de_actividades_economicas_industria_comercio_'.date('d-m-Y').'.pdf','D');
+?>

@@ -1,0 +1,76 @@
+<style type="text/css">
+.cuatro{
+	text-align:center;
+	color: #000;
+	margin: 0;
+	padding: 60px 0;
+	font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	font-size: 0.8em;
+	}
+	 a {
+		color: #FF0000;
+		font-weight: bold;
+		}
+	.dos {
+		font-weight: normal;
+		color: #CC0000;
+		font-size: 1.6em
+		}
+	.uno {
+		font-weight: normal;
+		color: #000;
+		font-size: 1.6em;
+		}
+		.tres {
+		font-weight: normal;
+		color: #086482;
+		font-size: 0.8em;
+		}
+		.error_404 {
+		font-weight: normal;
+		color: #000;
+		font-size: 3em;
+		}
+</style>
+<br>
+<?php
+//print_r($_SERVER);
+/**/
+/**/
+Vendor('phpmailer/mailsisap');
+$mensaje ="";
+$mensaje .= sprintf("<div>HTTP_HOST: <b>%s</b> </div>",      isset($_SERVER['HTTP_HOST'])?$_SERVER['HTTP_HOST']:'VACIO');
+$mensaje .= sprintf("<div>REQUEST_URI: <b>%s</b> </div>",    isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'VACIO');
+$mensaje .= sprintf("<div>REDIRECT_STATUS: <b>%s</b> </div>",isset($_SERVER['REDIRECT_STATUS'])?$_SERVER['REDIRECT_STATUS']:'VACIO');
+$mensaje .= sprintf("<div>HTTP_USER_AGENT:<b>%s</b> </div>",isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:'VACIO');
+$mensaje .= sprintf("<div>HTTP_REFERER: <b>%s</b> </div>",   isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:'VACIO');
+$mensaje .= sprintf("<div>RESQ_URI: <b>%s</b> </div>",$_REQUEST['url']);
+$mensaje .= sprintf("<div>USUARIO: <b>%s</b> </div>",   isset($_SESSION["nom_usuario"])?$_SESSION["nom_usuario"]:'VACIO');
+$mensaje .= sprintf("<div>DEP: <b>%s</b> </div>",   isset($_SESSION["SScoddep"])?$_SESSION["SScoddep"]:'VACIO');
+$mensaje .= sprintf("<div>IP: <b>%s</b> </div>",   isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'VACIO');
+
+$destinatarios[]=array('email'=>'jbvargas495@yahoo.com','nombre'=>'Ing. José Benjamín Vargas');
+
+$mailsisap = new MailSisap();
+$mailsisap->Asunto             = "Error SISAP";
+$mailsisap->Mensaje            = '<div style="text-align:left; color:red;font-size:15px;">SE HA ENCONTRADO ERROR 404:</div>'.$mensaje.' <br/>'.$mailsisap->obtener_ip();
+$mailsisap->Destinatario       = $destinatarios;
+$mailsisap->mensaje_retorno = 'Se ha enviado una notificaci&oacute;n al administrador sobre el error';
+$result = $mailsisap->sendgmail();
+/**/
+?>
+
+<? $html->OpenTable('650')?>
+<?= $html->image('error.png',array('title'=>'Error','width'=>'60','height'=>'60'))?>
+<br>
+            <span class="error_404">Error 404</span><br>
+            <span class="uno">Documento no encontrado</span><br>
+            <span class="dos">El directorio web <span class="tres">/<?= $_REQUEST['url']?></span> no fue encontrado.</span>
+            <br><?=$result?>
+            <?php echo $model;?>
+            <br><br><br>
+<? $html->CloseTable()?>
+<?if(isset($_SESSION['Usuario'])){?>
+<input name="SALIR" value="" src="" id="buttonSalir" class="salir_input" onclick="javascript:ver_documento('/modulos/vacio','principal'); " title="Salir" type="button">
+<?}?>
+

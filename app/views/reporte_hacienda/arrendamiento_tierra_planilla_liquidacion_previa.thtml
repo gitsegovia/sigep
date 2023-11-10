@@ -1,0 +1,822 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"Planilla de liquidaci&oacute;n previa","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/arrendamiento_tierra_planilla_liquidacion_previa/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+
+<table width="30%">
+	<tr>
+		<td align="center"><b>Ano:</b></td>
+		<td align="center"><?= $html->selectTag('reporte_hacienda/ano', $ano, $ano_arranque, $selectAttr = array(),  $optionAttr = array(), $showEmpty = true, $return = false);  ?></td>
+	</tr>
+	<tr>
+		<td align="center"><b>Mes:</b></td>
+		<td align="center"><?= $html->selectTag('reporte_hacienda/mes', $mes, $mes_arranque, $selectAttr = array(),  $optionAttr = array(), $showEmpty = true, $return = false);  ?></td>
+	</tr>
+	<tr>
+		<td align="center" colspan="2"><br /><?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Todo','2'=>'Un contribuyente'), array('url1'=>'/reporte_hacienda/ventana_reporte_patente_1/', 'update1'=>'funcion', 'url2'=>'/reporte_hacienda/vacio', 'update2'=>'div_contribuyente', 'id'=>'tipo_busqueda'), null, $opc=1); ?></td>
+	</tr>
+</table>
+<br />
+<div id="funcion"></div>
+<div id="div_contribuyente">&nbsp;</div>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	//$titulo_A = "LIQUIDACIÓN PREVIA";
+       	//$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+    }
+
+    function Formato2($monto){
+		$aux = $monto.'';
+		$monto =  sprintf("%01.3f",$monto);
+		for($i=0; $i<strlen($aux); $i++){
+			if($aux[$i]=='.'){
+				if(isset($aux[$i+3])){
+					if($aux[$i+3]=='5'){$monto += 0.001; break;}
+				}
+			}
+		}
+		$var = number_format($monto,2,",",".");
+		return $var;
+	}
+
+	function cambia_fecha($var=null){
+		$fecha = $var;
+		$mes = '';
+		$year = '';
+		if($fecha!=''){
+		$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+		$mes = $fecha[5].$fecha[6];
+		$dia = $fecha[8].$fecha[9];
+		$var = $dia.'/'.$mes.'/'.$year;
+		if($var=="01/01/1900"){$var="00/00/000";}
+		return $var;
+		}
+	}
+
+	function mascara_seis($var1){
+		$var = strlen($var1);
+		switch($var){
+		case '1';{$var1 = '00000'.$var1; }break;
+		case '2';{$var1 = '0000'.$var1; }break;
+		case '3';{$var1 = '000'.$var1; }break;
+		case '4';{$var1 = '00'.$var1; }break;
+		case '5';{$var1 = '0'.$var1; }break;
+		case '6';{$var1 = ''.$var1; }break;
+		}
+		return $var1;
+	}
+
+	function unidad($numuero) {
+	  switch ($numuero) {
+	    case 9: {
+	      $numu = "NUEVE";
+	      break;
+	    }
+	    case 8: {
+	      $numu = "OCHO";
+	      break;
+	    }
+	    case 7: {
+	      $numu = "SIETE";
+	      break;
+	    }
+	    case 6: {
+	      $numu = "SEIS";
+	      break;
+	    }
+	    case 5: {
+	      $numu = "CINCO";
+	      break;
+	    }
+	    case 4: {
+	      $numu = "CUATRO";
+	      break;
+	    }
+	    case 3: {
+	      $numu = "TRES";
+	      break;
+	    }
+	    case 2: {
+	      $numu = "DOS";
+	      break;
+	    }
+	    case 1: {
+	      $numu = "UN";
+	      break;
+	    }
+	    case 0: {
+	      $numu = "";
+	      break;
+	    }
+	  }
+	  return $numu;
+	}
+
+	// Función que permite específicar las letras correspondientes a las decenas de la cifra a convertir
+	function decena($numdero) {
+	  if ($numdero >= 90 && $numdero <= 99) {
+	    $numd = "NOVENTA ";
+	    if ($numdero > 90)
+	      $numd = $numd."Y ".($this->unidad($numdero - 90));
+	  }
+	  else if ($numdero >= 80 && $numdero <= 89) {
+	    $numd = "OCHENTA ";
+	    if ($numdero > 80)
+	      $numd = $numd."Y ".($this->unidad($numdero - 80));
+	  }
+	  else if ($numdero >= 70 && $numdero <= 79) {
+	    $numd = "SETENTA ";
+	    if ($numdero > 70)
+	      $numd = $numd."Y ".($this->unidad($numdero - 70));
+	  }
+	  else if ($numdero >= 60 && $numdero <= 69) {
+	    $numd = "SESENTA ";
+	    if ($numdero > 60)
+	      $numd = $numd."Y ".($this->unidad($numdero - 60));
+	  }
+	  else if ($numdero >= 50 && $numdero <= 59) {
+	    $numd = "CINCUENTA ";
+	    if ($numdero > 50)
+	      $numd = $numd."Y ".($this->unidad($numdero - 50));
+	  }
+	  else if ($numdero >= 40 && $numdero <= 49) {
+	    $numd = "CUARENTA ";
+	    if ($numdero > 40)
+	      $numd = $numd."Y ".($this->unidad($numdero - 40));
+	  }
+	  else if ($numdero >= 30 && $numdero <= 39) {
+	    $numd = "TREINTA ";
+	    if ($numdero > 30)
+	      $numd = $numd."Y ".($this->unidad($numdero - 30));
+	  }
+	  else if ($numdero >= 20 && $numdero <= 29) {
+	    if ($numdero == 20)
+	      $numd = "VEINTE ";
+	    else
+	      $numd = "VEINTI".($this->unidad($numdero - 20));
+	  }
+	  else if ($numdero >= 10 && $numdero <= 19) {
+	    switch ($numdero) {
+	      case 10: {
+	        $numd = "DIEZ ";
+	        break;
+	      }
+	      case 11: {
+	        $numd = "ONCE ";
+	        break;
+	      }
+	      case 12: {
+	        $numd = "DOCE ";
+	        break;
+	      }
+	      case 13: {
+	        $numd = "TRECE ";
+	        break;
+	      }
+	      case 14: {
+	        $numd = "CATORCE ";
+	        break;
+	      }
+	      case 15: {
+	        $numd = "QUINCE ";
+	        break;
+	      }
+	      case 16: {
+	        $numd = "DIECISEIS ";
+	        break;
+	      }
+	      case 17: {
+	        $numd = "DIECISIETE ";
+	        break;
+	      }
+	      case 18: {
+	        $numd = "DIECIOCHO ";
+	        break;
+	      }
+	      case 19: {
+	        $numd = "DIECINUEVE ";
+	        break;
+	      }
+	    }
+	  }
+	  else
+	    $numd = $this->unidad($numdero);
+	  return $numd;
+	}
+
+
+	// Función que permite específicar las letras correspondientes a las centenas de la cifra a convertir
+	function centena($numc) {
+	  if ($numc >= 100) {
+	    if ($numc >= 900 && $numc <= 999) {
+	      $numce = "NOVECIENTOS ";
+	      if ($numc > 900)
+	        $numce = $numce.($this->decena($numc - 900));
+	    }
+	    else if ($numc >= 800 && $numc <= 899) {
+	      $numce = "OCHOCIENTOS ";
+	      if ($numc > 800)
+	        $numce = $numce.($this->decena($numc - 800));
+	    }
+	    else if ($numc >= 700 && $numc <= 799) {
+	      $numce = "SETECIENTOS ";
+	      if ($numc > 700)
+	        $numce = $numce.($this->decena($numc - 700));
+	    }
+	    else if ($numc >= 600 && $numc <= 699) {
+	      $numce = "SEISCIENTOS ";
+	      if ($numc > 600)
+	        $numce = $numce.($this->decena($numc - 600));
+	    }
+	    else if ($numc >= 500 && $numc <= 599) {
+	      $numce = "QUINIENTOS ";
+	      if ($numc > 500)
+	        $numce = $numce.($this->decena($numc - 500));
+	    }
+	    else if ($numc >= 400 && $numc <= 499) {
+	      $numce = "CUATROCIENTOS ";
+	      if ($numc > 400)
+	        $numce = $numce.($this->decena($numc - 400));
+	    }
+	    else if ($numc >= 300 && $numc <= 399) {
+	      $numce = "TRESCIENTOS ";
+	      if ($numc > 300)
+	        $numce = $numce.($this->decena($numc - 300));
+	    }
+	    else if ($numc >= 200 && $numc <= 299) {
+	      $numce = "DOSCIENTOS ";
+	      if ($numc > 200)
+	        $numce = $numce.($this->decena($numc - 200));
+	    }
+	    else if ($numc >= 100 && $numc <= 199) {
+	      if ($numc == 100)
+	        $numce = "CIEN ";
+	      else
+	        $numce = "CIENTO ".($this->decena($numc - 100));
+	    }
+	  }
+	  else
+	    $numce = $this->decena($numc);
+	  return $numce;
+	}
+
+	// Función que permite específicar las letras correspondientes a las unidades de mil de la cifra a convertir
+	function miles($nummero) {
+	  if ($nummero >= 1000 && $nummero < 2000) {
+	    $numm = "MIL ".($this->centena($nummero%1000));
+	  }
+	  if ($nummero >= 2000 && $nummero <10000) {
+	    $numm = $this->unidad(Floor($nummero/1000))." MIL ".($this->centena($nummero%1000));
+	  }
+	  if ($nummero < 1000)
+	    $numm = $this->centena($nummero);
+	  return $numm;
+	}
+
+	// Función que permite específicar las letras correspondientes a las decenas de mil de la cifra a convertir
+	function decmiles($numdmero) {
+	  if ($numdmero == 10000)
+	    $numde = "DIEZ MIL";
+	  if ($numdmero > 10000 && $numdmero <20000) {
+	    $numde = $this->decena(Floor($numdmero/1000))."MIL ".($this->centena($numdmero%1000));
+	  }
+	  if ($numdmero >= 20000 && $numdmero <100000) {
+	    $numde = $this->decena(Floor($numdmero/1000))." MIL ".($this->miles($numdmero%1000));
+	  }
+	  if ($numdmero < 10000)
+	    $numde = $this->miles($numdmero);
+	  return $numde;
+	}
+
+	// Función que permite específicar las letras correspondientes a las centenas de mil de la cifra a convertir
+	function cienmiles($numcmero) {
+	  if ($numcmero == 100000)
+	    $num_letracm = "CIEN MIL";
+	  if ($numcmero >= 100000 && $numcmero <1000000) {
+	    $num_letracm = $this->centena(Floor($numcmero/1000))." MIL ".($this->centena($numcmero%1000));
+	  }
+	  if ($numcmero < 100000)
+	    $num_letracm = $this->decmiles($numcmero);
+	  return $num_letracm;
+	}
+
+	// Función que permite específicar las letras correspondientes a las unidades de millón de la cifra a convertir
+	function millon($nummiero) {
+	  if ($nummiero >= 1000000 && $nummiero <2000000) {
+	    $num_letramm = "UN MILLON ".($this->cienmiles($nummiero%1000000));
+	  }
+	  if ($nummiero >= 2000000 && $nummiero <10000000) {
+	    $num_letramm = $this->unidad(Floor($nummiero/1000000))." MILLONES ".($this->cienmiles($nummiero%1000000));
+	  }
+	  if ($nummiero < 1000000)
+	    $num_letramm = $this->cienmiles($nummiero);
+	  return $num_letramm;
+	}
+
+	// Función que permite específicar las letras correspondientes a las decenas de millón de la cifra a convertir
+	function decmillon($numerodm) {
+	  if ($numerodm == 10000000)
+	    $num_letradmm = "DIEZ MILLONES";
+	  if ($numerodm > 10000000 && $numerodm <20000000) {
+	    $num_letradmm = $this->decena(Floor($numerodm/1000000))."MILLONES ".($this->cienmiles($numerodm%1000000));
+	  }
+	  if ($numerodm >= 20000000 && $numerodm <100000000) {
+	    $num_letradmm = $this->decena(Floor($numerodm/1000000))." MILLONES ".($this->millon($numerodm%1000000));
+	  }
+	  if ($numerodm < 10000000)
+	    $num_letradmm = $this->millon($numerodm);
+	  return $num_letradmm;
+	}
+
+	// Función que permite específicar las letras correspondientes a las centenas de millón de la cifra a convertir
+	function cienmillon($numcmeros) {
+	  if ($numcmeros == 100000000)
+	    $num_letracms = "CIEN MILLONES";
+	  if ($numcmeros >= 100000000 && $numcmeros <1000000000) {
+	    $num_letracms = $this->centena(Floor($numcmeros/1000000))." MILLONES ".($this->millon($numcmeros%1000000));
+	  }
+	  if ($numcmeros < 100000000)
+	    $num_letracms = $this->decmillon($numcmeros);
+	  return $num_letracms;
+	}
+
+	// Función que permite específicar las letras correspondientes a las unidades del millardo de la cifra a convertir
+	function milmillon($nummierod) {
+	  if ($nummierod >= 1000000000 && $nummierod <2000000000) {
+	    $num_letrammd = "MIL ".($this->cienmillon($nummierod%1000000000));
+	  }
+	  if ($nummierod >= 2000000000 && $nummierod <10000000000) {
+	    $num_letrammd = $this->unidad(Floor($nummierod/1000000000))." MIL ".($this->cienmillon($nummierod%1000000000));
+	  }
+	  if ($nummierod < 1000000000)
+	    $num_letrammd = $this->cienmillon($nummierod);
+	  return $num_letrammd;
+	}
+
+	function convertir($numero){
+		$cantidad=explode(".",$numero);
+		$numf = $this->milmillon($cantidad[0]);
+		if(!isset($cantidad[1])){$cantidad[1]=0;}
+			$n=$this->decena($cantidad[1]);
+			if($cantidad[0]==0){
+				return $n." CENTIMOS" ;
+			}else if($cantidad[0]==1){
+				if($cantidad[1]!=""){
+			       $n=$cantidad[1]==0 ? "CERO" : $n;
+			       return $numf." BOLIVAR CON ".$n." CENTIMOS" ;
+			   }else{
+			      return $numf." BOLIVAR ";
+			   }
+		  }else{
+		      if($cantidad[1]!=""){
+			       $n=$cantidad[1]==0 ? "CERO" : $n;
+			       return $numf." BOLIVARES CON ".$n." CENTIMOS" ;
+			   }else{
+			      return $numf." BOLIVARES ";
+			   }
+	       }
+	}
+
+    function recibo($posicion=null, $datos=null){
+	$img_dependencia_o='/var/www/sigep/app/webroot/img/catsp0/logo_derecho.jpg';
+	$codigo_bar=$this->mascara_seis($datos['numero_planilla']).''.$this->cambia_fecha($datos['fecha_emision']);
+	if($posicion==1){
+		$var_x=10;
+		$var_y=12;
+		$this->SetXY($var_x,$var_y);
+		//$this->Image($img_dependencia_o,$var_x,$var_y,18,18);
+		$this->image_escudo_sin_consolidado($var_x+1,$var_y+1,16,16);
+		$this->writeBarcode(169, 25, 35, 5, "C39", "", "", "", $codigo_bar);
+	}elseif($posicion==2){
+		$var_x=10;
+		$var_y=142;
+		$this->SetXY($var_x,$var_y);
+		//$this->Image($img_dependencia_o,$var_x,$var_y,18,18);
+		$this->image_escudo_sin_consolidado($var_x+1,$var_y+1,16,16);
+		$this->writeBarcode(169, 155, 35, 5, "C39", "", "", "", $codigo_bar);
+	}
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(18,4,"",'TL',0,'L');
+	$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(18,3,"",'L',0,'L');
+	$this->Cell(0,3,$_SESSION["dependencia"],'R',1,'L');
+
+	$this->SetFont('vera','B',10);
+	$this->Cell(0,5,'LIQUIDACIÓN PREVIA','RL',1,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(158,0,'','RL',0);
+	$this->Cell(0,0,$codigo_bar,'RL',1);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'','RBL',1,'R');
+
+	//pr($datos);
+	/*
+	if($tipo_imp==1){
+		$concepto_impuesto="PATENTE DE INDUSTRIA Y COMERCIO";
+	}elseif($tipo_imp==2){
+		$concepto_impuesto="VEHÍCULOS";
+	}elseif($tipo_imp==3){
+		$concepto_impuesto="PROPAGANDA COMERCIAL";
+	}elseif($tipo_imp==4){
+		$concepto_impuesto="INMUEBLE URBANOS";
+	}elseif($tipo_imp==5){
+		$concepto_impuesto="ASEO DOMICILIARIO";
+	}elseif($tipo_imp==6){
+		$concepto_impuesto="ARRENDAMIENTO DE TIERRAS";
+	}elseif($tipo_imp==7){
+		$concepto_impuesto="CRÉDITO DE VIVIENDA";
+	}
+	*/
+
+	$this->Cell(1,7,'','L',0);
+	$varX = $this->GetX();
+	$varY = $this->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$this->SetFont('vera','B',10);
+	$this->Cell(194,2,"",'',2,'C');
+	$this->MultiCell(193,3,"PATENTE DE INDUSTRIA Y COMERCIO",'','C');//--[Concepto impuesto]
+	$varX = $varX+194;
+	$this->SetXY($varX,$varY);
+	$this->Cell(0,7,"",'R',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(49,5,'PLANILLA Nº','TRL',0,'C');
+	$this->Cell(29,5,'FECHA DE EMISIÓN','TR',0,'C');
+	$this->Cell(29,5,'FRECUENCIA PAGO','TR',0,'C');
+	$this->Cell(0,5,'PERIODO DE PAGO','TR',1,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(49,5,$this->mascara_seis($datos['numero_planilla']),'TRL',0,'C');//--[PLANILLA Nº]
+	$this->Cell(29,5,$this->cambia_fecha($datos['fecha_emision']),'TR',0,'C');//--[FECHA DE EMISIÓN]
+
+	if($datos['frecuencia_pago']==1){
+		$this->Cell(29,5,'Mensual','TR',0,'C');//--[FRECUENCIA PAGO]
+		switch($datos['mes']){
+			case '1': $periodo= "ENERO"; break;
+			case '2': $periodo= "FEBRERO"; break;
+			case '3': $periodo= "MARZO"; break;
+			case '4': $periodo= "ABRIL"; break;
+			case '5': $periodo= "MAYO"; break;
+			case '6': $periodo= "JUNIO"; break;
+			case '7': $periodo= "JULIO"; break;
+			case '8': $periodo= "AGOSTO"; break;
+			case '9': $periodo= "SEPTIEMBRE"; break;
+			case '10': $periodo= "OCTUBRE"; break;
+			case '11': $periodo= "NOVIEMBRE"; break;
+			case '12': $periodo= "DICIEMBRE"; break;
+			default : $periodo= ""; break;
+		}
+
+	}elseif($datos['frecuencia_pago']==2){
+		$this->Cell(29,5,'Bimestral','TR',0,'C');//--[FRECUENCIA PAGO]
+		switch($datos['mes']){
+			case '1': $periodo= "ENERO-FEBRERO"; break;
+			case '3': $periodo= "MARZO-ABRIL"; break;
+			case '5': $periodo= "MAYO-JUNIO"; break;
+			case '7': $periodo= "JULIO-AGOSTO"; break;
+			case '9': $periodo= "SEPTIEMBRE-OCTUBRE"; break;
+			case '11': $periodo= "NOVIEMBRE-DICIEMBRE"; break;
+			default : $periodo= ""; break;
+		}
+
+	}elseif($datos['frecuencia_pago']==3){
+		$this->Cell(29,5,'Trimestral','TR',0,'C');//--[FRECUENCIA PAGO]
+		switch($datos['mes']){
+			case '1': $periodo= "1ER. TRIMESTRE"; break;
+			case '4': $periodo= "2DO. TRIMESTRE"; break;
+			case '7': $periodo= "3ER. TRIMESTRE"; break;
+			case '10': $periodo= "4TO. TRIMESTRE"; break;
+			default : $periodo= ""; break;
+		}
+
+	}elseif($datos['frecuencia_pago']==4){
+		$this->Cell(29,5,'Semestral','TR',0,'C');//--[FRECUENCIA PAGO]
+		switch($datos['mes']){
+			case '1': $periodo= "1ER. SEMESTRE"; break;
+			case '6': $periodo= "2DO. SEMESTRE"; break;
+			default : $periodo= ""; break;
+		}
+
+	}elseif($datos['frecuencia_pago']==5){
+		$this->Cell(29,5,'Anual','TR',0,'C');//--[FRECUENCIA PAGO]
+		switch($datos['mes']){
+			case '1': $periodo= "AÑO ".$datos['ano']; break;
+			default : $periodo= ""; break;
+		}
+
+	}else{
+		$this->Cell(29,5,$datos['frecuencia_pago'],'TR',0,'C');//--[FRECUENCIA PAGO]
+	}
+
+	$this->Cell(0,5,$periodo,'TR',1,'C');//--[PERIODO DE PAGO]
+
+	$this->Cell(49,4,'R.I.F. / CÉDULA DE IDENTIDAD','TRL',0,'C');
+	$this->Cell(0,4,'RAZÓN SOCIAL / NOMBRES Y APELLIDOS','TR',1,'C');
+
+	$this->SetFont('vera','',7);
+	$this->Cell(49,5,$datos['rif_cedula'],'TRL',0,'C');//--[R.I.F. / CÉDULA DE IDENTIDAD]
+	$this->Cell(0,5,$datos['razon_social_nombres'],'TR',1,'L');//--[RAZÓN SOCIAL / NOMBRES Y APELLIDOS]
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,4,'DIRECCIÓN','TBRL',1,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(22,4,'País:','RL',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(40,4,$datos['deno_pais'],'R',0,'L');//--[País]
+	$this->SetFont('vera','B',6);
+	$this->Cell(20,4,'Estado:','R',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(55,4,$datos['deno_estado'],'R',0,'L');//--[Estado]
+	$this->SetFont('vera','B',6);
+	$this->Cell(20,4,'Municipio:','R',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(0,4,$datos['deno_municipio'],'R',1);//--[Municipio]
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(22,4,'Parroquia:','TRL',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(60,4,$datos['deno_parroquia'],'TR',0,'L');//--[Parroquia]
+	$this->SetFont('vera','B',6);
+	$this->Cell(35,4,'Centro poblado','TR',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(0,4,$datos['deno_centro_poblado'],'TR',1,'L');//--[Centro poblado]
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(22,4,'Calle/Avenida:','TRL',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(60,4,$datos['deno_calle'],'TR',0,'L');//--[Calle/Avenida]
+	$this->SetFont('vera','B',6);
+	$this->Cell(35,4,'Número Casa/Local','TR',0,'L');
+	$this->SetFont('vera','',6);
+	$this->Cell(0,4,$datos['numero_casa'],'TR',1,'L');//--[Número Casa/Local]
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(49,4,'SOLICITUD Nº','TBRL',0,'C');
+	$this->Cell(0,4,'DATOS DEL ARRENDAMIENTO','TBR',1,'C');
+
+	$this->SetFont('vera','',7);
+	$this->Cell(49,5,$datos['cod_numero_catastral_placas'],'RL',0,'C');//--[SOLICITUD Nº]
+	$this->Cell(0,5,$datos['datos_registro_arrendamiento'],'R',1,'L');//--[DATOS DEL ARRENDAMIENTO]
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,4,'DISTRIBUCIÓN DE LA DEUDA','TBRL',1,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(35,4,'Deuda Vigente','RL',0,'C');
+	$this->Cell(32,4,'Recargo','R',0,'C');
+	$this->Cell(32,4,'Multa','R',0,'C');
+	$this->Cell(32,4,'Intereses','R',0,'C');
+	$this->Cell(32,4,'Descuento','R',0,'C');
+	$this->Cell(0,4,'TOTAL ','R',1,'C');
+
+	$this->SetFont('vera','',6);
+	$this->Cell(35,5,$this->Formato2($datos['deuda_vigente']),'TRL',0,'R');// Deuda Vigente
+	$this->Cell(32,5,$this->Formato2($datos['monto_recargo']),'TR',0,'R');// Recargo
+	$this->Cell(32,5,$this->Formato2($datos['monto_multa']),'TR',0,'R');// Multa
+	$this->Cell(32,5,$this->Formato2($datos['monto_intereses']),'TR',0,'R');// Intereses
+	$this->Cell(32,5,$this->Formato2($datos['monto_descuento']),'TR',0,'R');// Descuento
+	$this->Cell(0,5,$this->Formato2($datos['total']),'TR',1,'R');// TOTAL
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(24,5,'Bolivares','TRL',0,'R');
+	$this->SetFont('vera','',6);
+	$this->Cell(0,5,$this->convertir($datos['total']),'TR',1,'L');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,4,'PLANILLAS PENDIENTES DE PAGO','TBRL',1,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(24,4,'Número','RL',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(24,4,'Número','R',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(24,4,'Número','R',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(24,4,'Número','R',0,'C');
+	$this->Cell(0,4,'','R',1,'C');
+
+	$this->Cell(24,3,'Planilla','RBL',0,'C');
+	$this->Cell(25,3,'Monto','RB',0,'C');
+	$this->Cell(24,3,'Planilla','RB',0,'C');
+	$this->Cell(25,3,'Monto','RB',0,'C');
+	$this->Cell(24,3,'Planilla','RB',0,'C');
+	$this->Cell(25,3,'Monto','RB',0,'C');
+	$this->Cell(24,3,'Planilla','RB',0,'C');
+	$this->Cell(0,3,'Monto','RB',1,'C');
+	$varX_X = $this->GetX();
+	$varY_Y = $this->GetY();
+	$varX=10;
+
+	$this->SetFont('vera','',6);
+
+	$k=1;
+	$x=0;
+
+	if(isset($datos['planillas_pendientes'])){
+		$planillas_pend = count($datos['planillas_pendientes']);
+	}else{
+		$planillas_pend = 0;
+	}
+
+	$i=0;
+	for($i=0; $i<$planillas_pend; $i++){
+		if($k==8){
+			if($x==0){
+				$x++;
+				$this->SetXY($varX_X,$varY_Y);
+			}elseif($x==1){
+				$x++;
+				$this->SetXY($varX_X,$varY_Y);
+			}elseif($x==2){
+				$x++;
+				$this->SetXY($varX_X,$varY_Y);
+			}elseif($x==4){
+				$x++;
+				$this->SetXY($varX_X,$varY_Y);
+			}
+			$k=1;
+			$varX+=49;
+		}
+		$k++;
+		$this->SetX($varX);
+		$this->Cell(24,3,$datos['planillas_pendientes'][$i]['num_planilla'],'RBL',0,'C');
+		$this->Cell(25,3,$this->Formato2($datos['planillas_pendientes'][$i]['monto_planilla']),'RB',1,'R');
+		//$this->Cell(24,3,'00000'.$i,'RB',0,'C');
+		//$this->Cell(25,3,'XXX.XXX.XXX,XX','RB',0,'R');
+		//$this->Cell(24,3,'00000'.$i,'RB',0,'C');
+		//$this->Cell(25,3,'XXX.XXX.XXX,XX','RB',0,'R');
+		//$this->Cell(24,3,'00000'.$i,'RB',0,'C');
+		//$this->Cell(0,3,'XXX.XXX.XXX,XX','RB',1,'R');
+	}
+
+	if($i < 28){
+		for($y=$i; $y<28; $y++){
+			if($k==8){
+				if($x==0){
+					$x++;
+					//$varX_X+=49;
+					$this->SetXY($varX_X,$varY_Y);
+				}elseif($x==1){
+					$x++;
+					//$varX_X+=49;
+					$this->SetXY($varX_X,$varY_Y);
+				}elseif($x==2){
+					$x++;
+					//$varX_X+=49;
+					$this->SetXY($varX_X,$varY_Y);
+				}elseif($x==4){
+					$x++;
+					//$varX_X+=49;
+					$this->SetXY($varX_X,$varY_Y);
+				}
+				$k=1;
+				$varX+=49;
+			}
+			$k++;
+			$this->SetX($varX);
+			$this->Cell(24,3,"",'RBL',0,'C');
+			$this->Cell(25,3,"",'RB',1,'R');
+		}
+	}
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(49,5,'MONTO TOTAL DEUDA','RBL',0,'C');
+	$this->SetFont('vera','',6);
+	$this->Cell(24,5,$this->Formato2($datos['total']),'RB',0,'R');
+	$this->SetFont('vera','B',6);
+	$this->Cell(25,5,'RECAUDADOR:','B',0,'R');
+	$this->SetFont('vera','',6);
+	$this->Cell(0,5,$datos['deno_cobrador'],'RB',1);
+
+   }
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+//$pdf->AddPage();
+
+
+if($cant_registros==0){
+	$pdf->AddPage();
+	$array_imp = array('1'=>'PATENTE DE INDUSTRIA Y COMERCIO','2'=>'VEHÍCULOS','3'=>'PROPAGANDA COMERCIAL','4'=>'INMUEBLE URBANOS','5'=>'ASEO DOMICILIARIO','6'=>'ARRENDAMIENTO DE TIERRAS','7'=>'CRÉDITO DE VIVIENDA');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','B',12);
+	if(isset($control) && $control==0){
+		$pdf->Cell(0,8,$array_imp[$tipo_impuesto],'TRBL',1,'C');
+		$pdf->Ln(5);
+		$pdf->Cell(0,0,'','B',1);
+		$pdf->Cell(30,10,'','L',0);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(134,1,"",'',2,'C');
+			$pdf->MultiCell(134,7,$mensaje,'','C');
+			$varX = $varX+134;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,10,'','R',1);
+	}else{
+		$pdf->Cell(0,8,$array_imp[$tipo_impuesto],'TRBL',1,'C');
+		$pdf->Ln(5);
+		$pdf->Cell(0,10,'No se encontrarón datos','TRL',1,'C');
+		$pdf->Cell(0,10,$mensaje,'RL',1,'C');
+	}
+	$pdf->Cell(0,10,'','RBL',1,'C');
+
+
+}elseif($cant_registros>0){
+
+	for($i=0; $i<$cant_registros; $i++){
+		$planilla_actual[0][0]['rif_cedula'];
+
+		$actual['rif_cedula'] = $planilla_actual[$i][0]['rif_cedula'];
+		$actual['razon_social_nombres'] = $planilla_actual[$i][0]['razon_social_nombres'];
+		//$actual['numero_patente'] = $planilla_actual[$i][0]['numero_patente'];
+		$actual['numero_planilla'] = $planilla_actual[$i][0]['numero_planilla'];
+		$actual['frecuencia_pago'] = $planilla_actual[$i][0]['frecuencia_pago'];
+		$actual['fecha_emision'] = $planilla_actual[$i][0]['fecha_emision'];
+		$actual['mes'] = $planilla_actual[$i][0]['mes'];
+
+		$actual['deno_pais'] = $planilla_actual[$i][0]['deno_pais'];
+		$actual['deno_estado'] = $planilla_actual[$i][0]['deno_estado'];
+		$actual['deno_municipio'] = $planilla_actual[$i][0]['deno_municipio'];
+		$actual['deno_parroquia'] = $planilla_actual[$i][0]['deno_parroquia'];
+		$actual['deno_centro_poblado'] = $planilla_actual[$i][0]['deno_centro'];
+		$actual['deno_calle'] = $planilla_actual[$i][0]['deno_vialidad'];
+		$actual['deno_vereda'] = $planilla_actual[$i][0]['deno_vereda'];
+		$actual['numero_casa'] = $planilla_actual[$i][0]['numero_vivienda_local'];
+		$actual['deno_cobrador'] = $planilla_actual[$i][0]['deno_cobrador'];
+
+		$actual['deuda_vigente'] = $planilla_actual[$i][0]['deuda_vigente'];
+		$actual['monto_recargo'] = $planilla_actual[$i][0]['monto_recargo'];
+		$actual['monto_multa'] = $planilla_actual[$i][0]['monto_multa'];
+		$actual['monto_intereses'] = $planilla_actual[$i][0]['monto_intereses'];
+		$actual['monto_descuento'] = $planilla_actual[$i][0]['monto_descuento'];
+		$actual['total'] = $planilla_actual[$i][0]['total'];
+
+		$actual['cod_numero_catastral_placas'] = $planilla_actual[$i][0]['cod_numero_catastral_placas'];
+		$actual['datos_registro_arrendamiento'] = $planilla_actual[$i][0]['datos_registro_arrendamiento'];
+
+		$rif_actual = $planilla_actual[$i][0]['rif_cedula'];
+		$num_actual = $planilla_actual[$i][0]['numero_planilla'];
+
+		$cant_anteriores=count($planilla_anterior);
+		$cont_planillas_pendientes=0;
+		for($j=0; $j<$cant_anteriores; $j++){
+			$rif_anterior = $planilla_anterior[$j][0]['rif_cedula'];
+			$num_anterior = $planilla_anterior[$j][0]['numero_planilla'];
+			if($rif_anterior==$rif_actual){
+				$cont_planillas_pendientes++;
+				$actual['planillas_pendientes'][] = array(
+														'num_planilla'=>$planilla_anterior[$j][0]['numero_planilla'],
+														'monto_planilla'=>$planilla_anterior[$j][0]['total']);
+			}
+		}
+		$data[] = $actual;
+		$actual=null;
+
+		//$pdf->recibo(1, $datos);
+		//$pdf->recibo(2, $datos);
+	}
+	//pr($data);
+
+	for($i=0; $i<count($data); $i++){
+		if($i%2 == 0){
+			$pdf->AddPage();
+			$pdf->recibo(1, $data[$i], $tipo_impuesto);
+		}else{
+			$pdf->recibo(2, $data[$i], $tipo_impuesto);
+		}
+	}
+
+}
+
+$pdf->Output('planilla_liquidacion_previa_'.date('d-m-Y').'.pdf','D');
+}
+?>

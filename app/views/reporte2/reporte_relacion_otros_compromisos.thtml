@@ -1,0 +1,193 @@
+<?php
+/*
+ * Creado el 13/04/2008 a las 06:25:40 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		$this->image_escudo_sin_consolidado(6,16,14);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(15,4,"",'L',0);
+		$this->Cell(165,4,$_SESSION["entidad_federal"],'',0);
+		$this->SetFont('vera','',6);
+		$this->Cell(0,4,"",'R',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(165,3,$_SESSION["dependencia"],'',0);
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"",'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,2,"",'RL',1,'C');
+		$this->Cell(0,4,"RELACIÓN DE OTROS COMPROMISOS",'RL',1,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,$_SESSION['subtituloreporte'],'RLB',1,'C');
+
+		$this->Ln(2);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(19,6,"NUMERO",'TBL',0,'C');
+		$this->Cell(13,6,"STATUS",'TBL',0,'C');
+		$this->Cell(16,6,"FECHA",'TBL',0,'C');
+		$this->Cell(70,6,"BENEFICIARIO",'TBL',0,'C');
+		$this->Cell(21,6,"MONTO",'TRBL',0,'C');
+		$this->Cell(21,6,"ORDEN PAGO",'TRBL',0,'C');
+		$this->Cell(15,6,"FECHA",'TRBL',0,'C');
+		$this->Cell(17,6,"CHEQUE",'TRBL',0,'C');
+		$this->Cell(0,6,"FECHA",'TRBL',1,'C');
+
+		$varX_aux = $this->GetX() + 185;
+		$varY_aux = $this->GetY() - 24;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+	}//fin funtion
+}//fin de la clase PDF
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE OTROS COMPROMISOS",null,"950");?>
+<form name='data[relacion_otroscompromisos]' method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_relacion_otros_compromisos/no'); ?>" onSubmit="return valida_reporte_relacion_ordenpago(4);">
+<?= $sisap->OpenTable("950")?>
+
+
+
+
+<table width="700" cellspacing="0" cellpadding="0">
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">
+      <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;
+      <?= $sisap->inputTagRemote('relacion_otroscompromisos/ano', array('url'=>'/consulta_relaciones_documentos/buscar_year_otroscompromisos/', 'update'=>'td-beneficiario', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+     </td>
+</tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">
+   <?= $sisap->radioTagRemote("relacion_otroscompromisos/opcionop", array('1'=>'Todo', '2'=>'Con ordenes de pago', '3'=>'Sin ordenes de pago'), array('id'=>'opcionop'), null, 1);?>
+</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center"><?= $sisap->radioTagRemote("relacion_otroscompromisos/estilo_reporte", array('1'=>'Todo', '2'=>'Por Beneficiario', '3'=>'Por Tipo de Compromiso'), array('url1'=>'/reporte2/distinct_beneficiarios_otros_compromisos', 'update1'=>'td-beneficiario', 'url2'=>'/reporte2/opcionfecha/2', 'update2'=>'td-opcionfecha', 'disabled'=>'enabled', 'id'=>'estilo_reporte'), null, 1);?></td></tr>
+<tr><td align="center" id="td-inputbusqueda">&nbsp;</td></tr>
+<tr><td align="center" id="td-beneficiario">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;<?= $html->radio('relacion_otroscompromisos/condicion_actividad', array('1'=>'Activos', '2'=>'Anulados', '3'=>'Todos'), null, array('value'=>'1'))?></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-opcionfecha"><?= $sisap->radioTagRemote("relacion_otroscompromisos/opcionfecha", array('1'=>'Generar todo', '2'=>'Generar por fecha'), array('url1'=>'/reporte2/seleccionarfecha/2', 'update1'=>'td-fecha', 'disabled'=>'enabled', 'id'=>'opcionfecha'), null, 1);?></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-fecha">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+</table>
+
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+$_SESSION['subtituloreporte'] = $subtituloreporte;
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 8);
+
+/*
+* Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$cont_acti=0;
+$cont_anul=0;
+$acum_acti=0;
+$acum_anul=0;
+for($i=0; $i<=$filas_compromiso_cuerpo; $i++){
+if($datos_compromiso_cuerpo[$i][0]['condicion_actividad']==1){
+$pdf->SetFont('vera','',6);
+$pdf->Cell(19,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_documento']),'TRL',0,'C');
+$pdf->Cell(13,6,"",'TR',0,'C');
+$pdf->Cell(16,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_documento']),'TR',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',5);
+    $pdf->Cell(70,1,"",'T',2,'C');
+    $pdf->MultiCell(69,2,$datos_compromiso_cuerpo[$i][0]['beneficiario'],'','L');//---[Beneficiario]
+    $varX = $varX+70;
+    $pdf->SetXY($varX,$varY);
+    $pdf->SetFont('vera','',6);
+$pdf->Cell(21,6,$sisap->Formato2($datos_compromiso_cuerpo[$i][0]['monto']),'TLR',0,'R');
+$pdf->Cell(21,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_orden_pago']),'TR',0,'C');
+$pdf->Cell(15,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_orden_pago']),'TR',0,'C');
+if($datos_compromiso_cuerpo[$i][0]['numero_cheque']!=0){
+$pdf->Cell(17,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_cheque']),'TR',0,'C');
+$pdf->Cell(0,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_cheque']),'TR',1,'C');
+}else{
+$pdf->Cell(17,6,"",'TR',0,'C');
+$pdf->Cell(0,6,"",'TR',1,'C');
+}
+$pdf->Cell(0,0,"",'T',1);// Linea sola.
+
+   $acum_acti=$acum_acti+$datos_compromiso_cuerpo[$i][0]['monto'];
+   $cont_acti++;
+
+}elseif($datos_compromiso_cuerpo[$i][0]['condicion_actividad']==2){
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(19,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_documento']),'TRL',0,'C');
+$pdf->Cell(13,6,"ANULADO",'TR',0,'C');
+$pdf->Cell(16,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_documento']),'TR',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',5);
+    $pdf->Cell(70,1,"",'T',2,'C');
+    $pdf->MultiCell(69,2,$datos_compromiso_cuerpo[$i][0]['beneficiario'],'','L');//---[Beneficiario]
+    $varX = $varX+70;
+    $pdf->SetXY($varX,$varY);
+    $pdf->SetFont('vera','',6);
+$pdf->Cell(21,6,$sisap->Formato2($datos_compromiso_cuerpo[$i][0]['monto']),'TLR',0,'R');
+$pdf->Cell(21,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_orden_pago']),'TR',0,'C');
+$pdf->Cell(15,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_orden_pago']),'TR',0,'C');
+if($datos_compromiso_cuerpo[$i][0]['numero_cheque']!=0){
+$pdf->Cell(17,6,$sisap->mascara_ocho($datos_compromiso_cuerpo[$i][0]['numero_cheque']),'TR',0,'C');
+$pdf->Cell(0,6,$sisap->cambia_fecha($datos_compromiso_cuerpo[$i][0]['fecha_cheque']),'TR',1,'C');
+}else{
+$pdf->Cell(17,6,"",'TR',0,'C');
+$pdf->Cell(0,6,"",'TR',1,'C');
+}
+$pdf->Cell(0,0,"",'T',1);// Linea sola.
+
+	$acum_anul=$acum_anul+$datos_compromiso_cuerpo[$i][0]['monto'];
+	$cont_anul++;
+}
+
+
+}//fin for
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,7,"T O T A L E S",'TRLB',1,'C');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(55,5,"CANTIDAD DE COMPROMISOS ACTIVOS",'TRL',0,'C');
+$pdf->Cell(50,5,"MONTO",'TR',0,'C');
+$pdf->Cell(55,5,"CANTIDAD DE COMPROMISOS ANULADOS",'TR',0,'C');
+$pdf->Cell(0,5,"MONTO",'TR',1,'C');
+$pdf->Cell(55,5,$cont_acti,'TRLB',0,'C');
+$pdf->Cell(50,5,$sisap->Formato2($acum_acti),'TRB',0,'C');
+$pdf->Cell(55,5,$cont_anul,'TRB',0,'C');
+$pdf->Cell(0,5,$sisap->Formato2($acum_anul),'TRB',1,'C');
+$pdf->Output('relacion_de_otros_compromisos_'.date("d-m-y").".pdf",'D');
+}
+?>

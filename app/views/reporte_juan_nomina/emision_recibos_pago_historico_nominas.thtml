@@ -1,0 +1,1052 @@
+<?php
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function header(){
+
+    }
+
+	function GetDateDifference($StartDateString=NULL, $EndDateString=NULL) {
+		$ReturnArray = array();
+
+		$SDSplit = explode('/',$StartDateString);
+		$StartDate = mktime(0,0,0,$SDSplit[0],$SDSplit[1],$SDSplit[2]);
+
+		$EDSplit = explode('/',$EndDateString);
+		$EndDate = mktime(0,0,0,$EDSplit[0],$EDSplit[1],$EDSplit[2]);
+
+		$y1 = date("Y", $StartDate);
+		$m1 = date("m", $StartDate);
+		$d1 = date("d", $StartDate);
+		$y2 = date("Y", $EndDate);
+		$m2 = date("m", $EndDate);
+		$d2 = date("d", $EndDate);
+
+		$diff = '';
+		if (($EndDate - $StartDate)<=0) {
+		    $diff = "0 days";
+		} else {
+
+			$y = $y2 - $y1;
+			$m = $m2 - $m1;
+			$d = $d2 - $d1;
+		if ($y!=0){
+			$daysInMonth = date("t",$StartDate);
+			if ($d<=0) {$m--;$d=$daysInMonth+$d;}
+			if ($m<=0) {$y--;$m=12+$m;}
+			$daysInMonth = date("t",$m2);
+
+			// Nicestring ("1 year, 1 month, and 5 days")
+			if ($y>0) $diff .= $y==1 ? "1-" : "$y-";
+			if ($y>0 && $m>0) $diff .= "";
+			if ($m>0) $diff .= $m==1? "1-" : "$m-";
+			if (($m>0||$y>0) && $d>0) $diff .= "";
+			if ($d>0) $diff .= $d==1 ? "1" : "$d";
+		}
+		}
+
+		$difFecha = split('-',$diff);
+		switch(count($difFecha)){
+			case '1': $ReturnArray['anos'] = 0; $ReturnArray['meses'] = 0; $ReturnArray['dias'] = $difFecha[0]; break;
+			case '2': $ReturnArray['anos'] = 0; $ReturnArray['meses'] = $difFecha[0]; $ReturnArray['dias'] = $difFecha[1]; break;
+			case '3': $ReturnArray['anos'] = $difFecha[0]; $ReturnArray['meses'] = $difFecha[1]; $ReturnArray['dias'] = $difFecha[2]; break;
+			default : $ReturnArray['anos'] = ''; $ReturnArray['meses'] = ''; $ReturnArray['dias'] = ''; break;
+		}
+		return $ReturnArray;
+	}
+
+	function Formato2($monto){
+		$aux = $monto.'';
+		$monto =  sprintf("%01.3f",$monto);
+        for($i=0; $i<strlen($aux); $i++){
+			if($aux[$i]=='.'){
+				if(isset($aux[$i+3])){
+           			if($aux[$i+3]=='5'){$monto += 0.001; break;}
+				}
+			}
+		}//fin for
+
+		$var = number_format($monto,2,",",".");
+		return $var;
+	}//fin function
+
+	function cambia_fecha($var=null){
+		$fecha = $var;
+		$mes = '';
+		$year = '';
+		if($fecha!=''){
+		$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+		$mes = $fecha[5].$fecha[6];
+		$dia = $fecha[8].$fecha[9];
+		$var = $dia.'/'.$mes.'/'.$year;
+
+		if($var=="01/01/1900"){$var="00/00/000";}
+
+		return $var;
+
+		}
+	}//fin function
+
+
+	function recibos ($vector_datos=null, $posicion=null, $escudo, $varTOPh1, $varTOPh11, $t1, $t2){
+
+		if($posicion==1){
+			$this->SetXY(5,6);
+		}elseif($posicion==2){
+			$this->SetXY(5,141);
+		}
+
+				// Se imprime el primer recibo.
+				$this->SetFont('vera','B',8);
+								$this->Cell(15,4,"",'TL',0);
+								$this->Cell(0,4,$varTOPh1,'TR',1);
+								$this->Cell(15,2,"",'L',0);
+								$this->SetFont('vera','',7);
+								$this->Cell(0,2,$varTOPh11,'R',1);
+								$this->SetFont('vera','B',8);
+								$this->Cell(0,3,"",'RL',1,'C');
+								$this->Cell(0,3,"RECIBO DE PAGO",'RL',1,'C');
+								$this->Cell(0,4,"NÚMERO RECIBO: ".mascara_seis($vector_datos[0]['ultimo_recibo']),'RBL',1,'R');
+
+								$varX_aux = $this->GetX() + 186;
+								$varY_aux = $this->GetY() - 14;
+							    	$this->SetFont('vera','B',5);
+							    	$this->Text($varX_aux, $varY_aux, 'FECHA: '.date("d/m/Y"));
+							    	$this->Text($varX_aux, $varY_aux+3, 'HORA: '.date("h:i a"));
+
+							    $this->Image($escudo,$varX_aux-184,$varY_aux-1,13);
+
+								$this->SetFont('vera','',6);
+								$this->Cell(20,4,'CÓDIGO','RBL',2,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->SetFont('vera','B',9);
+								$this->Cell(20,12,mascara_cuatro($vector_datos[0]['cod_tipo_nomina']),'RL',2,'C');
+								$this->setXY($varX+20, $varY-4);
+
+								$this->SetFont('vera','',6);
+								$this->Cell(68,4,'Denominación de nómina','B',2,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->SetFont('vera','B',8);
+								$this->MultiCell(68,3,$vector_datos[0]['denominacion_nomina'],'','L');//--[Denominación Nomina]
+
+								$this->setXY($varX+68, $varY-4);
+
+								$this->SetFont('vera','B',5);
+								$this->Cell(1,8,'','L',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$this->Cell(35,1,"",'',2,'C');
+								$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_coordinacion'])." - ".$vector_datos[0]['deno_cod_coordinacion'],'','L');//--[Coor]
+								$varX = $varX+35;
+								$this->SetXY($varX,$varY);
+
+								$this->Cell(1,8,'','R',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(35,1,"",'',2,'C');
+								$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_direccion'])." - ".$vector_datos[0]['deno_cod_direccion'],'','L');//--[Dire]
+								$varX = $varX+35;
+								$this->SetXY($varX,$varY);
+
+								$this->Cell(1,8,'','R',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(44,1,"",'',2,'C');
+								$this->MultiCell(45,2,mascara2($vector_datos[0]['cod_departamento'])." - ".$vector_datos[0]['deno_cod_departamento'],'','L');//--[Depa]
+								$varX = $varX+44;
+								$this->SetXY($varX,$varY);
+								$this->Cell(0,8,'','R',1,'C');
+
+								$this->SetXY($var_aux_X-1,$var_aux_Y+8);
+
+								$this->Cell(1,8,'','TL',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$this->Cell(35,1,"",'T',2,'C');
+								$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_secretaria'])." - ".$vector_datos[0]['deno_cod_secretaria'],'','L');//--[Secre]
+								$varX = $varX+35;
+								$this->SetXY($varX,$varY);
+
+								$this->Cell(1,8,'','TR',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(35,1,"",'T',2,'C');
+								$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_division'])." - ".$vector_datos[0]['deno_cod_division'],'','L');//--[Divi]
+								$varX = $varX+35;
+								$this->SetXY($varX,$varY);
+
+								$this->Cell(1,8,'','TR',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(44,1,"",'T',2,'C');
+								$this->MultiCell(45,2,mascara2($vector_datos[0]['cod_oficina'])." - ".$vector_datos[0]['deno_cod_oficina'],'','L');//--[ofic]
+								$varX = $varX+44;
+								$this->SetXY($varX,$varY);
+								$this->Cell(0,8,'','TR',1,'C');
+
+								//---------------------------------------------------------------------------------------------
+
+								$this->SetFont('vera','',6);
+								$this->Cell(20,3,'Cédula de','TRL',0,'C');
+								$this->Cell(50,3,'','TR',0,'C');
+								$this->Cell(15,3,'Código','TR',0,'C');
+								$this->Cell(60,3,'','TR',0,'C');
+								$this->Cell(15,3,'Código','TR',0,'C');
+								$this->Cell(15,3,'Código','TR',0,'C');
+								$this->Cell(0,3,'Sueldo','TR',1,'C');
+
+								$this->Cell(20,2,'identidad','RBL',0,'C');
+								$this->Cell(50,2,'Apellidos y Nombres','RB',0,'C');
+								$this->Cell(15,2,'Puesto','RB',0,'C');
+								$this->Cell(60,2,'Denominación del puesto','RB',0,'C');
+								$this->Cell(15,2,'Cargo','RB',0,'C');
+								$this->Cell(15,2,'Ficha','RB',0,'C');
+								$this->Cell(0,2,'Mensual','RB',1,'C');
+
+								$this->SetFont('vera','B',9);
+								$this->Cell(20,6,$vector_datos[0]['cedula_identidad'],'RL',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(50,0.2,"",'',2,'C');
+								$this->SetFont('vera','B',7);
+								$this->MultiCell(49,3,$vector_datos[0]['primer_apellido']." ".$vector_datos[0]['segundo_apellido']." ".$vector_datos[0]['primer_nombre']." ".$vector_datos[0]['segundo_nombre'],'','L');
+								$this->SetFont('vera','B',9);
+								$varX = $varX+50;
+								$this->SetXY($varX,$varY);
+								$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_puesto']),'RL',0,'C');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->Cell(60,0.2,"",'',2,'C');
+								$this->SetFont('vera','B',7);
+								$this->MultiCell(59,3,$vector_datos[0]['denominacion_puesto'],'','L');
+								$this->SetFont('vera','B',9);
+								$varX = $varX+60;
+								$this->SetXY($varX,$varY);
+								$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_cargo']),'RL',0,'C');
+								$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_ficha']),'R',0,'C');
+								$this->Cell(0,6,$this->Formato2($vector_datos[0]['sueldo_mensual']),'R',1,'R');
+
+								//---------------------------------------------------------------------------------------------
+
+								$this->SetFont('vera','',6);
+								$this->Cell(20,3,'Fecha','TRL',0,'C');
+								$this->Cell(35,3,'','TR',0,'C');
+								$this->Cell(30,3,'Acumulado','TR',0,'C');
+								$this->Cell(60,3,'','TR',0,'C');
+								$this->Cell(15,3,'Número','TR',0,'C');
+								$this->Cell(23,3,'Fecha','TR',0,'C');
+								$this->Cell(0,3,'Fecha','TR',1,'C');
+
+								$this->Cell(20,2,'ingreso','RBL',0,'C');
+								$this->Cell(35,2,'Tiempo de servicio','RB',0,'C');
+								$this->Cell(30,2,'Prestaciones','RB',0,'C');
+								$this->Cell(60,2,'Correspondiente','RB',0,'C');
+								$this->Cell(15,2,'Nómina','RB',0,'C');
+								$this->Cell(23,2,'desde','RB',0,'C');
+								$this->Cell(0,2,'hasta','RB',1,'C');
+
+								$this->SetFont('vera','B',8);
+								$this->Cell(20,6,$this->cambia_fecha($vector_datos[0]['fecha_ingreso']),'RL',0,'C');
+								$this->Cell(35,6,'Años: '.$vector_datos[0]['anos_serv'].'    Meses: '.$vector_datos[0]['meses_serv'],'R',0,'C');
+								$this->Cell(30,6,'','R',0,'C');
+
+
+                                            $this->SetFont('vera','B',6);
+								            $varX = $this->GetX();
+											$varY = $this->GetY();
+											$this->Cell(60,1,"",'',2,'C');
+											$this->MultiCell(59,2,$vector_datos[0]['correspondiente']."",'','L');//--[DENOMINACIÓN]
+											$varX = $varX+60;
+											$this->SetXY($varX,$varY);
+
+								$this->SetFont('vera','B',8);
+								$this->Cell(15,6,mascara($vector_datos[0]['numero_nomina'],2),'LR',0,'C');
+								$this->Cell(23,6,$this->cambia_fecha($vector_datos[0]['periodo_desde']),'R',0,'C');
+								$this->Cell(0,6,$this->cambia_fecha($vector_datos[0]['periodo_hasta']),'R',1,'C');
+
+
+								//----------------------
+								$this->SetFont('vera','B',6);
+								$this->Cell(20,5,"MUNICIPIO",'TLR',0,'C');
+								$this->SetFont('vera','B',7);
+									$varX = $this->GetX();
+									$varY = $this->GetY();
+									$this->Cell(45,1,"",'T',2,'C');
+									$this->MultiCell(44,2,mascara($vector_datos[0]['cod_municipio'],2)." - ".$vector_datos[0]['deno_cod_municipio'],'','L');
+									$varX = $varX+45;
+									$this->SetXY($varX,$varY);
+								$this->SetFont('vera','B',6);
+								$this->Cell(20,5,"PARROQUIA",'TRL',0,'C');
+								$this->SetFont('vera','B',7);
+									$varX = $this->GetX();
+									$varY = $this->GetY();
+									$this->Cell(47,1,"",'T',2,'C');
+									$this->MultiCell(46,2,mascara($vector_datos[0]['cod_parroquia'],2)." - ".$vector_datos[0]['deno_cod_parroquia'],'','L');
+									$varX = $varX+47;
+									$this->SetXY($varX,$varY);
+								$this->SetFont('vera','B',6);
+								$this->Cell(24,5,"CENTRO POBLADO",'TRL',0,'C');
+								$this->SetFont('vera','B',7);
+									$varX = $this->GetX();
+									$varY = $this->GetY();
+									$this->Cell(49,1,"",'T',2,'C');
+									$this->MultiCell(49,2,mascara($vector_datos[0]['cod_centro'],2)." - ".$vector_datos[0]['deno_cod_centro'],'','L');
+									$varX = $varX+49;
+									$this->SetXY($varX,$varY);
+								$this->Cell(0,5,"",'TR',1,'C');
+								//----------------------
+
+								$this->SetFont('vera','B',6);
+								$this->Cell(103,5,'ASIGNACIONES','TRBL',0,'C');
+								$this->Cell(0,5,'DEDUCCIONES','TRB',1,'C');
+
+								//--------------------------------------------------
+								$this->Cell(8,4,'Cód','RBL',0,'C');
+								$this->Cell(35,4,'Concepto','RB',0,'C');
+								$this->Cell(18,4,'Dias / Horas','RB',0,'C');
+								$this->Cell(21,4,'Cuota','RB',0,'C');
+								$this->Cell(21,4,'Saldo','RB',0,'C');
+								$this->Cell(8,4,'Cód','RB',0,'C');
+								$this->Cell(35,4,'Concepto','RB',0,'C');
+								$this->Cell(18,4,'Dias / Horas','RB',0,'C');
+								$this->Cell(20,4,'Cuota','RB',0,'C');
+								$this->Cell(0,4,'Saldo','RB',1,'C');
+
+								$total_asignacion = 0;
+								$total_deduccion  = 0;
+								$neto_cobrar = 0;
+								$total_vector=count($vector_datos);
+                                /*aqui comienza jgha*/
+                                $array1=array();
+                                $array2=array();
+								for($h=0; $h<$total_vector; $h++){
+									if($vector_datos[$h]['cod_tipo_transaccion']==1){
+										$array1[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$this->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$this->Formato2($vector_datos[$h]['saldo']),
+														'monto_2'=>$vector_datos[$h]['monto_cuota'],
+														'uso_trans'=>$vector_datos[$h]['uso_transaccion']
+										                );
+									}elseif($vector_datos[$h]['cod_tipo_transaccion']==2){
+								        $array2[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$this->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$this->Formato2($vector_datos[$h]['saldo']),
+								        				'monto_2'=>$vector_datos[$h]['monto_cuota'],
+								        				'uso_trans'=>$vector_datos[$h]['uso_transaccion']
+										                );
+								    }
+								}//fin for
+
+								$t_filas = count($array1)>count($array2)?count($array1):count($array2);
+								$cuenta_fila=0;
+								$cuenta_fila_2=0;
+								for($h=0; $h<$t_filas; $h++){
+									    sort($array1);
+									    sort($array2);
+									    $x1[1] = isset($array1[$h]['cod'])       ?$array1[$h]['cod']:'';
+									    $x1[2] = isset($array1[$h]['deno'])      ?$array1[$h]['deno']:'';
+									    $x1[3] = isset($array1[$h]['dias_horas'])?$array1[$h]['dias_horas']:'';
+									    $x1[4] = isset($array1[$h]['monto'])     ?$array1[$h]['monto']:'';
+									    $x1[5] = isset($array1[$h]['saldo'])     ?$array1[$h]['saldo']:0;
+									    $x1[6] = isset($array1[$h]['uso_trans']) ?$array1[$h]['uso_trans']:'';
+									    $x1[7] = isset($array1[$h]['monto_2'])   ?$array1[$h]['monto_2']:'';
+									    $x2[1] = isset($array2[$h]['cod'])       ?$array2[$h]['cod']:'';
+									    $x2[2] = isset($array2[$h]['deno'])      ?$array2[$h]['deno']:'';
+									    $x2[3] = isset($array2[$h]['dias_horas'])?$array2[$h]['dias_horas']:'';
+									    $x2[4] = isset($array2[$h]['monto'])     ?$array2[$h]['monto']:'';
+									    $x2[5] = isset($array2[$h]['saldo'])     ?$array2[$h]['saldo']:0;
+									    $x2[6] = isset($array2[$h]['uso_trans']) ?$array2[$h]['uso_trans']:'';
+									    $x2[7] = isset($array2[$h]['monto_2'])   ?$array2[$h]['monto_2']:'';
+									    $this->SetFont('vera','',8);
+
+							    		$cuenta_fila++;
+
+										// Esto es para ver si el vector de las asignaciones y deducciones se paso de 12 registros
+										// si es asi entramos y volvemos a imprimir de nuevo el pie de pagina del recibo en curso
+										// y se crea el encabezado y la informacion inicial para imprimir el otro recibo.
+										if($cuenta_fila > 12){
+											$cuenta_fila_2++;
+
+											if($cuenta_fila==13){// Si es 13 indica que es el primer registro luego que se paso de 12, se imprime la info inicial.
+
+												$this->SetFont('vera','B',7);
+												$this->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+												$this->SetFont('vera','B',9);
+												$this->Cell(35,5,'','TR',0,'R');
+												$this->SetFont('vera','B',7);
+												$this->Cell(43,5,'Total Deducciones:','TR',0,'C');
+												$this->SetFont('vera','B',9);
+												$this->Cell(35,5,'','TR',0,'R');
+												$this->SetFont('vera','B',7);
+												$this->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+												$this->SetFont('vera','B',9);
+												$this->Cell(0,5,'','TR',1,'R');
+
+												$this->SetFont('vera','B',6);
+												$this->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+												$this->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+												$this->SetFont('vera','B',7);
+												$this->Cell(15,4,'BANCO:','RL',0,'L');
+												$this->SetFont('vera','B',9);
+												$this->Cell(88,4,$vector_datos[0]['deno_entidades_bancarias'],'RL',1,'L');
+												$this->SetFont('vera','B',7);
+												$this->Cell(15,4,'CUENTA:','RL',0,'L');
+												$this->SetFont('vera','B',9);
+												$this->Cell(88,4,$vector_datos[0]['cuenta_bancaria'],'RL',1,'L');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->SetXY($varX+103,$varY-10);
+
+												$this->SetFont('vera','',6);
+												$this->MultiCell(102,3,"",'','L');//--[Mensajes]
+												$this->SetXY($varX+205,$varY-10);
+												$this->Cell(0,10,'','R',1,'C');
+												$this->Cell(0,0,'','T',1);
+
+												if($posicion==1){
+													//$this->SetXY(5,6);
+													$this->SetXY(5,141);
+												}elseif($posicion==2){
+													//$this->SetXY(5,141);
+													$this->AddPage();
+													$this->SetXY(5,6);
+												}
+
+												$this->SetFont('vera','B',8);
+												$this->Cell(15,4,"",'TL',0);
+												$this->Cell(0,4,$varTOPh1,'TR',1);
+												$this->Cell(15,2,"",'L',0);
+												$this->SetFont('vera','',7);
+												$this->Cell(0,2,$varTOPh11,'R',1);
+												$this->SetFont('vera','B',8);
+												$this->Cell(0,3,"",'RL',1,'C');
+												$this->Cell(0,3,"RECIBO DE PAGO",'RL',1,'C');
+												$this->Cell(0,4,"NÚMERO RECIBO: ".mascara_seis($vector_datos[0]['ultimo_recibo']),'RBL',1,'R');
+
+												$varX_aux = $this->GetX() + 186;
+												$varY_aux = $this->GetY() - 14;
+											    	$this->SetFont('vera','B',5);
+											    	$this->Text($varX_aux, $varY_aux, 'FECHA: '.date("d/m/Y"));
+											    	$this->Text($varX_aux, $varY_aux+3, 'HORA: '.date("h:i a"));
+
+											    $this->Image($escudo,$varX_aux-184,$varY_aux-1,13);
+
+												$this->SetFont('vera','',6);
+												$this->Cell(20,4,'CÓDIGO','RBL',2,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->SetFont('vera','B',9);
+												$this->Cell(20,12,mascara_cuatro($vector_datos[0]['cod_tipo_nomina']),'RL',2,'C');
+												$this->setXY($varX+20, $varY-4);
+
+												$this->SetFont('vera','',6);
+												$this->Cell(68,4,'Denominación de nómina','B',2,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->SetFont('vera','B',8);
+												$this->MultiCell(68,3,$vector_datos[0]['denominacion_nomina'],'','L');//--[Denominación Nomina]
+
+												$this->setXY($varX+68, $varY-4);
+
+												$this->SetFont('vera','B',5);
+												$this->Cell(1,8,'','L',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$var_aux_X = $varX;
+												$var_aux_Y = $varY;
+												$this->Cell(35,1,"",'',2,'C');
+												$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_coordinacion'])." - ".$vector_datos[0]['deno_cod_coordinacion'],'','L');//--[Coor]
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+
+												$this->Cell(1,8,'','R',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(35,1,"",'',2,'C');
+												$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_direccion'])." - ".$vector_datos[0]['deno_cod_direccion'],'','L');//--[Dire]
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+
+												$this->Cell(1,8,'','R',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(44,1,"",'',2,'C');
+												$this->MultiCell(45,2,mascara2($vector_datos[0]['cod_departamento'])." - ".$vector_datos[0]['deno_cod_departamento'],'','L');//--[Depa]
+												$varX = $varX+44;
+												$this->SetXY($varX,$varY);
+												$this->Cell(0,8,'','R',1,'C');
+
+												$this->SetXY($var_aux_X-1,$var_aux_Y+8);
+
+												$this->Cell(1,8,'','TL',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$var_aux_X = $varX;
+												$var_aux_Y = $varY;
+												$this->Cell(35,1,"",'T',2,'C');
+												$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_secretaria'])." - ".$vector_datos[0]['deno_cod_secretaria'],'','L');//--[Secre]
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+
+												$this->Cell(1,8,'','TR',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(35,1,"",'T',2,'C');
+												$this->MultiCell(34,2,mascara2($vector_datos[0]['cod_division'])." - ".$vector_datos[0]['deno_cod_division'],'','L');//--[Divi]
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+
+												$this->Cell(1,8,'','TR',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(44,1,"",'T',2,'C');
+												$this->MultiCell(45,2,mascara2($vector_datos[0]['cod_oficina'])." - ".$vector_datos[0]['deno_cod_oficina'],'','L');//--[ofic]
+												$varX = $varX+44;
+												$this->SetXY($varX,$varY);
+												$this->Cell(0,8,'','TR',1,'C');
+
+												//---------------------------------------------------------------------------------------------
+
+												$this->SetFont('vera','',6);
+												$this->Cell(20,3,'Cédula de','TRL',0,'C');
+												$this->Cell(50,3,'','TR',0,'C');
+												$this->Cell(15,3,'Código','TR',0,'C');
+												$this->Cell(60,3,'','TR',0,'C');
+												$this->Cell(15,3,'Código','TR',0,'C');
+												$this->Cell(15,3,'Código','TR',0,'C');
+												$this->Cell(0,3,'Sueldo','TR',1,'C');
+
+												$this->Cell(20,2,'identidad','RBL',0,'C');
+												$this->Cell(50,2,'Apellidos y Nombres','RB',0,'C');
+												$this->Cell(15,2,'Puesto','RB',0,'C');
+												$this->Cell(60,2,'Denominación del puesto','RB',0,'C');
+												$this->Cell(15,2,'Cargo','RB',0,'C');
+												$this->Cell(15,2,'Ficha','RB',0,'C');
+												$this->Cell(0,2,'Mensual','RB',1,'C');
+
+												$this->SetFont('vera','B',9);
+												$this->Cell(20,6,$vector_datos[0]['cedula_identidad'],'RL',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(50,0.2,"",'',2,'C');
+												$this->SetFont('vera','B',7);
+												$this->MultiCell(49,3,$vector_datos[0]['primer_apellido']." ".$vector_datos[0]['segundo_apellido']." ".$vector_datos[0]['primer_nombre']." ".$vector_datos[0]['segundo_nombre'],'','L');
+												$this->SetFont('vera','B',9);
+												$varX = $varX+50;
+												$this->SetXY($varX,$varY);
+												$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_puesto']),'RL',0,'C');
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(60,0.2,"",'',2,'C');
+												$this->SetFont('vera','B',7);
+												$this->MultiCell(59,3,$vector_datos[0]['denominacion_puesto'],'','L');
+												$this->SetFont('vera','B',9);
+												$varX = $varX+60;
+												$this->SetXY($varX,$varY);
+												$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_cargo']),'RL',0,'C');
+												$this->Cell(15,6,mascara_seis($vector_datos[0]['cod_ficha']),'R',0,'C');
+												$this->Cell(0,6,$this->Formato2($vector_datos[0]['sueldo_mensual']),'R',1,'R');
+
+												//---------------------------------------------------------------------------------------------
+
+												$this->SetFont('vera','',6);
+												$this->Cell(20,3,'Fecha','TRL',0,'C');
+												$this->Cell(35,3,'','TR',0,'C');
+												$this->Cell(30,3,'Acumulado','TR',0,'C');
+												$this->Cell(60,3,'','TR',0,'C');
+												$this->Cell(15,3,'Número','TR',0,'C');
+												$this->Cell(23,3,'Fecha','TR',0,'C');
+												$this->Cell(0,3,'Fecha','TR',1,'C');
+
+												$this->Cell(20,2,'ingreso','RBL',0,'C');
+												$this->Cell(35,2,'Tiempo de servicio','RB',0,'C');
+												$this->Cell(30,2,'Prestaciones','RB',0,'C');
+												$this->Cell(60,2,'Correspondiente','RB',0,'C');
+												$this->Cell(15,2,'Nómina','RB',0,'C');
+												$this->Cell(23,2,'desde','RB',0,'C');
+												$this->Cell(0,2,'hasta','RB',1,'C');
+
+												$this->SetFont('vera','B',8);
+												$this->Cell(20,6,$this->cambia_fecha($vector_datos[0]['fecha_ingreso']),'RL',0,'C');
+												$this->Cell(35,6,'Años: '.$vector_datos[0]['anos_serv'].'    Meses: '.$vector_datos[0]['meses_serv'],'R',0,'C');
+												$this->Cell(30,6,'','R',0,'C');
+
+
+				                                            $this->SetFont('vera','B',6);
+												            $varX = $this->GetX();
+															$varY = $this->GetY();
+															$this->Cell(60,1,"",'',2,'C');
+															$this->MultiCell(59,2,$vector_datos[0]['correspondiente']."",'','L');//--[DENOMINACIÓN]
+															$varX = $varX+60;
+															$this->SetXY($varX,$varY);
+
+												$this->SetFont('vera','B',8);
+												$this->Cell(15,6,mascara($vector_datos[0]['numero_nomina'],2),'LR',0,'C');
+												$this->Cell(23,6,$this->cambia_fecha($vector_datos[0]['periodo_desde']),'R',0,'C');
+												$this->Cell(0,6,$this->cambia_fecha($vector_datos[0]['periodo_hasta']),'R',1,'C');
+
+
+												//----------------------
+												$this->SetFont('vera','B',6);
+												$this->Cell(20,5,"MUNICIPIO",'TLR',0,'C');
+												$this->SetFont('vera','B',7);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(45,1,"",'T',2,'C');
+													$this->MultiCell(44,2,mascara($vector_datos[0]['cod_municipio'],2)." - ".$vector_datos[0]['deno_cod_municipio'],'','L');
+													$varX = $varX+45;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','B',6);
+												$this->Cell(20,5,"PARROQUIA",'TRL',0,'C');
+												$this->SetFont('vera','B',7);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(47,1,"",'T',2,'C');
+													$this->MultiCell(46,2,mascara($vector_datos[0]['cod_parroquia'],2)." - ".$vector_datos[0]['deno_cod_parroquia'],'','L');
+													$varX = $varX+47;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','B',6);
+												$this->Cell(24,5,"CENTRO POBLADO",'TRL',0,'C');
+												$this->SetFont('vera','B',7);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(49,1,"",'T',2,'C');
+													$this->MultiCell(49,2,mascara($vector_datos[0]['cod_centro'],2)." - ".$vector_datos[0]['deno_cod_centro'],'','L');
+													$varX = $varX+49;
+													$this->SetXY($varX,$varY);
+												$this->Cell(0,5,"",'TR',1,'C');
+												//----------------------
+
+												$this->SetFont('vera','B',6);
+												$this->Cell(103,5,'ASIGNACIONES','TRBL',0,'C');
+												$this->Cell(0,5,'DEDUCCIONES','TRB',1,'C');
+
+												//--------------------------------------------------
+												$this->Cell(8,4,'Cód','RBL',0,'C');
+												$this->Cell(35,4,'Concepto','RB',0,'C');
+												$this->Cell(18,4,'Dias / Horas','RB',0,'C');
+												$this->Cell(21,4,'Cuota','RB',0,'C');
+												$this->Cell(21,4,'Saldo','RB',0,'C');
+												$this->Cell(8,4,'Cód','RB',0,'C');
+												$this->Cell(35,4,'Concepto','RB',0,'C');
+												$this->Cell(18,4,'Dias / Horas','RB',0,'C');
+												$this->Cell(20,4,'Cuota','RB',0,'C');
+												$this->Cell(0,4,'Saldo','RB',1,'C');
+
+												$this->Cell(8,4,$x1[1],'RL',0,'C');
+												$this->SetFont('vera','',5);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(35,0,"",'',2,'C');
+													$this->MultiCell(34,2,$x1[2],'','L');
+													$varX = $varX+35;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','',9);
+												$this->Cell(18,4,$x1[3],'RL',0,'C');
+												$this->Cell(21,4,$x1[4],'R',0,'R');
+												$this->Cell(21,4,$x1[5]==0?'':$x1[5],'R',0,'R');
+
+												$this->SetFont('vera','',8);
+												$this->Cell(8,4,$x2[1],'R',0,'C');
+												$this->SetFont('vera','',5);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(35,0,"",'',2,'C');
+													$this->MultiCell(34,2,$x2[2],'','L');
+													$varX = $varX+35;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','',9);
+												$this->Cell(18,4,$x2[3],'RL',0,'C');
+												$this->Cell(20,4,$x2[4],'R',0,'R');
+												$this->Cell(0,4,$x2[5]==0?'':$x2[5],'R',1,'R');
+												$total_deduccion += $x2[7];
+												$total_asignacion += $x1[7];
+
+												$this->Cell(0,0,'','T',1);
+
+											}else{
+
+												$this->Cell(8,4,$x1[1],'RL',0,'C');
+												$this->SetFont('vera','',5);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(35,0,"",'',2,'C');
+													$this->MultiCell(34,2,$x1[2],'','L');
+													$varX = $varX+35;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','',9);
+												$this->Cell(18,4,$x1[3],'RL',0,'C');
+												$this->Cell(21,4,$x1[4],'R',0,'R');
+												$this->Cell(21,4,$x1[5]==0?'':$x1[5],'R',0,'R');
+
+												$this->SetFont('vera','',8);
+												$this->Cell(8,4,$x2[1],'R',0,'C');
+												$this->SetFont('vera','',5);
+													$varX = $this->GetX();
+													$varY = $this->GetY();
+													$this->Cell(35,0,"",'',2,'C');
+													$this->MultiCell(34,2,$x2[2],'','L');
+													$varX = $varX+35;
+													$this->SetXY($varX,$varY);
+												$this->SetFont('vera','',9);
+												$this->Cell(18,4,$x2[3],'RL',0,'C');
+												$this->Cell(20,4,$x2[4],'R',0,'R');
+												$this->Cell(0,4,$x2[5]==0?'':$x2[5],'R',1,'R');
+												$total_deduccion += $x2[7];
+												$total_asignacion += $x1[7];
+
+												$this->Cell(0,0,'','T',1);
+
+											}// Fin else cuenta_fila == 13
+
+										}else{
+
+											$this->Cell(8,4,$x1[1],'RL',0,'C');
+											$this->SetFont('vera','',5);
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(35,0,"",'',2,'C');
+												$this->MultiCell(34,2,$x1[2],'','L');
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+											$this->SetFont('vera','',9);
+											$this->Cell(18,4,$x1[3],'RL',0,'C');
+											$this->Cell(21,4,$x1[4],'R',0,'R');
+											$this->Cell(21,4,$x1[5]==0?'':$x1[5],'R',0,'R');
+
+											$this->SetFont('vera','',8);
+											$this->Cell(8,4,$x2[1],'R',0,'C');
+											$this->SetFont('vera','',5);
+												$varX = $this->GetX();
+												$varY = $this->GetY();
+												$this->Cell(35,0,"",'',2,'C');
+												$this->MultiCell(34,2,$x2[2],'','L');
+												$varX = $varX+35;
+												$this->SetXY($varX,$varY);
+											$this->SetFont('vera','',9);
+											$this->Cell(18,4,$x2[3],'RL',0,'C');
+											$this->Cell(20,4,$x2[4],'R',0,'R');
+											$this->Cell(0,4,$x2[5]==0?'':$x2[5],'R',1,'R');
+											$total_deduccion += $x2[7];
+											$total_asignacion += $x1[7];
+
+											$this->Cell(0,0,'','T',1);
+
+										}
+
+								}// Fin for
+								unset($array1);
+								unset($array2);
+								unset($x1);
+								unset($x2);
+                                /*hasta aqui hago yo*/
+
+								// Completamos las celdas que faltaron por imprimir
+								if($cuenta_fila_2 > 0){
+									$cont = 12 - $cuenta_fila_2;
+								}else{
+									$cont = 12 - $cuenta_fila;
+								}
+								//$cont = 12 - $cuenta_fila;
+								for($j=0; $j<$cont; $j++){
+									$this->Cell(8,4,'','RL',0,'C');
+									$this->Cell(35,4,'','R',0,'L');
+									$this->Cell(18,4,'','R',0,'C');
+									$this->Cell(21,4,'','R',0,'R');
+									$this->Cell(21,4,'','R',0,'R');
+									$this->Cell(8,4,'','R',0,'C');
+									$this->Cell(35,4,'','R',0,'L');
+									$this->Cell(18,4,'','R',0,'C');
+									$this->Cell(20,4,'','R',0,'R');
+									$this->Cell(0,4,'','R',1,'R');
+
+									$this->Cell(0,0,'','T',1);
+								}
+
+								$neto_cobrar = $total_asignacion - $total_deduccion;
+								//$neto_cobrar = ($total_asignacion + $vector_datos[0]['sueldo_basico']) - $total_deduccion;
+
+								$this->SetFont('vera','B',7);
+								$this->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+								$this->SetFont('vera','B',9);
+								$this->Cell(35,5,$this->Formato2($total_asignacion),'TR',0,'R');
+								$this->SetFont('vera','B',7);
+								$this->Cell(43,5,'Total Deducciones:','TR',0,'C');
+								$this->SetFont('vera','B',9);
+								$this->Cell(35,5,$this->Formato2($total_deduccion),'TR',0,'R');
+								$this->SetFont('vera','B',7);
+								$this->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+								$this->SetFont('vera','B',9);
+								$this->Cell(0,5,$this->Formato2($neto_cobrar),'TR',1,'R');
+
+								$this->SetFont('vera','B',6);
+								$this->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+								$this->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+								$this->SetFont('vera','B',7);
+								$this->Cell(15,4,'BANCO:','RL',0,'L');
+								$this->SetFont('vera','B',9);
+								$this->Cell(88,4,$vector_datos[0]['deno_entidades_bancarias'],'RL',1,'L');
+								$this->SetFont('vera','B',7);
+								$this->Cell(15,4,'CUENTA:','RL',0,'L');
+								$this->SetFont('vera','B',9);
+								$this->Cell(88,4,$vector_datos[0]['cuenta_bancaria'],'RL',1,'L');
+								$varX = $this->GetX();
+								$varY = $this->GetY();
+								$this->SetXY($varX+103,$varY-10);
+
+								$this->SetFont('vera','',6);
+								$this->MultiCell(102,3,"",'','L');//--[Mensajes]
+								$this->SetXY($varX+205,$varY-10);
+								$this->Cell(0,10,'','R',1,'C');
+								$this->Cell(0,0,'','T',1);
+
+								$vector_datos=array();
+								$total_asignacion = 0;
+								$total_deduccion  = 0;
+								$neto_cobrar = 0;
+	}
+
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(5);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->SetFont('vera','B',6);
+
+$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+if(file_exists($img_dependencia_o)){
+	$escudo=$img_dependencia_o;
+	$varTOPh1=$_SESSION["entidad_federal"];
+	$varTOPh11=$_SESSION["dependencia"];
+	$t1=11;
+	$t2=11;
+}else{
+	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+	$varTOPh1=$_SESSION["entidad_federal"];
+	$varTOPh11=$_SESSION["dependencia"];
+	$t1=6;
+	$t2=11;
+}
+
+$cant_registros = count($datos);
+if($cant_registros==0){
+	$pdf->AddPage();
+	$pdf->Ln(10);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,35,'NO SE ENCONTRARÓN REGISTROS PARA SU PETICIÓN','TRBL',1,'C');
+}else{
+
+	$k=0;
+	$cedula_2 = "";
+	$vector_datos = array();
+	$pagina=0;
+	$pasadas_asig=0;
+	$pasadas_deduc=0;
+
+	for($i=0; $i<$cant_registros; $i++){
+
+			/*
+			$cedula_1 = $datos[$i][0]['cedula_identidad'];
+
+			if($cedula_1 != $cedula_2){
+				$k=0;
+				if($i!=0){
+					$pagina++;
+					if($pagina==1){
+						$pdf->AddPage();
+						$pdf->recibos($vector_datos, 1, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+					}else{
+						$pdf->recibos($vector_datos, 2, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+						$pagina=0;
+					}
+					unset($vector_datos);
+				}
+				$vector_datos[0]['sueldo_mensual'] = 0;
+			}
+			*/
+			$cedula_1 = $datos[$i][0]['cedula_identidad'];
+			$ccargo_1 = $datos[$i][0]['cod_cargo'];
+
+			if(($cedula_1 != $cedula_2) || ($ccargo_1 != $ccargo_2)){// || ($pasadas_asig==12) || ($pasadas_deduc==12)
+				$k=0;
+				if($i!=0){
+					$pagina++;
+					if($pagina==1){
+						$pdf->AddPage();
+						$pdf->recibos($vector_datos, 1, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+
+						if($pasadas_asig > 12 || $pasadas_deduc > 12){
+							$pagina=0;
+						}
+
+					}else{
+						$pdf->recibos($vector_datos, 2, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+						$pagina=0;
+						if($pasadas_asig > 12 || $pasadas_deduc > 12){
+							$pagina=1;
+						}
+					}
+					unset($vector_datos);
+				}
+
+				$pasadas_asig=0;
+				$pasadas_deduc=0;
+			}
+
+
+			 if($datos[$i][0]["cod_tipo_transaccion"]=="1" &&
+                $datos[$i][0]["cod_transaccion"]=="1"
+             ){
+             	$datos[$i][0]["sueldo_basico"] = ($datos[$i][0]["monto_cuota"]/$cant_pagos);
+             	//$A1 = $datos[$i][0]["monto_cuota"];
+             }
+
+
+			switch($datos[$i][0]["frecuencia_cobro"]){
+				case '1': $A1=$datos[$i][0]["sueldo_basico"]*30; break;
+				case '2': $A1=(($datos[$i][0]["sueldo_basico"]*52)/12); break;
+				case '3': $A1=$datos[$i][0]["sueldo_basico"]*2 ; break;
+				case '4': $A1=$datos[$i][0]["sueldo_basico"]; break;
+				case '5': $A1=(($datos[$i][0]["sueldo_basico"]*6)/12); break;
+				case '6': $A1=(($datos[$i][0]["sueldo_basico"]*4)/12); break;
+				default : $A1= '';
+			}
+
+
+						// Bloque para calcular el tiempo de servicio.
+						$aux_fecha_ing = split('-', $datos[$i][0]['fecha_ingreso']);
+						$fecha_ing_inv = $aux_fecha_ing[1]."/".$aux_fecha_ing[2]."/".$aux_fecha_ing[0];
+						$DateDiff = $pdf->GetDateDifference($fecha_ing_inv,date('m/d/Y',strtotime ($datos[$i][0]['periodo_hasta'])));
+
+
+			$vector_datos[$k]['cod_tipo_nomina'] = $datos[$i][0]['cod_tipo_nomina'];
+			$vector_datos[$k]['denominacion_nomina'] = $datos[$i][0]['denominacion_nomina'];
+			$vector_datos[$k]['cod_coordinacion'] = $datos[$i][0]['cod_coordinacion'];
+			$vector_datos[$k]['deno_cod_coordinacion'] = $datos[$i][0]['deno_cod_coordinacion'];
+			$vector_datos[$k]['cod_direccion'] = $datos[$i][0]['cod_direccion'];
+			$vector_datos[$k]['deno_cod_direccion'] = $datos[$i][0]['deno_cod_direccion'];
+			$vector_datos[$k]['cod_departamento'] = $datos[$i][0]['cod_departamento'];
+			$vector_datos[$k]['deno_cod_departamento'] = $datos[$i][0]['deno_cod_departamento'];
+			$vector_datos[$k]['cod_secretaria'] = $datos[$i][0]['cod_secretaria'];
+			$vector_datos[$k]['deno_cod_secretaria'] = $datos[$i][0]['deno_cod_secretaria'];
+			$vector_datos[$k]['cod_division'] = $datos[$i][0]['cod_division'];
+			$vector_datos[$k]['deno_cod_division'] = $datos[$i][0]['deno_cod_division'];
+			$vector_datos[$k]['cod_oficina'] = $datos[$i][0]['cod_oficina'];
+			$vector_datos[$k]['deno_cod_oficina'] = $datos[$i][0]['deno_cod_oficina'];
+			$vector_datos[$k]['cedula_identidad'] = $datos[$i][0]['cedula_identidad'];
+			//$vector_datos[$k]['ultimo_recibo'] = $datos[$i][0]['ultimo_recibo'];
+			$vector_datos[$k]['ultimo_recibo'] = $datos[$i][0]['numero_recibo'];
+
+			$vector_datos[$k]['primer_apellido'] = $datos[$i][0]['primer_apellido'];
+			$vector_datos[$k]['segundo_apellido'] = $datos[$i][0]['segundo_apellido'];
+			$vector_datos[$k]['primer_nombre'] = $datos[$i][0]['primer_nombre'];
+			$vector_datos[$k]['segundo_nombre'] = $datos[$i][0]['segundo_nombre'];
+			$vector_datos[$k]['cod_puesto'] = $datos[$i][0]['cod_puesto'];
+			$vector_datos[$k]['denominacion_puesto'] = $datos[$i][0]['denominacion_puesto'];
+			$vector_datos[$k]['cod_cargo'] = $datos[$i][0]['cod_cargo'];
+			$vector_datos[$k]['cod_ficha'] = $datos[$i][0]['cod_ficha'];
+			$vector_datos[$k]['sueldo_basico'] = $datos[$i][0]['sueldo_basico'];
+
+			$vector_datos[$k]['fecha_ingreso'] = $datos[$i][0]['fecha_ingreso'];
+			$vector_datos[$k]['meses_serv'] = $DateDiff['meses'];
+			$vector_datos[$k]['anos_serv'] = $DateDiff['anos'];
+			$vector_datos[$k]['correspondiente'] = $datos[$i][0]['correspondiente'];
+			$vector_datos[$k]['numero_nomina'] = $datos[$i][0]['numero_nomina'];
+			$vector_datos[$k]['periodo_desde'] = $datos[$i][0]['periodo_desde'];
+			$vector_datos[$k]['periodo_hasta'] = $datos[$i][0]['periodo_hasta'];
+
+			$vector_datos[$k]['cod_tipo_transaccion'] = $datos[$i][0]['cod_tipo_transaccion'];
+			$vector_datos[$k]['cod_transaccion'] = $datos[$i][0]['cod_transaccion'];
+			$vector_datos[$k]['deno_transaccion'] = $datos[$i][0]['deno_transaccion'];
+			$vector_datos[$k]['dias_horas'] = $datos[$i][0]['dias_horas'];
+			$vector_datos[$k]['monto_cuota'] = $datos[$i][0]['monto_cuota'];
+			$vector_datos[$k]['saldo'] = $datos[$i][0]['saldo'];
+			 if($datos[$i][0]["cod_tipo_transaccion"]=="1" &&
+                $datos[$i][0]["cod_transaccion"]=="1"
+             ){
+			    $vector_datos[0]['sueldo_mensual'] = $A1;
+             }
+
+			$vector_datos[$k]['deno_entidades_bancarias'] = $datos[$i][0]['deno_entidades_bancarias'];
+			$vector_datos[$k]['cuenta_bancaria'] = $datos[$i][0]['cuenta_bancaria'];
+
+			$vector_datos[$k]['uso_transaccion'] = $datos[$i][0]['uso_transaccion'];
+			$vector_datos[$k]['devengado'] = $datos[$i][0]['devengado'];
+
+			$vector_datos[$k]['cod_municipio'] = $datos[$i][0]['cod_municipio'];
+			$vector_datos[$k]['deno_cod_municipio'] = $datos[$i][0]['deno_cod_municipio'];
+			$vector_datos[$k]['cod_parroquia'] = $datos[$i][0]['cod_parroquia'];
+			$vector_datos[$k]['deno_cod_parroquia'] = $datos[$i][0]['deno_cod_parroquia'];
+			$vector_datos[$k]['cod_centro'] = $datos[$i][0]['cod_centro'];
+			$vector_datos[$k]['deno_cod_centro'] = $datos[$i][0]['deno_cod_centro'];
+
+			$k++;
+
+			if($datos[$i][0]['cod_tipo_transaccion']==1){
+					$array1[] = array('cod'=>mascara_tres($datos[$i][0]['cod_transaccion']),
+							                'deno'=>$datos[$i][0]['deno_transaccion'],
+							                'dias_horas'=>$datos[$i][0]['dias_horas'],
+							                'monto'=>$sisap->Formato2($datos[$i][0]['monto_cuota']),
+							                'saldo'=>$sisap->Formato2($datos[$i][0]['saldo']),
+											'monto_2'=>$datos[$i][0]['monto_cuota'],
+											'uso_trans'=>$datos[$i][0]['uso_transaccion']
+								);
+					$pasadas_asig++;
+
+			}elseif($datos[$i][0]['cod_tipo_transaccion']==2){
+					$array2[] = array('cod'=>mascara_tres($datos[$i][0]['cod_transaccion']),
+							                'deno'=>$datos[$i][0]['deno_transaccion'],
+							                'dias_horas'=>$datos[$i][0]['dias_horas'],
+							                'monto'=>$sisap->Formato2($datos[$i][0]['monto_cuota']),
+							                'saldo'=>$sisap->Formato2($datos[$i][0]['saldo']),
+											'monto_2'=>$datos[$i][0]['monto_cuota'],
+											'uso_trans'=>$datos[$i][0]['uso_transaccion']
+								);
+					$pasadas_deduc++;
+			}
+
+			$cedula_2 = $datos[$i][0]['cedula_identidad'];
+			$ccargo_2 = $datos[$i][0]['cod_cargo'];
+
+	}//fin for
+
+	$pagina++;
+	if($pagina==1){
+		$pdf->AddPage();
+		$pdf->recibos($vector_datos, 1, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+	}else{
+		$pdf->recibos($vector_datos, 2, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+	}
+	//$pdf->AddPage();
+	//$pdf->recibos($vector_datos, 1, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+	//$pdf->recibos($vector_datos, 2, $escudo, $varTOPh1, $varTOPh11, $t1, $t2);
+	unset($vector_datos);
+}
+$pdf->Output('emision_de_recibos_'.date('d-m-Y').'.pdf','D');
+?>

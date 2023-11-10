@@ -1,0 +1,323 @@
+<?php if($opcion==1){
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('INGRESOS'),'','950');
+echo $sisap->OpenTable('950');
+
+?>
+
+<form>
+   <table width="17%" border="0" align='left' class="tablacompromiso tablacompromiso2">
+    <tr>
+        <td align='right' class='fila_titulos'>Año:</td>
+	    <td align="center">
+        	<?= $sisap->selectTagRemote('reporte_hacienda2/ano', $lista_ano,  null,  $ano_arranque ,array('onchange1' => '/reporte_hacienda2/consulta_ingresos/2', 'update1'=>'select_mes', 'onchange2' => '/reporte_hacienda2/consulta_ingresos/4', 'update2'=>'consulta_capa','id'=>'select_1',  'maxlength'=>'8', true), null, true); ?>
+	    </td>
+    </tr>
+    <tr>
+        <td align='right' class='fila_titulos'>Mes:</td>
+	    <td align="center" id="select_mes">
+        	<?= $sisap->selectTagRemote('reporte_hacienda2/mes', $lista_mes,  null,  null ,array('onChange'=>'vacio', 'onchange1' => '/reporte_hacienda2/consulta_ingresos/3/'.$year, 'update1'=>'select_dia', 'onchange2' => '/reporte_hacienda2/consulta_ingresos/4/'.$year, 'update2'=>'consulta_capa', 'id'=>'select_2',  'maxlength'=>'8', true), null, true); ?>
+	    </td>
+    </tr>
+    <tr>
+        <td align='right' class='fila_titulos'>Dia:</td>
+	    <td align="center" id="select_dia">
+        	<?= $sisap->selectTagRemote('reporte_hacienda2/dia', array(),  null,  null ,array('id'=>'dia',  'maxlength'=>'8', true), null, true); ?>
+	    </td>
+    </tr>
+    </table>
+
+<br><br><br><br>
+    <table border="0">
+    <tr>
+       <td  align="center">
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+    </table>
+
+<br><br>
+
+<div id="consulta_capa">
+		    <div id="distribuir" style="height:250px; overflow:auto;">
+				     <table width="100%" cellspacing="0" cellpadding="0" id="grid" border="0" class="tablacompromiso tablacompromiso2">
+							<tr class="tr_negro" align="center">
+							    <td width="10%">Código <br> Ingreso</td>
+							    <td width="30%">Denominación del ingreso</td>
+							    <td width="8%">Deuda <br> Anterior</td>
+							    <td width="8%">Deuda <br> Vigente</td>
+							    <td width="8%">Recargos</td>
+							    <td width="8%">Multas</td>
+							    <td width="8%">Intereses</td>
+							    <td width="8%">Descuento</td>
+							    <td width="12%">TOTAL</td>
+							</tr>
+				       <?php $ii=0; $total=0;
+
+				       $total_a = 0;
+				       $total_b = 0;
+				       $total_c = 0;
+				       $total_d = 0;
+				       $total_e = 0;
+				       $total_f = 0;
+				       $total_g = 0;
+
+				        if(!empty($datos2)){
+
+			  	       	   foreach($datos2 as $ve){
+
+							       	    if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } $ii++;
+
+
+			                              $cod_partida      = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_partida'];
+									      $cod_generica     = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_generica'];
+									      $cod_especifica   = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_especifica'];
+									      $cod_sub_espec    = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_sub_espec'];
+									      $cod_auxiliar     = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_auxiliar'];
+										  $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+										  $deno_partida    = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_partida'];
+										  $deno_generica   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_generica'];
+										  $deno_especifica = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_especifica'];
+										  $deno_sub_espe   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_sub_espe'];
+										  $deno_auxiliar   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_auxiliar'];
+
+										  $deuda_vigente   = $ve[0]['deuda_vigente'];
+										  $deuda_anterior  = $ve[0]['deuda_anterior'];
+										  $monto_recargo   = $ve[0]['monto_recargo'];
+										  $monto_multa     = $ve[0]['monto_multa'];
+										  $monto_intereses   = $ve[0]['monto_intereses'];
+										  $monto_descuento   = $ve[0]['monto_descuento'];
+										  $monto_total     = (($deuda_vigente+$monto_recargo+$monto_multa+$monto_intereses)-$monto_descuento);
+										  $total          += $monto_total;
+
+                                           $total_a += $deuda_vigente;
+									       $total_b += $deuda_anterior;
+									       $total_c += $monto_recargo;
+									       $total_d += $monto_multa;
+									       $total_e += $monto_intereses;
+									       $total_f += $monto_descuento;
+									       $total_g += $monto_total;
+
+
+										  if($deno_auxiliar==null || $deno_auxiliar==""){
+										  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+										  	 	if($deno_especifica==null || $deno_especifica==""){
+										  	 		if($deno_generica==null || $deno_generica==""){
+										  	 			if($deno_partida==null || $deno_partida==""){
+								                               $denominacion_impuesto = "";
+														  }else{
+														  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_partida'];
+														  }
+													  }else{
+													  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_generica'];
+													  }
+												  }else{
+												  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_especifica'];
+												  }
+											  }else{
+											  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_sub_espe'];
+											  }
+										  }else{
+										  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_auxiliar'];
+										  }
+
+
+							       	   ?>
+							       	    <tr bgcolor="<?= $color ?>" align="center">
+										    <td height="22"  width="2"><?= $cod_ingreso ?></td>
+										    <td align="left"><?= cambiar_mayuscula_basic($denominacion_impuesto) ?></td>
+										    <td align='right'><?= $sisap->Formato2($deuda_anterior) ?></td>
+										    <td align='right'><?= $sisap->Formato2($deuda_vigente) ?></td>
+										    <td align='right'><?= $sisap->Formato2($monto_recargo) ?></td>
+										    <td align='right'><?= $sisap->Formato2($monto_multa) ?></td>
+										    <td align='right'><?= $sisap->Formato2($monto_intereses) ?></td>
+										    <td align='right'><?= $sisap->Formato2($monto_descuento) ?></td>
+										    <td align='right'><?= $sisap->Formato2($monto_total) ?></td>
+										</tr>
+								<?php
+						             }//fin for
+						         ?>
+
+				       <?php }else{?>
+							<tr bgcolor="#DAEBFF" align="center">
+							    <td height="22"  width="2">------------------------------</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							    <td>--</td>
+							</tr>
+						<?php } ?>
+
+						<?php if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } ?>
+						<tr bgcolor="<?= $color ?>">
+							    <td height="22"  width="2" colspan="2" align="right"><b>TOTALES:</b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_b) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_a) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_c) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_d) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_e) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_f) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_g) ?></b></td>
+					    </tr>
+
+						</table>
+			</div>
+</div>
+
+
+
+
+</form>
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+<?php }else if($opcion==2){ ?>
+
+<?= $sisap->selectTagRemote('reporte_hacienda2/mes', $lista_mes,  null,  null ,array('onChange'=>'vacio', 'onchange1' => '/reporte_hacienda2/consulta_ingresos/3/'.$year, 'update1'=>'select_dia', 'onchange2' => '/reporte_hacienda2/consulta_ingresos/4/'.$year, 'update2'=>'consulta_capa', 'id'=>'select_2',  'maxlength'=>'8', true), null, true); ?>
+
+<?php }else if($opcion==3){ ?>
+
+<?= $sisap->selectTagRemote('reporte_hacienda2/dia', $lista_dia,  null,  null ,array('onchange1' => '/reporte_hacienda2/consulta_ingresos/4/'.$year.'/'.$mes, 'update1'=>'consulta_capa', 'id'=>'select_3',  'maxlength'=>'8', true), null, true); ?>
+
+
+<?php }else if($opcion==4){ ?>
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+	     <table width="100%" cellspacing="0" cellpadding="0" id="grid" border="0" class="tablacompromiso tablacompromiso2">
+				<tr class="tr_negro" align="center">
+				    <td width="10%">Código <br> Ingreso</td>
+				    <td width="30%">Denominación del ingreso</td>
+				    <td width="8%">Deuda <br> Anterior</td>
+				    <td width="8%">Deuda <br> Vigente</td>
+				    <td width="8%">Recargos</td>
+				    <td width="8%">Multas</td>
+				    <td width="8%">Intereses</td>
+				    <td width="8%">Descuento</td>
+				    <td width="12%">TOTAL</td>
+				</tr>
+	       <?php $ii=0; $total=0;
+	                   $total_a = 0;
+				       $total_b = 0;
+				       $total_c = 0;
+				       $total_d = 0;
+				       $total_e = 0;
+				       $total_f = 0;
+				       $total_g = 0;
+
+	        if(!empty($datos2)){
+
+  	       	   foreach($datos2 as $ve){
+
+				       	    if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } $ii++;
+
+
+                              $cod_partida      = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_partida'];
+						      $cod_generica     = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_generica'];
+						      $cod_especifica   = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_especifica'];
+						      $cod_sub_espec    = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_sub_espec'];
+						      $cod_auxiliar     = $ve["v_shd900_cobranza_acumulada_deno_part"]['cod_auxiliar'];
+							  $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+							  $deno_partida    = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_partida'];
+							  $deno_generica   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_generica'];
+							  $deno_especifica = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_especifica'];
+							  $deno_sub_espe   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_sub_espe'];
+							  $deno_auxiliar   = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_auxiliar'];
+
+							  $deuda_vigente   = $ve[0]['deuda_vigente'];
+							  $deuda_anterior  = $ve[0]['deuda_anterior'];
+							  $monto_recargo   = $ve[0]['monto_recargo'];
+							  $monto_multa     = $ve[0]['monto_multa'];
+							  $monto_intereses   = $ve[0]['monto_intereses'];
+							  $monto_descuento   = $ve[0]['monto_descuento'];
+							  $monto_total     = (($deuda_vigente+$monto_recargo+$monto_multa+$monto_intereses)-$monto_descuento);
+							  $total          += $monto_total;
+
+							               $total_a += $deuda_vigente;
+									       $total_b += $deuda_anterior;
+									       $total_c += $monto_recargo;
+									       $total_d += $monto_multa;
+									       $total_e += $monto_intereses;
+									       $total_f += $monto_descuento;
+									       $total_g += $monto_total;
+
+
+
+							  if($deno_auxiliar==null || $deno_auxiliar==""){
+							  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+							  	 	if($deno_especifica==null || $deno_especifica==""){
+							  	 		if($deno_generica==null || $deno_generica==""){
+							  	 			if($deno_partida==null || $deno_partida==""){
+					                               $denominacion_impuesto = "";
+											  }else{
+											  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_partida'];
+											  }
+										  }else{
+										  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_generica'];
+										  }
+									  }else{
+									  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_especifica'];
+									  }
+								  }else{
+								  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_sub_espe'];
+								  }
+							  }else{
+							  	 $denominacion_impuesto = $ve["v_shd900_cobranza_acumulada_deno_part"]['deno_auxiliar'];
+							  }
+
+
+				       	   ?>
+				       	    <tr bgcolor="<?= $color ?>" align="center">
+							    <td height="22"  width="2"><?= $cod_ingreso ?></td>
+							    <td align="left"><?= cambiar_mayuscula_basic($denominacion_impuesto) ?></td>
+							    <td align='right'><?= $sisap->Formato2($deuda_anterior) ?></td>
+							    <td align='right'><?= $sisap->Formato2($deuda_vigente) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_recargo) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_multa) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_intereses) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_descuento) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_total) ?></td>
+							</tr>
+					<?php
+			             }//fin for
+			         ?>
+
+	       <?php }else{?>
+				<tr bgcolor="#DAEBFF" align="center">
+				    <td height="22"  width="2">------------------------------</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				</tr>
+			<?php } ?>
+
+			<?php if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } ?>
+			          <tr bgcolor="<?= $color ?>">
+							    <td height="22"  width="2" colspan="2" align="right"><b>TOTALES:</b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_b) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_a) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_c) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_d) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_e) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_f) ?></b></td>
+							    <td align="right"><b><?= $sisap->Formato2($total_g) ?></b></td>
+					    </tr>
+
+			</table>
+</div>
+
+
+
+<?php } ?>

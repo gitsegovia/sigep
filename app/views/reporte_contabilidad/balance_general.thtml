@@ -1,0 +1,466 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla("",true,"BALANCE GENERAL","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_contabilidad/balance_general/si'); ?>"  onsubmit="return valida_reporte_contabilidad()"  >
+
+
+<?=$sisap->radio_consolidado('cfpp00/peticion', array('1'=>'institucion', '2'=>'dependencia'),null,false);;
+?>
+<br>
+
+<center>Año:<input name="data[cfpp00][ano]"  value="<?= $year?>" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  /></center>
+
+<br>
+
+<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+	<tr>
+		<td width="10%" align="center">Mes:</td>
+		<td width="15%">
+			<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,  $m, array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+		</td>
+	</tr>
+</table>
+
+<br>
+<div id="capita">
+<table width="600" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<input type="hidden" name="[cugp03_acta_anulacion][tipo_doc_anul]" id="firma" value="<?=$firma?>">
+	<tr>
+		<td width="70" align="center">Firma<input type="hidden" name="data[cugp03_acta_anulacion][tipo_doc_anul]" value="<?=$tipo_doc_anul?>" maxlength="4" id="tipo_doc_anul" class="inputtext" /></td>
+		<td align="center">Nombre Firmante</td>
+		<td align="center">Cargo Firmante</td>
+	</tr>
+	<tr>
+		<td width="70" align="center">1</td>
+		<td><input type="text" name="data[cfpp00][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" maxlength="100" id="nombre_primera_firma"  class="inputtext" /></td>
+		<td><input type="text" name="data[cfpp00][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" maxlength="100" id="cargo_primera_firma"  class="inputtext" /></td>
+	</tr>
+	<tr>
+		<td width="70" align="center">2</td>
+		<td><input type="text" name="data[cfpp00][nombre_segunda_firma]" value="<?=$nombre_segunda_firma?>" maxlength="100" id="nombre_segunda_firma"  class="inputtext" /></td>
+		<td><input type="text" name="data[cfpp00][cargo_segunda_firma]" value="<?=$cargo_segunda_firma?>" maxlength="100" id="cargo_segunda_firma" class="inputtext" /></td>
+	</tr>
+</table>
+</div>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+<br><br>
+<span id="mostOc" >
+    <?= $sisap->submitTagRemote('  Guardar Firmas  ', array( 'funcion'=>'valida_firmas_contabilidad','url1'=>'/reporte_contabilidad/firmas_balance_general/1', 'update1'=>'capita', 'id'=>'b_modificar_firmas', 'disabled'=>'enable')); ?>
+</span>
+
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+
+    function Header(){
+		$this->image("img/logos_dependencias_reportes/logo_".$_SESSION['SScodpresi'].'_'.$_SESSION['SScodentidad'].'_'.$_SESSION['SScodtipoinst'].'_'.$_SESSION['SScodinst'].".jpg",12,10,20);
+	  }//fin funtion
+
+    function Footer(){
+	$this->setY(-42);
+	$this->Cell(20,3,'','',0,'C');
+		$this->Cell(80,3,'','TRL',0,'C');
+		$this->Cell(80,3,'','TRL',0,'C');
+		$this->Cell(0,3,'','',1,'C');
+
+		$this->Cell(20,3,'','',0,'C');
+		$this->Cell(80,3,$_SESSION['firma1'],'RL',0,'C');
+		$this->Cell(80,3,$_SESSION['firma2'],'RL',0,'C');
+		$this->Cell(0,3,'','',1,'C');
+
+		$this->Cell(20,12,'','',0,'C');
+		$this->Cell(80,12,'','TRL',0,'C');
+		$this->Cell(80,12,'','TRL',0,'C');
+		$this->Cell(0,12,'','',1,'C');
+
+		$this->Cell(20,4,'','R',0,'C');
+		$this->Cell(80,4,'_____________________________________','R',0,'C');
+		$this->Cell(80,4,'_____________________________________','R',0,'C');
+		$this->Cell(0,4,'','',1,'C');
+
+		$this->Cell(20,3,'','',0,'C');
+		$this->Cell(80,3,$_SESSION['firma3'],'BL',0,'C');
+		$this->Cell(80,3,$_SESSION['firma4'],'BRL',0,'C');
+
+
+
+    }
+
+}//fin clase
+
+function denominacion($deno, $codigo, $cod_trans){
+	for($j=0; $j<count($deno);$j++){
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+
+$j=0;
+foreach($cuentas1 as $x){
+	$deno_activo[$j] = $x['ccfd01_cuenta']['denominacion'];
+	$cod_activo[$j] = $x['ccfd01_cuenta']['cod_cuenta'];
+	$j++;
+}
+
+$j=0;
+foreach($cuentas2 as $x){
+	$deno_pasivo[$j] = $x['ccfd01_cuenta']['denominacion'];
+	$cod_pasivo[$j] = $x['ccfd01_cuenta']['cod_cuenta'];
+	$j++;
+}
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+$pdf->Ln(10);
+$pdf->SetFont('vera','',9);
+$pdf->Cell(0,5,'BALANCE GENERAL','',1,'C');
+$pdf->Cell(0,5,'AL '.$_SESSION['hasta_dia'].' DE '.$_SESSION['name_mes'].' DE '.$_SESSION['valor_ano'],'',1,'C');
+$pdf->Ln(5);
+$pdf->SetFont('vera','U',8);
+$pdf->Cell(180,5,'ACTIVO','B',0,'C');
+$pdf->Cell(0,5,'PASIVO','B',1,'C');
+
+$pdf->Cell(0,3,'','LR',1,'C');
+//$pdf->Ln(2);
+
+
+$total=0;
+$acum_activo_tesoro=0;
+$acum_pasivo_tesoro=0;
+$cuenta_199=0;
+//pr($cuentas_100);
+if($cuentas_100!=null){
+	$pdf->SetFont('vera','U',9);
+	$pdf->Cell(0,5,'CUENTAS DEL TESORO','LR',1,'C');
+	for($i=0;$i<count($cuentas_100);$i++){
+			$saldo_activo=0;
+			$saldo_pasivo=0;
+
+			$saldo_activo=($cuentas_100[$i]['debito_total_activo']-$cuentas_100[$i]['credito_total_activo']);
+			$saldo_pasivo=($cuentas_100[$i]['credito_total_pasivo']-$cuentas_100[$i]['debito_total_pasivo']);
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(0,2,'','LR',1,'C');
+			if($cuentas_100[$i]['cod_cuenta_activo']!=null){
+				$pdf->Cell(55,5,$cuentas_100[$i]['cod_cuenta_activo'].' – '.$cuentas_100[$i]['cuenta_deno_activo'],'L',0);
+				$pdf->Cell(45,5,$sisap->Formato2($saldo_activo),'',0,'R');
+			}else{
+				$pdf->Cell(55,5,'','L',0);
+				$pdf->Cell(45,5,'','',0,'R');
+			}
+
+
+			if($cuentas_100[$i]['cod_cuenta_pasivo']!=null && $cuentas_100[$i]['cod_cuenta_pasivo']!=199){
+				$pdf->Cell(55,5,$cuentas_100[$i]['cod_cuenta_pasivo'].' – '.$cuentas_100[$i]['cuenta_deno_pasivo'],'',0);
+				$pdf->Cell(0,5,$sisap->Formato2($saldo_pasivo),'R',1,'R');
+			}else{
+				$pdf->Cell(55,5,'','',0);
+				$pdf->Cell(0,5,'','R',1,'R');
+			}
+
+
+			$acum_activo_tesoro+=$saldo_activo;
+			if($cuentas_100[$i]['cod_cuenta_pasivo']!=199){
+				$acum_pasivo_tesoro+=$saldo_pasivo;
+			}
+
+			if($cuentas_100[$i]['cod_cuenta_pasivo']==199){
+				$cuenta_199=$saldo_pasivo;
+			}
+
+
+	}//fin for
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,5,'','L',0);
+	$pdf->Cell(45,5,'','',0,'R');
+
+	$pdf->Cell(55,5,'SUBTOTAL','',0,'C');
+	$pdf->Cell(0,5,$sisap->Formato2($acum_pasivo_tesoro),'R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,5,'','L',0);
+	$pdf->Cell(45,5,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,5,'199 – SITUACIÓN FISCAL DEL TESORO','',0,'L');
+	$pdf->Cell(0,5,$sisap->Formato2($cuenta_199),'R',1,'R');
+
+	$pdf->Cell(53,5,'','L',0);
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(42,5,$sisap->Formato2($acum_activo_tesoro),'',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$total=$cuenta_199+$acum_pasivo_tesoro;
+	$pdf->Cell(53,5,'','',0,'C');
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(0,3,$sisap->Formato2($total),'R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+}
+
+$acum_activo_hacienda=0;
+$acum_pasivo_hacienda=0;
+if($cuentas_200!=null){
+	$pdf->SetFont('vera','U',9);
+	$pdf->Cell(0,5,'CUENTAS DE LA HACIENDA','LR',1,'C');
+	for($i=0;$i<count($cuentas_200);$i++){
+			$saldo_activo=0;
+			$saldo_pasivo=0;
+
+			$saldo_activo=($cuentas_200[$i]['debito_total_activo']-$cuentas_200[$i]['credito_total_activo']);
+			$saldo_pasivo=($cuentas_200[$i]['credito_total_pasivo']-$cuentas_200[$i]['debito_total_pasivo']);
+
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(0,2,'','LR',1,'C');
+			if($cuentas_200[$i]['cod_cuenta_activo']!=null){
+				$pdf->Cell(55,5,$cuentas_200[$i]['cod_cuenta_activo'].' – '.$cuentas_200[$i]['cuenta_deno_activo'],'L',0);
+				$pdf->Cell(45,5,$sisap->Formato2($saldo_activo),'',0,'R');
+			}else{
+				$pdf->Cell(55,5,'','L',0);
+				$pdf->Cell(45,5,'','',0,'R');
+			}
+
+
+			if($cuentas_200[$i]['cod_cuenta_pasivo']!=null){
+				$pdf->Cell(55,5,$cuentas_200[$i]['cod_cuenta_pasivo'].' – '.$cuentas_200[$i]['cuenta_deno_pasivo'],'',0);
+				$pdf->Cell(0,5,$sisap->Formato2($saldo_pasivo),'R',1,'R');
+			}else{
+				$pdf->Cell(55,5,'','',0);
+				$pdf->Cell(0,5,'','R',1,'R');
+			}
+
+			$acum_activo_hacienda+=$saldo_activo;
+			$acum_pasivo_hacienda+=$saldo_pasivo;
+
+
+	}//fin for
+
+}
+
+$acum_activo_presupuesto=0;
+$acum_pasivo_presupuesto=0;
+if($cuentas_300!=null){
+	$pdf->SetFont('vera','U',9);
+	$pdf->Cell(0,5,'CUENTAS DEL PRESUPUESTO','LR',1,'C');
+	for($i=0;$i<count($cuentas_300);$i++){
+			$saldo_activo=0;
+			$saldo_pasivo=0;
+
+			$saldo_activo=($cuentas_300[$i]['debito_total_activo']-$cuentas_300[$i]['credito_total_activo']);
+			$saldo_pasivo=($cuentas_300[$i]['credito_total_pasivo']-$cuentas_300[$i]['debito_total_pasivo']);
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(0,2,'','LR',1,'C');
+
+			if($cuentas_300[$i]['cod_cuenta_activo']!=null){
+				$pdf->Cell(55,5,$cuentas_300[$i]['cod_cuenta_activo'].' – '.$cuentas_300[$i]['cuenta_deno_activo'],'L',0);
+				$pdf->Cell(45,5,$sisap->Formato2($saldo_activo),'',0,'R');
+			}else{
+				$pdf->Cell(55,5,'','L',0);
+				$pdf->Cell(45,5,'','',0,'R');
+			}
+
+
+			if($cuentas_300[$i]['cod_cuenta_pasivo']!=null){
+				$pdf->Cell(55,5,$cuentas_300[$i]['cod_cuenta_pasivo'].' – '.$cuentas_300[$i]['cuenta_deno_pasivo'],'',0);
+				$pdf->Cell(0,5,$sisap->Formato2($saldo_pasivo),'R',1,'R');
+			}else{
+				$pdf->Cell(55,5,'','',0);
+				$pdf->Cell(0,5,'','R',1,'R');
+			}
+
+
+			$acum_activo_presupuesto+=$saldo_activo;
+			$acum_pasivo_presupuesto+=$saldo_pasivo;
+
+
+	}//fin for
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+}
+
+$acum_activo_orden=0;
+$acum_pasivo_orden=0;
+if($cuentas_400!=null){
+	$pdf->SetFont('vera','U',9);
+	$pdf->Cell(0,5,'CUENTAS DE ORDEN','LR',1,'C');
+	for($i=0;$i<count($cuentas_400);$i++){
+			$saldo_activo=0;
+			$saldo_pasivo=0;
+
+			$saldo_activo=($cuentas_400[$i]['debito_total_activo']-$cuentas_400[$i]['credito_total_activo']);
+			$saldo_pasivo=($cuentas_400[$i]['credito_total_pasivo']-$cuentas_400[$i]['debito_total_pasivo']);
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(0,2,'','LR',1,'C');
+
+			if($cuentas_400[$i]['cod_cuenta_activo']!=null){
+				$pdf->Cell(55,5,$cuentas_400[$i]['cod_cuenta_activo'].' – '.$cuentas_400[$i]['cuenta_deno_activo'],'L',0);
+				$pdf->Cell(45,5,$sisap->Formato2($saldo_activo),'',0,'R');
+			}else{
+				$pdf->Cell(55,5,'','L',0);
+				$pdf->Cell(45,5,'','',0,'R');
+			}
+
+
+			if($cuentas_400[$i]['cod_cuenta_pasivo']!=null){
+				$pdf->Cell(55,5,$cuentas_400[$i]['cod_cuenta_pasivo'].' – '.$cuentas_400[$i]['cuenta_deno_pasivo'],'',0);
+				$pdf->Cell(0,5,$sisap->Formato2($saldo_pasivo),'R',1,'R');
+			}else{
+				$pdf->Cell(55,5,'','',0);
+				$pdf->Cell(0,5,'','R',1,'R');
+			}
+
+
+			$acum_activo_orden+=$saldo_activo;
+			$acum_pasivo_orden+=$saldo_pasivo;
+
+
+	}//fin for
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$hacienda_presupuesto_orden_activo=($acum_activo_presupuesto+$acum_activo_hacienda+$acum_activo_orden);
+
+	$hacienda_presupuesto_orden_pasivo=($acum_pasivo_presupuesto+$acum_pasivo_hacienda+$acum_pasivo_orden);
+
+	$pdf->Cell(53,5,'','L',0);
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(42,3,$sisap->Formato2($hacienda_presupuesto_orden_activo),'',0,'R');
+
+	$pdf->Cell(53,5,'','',0,'C');
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(0,3,$sisap->Formato2($hacienda_presupuesto_orden_pasivo),'R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+
+}else{
+
+	$hacienda_presupuesto_activo=($acum_activo_presupuesto+$acum_activo_hacienda);
+
+	$hacienda_presupuesto_pasivo=($acum_pasivo_presupuesto+$acum_pasivo_hacienda);
+
+	$pdf->Cell(53,5,'','L',0);
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(42,3,$sisap->Formato2($hacienda_presupuesto_activo),'',0,'R');
+
+	$pdf->Cell(53,5,'','',0,'C');
+	$pdf->Cell(5,5,'Bs.','',0,'R');
+	$pdf->Cell(0,3,$sisap->Formato2($hacienda_presupuesto_pasivo),'R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(55,3,'','L',0);
+	$pdf->Cell(45,3,'--------------------------------','',0,'R');
+
+	$pdf->Cell(55,3,'','',0,'C');
+	$pdf->Cell(0,3,'--------------------------------','R',1,'R');
+
+}
+
+
+
+///////////////////////////////////FIN DEL BALANCE//////////////////////////////////////////////////////////////
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(55,5,'','BL',0);
+$pdf->Cell(45,5,'','B',0,'R');
+
+$pdf->Cell(55,5,'','B',0,'C');
+$pdf->Cell(0,5,'','RB',1,'R');
+
+
+$pdf->Output('Balance_General_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

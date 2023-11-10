@@ -1,0 +1,496 @@
+<?php
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.032 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+function Header()
+{
+	$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',7,31,19);
+	$this->SetFont('vera','B',10);
+	$this->Cell(28,5,"",'TL',0);
+	$this->Cell(0,5,$_SESSION['entidad_federal_aux'],'TR',1);//----AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->Cell(28,5,"",'L',0);
+	$this->SetFont('vera','',9);
+	$this->Cell(0,5,$_SESSION['titulo'],'R',1);//----AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->SetFont('vera','B',12);
+	$this->Cell(25,10,"",'L',0);
+	$this->MultiCell(0,5,"RESUMEN DE LOS CRÉDITOS PRESUPUESTARIOS",'R','C');
+	$this->SetFont('vera','',7);
+	$this->Cell(30,3,"",'L',0);
+	$this->Cell(0,3,"(BOLIVAR FUERTE)",'R',1,'C');
+	$this->SetFont('vera','',9);
+	$this->Cell(28,5,"",'BL',0);
+	$this->Cell(0,5,"PRESUPUESTO :".$_SESSION['ejercicio'],'RB',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+	$this->Ln(8);
+  }//fin funtion
+}//fin clases
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+
+
+
+
+
+$fpdf = new fpdfview('L','mm','Legal');
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(30);
+$fpdf->SetLeftMargin(4);
+$fpdf->SetRightMargin(4);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+//$fpdf->AddPage();
+
+
+$totaltotal=0;
+//-------------------------------------------------------
+foreach($distintos_sectores as $ds){
+	$var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+	foreach($cfpd05 as $denos_cfpd05){
+		if($var[1]==$denos_cfpd05["v_balance_ejecucion"]["cod_sector"] && $var[2]==$denos_cfpd05["v_balance_ejecucion"]["cod_programa"] && $var[3]==$denos_cfpd05["v_balance_ejecucion"]["cod_sub_prog"] && $var[4]==$denos_cfpd05["v_balance_ejecucion"]["cod_proyecto"] && $var[5]==$denos_cfpd05["v_balance_ejecucion"]["cod_activ_obra"]){
+			$var[11]=$denos_cfpd05["v_balance_ejecucion"]["deno_sector"];
+	        $var[12]=$denos_cfpd05["v_balance_ejecucion"]["deno_programa"];
+	        $var[13]=$denos_cfpd05["v_balance_ejecucion"]["deno_sub_prog"];
+	        $var[14]=$denos_cfpd05["v_balance_ejecucion"]["deno_proyecto"];
+	        $var[15]=$denos_cfpd05["v_balance_ejecucion"]["deno_activ_obra"];
+	        break;
+	   }
+	}
+
+    if($var[4]!=0){
+    	$var[16]=" no se que va";
+    }else{
+    	$var[16]="no se que va 2";
+    }
+    $var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+    $fpdf->AddPage();
+	$fpdf->Cell(33,4,"",'TBRL',0,'C');
+	$fpdf->Cell(17,4,"CÓDIGO",'TBRL',0,'C');
+	$fpdf->Cell(0,4,"D E N O M I N A C I Ó N",'TBRL',1,'C');
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"SECTOR",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[1],'RBL',0,'C');//-----------------------[COD. SECTOR]
+	$fpdf->Cell(0,4,$var[11],'RBL',1,'L');//------------------------[DENO SECTOR]
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"PROGRAMA",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[2],'RBL',0,'C');//-----------------------[COD. PROGRAMA]
+	$fpdf->Cell(0,4,$var[12],'RBL',1,'L');//------------------------[DENO PROGRAMA]
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"SUBPROGRAMA",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[3],'RBL',0,'C');//-----------------------[COD. SUBPROGRAMA]
+	$fpdf->Cell(0,4,$var[13],'RBL',1,'L');//------------------------[DENO SUBP]
+    if($var[4]!=0){
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"PROYECTO",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[4],'RBL',0,'C');//-----------------------[COD. PROYECTO]
+	$fpdf->Cell(0,4,$var[14],'RBL',1,'L');//------------------------[DENO PROYECTO]
+    }
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"ACTIVIDAD U OBRA",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[5],'RBL',0,'C');//-----------------------[COD. ACTIVIDAD]
+	$fpdf->Cell(0,4,$var[15],'RBL',1,'L');//------------------------[DENO ACTIVIDAD]
+/*
+	        $fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"UNIDAD EJECUTORA",'BL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,"",'RB',0,'C');//-----------------------[COD. UNID. EJECUTORA]
+			$fpdf->Cell(0,4,$var[16],'RBL',1,'L');//------------------------[DENO UNID. EJECUTORA]
+			$fpdf->Ln();
+*/
+	$fpdf->SetFont('vera','B',7);
+	$fpdf->Cell(50,4,"CÓDIGOS",'TRBL',0,'C');
+	$fpdf->Cell(80,4,"",'TR',0,'C');
+	$fpdf->Cell(25,4,"",'TR',0,'C');
+
+		$fpdf->Cell(21,4,"",'TR',0,'C');//------------[Aumento]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Disminución]
+		$fpdf->Cell(23,4,"",'TR',0,'C');//---------[total Asignacion]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//-----[Pre compromiso]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//---------[compromiso]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//------------[Causado]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//-------------[Pagado]
+		$fpdf->Cell(21,4,"",'TR',0,'C');//--------------[Deuda]
+		$fpdf->Cell(0,4,"",'TR',1,'C');//------[Disponibilidad]
+
+	$fpdf->Cell(9,3,"",'RL',0,'C');
+	$fpdf->Cell(8,3,"",'R',0,'C');
+	$fpdf->Cell(8,3,"",'R',0,'C');
+	$fpdf->Cell(8,3,"",'R',0,'C');
+	$fpdf->Cell(8,3,"",'R',0,'C');
+	$fpdf->Cell(9,3,"",'R',0,'C');
+
+	$fpdf->Cell(80,3,"",'R',0,'C');
+	$fpdf->Cell(25,3,"",'R',0,'C');
+
+		$fpdf->Cell(21,3,"",'R',0,'C');//------------[Aumento]
+		$fpdf->Cell(21,3,"",'R',0,'C');//--------[Disminución]
+		$fpdf->Cell(23,3,"",'R',0,'C');//---------[total Asignacion]
+		$fpdf->Cell(21,3,"",'R',0,'C');//-----[Pre compromiso]
+		$fpdf->Cell(21,3,"",'R',0,'C');//---------[compromiso]
+		$fpdf->Cell(21,3,"",'R',0,'C');//------------[Causado]
+		$fpdf->Cell(21,3,"",'R',0,'C');//-------------[Pagado]
+		$fpdf->Cell(21,3,"",'R',0,'C');//--------------[Deuda]
+		$fpdf->Cell(0,3,"",'R',1,'C');//------[Disponibilidad]
+
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(9,5,"",'RL',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(8,5,"SUB",'R',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(9,5,"CÓDIGO",'R',0,'C');
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(80,5,"D E N O M I N A C I Ó N",'R',0,'C');
+	$fpdf->Cell(25,5,"",'R',0,'C');
+
+		$fpdf->Cell(21,5,"",'R',0,'C');//------------[Aumento]
+		$fpdf->Cell(21,5,"",'R',0,'C');//--------[Disminución]
+		$fpdf->Cell(23,5,"",'R',0,'C');//---------[total Asignacion]
+		$fpdf->Cell(21,5,"",'R',0,'C');//-----[Pre compromiso]
+		$fpdf->Cell(21,5,"",'R',0,'C');//---------[compromiso]
+		$fpdf->Cell(21,5,"",'R',0,'C');//------------[Causado]
+		$fpdf->Cell(21,5,"",'R',0,'C');//-------------[Pagado]
+		$fpdf->Cell(21,5,"",'R',0,'C');//--------------[Deuda]
+		$fpdf->Cell(0,5,"",'R',1,'C');//------[Disponibilidad]
+
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(9,3,"PART.",'RLB',0,'C');
+	$fpdf->Cell(8,3,"GEN.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ORDI.",'RB',0,'C');
+	$fpdf->Cell(9,3,"OBRA",'RB',0,'C');
+	$fpdf->Cell(80,3,"",'RB',0,'C');
+	$fpdf->Cell(25,3,"ASIGNACIÓN",'RB',0,'C');
+
+		$fpdf->Cell(21,3,"Aumento",'RB',0,'C');//------------[Aumento]
+		$fpdf->Cell(21,3,"Disminución",'RB',0,'C');//--------[Disminución]
+		$fpdf->Cell(23,3,"Total Asignacion",'RB',0,'C');//---------[total Asignacion]
+		$fpdf->Cell(21,3,"Pre compromiso",'RB',0,'C');//-----[Pre compromiso]
+		$fpdf->Cell(21,3,"Compromiso",'RB',0,'C');//---------[compromiso]
+		$fpdf->Cell(21,3,"Causado",'RB',0,'C');//------------[Causado]
+		$fpdf->Cell(21,3,"Pagado",'RB',0,'C');//-------------[Pagado]
+		$fpdf->Cell(21,3,"Deuda",'RB',0,'C');//--------------[Deuda]
+		$fpdf->Cell(0,3,"Disponibilidad",'RB',1,'C');//------[Disponibilidad]
+
+	$fpdf->SetFont('vera','',7);
+    $var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+	$var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+	$totales['asignacion_anual']=0;
+	$totales['aumento']=0;
+	$totales['disminucion']=0;
+	$totales['total_asignacion']=0;
+	$totales['pre_compromiso']=0;
+	$totales['compromiso']=0;
+	$totales['causado']=0;
+	$totales['pagado']=0;
+	$totales['deuda']=0;
+	$totales['disponibilidad']=0;
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd['v_balance_ejecucion']['cod_sector'];
+		$var2[2]=$vcfpd['v_balance_ejecucion']['cod_programa'];
+		$var2[3]=$vcfpd['v_balance_ejecucion']['cod_sub_prog'];
+		$var2[4]=$vcfpd['v_balance_ejecucion']['cod_proyecto'];
+		$var2[5]=$vcfpd['v_balance_ejecucion']['cod_activ_obra'];
+		$var2[6]=$vcfpd['v_balance_ejecucion']['cod_partida'];
+		$var2[7]=$vcfpd['v_balance_ejecucion']['cod_generica'];
+		$var2[8]=$vcfpd['v_balance_ejecucion']['cod_especifica'];
+		$var2[9]=$vcfpd['v_balance_ejecucion']['cod_sub_espec'];
+		$var2[10]=$vcfpd['v_balance_ejecucion']['cod_auxiliar'];
+		$var2[11]=$vcfpd['v_balance_ejecucion']['asignacion_anual'];
+        $var2["aumento"]=$vcfpd['v_balance_ejecucion']['aumento'];
+        $var2["disminucion"]=$vcfpd['v_balance_ejecucion']['disminucion'];
+        $var2["total_asignacion"]=$vcfpd['v_balance_ejecucion']['total_asignacion'];
+        $var2["pre_compromiso"]=$vcfpd['v_balance_ejecucion']['pre_compromiso'];
+        $var2["compromiso"]=$vcfpd['v_balance_ejecucion']['compromiso_anual'];
+        $var2["causado"]=$vcfpd['v_balance_ejecucion']['causado_anual'];
+        $var2["pagado"]=$vcfpd['v_balance_ejecucion']['pagado_anual'];
+        $var2["deuda"]=$vcfpd['v_balance_ejecucion']['deuda'];
+        $var2["disponibilidad"]=$vcfpd['v_balance_ejecucion']['disponibilidad'];
+
+		//if($var2[9]==0 && $var2[10]==0){
+			//$var2[12]=$vcfpd["_balance_ejecucion"]["deno_"];
+		//}else
+		if($var2[10]!=0){
+            $var2[12]=$vcfpd["v_balance_ejecucion"]["deno_auxiliar"];
+		}else{
+			$var2[12]=$vcfpd["v_balance_ejecucion"]["deno_sub_espec"];
+		}
+		//$var2[11]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(1=>$var2[6],2=>$var2[7],3=>$var2[8],4=>$var2[9]));
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     //$var2[9]=$var2[9]==0 ? "" : $var2[9];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+		$x = $fpdf->GetY();
+		if($var[1]==$var2[1] && $var[2]==$var2[2] && $var[3]==$var2[3] && $var[4]==$var2[4] && $var[5]==$var2[5]){
+			//$totaltotal=$totaltotal+$var2[11];
+        if($x >= 190){
+
+            $fpdf->AddPage();
+			$fpdf->Cell(33,4,"",'TBRL',0,'C');
+			$fpdf->Cell(17,4,"CÓDIGO",'TBRL',0,'C');
+			$fpdf->Cell(0,4,"D E N O M I N A C I Ó N",'TBRL',1,'C');
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"SECTOR",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[1],'RBL',0,'C');//-----------------------[COD. SECTOR]
+			$fpdf->Cell(0,4,$var[11],'RBL',1,'L');//------------------------[DENO SECTOR]
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"PROGRAMA",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[2],'RBL',0,'C');//-----------------------[COD. PROGRAMA]
+			$fpdf->Cell(0,4,$var[12],'RBL',1,'L');//------------------------[DENO PROGRAMA]
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"SUBPROGRAMA",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[3],'RBL',0,'C');//-----------------------[COD. SUBPROGRAMA]
+			$fpdf->Cell(0,4,$var[13],'RBL',1,'L');//------------------------[DENO SUBP]
+		    if($var[4]!=0){
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"PROYECTO",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[4],'RBL',0,'C');//-----------------------[COD. PROYECTO]
+			$fpdf->Cell(0,4,$var[14],'RBL',1,'L');//------------------------[DENO PROYECTO]
+		    }
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"ACTIVIDAD U OBRA",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[5],'RBL',0,'C');//-----------------------[COD. ACTIVIDAD]
+			$fpdf->Cell(0,4,$var[15],'RBL',1,'L');//------------------------[DENO ACTIVIDAD]
+/*
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"UNIDAD EJECUTORA",'BL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,"",'RB',0,'C');//-----------------------[COD. UNID. EJECUTORA]
+			$fpdf->Cell(0,4,$var[16],'RBL',1,'L');//------------------------[DENO UNID. EJECUTORA]
+			$fpdf->Ln();
+*/
+			$fpdf->SetFont('vera','B',7);
+			$fpdf->Cell(50,4,"CÓDIGOS",'TRBL',0,'C');
+			$fpdf->Cell(80,4,"",'TR',0,'C');
+			$fpdf->Cell(25,4,"",'TR',0,'C');
+
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Aumento]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Disminución]
+			$fpdf->Cell(23,4,"",'TR',0,'C');//--------[total Asignacion]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Pre compromiso]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[compromiso]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Causado]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Pagado]
+			$fpdf->Cell(21,4,"",'TR',0,'C');//--------[Deuda]
+			$fpdf->Cell(0,4,"",'TR',1,'C');//---------[Disponibilidad]
+
+			$fpdf->Cell(9,3,"",'RL',0,'C');
+			$fpdf->Cell(8,3,"",'R',0,'C');
+			$fpdf->Cell(8,3,"",'R',0,'C');
+			$fpdf->Cell(8,3,"",'R',0,'C');
+			$fpdf->Cell(8,3,"",'R',0,'C');
+			$fpdf->Cell(9,3,"",'R',0,'C');
+
+			$fpdf->Cell(80,3,"",'R',0,'C');
+			$fpdf->Cell(25,3,"",'R',0,'C');
+
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Aumento]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Disminución]
+			$fpdf->Cell(23,3,"",'R',0,'C');//--------[total Asignacion]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Pre compromiso]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[compromiso]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Causado]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Pagado]
+			$fpdf->Cell(21,3,"",'R',0,'C');//--------[Deuda]
+			$fpdf->Cell(0,3,"",'R',1,'C');//---------[Disponibilidad]
+
+			$fpdf->SetFont('vera','B',5);
+			$fpdf->Cell(9,4,"",'RL',0,'C');
+			$fpdf->Cell(8,4,"",'R',0,'C');
+			$fpdf->Cell(8,4,"",'R',0,'C');
+			$fpdf->Cell(8,4,"SUB",'R',0,'C');
+			$fpdf->Cell(8,4,"",'R',0,'C');
+			$fpdf->Cell(9,4,"CÓDIGO",'R',0,'C');
+			$fpdf->SetFont('vera','B',8);
+			$fpdf->Cell(80,4,"D E N O M I N A C I Ó N",'R',0,'C');
+			$fpdf->Cell(25,4,"",'R',0,'C');
+
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[Aumento]
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[Disminución]
+			$fpdf->Cell(23,4,"",'R',0,'C');//---[total Asignacion]
+			$fpdf->Cell(21,4,"",'R',0,'C');//-----[Pre compromiso]
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[compromiso]
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[Causado]
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[Pagado]
+			$fpdf->Cell(21,4,"",'R',0,'C');//--------[Deuda]
+			$fpdf->Cell(0,4,"",'R',1,'C');//---------[Disponibilidad]
+
+			$fpdf->SetFont('vera','B',5);
+			$fpdf->Cell(9,3,"PART.",'RLB',0,'C');
+			$fpdf->Cell(8,3,"GEN.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ORDI.",'RB',0,'C');
+			$fpdf->Cell(9,3,"OBRA",'RB',0,'C');
+			$fpdf->Cell(80,3,"",'RB',0,'C');
+			$fpdf->Cell(25,3,"ASIGNACIÓN",'RB',0,'C');
+
+			$fpdf->Cell(21,3,"Aumento",'RB',0,'C');//------------[Aumento]
+			$fpdf->Cell(21,3,"Disminución",'RB',0,'C');//--------[Disminución]
+			$fpdf->Cell(23,3,"Total Asignacion",'RB',0,'C');//---------[total Asignacion]
+			$fpdf->Cell(21,3,"Pre compromiso",'RB',0,'C');//-----[Pre compromiso]
+			$fpdf->Cell(21,3,"Compromiso",'RB',0,'C');//---------[compromiso]
+			$fpdf->Cell(21,3,"Causado",'RB',0,'C');//------------[Causado]
+			$fpdf->Cell(21,3,"Pagado",'RB',0,'C');//-------------[Pagado]
+			$fpdf->Cell(21,3,"Deuda",'RB',0,'C');//--------------[Deuda]
+			$fpdf->Cell(0,3,"Disponibilidad",'RB',1,'C');//------[Disponibilidad]
+
+			$fpdf->SetFont('vera','',7);
+        }//fin $x 190
+
+            $fpdf->SetFont('vera','',6);
+		    $fpdf->Cell(9,18,$var2[6],'TRLB',0,'C');//-------------[PARTIDA]
+		    $fpdf->Cell(8,18,$var2[7],'TRB',0,'C');//--------------[GENERICA]
+		    $fpdf->Cell(8,18,$var2[8],'TRB',0,'C');//--------------[ESP.]
+		    $fpdf->Cell(8,18,$var2[9],'TRB',0,'C');//--------------[SUB. ESP.]
+		    $fpdf->Cell(8,18,$var2[10],'TRB',0,'C');//-------------[ORDINARIA]
+		    $fpdf->Cell(9,18,"",'TRB',0,'C');//--------------------[COD. OBRA]
+		    $varX = $fpdf->GetX();
+		    $varY = $fpdf->GetY();
+		    $fpdf->Cell(80,1,"",'T',2,'C');
+		    $fpdf->MultiCell(80,3,$var2[12],'','J');//-----------[DENOMINACION TODO]
+		    $varX = $varX+80;
+		    $fpdf->SetXY($varX,$varY);
+
+		    $fpdf->Cell(25,18,$sisap->Formato2($var2[11]),'TLRB',0,'R');//------[Asignacion anual]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["aumento"]),'TRB',0,'R');//-------------------[Aumento]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["disminucion"]),'TRB',0,'R');//-------------------[Disminución]
+			$fpdf->Cell(23,18,$sisap->Formato2($var2["total_asignacion"]),'TRB',0,'R');//-------------------[total Asignacion]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["pre_compromiso"]),'TRB',0,'R');//-------------------[Pre compromiso]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["compromiso"]),'TRB',0,'R');//-------------------[compromiso]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["causado"]),'TRB',0,'R');//-------------------[Causado]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["pagado"]),'TRB',0,'R');//-------------------[Pagado]
+			$fpdf->Cell(21,18,$sisap->Formato2($var2["deuda"]),'TRB',0,'R');//-------------------[Deuda]
+			$fpdf->Cell(0,18,$sisap->Formato2($var2["disponibilidad"]),'TRB',1,'R');//--------------------[Disponibilidad]
+		    $fpdf->Cell(0,0,"",'T',1,'C');
+		    $totaltotal=$totaltotal+$var2[11];
+		    $totales['asignacion_anual']+=$var2[11];
+			$totales['aumento']+=$var2["aumento"];
+			$totales['disminucion']+=$var2["disminucion"];
+			$totales['total_asignacion']+=$var2["total_asignacion"];
+			$totales['pre_compromiso']+=$var2["pre_compromiso"];
+			$totales['compromiso']+=$var2["compromiso"];
+			$totales['causado']+=$var2["causado"];
+			$totales['pagado']+=$var2["pagado"];
+			$totales['deuda']+=$var2["deuda"];
+			$totales['disponibilidad']+=$var2["disponibilidad"];
+        }//end if
+
+	}//fin foreach cfpd05
+
+
+
+
+
+
+
+
+
+
+	$fpdf->SetFont('vera','B',9);
+    $fpdf->Cell(130,8,"T O T A L E S   ",'TRBL',0,'R');
+    $fpdf->SetFont('vera','B',6);
+    $fpdf->Cell(25,8,$sisap->Formato2($totales['asignacion_anual']),'TLRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['aumento']),'TRB',0,'R');
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['disminucion']),'TRB',0,'R');//
+	$fpdf->Cell(23,8,$sisap->Formato2($totales['total_asignacion']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['pre_compromiso']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['compromiso']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['causado']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['pagado']),'TRB',0,'R');//
+	$fpdf->Cell(21,8,$sisap->Formato2($totales['deuda']),'TRB',0,'R');//
+    $fpdf->Cell(0,8,$sisap->Formato2($totales['disponibilidad']),'TLRB',1,'R');//
+    $totaltotal=0;
+    $totales['asignacion_anual']=0;
+	$totales['aumento']=0;
+	$totales['disminucion']=0;
+	$totales['total_asignacion']=0;
+	$totales['pre_compromiso']=0;
+	$totales['compromiso']=0;
+	$totales['causado']=0;
+	$totales['pagado']=0;
+	$totales['deuda']=0;
+	$totales['disponibilidad']=0;
+}//fin foreach distintos_sectores
+
+//$fpdf->SetFont('vera','B',9);
+//$fpdf->Cell(230,8,"T O T A L E S        ",'TRBL',0,'R');
+//$fpdf->Cell(0,8,$sisap->Formato2($totaltotal),'TLRB',1,'R');//-----[Asignacion anual]
+//$fpdf->SetFont('vera','B',6);
+//$fpdf->Cell(0,6,"FORMA: 2.032",'',1,'R');
+$fpdf->OutPut('balance_ejecucion_presupuestaria_'.date("d-m-Y").".pdf",'D');
+?>

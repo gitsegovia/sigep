@@ -1,0 +1,81 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<form name='data[cnmp03transacciones]'  method = "post" id='form'>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+   <tr>
+    <td align="center" colspan="3">TIPO DE TRANSACCIÓN</td>
+   </tr>
+   <tr>
+    <td align="center" colspan="3"><?= $html->radio('cnmp03transacciones/tipo_transaccion', array('1'=>'Asignaci&oacute;n', '2'=>'Deducci&oacute;n'), NULL, array('id'=>'tipo_transaccion','onClick'=>'TipoTransaccion2()'))?></td>
+   </tr>
+   <tr>
+    <td align="right" colspan="3">Buscar&nbsp;<?= $html->input('cnmp03transacciones/observa_transaccion',array('id'=>'observa_transaccion','style'=>'width:40%;','maxlength'=>50));?>
+    	<?php
+    		$execscript = "var observa_pista; var tipo_transaccione; observa_pista = document.getElementById('observa_transaccion').value;
+		if(document.getElementById('tipo_transaccion_1').checked==true){tipo_transaccione = 1;}else{tipo_transaccione = 2;}
+        ver_documento('/cnmp03transacciones/observar2transaccion/'+tipo_transaccione+'/'+observa_pista, 'carga_observa_trans');";
+    	echo $ajax->link($html->image('eye_dosb.png',array('border'=>0, 'width'=>24, 'height'=>24, "onclick"=>"javascript:$execscript")), '#', array('update'=>'#','title'=>'Observar'),'',false,true); ?>
+    </td>
+   </tr>
+</table>
+
+<div id="carga_observa_trans">
+</div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0"  class="tablacompromiso tablacompromiso3">
+    <tr>
+      <td  align="center" height="27" width="10%">C&oacute;digo</td>
+      <td align="center" width="50%">Denominaci&oacute;n de la transacci&oacute;n</td>
+      <td align="center" width="20%">Denominaci&oacute;n para el recibo</td>
+    </tr>
+     <tr>
+      <td align="center"><input name="data[cnmp03transacciones][codigo]" style="text-align:center;"  size="3" value="" id="codigo_transaccion" maxlength="4" onKeyPress="return solonumeros(event);" style="width:95%" disabled="disabled"></td>
+      <td><?= $html->input('cnmp03transacciones/denominaciont',array('style'=>'width:98%;','maxlength'=>50,'disabled'=>'disabled'));?></td>
+      <td><?= $html->input('cnmp03transacciones/denominacionp',array('style'=>'width:98%;','maxlength'=>15,'disabled'=>'disabled'));?></td>
+    </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+ <tr>
+     <td >&nbsp;</td><td colspan="4"  align="center" height="27">USO DE LA TRANSACCIÓN</td>
+ </tr>
+  <tr>
+     <td align="center" height="27">Tipo de asignaci&oacute;n</td><td align="center">Asignación</td><td align="center">Deducci&oacute;n</td><td align="center">GRUPO CONTABLE - DEDUCCIONES</td>
+ </tr>
+  <tr>
+     <td valign="top" width="18%"><?= $html->radio('cnmp03transacciones/tipo_asignacion', array('1'=>'Prima', '2'=>'Compensaci&oacute;n','3'=>'Bono','4'=>'Ninguna'), '<br>', array('disabled'=>'disabled'))?></td>
+     <td valign="top" width="23%"><?= $html->radio('cnmp03transacciones/uso_transaccion', array('1'=>'Fijo seg&uacute;n la ley', '2'=>'Fijo seg&uacute;n contrato','7'=>'Eventual'), '<br>', array('onClick'=>'UsoTransaccion()','disabled'=>'disabled'))?></td>
+     <td valign="top" width="34%"><?= $html->radio('cnmp03transacciones/uso_transaccion', array('3'=>'Fijo terceros seg&uacute;n la ley', '4'=>'Fijo terceros seg&uacute;n contrato','5'=>'Fijo terceros casas comerciales','6'=>'Fijo aportes patronales','8'=>'Abono a cuenta','77'=>'Eventual'), '<br>',array('onClick'=>'UsoTransaccion()','disabled'=>'disabled'))?></td>
+ 	 <td valign="top" width="25%"><?= $html->selectTag('cnmp03transacciones/enlace_contable', array('1'=>'SEGURO SOCIAL OBLIGATORIO','2'=>'PARO FORZOSO','3'=>'LEY DE POLITICA HABITACIONAL','4'=>'FONDO DE PENSIÓN Y JUBILACIÓN','5'=>'CAJAS DE AHORROS','6'=>'SINDICATOS Y GREMIOS','7'=>'JUZGADOS Y TRIBUNALES','8'=>'CASAS COMERCIALES','99'=>'OTRAS RETENCIONES (DEDUCCIONES)'), null, array('id'=>'enlace_contable','disabled'=>'disabled'))?></td>
+ </tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0"  class="tablacompromiso tablacompromiso3">
+ <tr id="tipo_padre0">
+     <td>&nbsp;</td><td colspan="3" align="center" height="27">TRANSACCIÓN PADRE DEL APORTE PATRONAL O ABONO A CUENTA</td>
+ </tr>
+  <tr id="tipo_padre1">
+     <td  align="center" height="27">Tipo de actualizaci&oacute;n</td><td  align="center">Tipo de transacci&oacute;n</td><td align="center" width="10%">C&oacute;digo</td><td align="center">Denominaci&oacute;n de transacci&oacute;n</td>
+ </tr>
+  <tr>
+     <td><?= $html->radio('cnmp03transacciones/tipo_actualizacion', array('1'=>'Acumulativa', '2'=>'Deductiva'), '<br>', array('value'=>'2'))?></td>
+     <td><div id="TP1">
+      <?= $sisap->radioTagRemote('cnmp03transacciones/cod_tipo_transaccion_padre', array('1'=>'Asignaci&oacute;n', '2'=>'Deducci&oacute;n'), array('url1'=>'/cnmp03transacciones/select_tipo_trans/', 'update1'=>'TP2','id'=>'tipo_transaccion_padre'),null,2);?>
+     </td>
+     <t align="center"d><br><div id="TP2" style="display:none;"><?=  $sisap->selectTagRemote('cnmp03transacciones/cod_tp', $Listactp !='' ? $Listactp : '',  array('value1'=>'otros'),  '', array('onchange1'=>'/cnmp03transacciones/mostrar_ctp', 'update1'=>'denominacion','id'=>'select_1'  , true), null, true); ?></div><!-- input name="data[cnmp03transacciones][cod_transaccion_padre]"  value="" id="cod_transaccion_padre" maxlength="4" onKeyPress="return solonumeros(event);" style="width:95%" --></td>
+     <td><br><div id="TP3" style="display:none;"><div id="denominacion" class="textNegro2">&nbsp;</div></div></td>
+ </tr>
+</table>
+<br>
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'validar', 'url1' => '/cnmp03transacciones/guardar', 'update1'=>'principal', 'disabled'=>$enable_guardar)); ?>&nbsp;
+<?= $sisap->submitTagRemote('Modificar',array('funcion'=>'validar','url1' => '/cnmp03transacciones/modificar', 'update1'=>'principal','disabled'=> 'disabled') )  ?>&nbsp;
+<?= $sisap->submitTagRemote('Eliminar', array('funcion'=>'validar', 'url1' => '/cnmp03transacciones/eliminar', 'update1'=>'principal','disabled'=> 'disabled')); ?>&nbsp;
+<?= $sisap->submitTagRemote('Consultar',array('url1' => '/cnmp03transacciones/consulta', 'update1'=>'div_transacciones') )  ?>&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</form>
+
+

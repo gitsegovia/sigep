@@ -1,0 +1,39 @@
+<?php
+$sisap->CssSelect();
+      if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+}
+
+?>
+
+<?php
+
+
+foreach($data3 as $r2){
+extract($r2['shd100_declaracion_ingresos_convenimientos']);
+if($cancelado==1){$status="Cancelado";}else{$status="Deuda";}
+if(cambiar_formato_fecha($fecha_cancelacion)=="01/01/1900"){$fecha_cancelacion="";}else{$fecha_cancelacion=cambiar_formato_fecha($fecha_cancelacion);}
+
+?>
+
+<td><?= $ano_declaracion ?></td>
+<td align="center"><?=mascara_seis($numero_declaracion);?></td>
+<td align="center"><?=$ano_convenimiento;?></td>
+<td align="center"><?=mascara_seis($numero_convenimient);?></td>
+<td align="center" id="campo_a_<?= $ano_declaracion.'_'.$numero_declaracion.'_'.$ano_convenimiento.'_'.$numero_convenimient?>"><? $sisap->input_fecha("shp100_declaracion_ingresos_convenimientos","fecha_convenimiento_".$var1,"fecha_convenimiento_".$var1, cambiar_formato_fecha($fecha_acordada_pago)); ?></td>
+<td align="right"  id="campo_b_<?= $ano_declaracion.'_'.$numero_declaracion.'_'.$ano_convenimiento.'_'.$numero_convenimient?>"><?=$sisap->Formato2($monto_convenido);?>
+      <input  type="hidden"   name="data[shp100_declaracion_ingresos_convenimientos][monto_convenimiento_<?= $var1 ?>]"   value="<?=$sisap->Formato2($monto_convenido);?>"    id="monto_convenimiento_<?= $var1 ?>"                                                                                                                                            class="inputtext" onKeyPress="return solonumeros_con_punto(event);"  onblur="calcular_deuda_pendiente2('<?= $ano_declaracion.'_'.$numero_declaracion.'_'.$ano_convenimiento.'_'.$numero_convenimient?>'); " style="text-align:center" />
+      <input  type="hidden" name="data[shp100_declaracion_ingresos_convenimientos][deuda_pendiente_<?= $var1 ?>]"       value="<?=$sisap->Formato2($_SESSION["deuda_vigente_".$data[0]['shd100_declaracion_ingresos']["ano_declaracion"]."_".$data[0]['shd100_declaracion_ingresos']["numero_declaracion"]]);?>"    id="deuda_pendiente_<?= $var1 ?>"        class="inputtext" readonly style="text-align:center"/>
+      <input  type="hidden" name="data[shp100_declaracion_ingresos_convenimientos][monto_deuda_<?= $var1 ?>]"           value="<?=$sisap->Formato2($monto_deuda);?>"        id="monto_deuda_<?= $var1 ?>"                                                                                                                                                    class="inputtext" readonly style="text-align:center"/>
+</td>
+<td align="right"><?=$fecha_cancelacion;?></td>
+<td align="center"><?=$status;?></td>
+<td align="center">
+     <?= $sisap->submitTagRemote('',                        array('url1' => '/shp100_declaracion_ingresos_convenimientos/guardar2/'.$rif_cedula.'/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$ano_convenimiento.'/'.$numero_convenimient.'/'.$fila,      'update1'=>$fila, 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$ano_declaracion.'_'.$numero_declaracion.'_'.$ano_convenimiento.'_'.$numero_convenimient)); ?>
+     <?php echo $ajax->link($html->image('cancel.png',array('border'=>0)), '/shp100_declaracion_ingresos_convenimientos/cancelar/'.$rif_cedula.'/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$ano_convenimiento.'/'.$numero_convenimient.'/'.$fila, array('update'=>$fila, 'title'=>'Cancelar'),false,false,true); ?>
+</td>
+
+<?php } ?>

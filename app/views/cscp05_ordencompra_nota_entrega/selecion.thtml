@@ -1,0 +1,114 @@
+<form>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"NOTA DE ENTREGA",null,"950");?>
+<?php
+
+if(isset($datos_orden_compra)){
+ if($datos_orden_compra!=null){
+ foreach($datos_orden_compra as $aux_datos_orden_compra){
+
+
+$fecha = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'];
+$mes = '';
+$year = '';
+$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'] = $sisap->cFecha($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'], 'D/M/A');
+//echo $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'];
+
+
+ 	?>
+
+<?= $sisap->OpenTable("950")?>
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro"><td colspan="4" align="center"><b>DETALLES DE LA ORDEN DE COMPRA</b></td></tr>
+	<tr align="center">
+		<td width="25%">A&ntilde;o</td>
+		<td width="25%">N&uacute;mero</td>
+		<td width="25%">Fecha</td>
+		<td width="25%">Tipo de orden</td>
+	</tr>
+	<tr align="center">
+		<td id="year_cotizacion"><?= $html ->input('cscp05_ordencompra_nota_entrega/ano_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['ano_orden_compra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4','style'=>'text-align:center;'), false); ?></td>
+		<td><?= $sisap->selectTagRemote('cscp05_ordencompra_nota_entrega/numero_orden_compra', $optionElements=$lista_numero,  $extra_opciones = array(), $selected = $numero_orden_compra, $selectAttr = array('onchange1'=>'/cscp05_ordencompra_nota_entrega/selecion', 'update1'=>'principal' ,'id'=>'num_1','style'=>'width:160px', true),  $optionAttr = null,  $showEmpty = true) ?></td>
+		<td id="fecha_cotizacion"><?= $html ->input('cscp05_ordencompra_nota_entrega/fecha_cotizacion', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'].'', 'readonly'=>'readonly', 'id'=>'fecha_ordencompra','style'=>'text-align:center;'), false); ?></td>
+		<td><?= $html->radio('cscp05_ordencompra_nota_entrega/tipo_ordencompra', $options = array('1'=>'Bienes', '3'=>'Ambas'), $inbetween = null, $htmlAttributes = array('value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['tipo_orden'].'', 'disabled'=>'disabled'), $return = false); ?></td>
+
+	</tr>
+	<tr align="center">
+		<td>Rif del Proveedor</td>
+		<td colspan="2">Nombre de Proveedor o Raz&oacute;n Social</td>
+		<td>Direcci&oacute;n</td>
+	</tr>
+	<tr align="center">
+		<td><?= $html->input('cscp05_ordencompra_nota_entrega/rif', $htmlAttributes = array('style'=>'width:98%;text-align:center;', 'readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'].''), false); ?></td>
+		<td colspan="2"><?= $html->input('cscp05_ordencompra_nota_entrega/nom_prov', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?></td>
+		<td><?= $html->textarea('cscp05_ordencompra_nota_entrega/dir_prov', $htmlAttributes = array('rows'=>'2', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$direccion_comercial_rif.''), false); ?></td>
+	</tr>
+</table>
+<div id="cotizacion"><?php include("datos.thtml");?></div>
+
+<br>
+<table width="60%" border="0" align="center" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro"><td colspan="3" align="center"><b>DETALLES DE LA NOTA DE ENTREGA</b></td></tr>
+	<tr>
+		<td align="center">Año</td>
+		<td align="center">Número</td>
+		<td align="center" >Fecha</td>
+</tr>
+	<tr>
+		<td align="center" width="130">
+			<?= $html->input('cscp05_ordencompra_nota_entrega/ano_orden_compra_pago', $htmlAttributes = array('id'=>'ano_orden_compra_pago', 'size'=>'16', 'value'=>$ano_orden_compra_pago, 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center" width="130">
+		    <?= $sisap->inputTagRemote('cscp05_ordencompra_nota_entrega/numero_orden_compra_pago', array('url'=>'/cscp05_ordencompra_nota_entrega/verifica_nota_entrega/'.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'],  'update'=>'funcion', 'value'=>$numero_orden_compra."-".$cont_aux_nota_entrega,  'id'=>'numero_orden_compra_pago', 'size'=>'16', 'maxlength'=>'20', 'onKeyPress'=>"return sin_eslas(event);",'style'=>'text-align:center; font-size:25;'))?>
+		</td>
+		<td align="center" width="190">
+		  <?=$sisap->input_fecha('cscp05_ordencompra_nota_entrega','fecha_pago','fecha_pago',date('d/m/Y'))?>
+		</td>
+</tr>
+</table>
+<br>
+<div id="entregado"><?php include("datos2.thtml");?></div>
+<div id="funcion"></div>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr>
+  <td align="center">OBSERVACIONES</td>
+  <td align="center">ENTREGA COMPLETA</td>
+</tr>
+<tr>
+  <td  align="center"><?= $html->textarea('cscp05_ordencompra_nota_entrega/observaciones', $htmlAttributes = array('rows'=>'2', 'style'=>'width:99%','cols'=>'70', 'value'=>'', 'id'=>'observaciones'), false); ?></td>
+  <td  align="center">
+  	<?= $html->radio('cscp05_ordencompra_nota_entrega/entrega_completa_radio', $options = array('2'=>'No', '1'=>'Si'), $inbetween = null, $htmlAttributes = array('value'=>'', 'id'=>'entrega_completa_radio', 'disabled'=>'disabled'), $return = false); ?>
+  	<input type="hidden" name="data[cscp05_ordencompra_nota_entrega][entrega_completa]" id="entrega_completa" value="">
+  </td>
+</tr>
+</table>
+<br>
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'cscp05_registro_ordencompra_pago_valida', 'url1' => '/cscp05_ordencompra_nota_entrega/guardar', 'update1'=>'principal', 'id'=>'guardar')); ?>
+
+<?= $sisap->buttonTagRemote('cscp05_ordencompra_nota_entrega/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/cscp05_ordencompra_nota_entrega/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp05_ordencompra_nota_entrega/anular', array ('value'=>'Anular', 'disabled'=>'disabled'), array('url1' => '/cscp05_ordencompra_nota_entrega/anular/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp05_ordencompra_nota_entrega/consultar', array ('value'=>'Consultar'), array('url1' => '/cscp05_ordencompra_nota_entrega/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+<br>
+
+<?php
+     }//fin
+  }//fin
+}//fin
+?>
+
+
+<div id="funcion"></div>
+
+</form>

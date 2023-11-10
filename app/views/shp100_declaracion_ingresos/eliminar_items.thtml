@@ -1,0 +1,87 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<? if(!isset($vacio)){
+	?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro">
+		<td align="center" width="15%">Código actividad</td>
+		<td align="center" width="45%">Denominación</td>
+		<td align="center" width="15%">Ingresos</td>
+		<td align="center" width="15%">Impuestos</td>
+		<td align="center" width="10%">---</td>
+	</tr>
+
+
+  <?php
+//  print_r($_SESSION["items1"]);
+ if(isset($_SESSION ["items1"]) && $_SESSION ["items1"]!=array() ){
+//  if($_SESSION ["items1"]!=null){
+
+ 	$i=0;
+ 	$monto_total=0;
+    foreach($_SESSION ["items1"] as $codigos){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=3;$x++){
+    	if($x==0){
+    		echo "<td align=\"center\">".$sisap->zero($codigos[$x])."</td>";
+    	}else if($x==1){
+    		echo "<td>".$codigos[$x]."</td>";
+    	}else if($x==2){
+    		echo "<td align=\"right\">".$sisap->Formato2($codigos[$x])."</td>";
+    	}else if($x==3){
+    		echo "<td align=\"right\">".$sisap->Formato2($codigos[$x])."</td>";
+    		$monto_total+=$codigos[$x];
+    	}
+    }
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/shp100_declaracion_ingresos/eliminar_items/'.$codigos['id'], array('update'=>'carga_grilla','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+ }else{
+ 	for($x=0;$x<=4;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ }
+?>
+<tr>
+	<td colspan="3" align="right">TOTAL</td>
+	<td align="right" id="total_partidas_rc"><?=$sisap->Formato2($monto_total);?><input type="hidden" id="monto_debe" value="<?=$monto1?>"/></td>
+	<td align="center">---</td>
+</tr>
+</table>
+<script>
+	document.getElementById('ingresos').value='';
+	document.getElementById('impuestos').value='';
+</script>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/shp100_declaracion_ingresos/limpiar_lista/', 'update1'=>'carga_grilla')); ?>
+<div id="del"></div>
+</div>
+<?/*<script language="JavaScript" type="text/javascript">
+  document.getElementById('lista_partidas').value=<?=$_SESSION["contador"];?>;
+</script> */ ?>
+<? } ?>
+
+

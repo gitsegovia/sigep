@@ -1,0 +1,427 @@
+<? if(isset($ir) && $ir=="si"){ ?>
+<?$sisap->Tabla("",true,"REINTEGROS","","750")?>
+
+
+
+
+
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/reporte_cfpd30_reintegros/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+				Año:
+				<?= $sisap->inputTagRemote('cepp01_compromiso/ano', array('url'=>'/reporte_e/escribir_ano_reintegro', 'update'=>'opcion','id'=>'ano', 'size'=>'6','value'=>$year,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);",  'style'=>"text-align:center;"))?>
+
+				<?= $sisap->radioTagRemote('cepp01_compromiso/radio_ver', array('1'=>'Todas', '2'=>'Una en particular'), array('url1'=>'/reporte_e/reporte_cfpd30_reintegros/vista', 'update1'=>'opcion', 'id'=>'reporte_registro_compromiso_opcion'), NULL, null)?>
+				<br><br>
+				<div id="opcion"></div>
+				<br>
+				<div id="botones">
+				<?= $html->submit('Generar', array('id'=>'enviar','disabled'=>'disabled')); ?>&nbsp;&nbsp;
+				<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+				</div>
+
+<?=$sisap->CloseTable()?>
+</form>
+
+
+
+
+
+<? }else if(isset($ir) && $ir=='vista'){
+	if($vista=='opcion') {?>
+		<?= $sisap->radioTagRemote('cepp01_compromiso/opciones', array('1'=>'Todas','2'=>'Activas','3'=>'Anuladas'), array('url2'=>'/reporte_e/reporte_cfpd30_reintegros/boton/', 'update2'=>'botones', 'id'=>'radio'), NULL, null)?>
+<?	}else if($vista=='select'){ ?>
+	<table width="10%">
+		<tr>
+			<td width="10%">
+		<?= $sisap->selectTagRemote('cepp01_compromiso/solicitud', $numero,  null,  null, array('onchange1'=>'/reporte_e/reporte_cfpd30_reintegros/boton/', 'update1'=>'botones', 'id'=>'mes_1', 'onChange'=>'si'  , true), null, true);?>
+			</td>
+		</tr>
+	</table>
+<? }
+ }else if(isset($ir) && $ir=='boton'){ ?>
+ 	<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+	<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+ <? }else if(isset($ir) && $ir=='no' && !isset($vacio))  {
+
+// 	require_once('../tcpdf.php');
+ 	vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+function Header()
+	{
+		/*
+		$this->image_escudo_sin_consolidado(11,13,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(14,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"REINTEGROS",'RLB',1,'C');
+		$this->Ln(1);
+
+		$varX_aux = $this->GetX() + 225;
+		$varY_aux = $this->GetY() - 16;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+		*/
+
+		$this->top_reporte("REINTEGROS", null, null, array("Y"=>"11", "X"=>"13", "Z"=>"13"), array("Y"=>"14", "X"=>"250"));
+
+
+		$this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',5);
+
+
+		$this->Cell(15,2,"",'RL',0,'C');
+		$this->Cell(15,2,"",'R',0,'C');
+		$this->Cell(50,2,"",'R',0,'C');
+		$this->Cell(35,2,"",'R',0,'C');
+		$this->Cell(17,2,"",'R',0,'C');
+		$this->Cell(10,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(20,2,"",'R',0,'C');
+		$this->Cell(19,2,"",'R',0,'C');
+		$this->Cell(19,2,"",'R',0,'C');
+		$this->Cell(0,2,"",'R',1,'C');
+
+
+		$this->Cell(15,2,"NUMERO",'RL',0,'C');
+		$this->Cell(15,2,"FECHA",'R',0,'C');
+		$this->Cell(50,2,"",'R',0,'C');
+		$this->Cell(35,2,"",'R',0,'C');
+		$this->Cell(17,2,"CONDICION",'R',0,'C');
+		$this->Cell(10,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(20,2,"MONTO",'R',0,'C');
+		$this->Cell(19,2,"MONTO",'R',0,'C');
+		$this->Cell(19,2,"MONTO",'R',0,'C');
+		$this->Cell(0,2,"MONTO",'R',1,'C');
+
+		$this->Cell(15,4,"RENDICION",'RLB',0,'C');
+		$this->Cell(15,4,"RENDICION",'RB',0,'C');
+		$this->Cell(50,4,"CONCEPTO",'RB',0,'C');
+		$this->Cell(35,4,"FUNCIONARIO RESPONSABLE",'RB',0,'C');
+		$this->Cell(17,4,"ACTIVIDAD",'RB',0,'C');
+		$this->Cell(10,4,"AÑO",'RB',0,'C');
+		$this->Cell(40,4,"CODIGO PRESUPUESTARIO",'RB',0,'C');
+		$this->Cell(20,4,"PRECOMPROMISO",'RB',0,'C');
+		$this->Cell(19,4,"COMPROMISO",'RB',0,'C');
+		$this->Cell(19,4,"CAUSADO",'RB',0,'C');
+		$this->Cell(0,4,"PAGADO",'RB',1,'C');
+
+	}//fin funtion
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','B',5);
+
+//print_r($datos);
+$monto_total1=0;
+$monto_total2=0;
+$monto_total3=0;
+$monto_total4=0;
+foreach($datos as $row){
+	$ano_reintegro=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['ano_reintegro']);
+	$numero=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['numero_reintegro']);
+	$fecha=$sisap->cambia_fecha($row['v_cfpd30_reintegros_generales']['fecha_reintegro']);
+	$responsable=$row['v_cfpd30_reintegros_generales']['funcionario_responsable'];
+	$concepto=$row['v_cfpd30_reintegros_generales']['concepto'];
+	$condicion=$row['v_cfpd30_reintegros_generales']['condicion_actividad'];
+	$cod_sector=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_sector']);
+	$cod_programa=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_programa']);
+	$cod_sub_programa=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_sub_prog']);
+	$cod_proyecto=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_proyecto']);
+	$cod_activ_obra=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_activ_obra']);
+	$cod_partida=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_partida']);
+	$cod_generica=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_generica']);
+	$cod_especifica=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_especifica']);
+	$cod_sub_espec=$sisap->AddCero3($row['v_cfpd30_reintegros_generales']['cod_sub_espec']);
+	$cod_auxiliar=$sisap->mascara_cuatro($row['v_cfpd30_reintegros_generales']['cod_auxiliar']);
+	$monto_pre_compromiso=$row['v_cfpd30_reintegros_generales']['monto_pre_compromiso'];
+	$monto_compromiso=$row['v_cfpd30_reintegros_generales']['monto_compromiso'];
+	$monto_pagado=$row['v_cfpd30_reintegros_generales']['monto_pagado'];
+	$monto_causado=$row['v_cfpd30_reintegros_generales']['monto_causado'];
+
+	$monto_total1+=$monto_pre_compromiso;
+	$monto_total2+=$monto_compromiso;
+	$monto_total3+=$monto_pagado;
+	$monto_total4+=$monto_causado;
+
+	$cadena=$cod_sector.".".$cod_programa.".".$cod_sub_programa.".".$cod_proyecto.".".$cod_activ_obra.".".$cod_partida.".".$cod_generica.".".$cod_especifica.".".$cod_sub_espec.".".$cod_auxiliar;
+	$long=strlen($concepto);
+	if($long<=45){//echo "a";
+		$height=5;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=10;
+	}else if($long>90 && $long<=135){//echo "c";
+		$height=14;
+	}else if($long>135 && $long<=170){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=26;
+	}else{//echo "i";
+		$height=28;
+	}
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(15,$height,$numero,'RL',0,'C');/////NUMERO reintegro
+	$pdf->Cell(15,$height,$fecha,'R',0,'C');/////FECHA reintegro
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(50,1,"",'LT',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(50,3,$concepto,'','L');//Concepto Orden de Pago
+	$varX =$varX+50;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+
+
+	$pdf->Cell(1,$height,"",'L',0,'C');
+	$pdf->Cell(34,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(34,3,$responsable,'','L');//Concepto Orden de Pago
+	$varX =$varX+34;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->SetFont('vera','',6);
+
+//	$pdf->Cell(40,$height,,'RL',0,'L');/////FUNCIONARIO RESPONSABLE
+	if($condicion==1)
+		$pdf->Cell(17,$height,"Activo",'RL',0,'C');/////ACTIVIDAD
+	else
+		$pdf->Cell(17,$height,"Anulado",'RL',0,'C');/////ACTIVIDAD
+	$pdf->Cell(10,$height,$ano_reintegro,'R',0,'C');///AÑO
+
+	$pdf->Cell(40,$height,$cadena,'R',0,'L');///CODIGO PRESUPUESTARIO
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(20,$height,$sisap->Formato2($monto_pre_compromiso),'R',0,'R');///MONTO
+	$pdf->Cell(19,$height,$sisap->Formato2($monto_compromiso),'R',0,'R');///MONTO
+	$pdf->Cell(19,$height,$sisap->Formato2($monto_pagado),'R',0,'R');///MONTO
+	$pdf->Cell(0,$height,$sisap->Formato2($monto_causado),'R',1,'R');///MONTO
+	$pdf->Cell(0,0,"",'T',1,'C');
+
+
+
+
+
+
+
+}//fin foreach
+
+
+//for($i=0;$i<=15;$i++){}//FIN FOR
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(182,6,"TOTAL REINTEGRO:",'TRLB',0,'R');
+		$pdf->SetFont('vera','B',5);
+	$pdf->Cell(20,6,$sisap->Formato2($monto_total1),'RB',0,'R');///MONTO
+	$pdf->Cell(19,6,$sisap->Formato2($monto_total2),'RB',0,'R');///MONTO
+	$pdf->Cell(19,6,$sisap->Formato2($monto_total3),'RB',0,'R');///MONTO
+	$pdf->Cell(0,6,$sisap->Formato2($monto_total4),'RB',1,'R');///MONTO
+
+$pdf->Output('reintegros_generales_'.date("d-m-Y"),'D');
+
+ }else if(isset($vacio)){/////////////////////////////////////////////VACIO/////////////////////////////////////
+
+
+// 	require_once('../tcpdf.php');
+ 	vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=$_SESSION['entidad_federal'];
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION['entidad_federal'];
+        	$varTOPh2=$_SESSION['dependencia'];
+        	$t1=14;
+        	$t2=11;
+        }
+
+    	$this->Image($escudo,11,13,13);
+
+//		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,15,12);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(14,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"REINTEGROS",'RLB',1,'C');
+		$this->Ln(3);
+
+		$varX_aux = $this->GetX() + 225;
+		$varY_aux = $this->GetY() - 18;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+
+
+
+
+		$this->Cell(0,5,"",'B',1,'C');
+		$this->SetFont('vera','B',5);
+
+
+		$this->Cell(15,2,"",'RL',0,'C');
+		$this->Cell(15,2,"",'R',0,'C');
+		$this->Cell(45,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(17,2,"",'R',0,'C');
+		$this->Cell(10,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(20,2,"",'R',0,'C');
+		$this->Cell(19,2,"",'R',0,'C');
+		$this->Cell(19,2,"",'R',0,'C');
+		$this->Cell(0,2,"",'R',1,'C');
+
+
+		$this->Cell(15,2,"NUMERO",'RL',0,'C');
+		$this->Cell(15,2,"FECHA",'R',0,'C');
+		$this->Cell(45,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(17,2,"CONDICION",'R',0,'C');
+		$this->Cell(10,2,"",'R',0,'C');
+		$this->Cell(40,2,"",'R',0,'C');
+		$this->Cell(20,2,"MONTO",'R',0,'C');
+		$this->Cell(19,2,"MONTO",'R',0,'C');
+		$this->Cell(19,2,"MONTO",'R',0,'C');
+		$this->Cell(0,2,"MONTO",'R',1,'C');
+
+		$this->Cell(15,4,"RENDICION",'RLB',0,'C');
+		$this->Cell(15,4,"RENDICION",'RB',0,'C');
+		$this->Cell(45,4,"CONCEPTO",'RB',0,'C');
+		$this->Cell(40,4,"FUNCIONARIO RESPONSABLE",'RB',0,'C');
+		$this->Cell(17,4,"ACTIVIDAD",'RB',0,'C');
+		$this->Cell(10,4,"AÑO",'RB',0,'C');
+		$this->Cell(40,4,"CODIGO PRESUPUESTARIO",'RB',0,'C');
+		$this->Cell(20,4,"PRECOMPROMISO",'RB',0,'C');
+		$this->Cell(19,4,"COMPROMISO",'RB',0,'C');
+		$this->Cell(19,4,"CAUSADO",'RB',0,'C');
+		$this->Cell(0,4,"PAGADO",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','B',5);
+
+
+
+		$height=5;
+
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(15,$height,"",'RL',0,'C');/////NUMERO reintegro
+	$pdf->Cell(15,$height,"",'R',0,'C');/////FECHA reintegro
+	$pdf->Cell(45,1,"",'LT',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(45,3,"",'','L');//Concepto Orden de Pago
+	$varX =$varX+45;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,$height,"",'RL',0,'L');/////FUNCIONARIO RESPONSABLE
+	$pdf->Cell(17,$height,"",'R',0,'C');/////ACTIVIDAD
+	$pdf->Cell(10,$height,"",'R',0,'C');///AÑO
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(40,$height,"",'R',0,'L');///CODIGO PRESUPUESTARIO
+	$pdf->Cell(20,$height,$sisap->Formato2(0),'R',0,'R');///MONTO
+	$pdf->Cell(19,$height,$sisap->Formato2(0),'R',0,'R');///MONTO
+	$pdf->Cell(19,$height,$sisap->Formato2(0),'R',0,'R');///MONTO
+	$pdf->Cell(0,$height,$sisap->Formato2(0),'R',1,'R');///MONTO
+	$pdf->Cell(0,0,"",'T',1,'C');
+
+
+
+//for($i=0;$i<=15;$i++){}//FIN FOR
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(182,6,"TOTAL REINTEGRO:",'TRLB',0,'R');
+	$pdf->Cell(20,6,$sisap->Formato2(0),'RB',0,'R');///MONTO
+	$pdf->Cell(19,6,$sisap->Formato2(0),'RB',0,'R');///MONTO
+	$pdf->Cell(19,6,$sisap->Formato2(0),'RB',0,'R');///MONTO
+	$pdf->Cell(0,6,$sisap->Formato2(0),'RB',1,'R');///MONTO
+
+$pdf->Output('reintegros_generales_'.date("d-m-Y"),'D');
+
+
+
+ }?>

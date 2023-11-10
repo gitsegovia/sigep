@@ -1,0 +1,229 @@
+<?php
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "DECLARACIÓN DE INGRESOS BRUTOS";
+       	//$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+       	$this->info_top_reporte(array($titulo_A,' '), array("Y"=>"11", "X"=>"16", "Z"=>"12"), array("Y"=>"17", "X"=>"186"));
+    }
+
+    function Footer(){
+	$this->setY(-20);
+	$this->SetFont('vera','B',9);
+	$this->Cell(0,5,'FIRMA: _________________________','',1,'C');
+    }
+
+}//fin clase
+
+extract($datos[0]['v_shd100_solicitud']);
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,4,'R.I.F.','TRL',0,'C');
+$pdf->Cell(110,4,'','TR',0,'C');
+$pdf->Cell(30,4,'Número','TR',0,'C');
+$pdf->Cell(0,4,'Fecha','TR',1,'C');
+
+$pdf->Cell(29,3,'Cédula de Identidad','RBL',0,'C');
+$pdf->Cell(110,3,'Denominación Comercial','RB',0,'C');
+$pdf->Cell(30,3,'Patente','RB',0,'C');
+$pdf->Cell(0,3,'Patente','RB',1,'C');
+
+$pdf->Cell(29,5,$rif_cedula,'RBL',0,'C');//--[Cédula de Identidad]
+$pdf->Cell(110,5,$razon_social_nombres,'RB',0,'C');//--[Denominación Comercial]
+$pdf->Cell(30,5,$numero_patente,'RB',0,'C');//--[Número Patente]
+$pdf->Cell(0,5,cambiar_formato_fecha($fecha_patente),'RB',1,'C');//--[Fecha Patente]
+                    //[$numero_local_razon] => CASA Nº 542
+                    //[$profesion] => 4
+                    //[$deno_profesion] => ingeniero
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(100,5,'DIRECCIÓN','TRBL',0,'C');
+$pdf->Cell(0,5,'DATOS COMPLEMENTARIOS','TRB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+
+$pdf->Cell(25,5,'País','RBL',0);
+$pdf->Cell(8,5,mascara($pais_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_pais_razon,'RBL',0);//--[País]
+$pdf->Cell(30,5,'Fecha Inscripción','RBL',0);
+$pdf->Cell(0,5,cambiar_formato_fecha($fecha_inscripcion),'RBL',1);//--[Fecha Inscripción]
+
+$pdf->Cell(25,5,'Estado','RBL',0);
+$pdf->Cell(8,5,mascara($estado_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_estado_razon,'RBL',0);//--[Estado]
+$pdf->Cell(30,5,'Teléfonos Fijos','RBL',0);
+$pdf->Cell(0,5,$telefonos_fijos_razon,'RBL',1);//--[Teléfonos Fijos]
+
+$pdf->Cell(25,5,'Municipio','RBL',0);
+$pdf->Cell(8,5,mascara($municipio_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_municipio_razon,'RBL',0);//--[Municipio]
+$pdf->Cell(30,5,'Teléfonos Celulares','RBL',0);
+$pdf->Cell(0,5,$telefonos_celulares_razon,'RBL',1);//--[Teléfonos Celulares]
+
+$pdf->Cell(25,5,'Parroquia','RBL',0);
+$pdf->Cell(8,5,mascara($parroquia_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_parroquia_razon,'RBL',0);//--[Parroquia]
+$pdf->Cell(30,5,'Correo Electrónico','RBL',0);
+$pdf->Cell(0,5,$correo_electronico_razon,'RBL',1);//--[Correo Electrónico]
+
+$pdf->Cell(25,5,'Centro Poblado','RBL',0);
+$pdf->Cell(8,5,mascara($centro_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_centro_razon,'RBL',0);//--[Centro Poblado]
+$pdf->Cell(30,5,'Nacionalidad','RBL',0);
+$pdf->Cell(0,5,$nacionalidad_razon==1?'VENEZOLANA':'EXTRAJERA','RBL',1);//--[Nacionalidad]
+
+$pdf->Cell(25,5,'Calle o Avenida','RBL',0);
+$pdf->Cell(8,5,mascara($calle_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_vialidad_razon,'RBL',0);//--[Calle o Avenida]
+$pdf->Cell(0,5,'Estado Civil','RBL',1,'C');
+
+$pdf->Cell(25,5,'Vereda / Edificio','RBL',0);
+$pdf->Cell(8,5,$vereda_razon==0?'':mascara($vereda_razon,2),'RBL',0,'C');
+$pdf->Cell(67,5,$deno_vereda_razon,'RBL',0);//--[Vereda / Edificio]
+if($estado_civil==1){$ec1='*';$ec2='';$ec3='';$ec4='';$ec5='';}
+else if($estado_civil==2){$ec1='';$ec2='*';$ec3='';$ec4='';$ec5='';}
+else if($estado_civil==3){$ec1='';$ec2='';$ec3='*';$ec4='';$ec5='';}
+else if($estado_civil==4){$ec1='';$ec2='';$ec3='';$ec4='*';$ec5='';}
+else if($estado_civil==5){$ec1='';$ec2='';$ec3='';$ec4='';$ec5='*';}
+else {$ec1='';$ec2='';$ec3='';$ec4='';$ec5='';}
+$pdf->Cell(18,5,$ec1.' SOLTERO','RBL',0,'C');//--[SOLTERO]
+$pdf->Cell(17,5,$ec2.' CASADO','RBL',0,'C');//--[CASADO]
+$pdf->Cell(22,5,$ec3.' DIVORCIADO','RBL',0,'C');//--[DIVORCIADO]
+$pdf->Cell(17,5,$ec4.' VIUDO','RBL',0,'C');//--[VIUDO]
+$pdf->Cell(0,5,$ec5.' OTROS','RBL',1,'C');//--[OTROS]
+
+
+
+//------------------------------------------------------------
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DATOS DE CONSTITUCIÓN DE LA EMPRESA','RBL',1,'C');
+$pdf->Cell(100,5,'DATOS DE CONSTITUCIÓN DE LA EMPRESA','TRBL',0,'C');
+$pdf->Cell(0,5,'PRIMER EJERCICIO ECONÓMICO','TRB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(50,4,'Fecha de Inicio','RBL',0,'C');
+$pdf->Cell(50,4,'Fecha de Cierre','RB',0,'C');
+$pdf->Cell(50,4,'Fecha de Inicio','RB',0,'C');
+$pdf->Cell(0,4,'Fecha de Cierre','RB',1,'C');
+
+$pdf->Cell(50,5,cambiar_formato_fecha($fecha_inicio_const),'RBL',0,'C');//--[Fecha de Inicio]
+$pdf->Cell(50,5,cambiar_formato_fecha($fecha_cierre_const),'RB',0,'C');//--[Fecha de Cierre]
+$pdf->Cell(50,5,cambiar_formato_fecha($fecha_inicio_econo),'RB',0,'C');//--[Fecha de Inicio]
+$pdf->Cell(0,5, cambiar_formato_fecha($fecha_cierre_economico),'RB',1,'C');//--[Fecha de Cierre]
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'REGISTRO MERCANTIL','RBL',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(1,10,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(194,1,"",'',2,'C');
+	$pdf->MultiCell(194,2,$registro_mercantil,'','L');//--[REGISTRO MERCANTIL]
+	$varX = $varX+194;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,10,'','R',1,'C');
+
+extract($data_hi[0]['shd100_declaracion_ingresos']);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DATOS DEL REPRESENTANTE O PROPIETARIO','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(18,5,'R.I.F. / C.I.','RBL',0);
+$pdf->Cell(27,5,$cedula_identidad,'RBL',0,'C');//--[R.I.F. / C.I.]
+$pdf->Cell(36,5,'Nombres y Apellidos','RBL',0,'C');
+$pdf->Cell(0,5,$nombres_apellidos,'RBL',1);//--[Nombres y Apellidos]
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DATOS DE ESTA DECLARACIÓN','TRBL',1,'C');
+$pdf->Cell(115,5,'PERIODO DE DECLARACIÓN','TRBL',0,'C');
+$pdf->Cell(0,5,'CRECIMIENTO DE LA EMPRESA','TRB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(40,3,'NÚMERO','RL',0,'C');
+$pdf->Cell(25,3,'Fecha','RL',0,'C');
+$pdf->Cell(25,3,'Periodo','R',0,'C');
+$pdf->Cell(25,3,'Periodo','R',0,'C');
+$pdf->Cell(30,3,'','R',0,'C');
+$pdf->Cell(25,3,'Número','R',0,'C');
+$pdf->Cell(0,3,'Número','R',1,'C');
+
+$pdf->Cell(40,3,'DECLARACIÓN','RBL',0,'C');
+$pdf->Cell(25,3,'Declaración','RBL',0,'C');
+$pdf->Cell(25,3,'Desde','RB',0,'C');
+$pdf->Cell(25,3,'Hasta','RB',0,'C');
+$pdf->Cell(30,3,'Capital','RB',0,'C');
+$pdf->Cell(25,3,'Empleados','RB',0,'C');
+$pdf->Cell(0,3,'Obreros','RB',1,'C');
+
+$pdf->Cell(40,5,mascara($numero_declaracion,6),'RBL',0,'C');//--[NÚMERO DECLARACIÓN]
+$pdf->Cell(25,5,cambiar_formato_fecha($fecha_declaracion),'RB',0,'C');//--[Fecha Declaración]
+$pdf->Cell(25,5,cambiar_formato_fecha($periodo_desde),'RB',0,'C');//--[Periodo Desde]
+$pdf->Cell(25,5,cambiar_formato_fecha($periodo_hasta),'RB',0,'C');//--[Periodo Hasta]
+$pdf->Cell(30,5,$sisap->Formato2($capital),'RB',0,'C');//--[Capital]
+$pdf->Cell(25,5,$numero_empleados,'RB',0,'C');//--[Número Empleados]
+$pdf->Cell(0,5,$numero_obreros,'RB',1,'C');//--[Número Obreros]
+
+
+
+//------------------------------------------------------------
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DECLARACIÓN DE INGRESOS POR ACTIVIDADES','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,3,'','RL',0,'C');
+$pdf->Cell(100,3,'','R',0,'C');
+$pdf->Cell(15,3,'Alícuota','R',0,'C');
+$pdf->Cell(25,3,'Monto','R',0,'C');
+$pdf->Cell(0,3,'Monto','R',1,'C');
+
+$pdf->Cell(30,3,'Código de Actividad','RBL',0,'C');
+$pdf->Cell(100,3,'Denominación de la Actividad','RB',0,'C');
+$pdf->Cell(15,3,'Aplicada','RB',0,'C');
+$pdf->Cell(25,3,'Ingresos','RB',0,'C');
+$pdf->Cell(0,3,'Impuesto','RB',1,'C');
+
+foreach($data_da as $dAct){
+	extract($dAct['v_shd100_declaracion_actividades']);
+	$pdf->Cell(30,5,$cod_actividad,'RBL',0,'C');//--[Código de Actividad]
+	$pdf->Cell(100,5,$deno_actividad,'RB',0,'C');//--[Denominación de la Actividad]
+	$pdf->Cell(15,5,$sisap->Formato2($alicuota_aplicada),'RB',0,'C');//--[Alícuota Aplicada]
+	$pdf->Cell(25,5,$sisap->Formato2($monto_ingresos),'RB',0,'C');//--[Monto Ingresos]
+	$pdf->Cell(0,5,$sisap->Formato2($monto_impuesto),'RB',1,'C');//--[Monto Impuesto]
+}
+
+$pdf->Ln(2);
+$pdf->MultiCell(194,3,"Hago constar y doy fé que todos los datos aportados en ésta Declaración Jurada de Ingresos brutos, son ciertos y verificables.",'','L');
+$pdf->Ln(3);
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(0,5,$condicion_actividad==2?'ANULADO':'','',0,'C');
+
+
+$pdf->Output('declaracion_ingreso_'.date("dmY-hi").'.pdf','D');//Poner nombre y la opcion D
+?>

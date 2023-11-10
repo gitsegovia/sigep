@@ -1,0 +1,1029 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+		for($j=0; $j<count($deno);$j++){
+			if($codigo[$j]==$cod_trans){
+				$deno_trans = $deno[$j];
+				break;
+			}
+		}
+		return $deno_trans;
+}
+
+function marcar($var){
+	if($var==1){
+		return true;
+	}else{
+		return false;
+	}
+}
+?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"Estudio demográfico y socio económico","","1000");?>
+
+
+
+<?= $sisap->OpenTable("1000")?>
+
+
+<form>
+
+		<div id="funcion"></div>
+
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+				 <tr>
+					<td colspan='5' class="tr_negro" align="center">I. UBICACIÓN GEOGRÁFICA</td>
+				</tr>
+
+				<tr align="center">
+					<td width="20%">República</td>
+					<td width="20%">Estado</td>
+					<td width="20%">Municipio</td>
+					<td width="20%">Parroquia</td>
+					<td width="20%">Centro poblado</td>
+				</tr>
+
+				<tr align="center">
+					<td><?= $html->input('casp01/republica', $htmlAttributes = array('value'=>$republica,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'republica','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/estado', $htmlAttributes = array('value'=>$estado,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'estado','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/municipio', $htmlAttributes = array('value'=>$municipio,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'municipio','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/parroquia', $htmlAttributes = array('value'=>$parroquia,'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'parroquia','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/centro', $htmlAttributes = array('value'=>$datos[0][0]['denominacion'],'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'centro','class'=>'inputtext'), false); ?></td>
+				</tr>
+
+			</table>
+
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+				<tr align="center">
+					<td width="20%">Población</td>
+					<td width="40%">Orientación</td>
+					<td width="20%">Ambito</td>
+					<td width="20%">Dimensión</td>
+				</tr>
+
+				<tr align="center">
+					<td><?= $html->input('casp01/poblacion', $htmlAttributes = array('value'=>($datos[0][0]['poblacion']==0)?'':$datos[0][0]['poblacion'],'style'=>'width:98%;text-align:center','size'=>'3', 'readonly'=>'readonly','id'=>'poblacion','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/orientacion', $htmlAttributes = array('value'=>($datos[0][0]['orientacion']=='0')?'':$datos[0][0]['orientacion'],'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'orientacion','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/ambito', $htmlAttributes = array('value'=>($datos[0][0]['clasificacion']==0)?'':$datos[0][0]['clasificacion'],'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'ambito','class'=>'inputtext'), false); ?></td>
+					<td><?= $html->input('casp01/dimension', $htmlAttributes = array('value'=>($datos[0][0]['dimension']=='0')?'':$datos[0][0]['dimension'],'style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'dimension','class'=>'inputtext'), false); ?></td>
+				</tr>
+
+			</table>
+
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+				<tr align="center">
+					<td width="25%">Características</td>
+					<td width="25%">Economía</td>
+					<td width="25%">Límites</td>
+				</tr>
+
+				<tr align="center">
+					<td align="center"><?= $html->textarea('casp01/caracteristicas', array('value'=>($datos[0][0]['caracteristicas']=='0')?'':$datos[0][0]['caracteristicas'],'id'=>'caracteristicas','style'=>'width:100%','rows'=>'2','readonly'=>'readonly','class'=>'inputtext'))?></td>
+					<td><?= $html->textarea('casp01/economia', array('value'=>($datos[0][0]['economia']=='0')?'':$datos[0][0]['economia'],'id'=>'economia','style'=>'width:100%','rows'=>'2','readonly'=>'readonly','class'=>'inputtext'))?></td>
+					<td><?= $html->textarea('casp01/limites', array('value'=>($datos[0][0]['limites']=='0')?'':$datos[0][0]['limites'],'id'=>'limites','style'=>'width:100%','rows'=>'2','readonly'=>'readonly','class'=>'inputtext'))?></td>
+				</tr>
+
+			</table>
+
+		<br>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+				<tr align="center">
+					<td width="15%">&nbsp;</td>
+					<td width="10%">Código</td>
+					<td width="45%">Denominación</td>
+					<td width="30%" colspan="2">&nbsp;</td>
+				</tr>
+
+				<tr align="center">
+					<td align="left">Consejo Comunal:</td>
+					<td> <input name="data[ccnp01_directiva][cod_concejo]"           value="<?= mascara2($seleccion_concejo) ?>" readonly id="cod_concejo"           class="inputtext" style="text-align:center"></td>
+					<td> <input name="data[ccnp01_directiva][deno_concejo_comunal]"  value="<?= $denominacion_concejo ?>"        readonly id="deno_concejo_comunal"  class="inputtext" ></td>
+					<td align="left" width="15%">Nro de Casa o Parcela</td>
+					<td width="15%"> <?= $sisap->inputTagRemote('ccnp01_directiva/nro_casa_parcela', array('value'=>$perso[0]['ccnd03_censo_jefe_familia']['numero_casa'],'url1'=>'/ccnp03_censo_poblacional1/calculos/3', 'update1'=>'funcion','id'=>'nro_casa_parcela','disabled'=>'','readonly'=>'readonly','style'=>'width:98%;text-align:center','class'=>'inputtext'),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+				</tr>
+
+				<tr align="center">
+					<td align="left">Sector:</td>
+					<td><?= $sisap->selectTagRemote('ccnp01_directiva/cod_sector', $sectores ,null, $perso[0]['ccnd03_censo_jefe_familia']['cod_sector'], array('onchange1'=>'/ccnp03_censo_poblacional1/calles', 'update1'=>'carga_calles','readonly'=>'readonly','id'=>'select1',  true), null, true);?></td>
+					<td> <input name="data[ccnp01_directiva][deno_sector]"  value="<?=$deno_sector?>"        readonly id="deno_sector"  class="inputtext" ></td>
+					<td align="left" width="15%">Punto de referencia</td>
+					<td width="15%"><textarea name='data[ccnp01_directiva][punto_referencia]' rows='2'  class='inputtext' maxlength='100'  id='punto_referencia'  ><?=($perso[0]['ccnd03_censo_jefe_familia']['punto_referencia']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['punto_referencia']?></textarea></td>
+				</tr>
+
+				<tr align="center">
+					<td align="left">Calles:</td>
+					<td id="carga_calles"><?= $sisap->selectTagRemote('ccnp01_directiva/cod_calle', $calles ,null, $perso[0]['ccnd03_censo_jefe_familia']['cod_calle'], array('readonly'=>'readonly','id'=>'select2',  true), null, true);?></td>
+					<td> <input name="data[ccnp01_directiva][deno_calle]"  value="<?=$deno_calle?>"        readonly id="deno_calle"  class="inputtext" ></td>
+					<td align="left" width="15%">Telefono:</td>
+					<td width="15%"><input name="data[ccnp01_directiva][telefono]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['telefonos_vivienda']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['telefonos_vivienda']?>" id="telefono"  class="inputtext" ></td>
+				</tr>
+
+			</table>
+
+
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+				<tr>
+					<td class="tr_negro" align="center" colspan="5">II. Identificación del encuestado o jefe de familia</td>
+				</tr>
+
+				<tr align="center">
+					<td width="10%">Nombres:</td>
+					<td width="27%"> <input name="data[ccnp01_directiva][nombres]"  value="<?=$perso[0]['ccnd03_censo_jefe_familia']['nombres']?>"  id="nombres"  class="inputtext" ></td>
+					<td width="10%">Apellidos</td>
+					<td width="28%"> <input name="data[ccnp01_directiva][apellidos]"  value="<?=$perso[0]['ccnd03_censo_jefe_familia']['apellidos']?>"  id="apellidos"  class="inputtext" ></td>
+					<td width="25%">Estado Civil</td>
+				</tr>
+
+			</table>
+
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+				<tr align="center">
+					<td align="left" width="20%">Cédula Identidad:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][cedula_identidad]"  value="<?=$perso[0]['ccnd03_censo_jefe_familia']['cedula_identidad']?>" id="cedula_identidad" onkeypress="return solonumeros_con_punto(event)"  class="inputtext" ></td>
+					<td align="left" width="20%">Nacionalidad:</td>
+					<td align="center" "20%"><?= $html->selectTag('ccnp01_directiva/nacionalidad', $nacionalidad,$perso[0]['ccnd03_censo_jefe_familia']['nacionalidad'], array('id'=>'nacionalidad'));?></td>
+					<td width="4%">S</td>
+					<td width="4%">C</td>
+					<td width="4%">V</td>
+					<td width="4%">D</td>
+					<td width="4%">Con</td>
+					<td width="5%">Otro</td>
+				</tr>
+
+				<tr align="center">
+					<td align="left" width="20%">Grado de Instrucción:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][grado_instruccion]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['grado_instruccion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['grado_instruccion']?>" id="grado_instruccion" maxlength="100"  class="inputtext" ></td>
+					<td align="left" width="20%">Sexo:</td>
+					<td width="20%"><?= $html->selectTag('ccnp01_directiva/sexo', $sexo,$perso[0]['ccnd03_censo_jefe_familia']['sexo'], array('id'=>'sexo'));?></td>
+					<td width="4%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil1" value="S" <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='S'){echo 'checked';} ?>></td>
+					<td width="4%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil2" value="C" <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='C'){echo 'checked';} ?>></td>
+					<td width="4%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil3" value="V" <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='V'){echo 'checked';} ?>></td>
+					<td width="4%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil4" value="D  <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='D'){echo 'checked';} ?>"></td>
+					<td width="4%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil5" value="B" <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='B'){echo 'checked';} ?>></td>
+					<td width="5%"><input type="radio" name="data[ccnp01_directiva][estado_civil]" id="estado_civil6" value="O" <?php if($perso[0]['ccnd03_censo_jefe_familia']['estado_civil']=='O'){echo 'checked';} ?>></td>
+					<input type="hidden" id="estado_civil_chec" value=""/>
+				</tr>
+
+
+				<tr align="center">
+					<td align="left" width="20%">Oficio o Profesión:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][oficio_profesion]"  value="<?=($perso[0]['ccnd03_censo_jefe_familia']['oficio_profesion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['oficio_profesion']?>" id="oficio_profesion" maxlength="100"  class="inputtext" ></td>
+					<td align="left" width="20%">Fecha de Nacimiento</td>
+					<td width="20%" align="center"><?= $sisap->input_fecha('ccnp01_directiva','fecha_nacimiento','fecha_nacimiento',$sisap->cambia_fecha($perso[0]['ccnd03_censo_jefe_familia']['fecha_nacimiento']));?></td>
+					<td width="25%" colspan="6">&nbsp;</td>
+				</tr>
+
+				<tr align="center">
+					<td align="left" width="20%">Ocupación Actual:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][ocupacion_actual]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['ocupacion_actual']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['ocupacion_actual']?>" id="ocupacion_actual" maxlenght="100"  class="inputtext" ></td>
+					<td align="left" width="20%">Sueldo o Salario</td>
+					<td width="20%"><?= $sisap->inputTagRemote('ccnp01_directiva/sueldo_salario', array('value'=>($perso[0]['ccnd03_censo_jefe_familia']['sueldo_salario']=='0')?'':$sisap->Formato2($perso[0]['ccnd03_censo_jefe_familia']['sueldo_salario']),'url1'=>'/ccnp03_censo_poblacional1/calculos/1', 'update1'=>'vacio','id'=>'sueldo_salario','readonly'=>'','style'=>'width:98%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('sueldo_salario');"),  $optionAttr = null,  $showEmpty = true, $return = false) ?>
+					</td>
+					<td width="12%" colspan="3">Otros Ingresos:</td>
+					<td width="13%" colspan="3"><?= $sisap->inputTagRemote('ccnp01_directiva/otros_ingresos', array('value'=>($perso[0]['ccnd03_censo_jefe_familia']['otros_ingresos']=='0')?'':$sisap->Formato2($perso[0]['ccnd03_censo_jefe_familia']['otros_ingresos']),'url1'=>'/ccnp03_censo_poblacional1/calculos/2', 'update1'=>'vacio','id'=>'otros_ingresos','readonly'=>'','style'=>'width:98%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('otros_ingresos');"),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+				</tr>
+
+				<tr align="center">
+					<td align="left" width="20%">Donde Trabaja:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][donde_trabaja_top]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['donde_trabaja']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['donde_trabaja']?>" id="donde_trabaja" maxlength="100"  class="inputtext" ></td>
+					<td align="left" width="20%">Dirección Laboral:</td>
+					<td width="20%"><input name="data[ccnp01_directiva][direccion_laboral]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['direccion_laboral']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['direccion_laboral']?>" id="direccion_laboral" maxlength="100"  class="inputtext" ></td>
+					<td width="25%" colspan="6">&nbsp;</td>
+				</tr>
+
+				<tr align="center">
+					<td align="left" width="20%">Cargo:</td>
+					<td width="15%"> <input name="data[ccnp01_directiva][cargo]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['cargo']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cargo']?>" id="cargo" maxlength="100"  class="inputtext" ></td>
+					<td align="left" width="20%">Supervisor Inmediato:</td>
+					<td width="20%"><input name="data[ccnp01_directiva][supervisor_inmediato]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['supervisor_inmediato']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['supervisor_inmediato']?>" id="supervisor_inmediato" maxlength="100"  class="inputtext" ></td>
+					<td width="25%" colspan="6">&nbsp;</td>
+				</tr>
+
+				<tr align="center">
+					<td align="left" width="20%">Fecha de Ingreso:</td>
+					<td width="15%" align="center"><?= $sisap->input_fecha('ccnp01_directiva','fecha_ingreso','fecha_ingreso',($perso[0]['ccnd03_censo_jefe_familia']['fecha_ingreso']=='1900-01-01')?'':$sisap->cambia_fecha($perso[0]['ccnd03_censo_jefe_familia']['fecha_ingreso']));?></td>
+					<td align="left" width="20%">Telefonos:</td>
+					<td width="20%"><input name="data[ccnp01_directiva][telefonos_trabajo]"   value="<?=($perso[0]['ccnd03_censo_jefe_familia']['telefonos_trabajo']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['telefonos_trabajo']?>" id="telefonos_trabajo" maxlength="100"  class="inputtext" ></td>
+					<td width="25%" colspan="6">&nbsp;</td>
+				</tr>
+
+			</table>
+
+
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+				<tr>
+					<td class="tr_negro" align="center" colspan="12">III. GRUPO FAMILIAR</td>
+				</tr>
+
+				<tr>
+					<td align="center" width="4%">N°</td>
+					<td align="center" width="20%">Apellidos y Nombres</td>
+					<td align="center" width="10%">Cédula</td>
+					<td align="center" width="8%">Fecha de Nacimiento</td>
+					<td align="center" width="5%">Sexo</td>
+					<td align="center" width="5%">Estado<br> Civil</td>
+					<td align="center" width="8%">Parentesco</td>
+					<td align="center" width="10%">Grado de<br> Instrucción</td>
+					<td align="center" width="7%">Estudia</td>
+					<td align="center" width="9%">Ocupación</td>
+					<td align="center" width="9%">Ingreso</td>
+					<td align="center" width="5%">Acción</td>
+				</tr>
+				<tr>
+					<td align="center"><?= $html->input('ccnp01_directiva/num_miembro', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3', 'readonly'=>'readonly','value'=>$miembro_numero,'id'=>'num_miembro','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+					<td align="center"><?= $html->input('ccnp01_directiva/ape_nom', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'','id'=>'ape_nom','value'=>'','class'=>'inputtext'), false); ?></td>
+					<td align="center"><?= $html->input('ccnp01_directiva/cedula_fami', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'','value'=>'','id'=>'cedula_fami','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+					<td align="center"><?= $sisap->input_fecha('ccnp01_directiva','fecha_nacimiento_fami','fecha_nacimiento_fami');?></td>
+					<td align="center"><?= $html->selectTag('ccnp01_directiva/sexo_fami', $sexo,null, array('id'=>'sexo_fami'));?></td>
+					<td align="center"><?= $html->selectTag('ccnp01_directiva/estado_civil_fami', $estado_civil,null, array('id'=>'estado_civil_fami'));?></td>
+					<td align="center"><?= $sisap->selectTagRemote('ccnp01_directiva/parentesco_fami', $parentesco,  null,  null, array('id'=>'parentesco_fami', 'onChange'=>'vacio', true), null, true);?></td>
+					<td align="center"><?= $html->input('ccnp01_directiva/grado_instruccion_fami', $htmlAttributes = array('style'=>'width:98%','readonly'=>'','value'=>'','id'=>'grado_instruccion_fami','class'=>'inputtext'), false); ?></td>
+					<td align="center"><?= $html->radio('ccnp01_directiva/estudia', array('1'=>'Si', '2'=>'No'),'<br>', array('value'=>'','id'=>'estudia'))?></td>
+					<td align="center"><?= $html->input('ccnp01_directiva/ocupacion_fami', $htmlAttributes = array('style'=>'width:98%','readonly'=>'','value'=>'','id'=>'ocupacion_fami','class'=>'inputtext'), false); ?></td>
+					<td align="center"><?= $html->input('ccnp01_directiva/ingreso_fami', $htmlAttributes = array('style'=>'width:98%','readonly'=>'','value'=>'','id'=>'ingreso_fami','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('ingreso_fami');"), false); ?></td>
+					<td align="center"><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'','url1' => '/ccnp03_censo_poblacional1/guardar_items', 'update1'=>'carga_grilla')); ?></td>
+				</tr>
+		</table>
+
+<br>
+<div id="carga_grilla"  style="height:150px; overflow:auto;" >
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+				<tr>
+					<td align="center" width="4%">N°</td>
+					<td align="center" width="20%">Apellidos y Nombres</td>
+					<td align="center" width="10%">Cédula</td>
+					<td align="center" width="8%">Fecha de Nacimiento</td>
+					<td align="center" width="5%">Sexo</td>
+					<td align="center" width="5%">Estado<br> Civil</td>
+					<td align="center" width="8%">Parentesco</td>
+					<td align="center" width="10%">Grado de<br> Instrucción</td>
+					<td align="center" width="7%">Estudia</td>
+					<td align="center" width="9%">Ocupación</td>
+					<td align="center" width="9%">Ingreso</td>
+					<td align="center" width="5%">Acción</td>
+				</tr>
+				<?
+//		pr($fami);
+		$j=0;
+		foreach($paren as $x){
+			$deno[$j] = $x['cnmd06_parentesco']['denominacion'];
+			$codigo[$j] = $x['cnmd06_parentesco']['cod_parentesco'];
+			$j++;
+		}
+		$monto2=0;
+		for($i=0;$i<count($fami);$i++){
+			if($i%2==0){
+    			$color="#CDF2FF";
+	    	}else{
+	    		$color="#DAEBFF";
+	    	}
+		?>
+			<tr bgcolor=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" >
+				<td align="center"><?=$fami[$i][0]['numero_parentesco']?></td>
+				<td align="lefth"><?=$fami[$i][0]['nombres_apellidos']?></td>
+				<td align="center"><?=($fami[$i][0]['cedula_identidad']=='0')?'':$fami[$i][0]['cedula_identidad']?></td>
+				<td align="center"><?=$sisap->cambia_fecha($fami[$i][0]['fecha_nacimiento'])?></td>
+				<td align="center"><?=$fami[$i][0]['sexo']?></td>
+				<td align="center"><?=($fami[$i][0]['estado_civil']=='B')?'Con':$fami[$i][0]['estado_civil']?></td>
+				<td align="center"><?=denominacion($deno, $codigo,$fami[$i][0]['cod_parentesco'])?></td>
+				<td align="lefth"><?=($fami[$i][0]['grado_instruccion']=='0')?'':$fami[$i][0]['grado_instruccion']?></td>
+				<td align="center"><?=($fami[$i][0]['estudia']=='1')?'Si':'No'?></td>
+				<td align="lefth"><?=($fami[$i][0]['ocupacion']=='0')?'':$fami[$i][0]['ocupacion']?></td>
+				<td align="right"><?=($fami[$i][0]['ingreso']=='0')?'':$sisap->Formato2($fami[$i][0]['ingreso'])?></td>
+				<td align="center" id="<?= "li_".$i ?>">
+					<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/ccnp03_censo_poblacional1/eliminar_familiar/'.$fami[$i][0]['cod_sector'].'/'.$fami[$i][0]['cod_calle'].'/'.$fami[$i][0]['numero_casa'].'/'.$fami[$i][0]['numero_parentesco'].'/'.$fami[$i][0]['ingreso'], array('update'=>'carga_grilla', 'title'=>'Eliminar', null), "Realmente desea Eliminar a este familiar?", false, true); ?>
+				</td>
+			</tr>
+		<?
+		$monto2+=$fami[$i][0]['ingreso'];
+
+		 } ?>
+
+		 	<input type="hidden" id="familia" value="<?=$i?>"/>
+			<div id="del"></div>
+	</table>
+
+
+
+	</div>
+
+
+<br>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+				<tr><?
+					$monto1=$perso[0]['ccnd03_censo_jefe_familia']['sueldo_salario']+$perso[0]['ccnd03_censo_jefe_familia']['otros_ingresos'];
+					$monto3=$monto1+$monto2;
+
+					$_SESSION['salario_jefe']=$perso[0]['ccnd03_censo_jefe_familia']['sueldo_salario'];
+					$_SESSION['otro_ingreso']=$perso[0]['ccnd03_censo_jefe_familia']['otros_ingresos'];
+
+					$_SESSION['ingresos_familiares']=$monto2;
+					$_SESSION['suma_total']=$monto3;
+
+					?>
+					<td width="80%">Total Ingresos del Jefe de la Familia:</td>
+					<td align="center"><?= $html->input('ccnp01/total_jefe_familia', $htmlAttributes = array('style'=>'width:98%;text-align:right','readonly'=>'readonly','value'=>($monto1==0)?'':$sisap->Formato2($monto1),'id'=>'total_jefe_familia','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('total_jefe_familia');"), false); ?></td>
+				</tr>
+				<tr>
+					<td>Total Ingresos de los demás Miembros de la Familia:</td>
+					<td align="center"><?= $html->input('ccnp01/total_miembros_familia', $htmlAttributes = array('style'=>'width:98%;text-align:right','readonly'=>'readonly','value'=>($monto2==0)?'':$sisap->Formato2($monto2),'id'=>'total_miembros_familia','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('total_miembros_familia');"), false); ?></td>
+				</tr>
+				<tr>
+					<td><b>Total General del Ingreso Familiar:</b></td>
+					<td align="center"><?= $html->input('ccnp01/total_general', $htmlAttributes = array('style'=>'width:98%;text-align:right','readonly'=>'readonly','value'=>($monto3==0)?'':$sisap->Formato2($monto3),'id'=>'total_general','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','onChange'=>"moneda('total_general');"), false); ?></td>
+				</tr>
+
+		</table>
+
+
+
+
+
+
+
+
+
+
+<br><br>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+				<tr>
+					<td class="tr_negro" align="center" colspan="12">IV. SITUACIÓN ECONÓMICA</td>
+				</tr>
+
+
+				<tr align="center">
+					<td align="left" width="100%"><b>Donde Trabaja?</b>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja0" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==0){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Ninguno</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==1){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Institución Pública</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==2){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Privada</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==3){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Comercial</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja4" value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==4){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Por cuenta propia</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja5" value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==5){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Buhoneria</input>
+						<input type="radio" name="data[ccnp01_directiva][donde_trabaja]" id="donde_trabaja6" value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_trabajo']==6){echo 'checked';} ?> onChange="verfica_donde_trabaja();">Otro</input>
+						<?= $html->input('ccnp01_directiva/otro_tipo_trabajo', $htmlAttributes = array('style'=>'width:19%','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['especifique_otro_tipo_trabajo']=='0')?'disabled':'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['especifique_otro_tipo_trabajo']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['especifique_otro_tipo_trabajo'],'id'=>'otro_tipo_trabajo','class'=>'inputtext'), false); ?>
+					</td>
+
+				</tr>
+
+
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+					<td align="center" width="100%" colspan="10">Realiza algún tipo de actividad comercial dentro de la vivienda?
+						<input type="radio" name="data[ccnp01_directiva][actividad_comercial_vivienda]" id="actividad_comercial_vivienda1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==1){echo 'checked';} ?> onChange="verfica_actividad_comercial();">SI</input>
+						<input type="radio" name="data[ccnp01_directiva][actividad_comercial_vivienda]" id="actividad_comercial_vivienda2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2){echo 'checked';} ?> onChange="verfica_actividad_comercial();">NO</input>
+					</td>
+			</tr>
+
+			<tr>
+			    <td width="100%" align="center">
+			    	<b>ventas de:</b>
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][0]),'id'=>'venta_de1','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Dulces
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][1]),'id'=>'venta_de2','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Helados
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][2]),'id'=>'venta_de3','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Empanadas
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][3]),'id'=>'venta_de4','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Refresco
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][4]),'id'=>'venta_de5','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Cervezas
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][5]),'id'=>'venta_de6','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Malta
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][6]),'id'=>'venta_de7','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''));?>Hielo
+			    	<?=$html->checkbox('ccnp01_directiva/venta_de8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cual_tipo_actividad'][7]),'id'=>'venta_de8','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['actividad_comercial_vivienda']==2)?'disabled':''					));?>Otros
+			    </td>
+			  </tr>
+
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<td align="center" width="25%">Ingreso Familiar</td>
+			<td align="center" width="25%">Tiene Cuenta Bancaria</td>
+			<td align="center" width="25%">Tiene Tarjeta de Credito</td>
+			<td align="center" width="25%">Tiene Cesta Ticket</td>
+
+			<tr>
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][ingreso_familiar]" id="ingreso_familiar1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['ingreso_familiar']==0){echo 'checked';} ?> >Ninguno</input>
+						<input type="radio" name="data[ccnp01_directiva][ingreso_familiar]" id="ingreso_familiar2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['ingreso_familiar']==1){echo 'checked';} ?> >Menos de 880</input>
+						<br>
+						<input type="radio" name="data[ccnp01_directiva][ingreso_familiar]" id="ingreso_familiar3" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['ingreso_familiar']==2){echo 'checked';} ?> >1,500</input>
+						<input type="radio" name="data[ccnp01_directiva][ingreso_familiar]" id="ingreso_familiar4" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['ingreso_familiar']==3){echo 'checked';} ?> >2,000</input>
+						<input type="radio" name="data[ccnp01_directiva][ingreso_familiar]" id="ingreso_familiar5" value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['ingreso_familiar']==4){echo 'checked';} ?> >2,500 y mas</input>
+					</td>
+
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][cuenta_bancaria]" id="cuenta_bancaria1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_cuenta_bancaria']==0){echo 'checked';} ?> >Si</input>
+						<input type="radio" name="data[ccnp01_directiva][cuenta_bancaria]" id="cuenta_bancaria2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_cuenta_bancaria']==1){echo 'checked';} ?> >No</input>
+					</td>
+
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][tarjeta_credito]" id="tarjeta_credito1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_tarjeta_credito']==0){echo 'checked';} ?> >Si</input>
+						<input type="radio" name="data[ccnp01_directiva][tarjeta_credito]" id="tarjeta_credito2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_tarjeta_credito']==1){echo 'checked';} ?> >No</input>
+					</td>
+
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][cesta_ticket]" id="cesta_ticket1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_cesta_ticket']==0){echo 'checked';} ?> >Si</input>
+						<input type="radio" name="data[ccnp01_directiva][cesta_ticket]" id="cesta_ticket2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_cesta_ticket']==1){echo 'checked';} ?> >No</input>
+					</td>
+			</tr>
+
+		</table>
+
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td class="tr_negro" align="center" colspan="12">V. SITUACIÓN DE LA VIVIENDA</td>
+			</tr>
+
+			<tr>
+				<td align="center" width="25%">Tipo de Vivienda</td>
+				<td align="center" width="25%">Forma de Tenencia</td>
+				<td align="center" width="25%">Terreno propio</td>
+				<td align="center" width="25%">Pertenece Ud a una OCV</td>
+			</tr>
+
+			<tr>
+					<td>
+		                    <select name="data[ccnp01_directiva][tipo_vivienda]" id="tipo_vivienda"  >
+							    <option value=""></option>
+							    <option value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==1){echo 'selected';} ?> >Quinta</option>
+							    <option value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==2){echo 'selected';} ?> >Casa</option>
+							    <option value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==3){echo 'selected';} ?> >Apartamento</option>
+							    <option value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==4){echo 'selected';} ?>  >Rancho</option>
+							    <option value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==5){echo 'selected';} ?>  >Barraca</option>
+							    <option value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_vivienda']==6){echo 'selected';} ?>  >Otro</option>
+							  </select>
+					</td>
+
+					<td >
+			                 <select name="data[ccnp01_directiva][forma_tenencia]" id="forma_tenencia">
+							   <option value=""></option>
+							    <option value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==1){echo 'selected';} ?> >Propia</option>
+							    <option value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==2){echo 'selected';} ?> >Alquilada</option>
+							    <option value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==3){echo 'selected';} ?> >Compartida</option>
+							    <option value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==4){echo 'selected';} ?> >Invadida</option>
+							    <option value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==5){echo 'selected';} ?> >Traspasada</option>
+							    <option value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==6){echo 'selected';} ?> >Prestada</option>
+							    <option value="7" <?php if($perso[0]['ccnd03_censo_jefe_familia']['forma_tenencia']==7){echo 'selected';} ?> >Otro</option>
+							  </select>
+					</td>
+
+
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][terreno_propio]" id="terreno_propio1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['terreno_propio']==0){echo 'checked';} ?> >Si</input>
+						<input type="radio" name="data[ccnp01_directiva][terreno_propio]" id="terreno_propio2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['terreno_propio']==1){echo 'checked';} ?> >No</input>
+					</td>
+
+					<td align="center">
+						<input type="radio" name="data[ccnp01_directiva][pertenece_ocv]" id="pertenece_ocv1" value="0" <?php if($perso[0]['ccnd03_censo_jefe_familia']['pertenece_ocv']==0){echo 'checked';} ?> >Si</input>
+						<input type="radio" name="data[ccnp01_directiva][pertenece_ocv]" id="pertenece_ocv2" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['pertenece_ocv']==1){echo 'checked';} ?> >No</input>
+					</td>
+			</tr>
+
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+			<td align="center" width="15%">Tipo de Paredes</td>
+			<td align="center" width="15%">Tipo de Techo</td>
+			<td align="center" width="45%">Enseres de la vivienda</td>
+			<td align="center" width="25%">Condiciones de Salubridad de la Vivienda</td>
+
+			<tr>
+					<td>
+		                    <select name="data[ccnp01_directiva][tipo_paredes]" id="tipo_paredes">
+							    <option value=""></option>
+							    <option value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==1){echo 'selected';} ?> >Frisadas</option>
+							    <option value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==2){echo 'selected';} ?>>Sin frisar</option>
+							    <option value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==3){echo 'selected';} ?>>Tablas</option>
+							    <option value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==4){echo 'selected';} ?>>Baharaque o Adobe</option>
+							    <option value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==5){echo 'selected';} ?>>Zinc</option>
+							    <option value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==6){echo 'selected';} ?>>Cartón piedra</option>
+							    <option value="7" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_paredes']==7){echo 'selected';} ?>>Otro</option>
+							  </select>
+					</td>
+
+					<td >
+			                 <select name="data[ccnp01_directiva][tipo_techo]" id="tipo_techo">
+							   <option value=""></option>
+							    <option value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==1){echo 'selected';} ?>>Platabanda</option>
+							    <option value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==2){echo 'selected';} ?>>Asbesto</option>
+							    <option value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==3){echo 'selected';} ?>>Tejas</option>
+							    <option value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==4){echo 'selected';} ?>>Madera</option>
+							    <option value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==5){echo 'selected';} ?>>Machimbrado</option>
+							    <option value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==6){echo 'selected';} ?>>Raso</option>
+							    <option value="7" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tipo_techo']==7){echo 'selected';} ?>>Otros</option>
+							  </select>
+					</td>
+
+					 <td>
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][0]),'id'=>'enseres_vivienda1','disabled'=>''));?>Nevera
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][1]),'id'=>'enseres_vivienda2','disabled'=>''));?>Cocina
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][2]),'id'=>'enseres_vivienda3','disabled'=>''));?>Gabinete
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][3]),'id'=>'enseres_vivienda4','disabled'=>''));?>Camas
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][4]),'id'=>'enseres_vivienda5','disabled'=>''));?>Aire Acondicionado
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][5]),'id'=>'enseres_vivienda6','disabled'=>''));?>Ventilador
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][6]),'id'=>'enseres_vivienda7','disabled'=>''));?>Juego Comedor
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][7]),'id'=>'enseres_vivienda8','disabled'=>''));?>Muebles Salas
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda9','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][8]),'id'=>'enseres_vivienda9','disabled'=>''));?>Utensilios de cocina
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda10','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][9]),'id'=>'enseres_vivienda10','disabled'=>''));?>Tv
+				    	<?=$html->checkbox('ccnp01_directiva/enseres_vivienda11','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['enseres_vivienda'][10]),'id'=>'enseres_vivienda11','disabled'=>''));?>Otros
+				    </td>
+
+					<td >
+			                 <select name="data[ccnp01_directiva][condicion_salubridad]" id="condicion_salubridad">
+							   <option value=""></option>
+							    <option value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['salubridad_vivienda']==1){echo 'selected';} ?>>Limpia</option>
+							    <option value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['salubridad_vivienda']==2){echo 'selected';} ?>>Sucio</option>
+							    <option value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['salubridad_vivienda']==3){echo 'selected';} ?>>Medianamente limpia</option>
+							    <option value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['salubridad_vivienda']==4){echo 'selected';} ?>>Moderadamente sucia</option>
+							    <option value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['salubridad_vivienda']==5){echo 'selected';} ?>>Otros</option>
+							  </select>
+					</td>
+
+			</tr>
+
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+			<tr>
+					<td align="center" width="50%">Presencia de Insectos y roedores?
+						<input type="radio" name="data[ccnp01_directiva][presencia_insectos]" id="presencia_insectos1" value="1"  <?php if($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==1){echo 'checked';} ?> onChange="verfica_insectos();">SI</input>
+						<input type="radio" name="data[ccnp01_directiva][presencia_insectos]" id="presencia_insectos2" value="2"  <?php if($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2){echo 'checked';} ?> onChange="verfica_insectos();">NO</input>
+					</td>
+
+					<td align="center" width="50%">Tiene Animales domesticos en la Vivienda?
+						<input type="radio" name="data[ccnp01_directiva][animales_domesticos]" id="animales_domesticos1" value="1"  <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==1){echo 'checked';} ?> onChange="verfica_animales();">SI</input>
+						<input type="radio" name="data[ccnp01_directiva][animales_domesticos]" id="animales_domesticos2" value="2"  <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2){echo 'checked';} ?> onChange="verfica_animales();">NO</input>
+					</td>
+			</tr>
+
+			<tr>
+					<td>
+				    	<?=$html->checkbox('ccnp01_directiva/insectos1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][0]),'id'=>'insectos1','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Moscas
+				    	<?=$html->checkbox('ccnp01_directiva/insectos2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][1]),'id'=>'insectos2','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Hormigas
+				    	<?=$html->checkbox('ccnp01_directiva/insectos3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][2]),'id'=>'insectos3','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Ratones
+				    	<?=$html->checkbox('ccnp01_directiva/insectos4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][3]),'id'=>'insectos4','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Cucarachas
+				    	<?=$html->checkbox('ccnp01_directiva/insectos5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][4]),'id'=>'insectos5','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Ciempiés
+				    	<?=$html->checkbox('ccnp01_directiva/insectos6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_insectos_roedores'][5]),'id'=>'insectos6','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['presencia_insectos_roedores']==2)?'disabled':''));?>Otros
+				    </td>
+
+				    <td>
+				    	<?=$html->checkbox('ccnp01_directiva/animales1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][0]),'id'=>'animales1','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Perro
+				    	<?=$html->checkbox('ccnp01_directiva/animales2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][1]),'id'=>'animales2','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Gato
+				    	<?=$html->checkbox('ccnp01_directiva/animales3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][2]),'id'=>'animales3','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Pájaros
+				    	<?=$html->checkbox('ccnp01_directiva/animales4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][3]),'id'=>'animales4','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>gallinas
+				    	<?=$html->checkbox('ccnp01_directiva/animales5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][4]),'id'=>'animales5','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Patos
+				    	<?=$html->checkbox('ccnp01_directiva/animales6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][5]),'id'=>'animales6','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Cochinos
+				    	<?=$html->checkbox('ccnp01_directiva/animales7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['tipo_animales_domesticos'][6]),'id'=>'animales7','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['tiene_animales_domesticos']==2)?'disabled':''));?>Otros
+				    </td>
+			</tr>
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td class="tr_negro" align="center" colspan="4">VI. SITUACIÓN DE LA VIVIENDA</td>
+			</tr>
+
+			<tr>
+				<td align="center" width="30%">Existe en su Nucleo Familiar personas que padezcan de:</td>
+				<td align="center" width="35%">Necesita usted de alguna Ayuda especial para familiares enfermos en su lugar:
+						<input type="radio" name="data[ccnp01_directiva][requeriere_ayuda_especial]" id="requeriere_ayuda_especial1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['requeriere_ayuda_especial']==1){echo 'checked';} ?> onChange="verfica_necesita_ayuda();">SI</input>
+						<input type="radio" name="data[ccnp01_directiva][requeriere_ayuda_especial]" id="requeriere_ayuda_especial2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['requeriere_ayuda_especial']==2){echo 'checked';} ?> onChange="verfica_necesita_ayuda();">NO</input>
+				</td>
+				<td align="center" width="30%" colspan="2">Situación de Exclusión</td>
+
+			<tr>
+
+			<tr>
+					<td rowspan="7" valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][0]),'id'=>'enfermedad1','disabled'=>''));?>Cáncer
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][1]),'id'=>'enfermedad2','disabled'=>''));?>Diabetes
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][2]),'id'=>'enfermedad3','disabled'=>''));?>Corazón
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][3]),'id'=>'enfermedad4','disabled'=>''));?>Hepatitis
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][4]),'id'=>'enfermedad5','disabled'=>''));?>Leucemia
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][5]),'id'=>'enfermedad6','disabled'=>''));?>Epilepsia
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][6]),'id'=>'enfermedad7','disabled'=>''));?>Tuberculosis
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][7]),'id'=>'enfermedad8','disabled'=>''));?>Hipertensión
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/enfermedad9','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['familiares_padecen_enfermedades'][8]),'id'=>'enfermedad9','disabled'=>''));?>Otros
+				    </td>
+
+				    <td rowspan="7">Cual(es):
+				    	<?= $html->input('ccnp01_directiva/cual_ayuda_especial', $htmlAttributes = array('style'=>'width:80%','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['requeriere_ayuda_especial']==2)?'disabled':'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cual_ayuda_especial']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cual_ayuda_especial'],'id'=>'cual_ayuda_especial','class'=>'inputtext'), false); ?>
+				    </td>
+			</tr>
+
+				<tr>
+				    <td width="25%" align="left">
+				    			Niños de la calle ¿Cuantos?:<br>
+				    </td>
+
+				    <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/ninos_calle', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuantos_ninos_exclusion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuantos_ninos_exclusion'],'id'=>'ninos_calle','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+				</tr>
+
+				<tr>
+				    <td width="25%" align="left">
+				    			Indígenas ¿Cuántos?:<br>
+				    </td>
+
+				     <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/indigenas', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuantos_indigenas_exclusion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuantos_indigenas_exclusion'],'id'=>'indigenas','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+				</tr>
+
+				<tr>
+				    <td width="25%" align="left">
+				    			Enfermos Terminales ¿Cuántos?:<br>
+				    </td>
+
+				    <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/enfermos_terminales', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuantos_enfermos_exclusion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuantos_enfermos_exclusion'],'id'=>'enfermos_terminales','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+				</tr>
+
+				 <tr>
+				    <td width="25%" align="left">
+				    			Discapacitados ¿Cuántos?:<br>
+				    </td>
+
+				     <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/discapacitados', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuantos_discapacitados_exclusion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuantos_discapacitados_exclusion'],'id'=>'discapacitados','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+
+				 </tr>
+
+				 <tr>
+				    <td width="25%" align="left">
+				    			Tercera Edad ¿Cuántos?:<br>
+				    </td>
+
+				    <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/tercera_edad', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuantos_tercera_exclusion']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuantos_tercera_exclusion'],'id'=>'tercera_edad','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+				 </tr>
+
+				 <tr>
+				    <td width="25%" align="left">
+				    			Otros
+				    </td>
+
+				    <td width="5%" align="left">
+				    	<?= $html->input('ccnp01_directiva/situacion_exclusion_otros', $htmlAttributes = array('style'=>'width:98%;text-align:center','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['otros']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['otros'],'id'=>'situacion_exclusion_otros','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?><br>
+				    </td>
+
+				 </tr>
+
+		</table>
+
+
+
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td class="tr_negro" align="center" colspan="5">VII. SERVICIOS</td>
+			</tr>
+
+			<tr>
+				<td align="center" width="20%">Aguas Blancas</td>
+				<td align="center" width="20%">Aguas Servidas</td>
+				<td align="center" width="20%">Gas</td>
+				<td align="center" width="20%">Sistema Eléctrico</td>
+				<td align="center" width="20%">Recoleccón de Basura</td>
+			</tr>
+
+			<tr>
+
+				<td align="left" valign="top">
+					<input type="radio" name="data[ccnp01_directiva][aguas_blancas]" id="aguas_blancas1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas']==1){echo 'checked';} ?> >Acueducto</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_blancas]" id="aguas_blancas2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas']==2){echo 'checked';} ?> >Camión</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_blancas]" id="aguas_blancas3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas']==3){echo 'checked';} ?> >Pública</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_blancas]" id="aguas_blancas4" value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas']==4){echo 'checked';} ?> >Del Rio</input>
+				</td>
+
+				<td align="left" valign="top" rowspan="2">
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==1){echo 'checked';} ?> >Cloacas</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==2){echo 'checked';} ?> >Pozo Séptico</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==3){echo 'checked';} ?> >Letrinas</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas4" value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==4){echo 'checked';} ?> >Al Aire Libre</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas5" value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==5){echo 'checked';} ?> >Depositada en Bolsas</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][aguas_servidas]" id="aguas_servidas6" value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_servidas']==6){echo 'checked';} ?> >Otros</input>
+				</td>
+
+				<td align="left" valign="top" rowspan="2">
+					<input type="radio" name="data[ccnp01_directiva][gas]" id="gas1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['gas']==1){echo 'checked';} ?> >Bombona</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][gas]" id="gas2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['gas']==2){echo 'checked';} ?> >Tubéria</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][gas]" id="gas3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['gas']==3){echo 'checked';} ?> >No Posee</input>
+				</td>
+
+				<td align="left" valign="top">
+					<input type="radio" name="data[ccnp01_directiva][electrificado]" id="electrificado1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['sistema_electrico']==1){echo 'checked';} ?> >Electrificado Público</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][electrificado]" id="electrificado2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['sistema_electrico']==2){echo 'checked';} ?> >Planta Eléctrica Propia</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][electrificado]" id="electrificado3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['sistema_electrico']==3){echo 'checked';} ?> >No Tiene</input>
+				</td>
+
+				<td align="left" valign="top" rowspan="2">
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==1){echo 'checked';} ?> >Aseo Urbano</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==2){echo 'checked';} ?> >Container</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura3" value="3" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==3){echo 'checked';} ?> >Bajante</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura4" value="4" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==4){echo 'checked';} ?> >Camión</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura5" value="5" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==5){echo 'checked';} ?> >Al Aire Libre</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura6" value="6" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==6){echo 'checked';} ?> >Quemada</input>
+					<br>
+					<input type="radio" name="data[ccnp01_directiva][basura]" id="basura7" value="7" <?php if($perso[0]['ccnd03_censo_jefe_familia']['recoleccion_basura']==7){echo 'checked';} ?> >Otros</input>
+				</td>
+			</tr>
+
+			<tr>
+
+				<td align="center" border="0" >Medidor:
+						<input type="radio" name="data[ccnp01_directiva][aguas_blancas_medidor]" id="aguas_blancas_medidor1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas_medidor']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][aguas_blancas_medidor]" id="aguas_blancas_medidor2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['aguas_blancas_medidor']==2){echo 'checked';} ?>>NO</input>
+				</td>
+
+				<td align="center" >tiene Medidor:
+						<input type="radio" name="data[ccnp01_directiva][tiene_medidor_electricidad]" id="tiene_medidor_electricidad1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_medidor_electricidad']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][tiene_medidor_electricidad]" id="tiene_medidor_electricidad2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['tiene_medidor_electricidad']==2){echo 'checked';} ?> >NO</input>
+				</td>
+			</tr>
+
+
+		</table>
+
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+			<tr>
+				<td align="center" width="20%">Telefonía</td>
+				<td align="center" width="20%">Transporte</td>
+				<td align="center" width="30%">Mecanismos de Información</td>
+				<td align="center" width="30%">Servicios Comunales</td>
+			</tr>
+
+
+			<tr>
+					<td valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/telefonia1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['telefonia'][0]),'id'=>'telefonia1','disabled'=>''));?>Domiciliaria
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/telefonia2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['telefonia'][1]),'id'=>'telefonia2','disabled'=>''));?>Celular
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/telefonia3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['telefonia'][2]),'id'=>'telefonia3','disabled'=>''));?>Prepago
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/telefonia4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['telefonia'][3]),'id'=>'telefonia4','disabled'=>''));?>Centro de Conexión
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/telefonia5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['telefonia'][4]),'id'=>'telefonia5','disabled'=>''));?>No Posee
+				    </td>
+
+
+				    <td valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/transporte1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['transporte'][0]),'id'=>'transporte1','disabled'=>''));?>Propio
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/transporte2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['transporte'][1]),'id'=>'transporte2','disabled'=>''));?>Público
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/transporte3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['transporte'][2]),'id'=>'transporte3','disabled'=>''));?>Privado (Taxi)
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/transporte4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['transporte'][3]),'id'=>'transporte4','disabled'=>''));?>Otros
+				    </td>
+
+				    <td valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][0]),'id'=>'mecanismo_informacion1','disabled'=>''));?>Televisión
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][1]),'id'=>'mecanismo_informacion2','disabled'=>''));?>Radio
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][2]),'id'=>'mecanismo_informacion3','disabled'=>''));?>Prensa
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][3]),'id'=>'mecanismo_informacion4','disabled'=>''));?>Internet
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][4]),'id'=>'mecanismo_informacion5','disabled'=>''));?>Otros
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/mecanismo_informacion6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['mecanismos_informacion'][5]),'id'=>'mecanismo_informacion6','disabled'=>''));?>Medios Alternativos Comunitarios
+				    </td>
+
+				    <td valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][0]),'id'=>'servicios_comunales1','disabled'=>''));?>Mercado
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][1]),'id'=>'servicios_comunales2','disabled'=>''));?>Abastos
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][2]),'id'=>'servicios_comunales3','disabled'=>''));?>Bodegas
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][3]),'id'=>'servicios_comunales4','disabled'=>''));?>Plazas y Parques
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][4]),'id'=>'servicios_comunales5','disabled'=>''));?>Farmacia
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][5]),'id'=>'servicios_comunales6','disabled'=>''));?>Preescolar
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][6]),'id'=>'servicios_comunales7','disabled'=>''));?>Escuelas
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][7]),'id'=>'servicios_comunales8','disabled'=>''));?>Liceos
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales9','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][8]),'id'=>'servicios_comunales9','disabled'=>''));?>Centro de Salud
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales10','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][9]),'id'=>'servicios_comunales10','disabled'=>''));?>Canchas
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales11','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][10]),'id'=>'servicios_comunales11','disabled'=>''));?>Casa Comunal
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales12','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][11]),'id'=>'servicios_comunales12','disabled'=>''));?>Iglesia
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/servicios_comunales13','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['servicios_comunales'][12]),'id'=>'servicios_comunales13','disabled'=>''));?>Otros
+				    </td>
+
+			</tr>
+
+
+
+		</table>
+
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td class="tr_negro" align="center" colspan="4">VIII. PARTICIPACIÓN COMUNITARIA</td>
+			</tr>
+
+			<tr>
+				<td align="center" width="20%">Organizaciones Comunitarias</td>
+				<td align="center" width="20%">¿Participa usted en algunas de ellas?</td>
+				<td align="center" width="30%">¿Participa algún miembro de la Familia?</td>
+				<td align="center" width="30%">Cuales Misiones se están implementando en su Comunidad</td>
+			</tr>
+
+			<tr>
+				<td align="center" >
+						<input type="radio" name="data[ccnp01_directiva][organizaciones_comunitarias]" id="organizaciones_comunitarias1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['organizacion_comunitaria']==1){echo 'checked';} ?> onChange="verfica_organizacion_comunitaria();">SI</input>
+						<input type="radio" name="data[ccnp01_directiva][organizaciones_comunitarias]" id="organizaciones_comunitarias2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['organizacion_comunitaria']==2){echo 'checked';} ?> onChange="verfica_organizacion_comunitaria();">NO</input>
+				</td>
+		<? if($perso[0]['ccnd03_censo_jefe_familia']['organizacion_comunitaria']==2){ ?>
+				<td align="center" >
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria]" disabled="disabled" id="participa_organizacion_comunitaria1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_organizacion_comunitaria']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria]" disabled="disabled" id="participa_organizacion_comunitaria2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_organizacion_comunitaria']==2){echo 'checked';} ?> >NO</input>
+				</td>
+
+				<td align="center" >
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria_miembro]" disabled="disabled" id="participa_organizacion_comunitaria_miembro1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_miembro_familiar']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria_miembro]" disabled="disabled" id="participa_organizacion_comunitaria_miembro2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_miembro_familiar']==2){echo 'checked';} ?> >NO</input>
+				</td>
+		<? }else{ ?>
+			<td align="center" >
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria]"  id="participa_organizacion_comunitaria1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_organizacion_comunitaria']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria]"  id="participa_organizacion_comunitaria2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_organizacion_comunitaria']==2){echo 'checked';} ?> >NO</input>
+				</td>
+
+				<td align="center" >
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria_miembro]"  id="participa_organizacion_comunitaria_miembro1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_miembro_familiar']==1){echo 'checked';} ?> >SI</input>
+						<input type="radio" name="data[ccnp01_directiva][participa_organizacion_comunitaria_miembro]"  id="participa_organizacion_comunitaria_miembro2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participa_miembro_familiar']==2){echo 'checked';} ?> >NO</input>
+				</td>
+
+
+		<?}?>
+				 <td valign="top">
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][0]),'id'=>'cuales_misiones1','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Ribas
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][1]),'id'=>'cuales_misiones2','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Sucre
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][2]),'id'=>'cuales_misiones3','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Vuelvan Caras
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][3]),'id'=>'cuales_misiones4','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Identidad
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][4]),'id'=>'cuales_misiones5','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Barrio Adentro
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][5]),'id'=>'cuales_misiones6','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Mercal
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][6]),'id'=>'cuales_misiones7','disabled'=>'','onChange'=>'verfica_cuales_otras_misiones();'));?>Ezequiel Zamora
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/cuales_misiones8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][7]),'id'=>'cuales_misiones8','disabled'=>'','onChange'=>"verfica_cuales_otras_misiones();"));?>Otras:
+				    	<?= $html->input('ccnp01_directiva/cual_otra_mision', $htmlAttributes = array('style'=>'width:70%','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['cuales_misiones'][7]==1)?'':'disabled','value'=>($perso[0]['ccnd03_censo_jefe_familia']['cuales_otras_misiones']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['cuales_otras_misiones'],'id'=>'cual_otra_mision','class'=>'inputtext'), false); ?>
+				 </td>
+			</tr>
+
+
+			<tr>
+				<td align="left">Usted está interviniendo en sesiones sobre como deben repartir los recursos de su comunidad</td>
+				<td align="left">¿Esta de acuerdo, que según la Constitución es ahora el Pueblo organizado quién debe tener el protagonismo y el poder para decidir sobre como invertir el presupuesto en su comunidad?</td>
+				<td align="left">¿Tiene información sobre la propuesta de creación de consejos comunales?<br>
+				<center>	<input type="radio" name="data[ccnp01_directiva][informacion_creacion_consejo]" id="informacion_creacion_consejo1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['informacion_creacion_consejo']==1){echo 'checked';} ?> onChange="verfica_creacion_consejo();" >SI</input>
+					<input type="radio" name="data[ccnp01_directiva][informacion_creacion_consejo]" id="informacion_creacion_consejo2" value="2"         <?php if($perso[0]['ccnd03_censo_jefe_familia']['informacion_creacion_consejo']==2){echo 'checked';} ?> onChange="verfica_creacion_consejo();">NO</input>
+				</center>
+				</td>
+				<td align="left">¿Estaria dispuesto(a) a apoyar, participar en la creación de un consejo comunal en su comunidad?</td>
+			</tr>
+
+			<tr>
+				<td align="center">
+					<input type="radio" name="data[ccnp01_directiva][interviene_repartir_recursos]" id="interviene_repartir_recursos1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['interviene_repartir_recursos']==1){echo 'checked';} ?> >SI</input>
+					<input type="radio" name="data[ccnp01_directiva][interviene_repartir_recursos]" id="interviene_repartir_recursos2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['interviene_repartir_recursos']==2){echo 'checked';} ?> >NO</input>
+				</td>
+
+				<td align="center">
+					<input type="radio" name="data[ccnp01_directiva][protagonismo_presupuestario]" id="protagonismo_presupuestario1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['protagonismo_presupuestario']==1){echo 'checked';} ?> value="1" >SI</input>
+					<input type="radio" name="data[ccnp01_directiva][protagonismo_presupuestario]" id="protagonismo_presupuestario2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['protagonismo_presupuestario']==2){echo 'checked';} ?> value="2" >NO</input>
+				</td>
+
+				<td align="center">¿Como la Obtuvo?<br>
+					<?= $html->input('ccnp01_directiva/como_obtuvo', $htmlAttributes = array('style'=>'width:98%','disabled'=>($perso[0]['ccnd03_censo_jefe_familia']['informacion_creacion_consejo']==1)?'':'disabled','value'=>($perso[0]['ccnd03_censo_jefe_familia']['como_obtuvo']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['como_obtuvo'],'id'=>'como_obtuvo','class'=>'inputtext'), false); ?>
+				</td>
+
+				<td align="center">
+					<input type="radio" name="data[ccnp01_directiva][participar_creacion_consejo]" id="participar_creacion_consejo1" value="1" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participar_creacion_consejo']==1){echo 'checked';} ?> >SI</input>
+					<input type="radio" name="data[ccnp01_directiva][participar_creacion_consejo]" id="participar_creacion_consejo2" value="2" <?php if($perso[0]['ccnd03_censo_jefe_familia']['participar_creacion_consejo']==2){echo 'checked';} ?> >NO</input>
+				</td>
+			</tr>
+
+			<tr>
+
+				<td align="center" colspan="4">
+					<b>Realizarse un consejo en su comunidad en cual área de trabajo le gustaria participar (Marque tres)</b>
+				</td>
+
+			</tr>
+
+			<tr>
+			 	<td  valign="top" colspan="4">
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal1','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][0]),'id'=>'realizarse_consejo_comunal1','disabled'=>''));?>Contraloria y seguimiento
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal2','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][1]),'id'=>'realizarse_consejo_comunal2','disabled'=>''));?>Relaciones Públicas y medios
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal3','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][2]),'id'=>'realizarse_consejo_comunal3','disabled'=>''));?>Seguridad Ciudadana
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal4','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][3]),'id'=>'realizarse_consejo_comunal4','disabled'=>''));?>Infraestructura, viviendas y servicios públicos
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal5','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][4]),'id'=>'realizarse_consejo_comunal5','disabled'=>''));?>Formación ideológica
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal6','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][5]),'id'=>'realizarse_consejo_comunal6','disabled'=>''));?>Elaboración de proyectos de desarrollo comunitario (Endógeno)
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal7','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][6]),'id'=>'realizarse_consejo_comunal7','disabled'=>''));?>Alimentación y Nutrición Zamora
+				    	<br>
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal8','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][7]),'id'=>'realizarse_consejo_comunal8','disabled'=>''));?>Educación, Cultura y Tecnología:
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal9','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][8]),'id'=>'realizarse_consejo_comunal9','disabled'=>''));?>Deporte y saneamiento ambiental
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal10','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][9]),'id'=>'realizarse_consejo_comunal10','disabled'=>''));?>Ejecución de programas sociales y las misiones
+				    	<?=$html->checkbox('ccnp01_directiva/realizarse_consejo_comunal11','',array('value'=>1,'checked'=>marcar($perso[0]['ccnd03_censo_jefe_familia']['area_gustaria_participar'][10]),'id'=>'realizarse_consejo_comunal11','disabled'=>''));?>Otros
+				 </td>
+			</tr>
+
+		</table>
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td class="tr_negro" align="center">IX. SITUACIÓN DE LA COMUNIDAD</td>
+			</tr>
+
+			<tr>
+				<td  align="center">¿Cuales cree usted que son las principales potencialidades y aspectos ventajosos que tiene su comunidad?</td>
+			</tr>
+
+			<tr align="center">
+				<td><?= $html->input('ccnp01_directiva/principales_potencialidades', $htmlAttributes = array('style'=>'width:100%','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['principales_potencialidades']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['principales_potencialidades'],'id'=>'principales_potencialidades','class'=>'inputtext','maxlength'=>'200'), false); ?></td>
+			</tr>
+
+			<tr>
+				<td  align="center">¿Cuales cree usted que son los principales problemas y debilidades de su comunidad?</td>
+			</tr>
+
+			<tr align="center">
+				<td><?= $html->input('ccnp01_directiva/principales_problemas', $htmlAttributes = array('style'=>'width:100%','disabled'=>'','value'=>($perso[0]['ccnd03_censo_jefe_familia']['principales_problemas']=='0')?'':$perso[0]['ccnd03_censo_jefe_familia']['principales_problemas'],'id'=>'principales_problemas','class'=>'inputtext','maxlength'=>'200'), false); ?></td>
+			</tr>
+
+		</table>
+
+		<div id="guardar"></div>
+		<div id="vacio"></div>
+
+<? if(isset($pagina)){ ?>
+        <?= $sisap->submitTagRemote('Guardar', array('funcion'=>'guardar_censo_jefe_familia','id'=>'guardar','url1' => '/ccnp03_censo_poblacional1/guardar_modificar/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_sector'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_calle'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['numero_casa'].'/'.$pagina, 'update1'=>'vacio')); ?>
+        		<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Regresar'), array('url1' => '/ccnp03_censo_poblacional1/consulta/'.$pagina, 'update1'=>'principal'))?>
+<?}else{?>
+	    <?= $sisap->submitTagRemote('Guardar', array('funcion'=>'guardar_censo_jefe_familia','id'=>'guardar','url1' => '/ccnp03_censo_poblacional1/guardar_modificar/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_sector'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_calle'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['numero_casa'], 'update1'=>'vacio')); ?>
+        <?= $sisap->buttonTagRemote('/ccfp01_subdivision/salir', array ('type'=>'button', 'value'=>'Regresar'), array('url1' => '/ccnp03_censo_poblacional1/seleccion/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_sector'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['cod_calle'].'/'.$perso[0]['ccnd03_censo_jefe_familia']['numero_casa'], 'update1'=>'principal'))?>
+
+<? } ?>
+
+		<?= $sisap->buttonTagRemote('/ccfp01_subdivision/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/ccnp01_concejo_comunales_entrada/vacio', 'update1'=>'principal'))?>
+
+
+
+		<br><br>
+</form>
+
+<?=$sisap->CloseTable() ?>

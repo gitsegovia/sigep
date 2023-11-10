@@ -1,0 +1,60 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+ ?>
+
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+	<tr>
+	    <th width="30%">Denominación del almacen</th>
+	    <th width="40%">Denominación del producto</th>
+	    <th width="15%">Existencia</th>
+	    <th width="15%">Acción</th>
+	</tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:150px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){
+
+                         if($color==1){$color=0;}else{$color=1;}
+
+                         $existencia=($ve["v_ciad01_inventario_productos"]['numero_entradas']-$ve["v_ciad01_inventario_productos"]['numero_salidas']);
+                         $monto=($ve["v_ciad01_inventario_productos"]['costo_maximo']+$ve["v_ciad01_inventario_productos"]['costo_minimo'])/2;
+                     ?>
+
+					      <tr class="row<?php echo $color; ?>">
+						    <td class="" width="30%" height="22"  width="2" align='center'>	<?= $ve["v_ciad01_inventario_productos"]["deno_almacen"] ?></td>
+						    <td class="" width="40%" align='lefth'>                       	<?= $ve["v_ciad01_inventario_productos"]["denominacion"] ?></td>
+						    <td class="" width="15%" align="center">                      					<?= $existencia?></td>
+						    <td class="" width="15%" align="center">
+						     <?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/casp01_ayudas/carga_js/'.$opcion.'/'.$ve["v_ciad01_inventario_productos"]["denominacion"].'/'.$monto, array('update'=>'vacio','title'=>'ver'),'',false,true); ?>
+                            </td>
+						  </tr>
+                     <?php } ?>
+				  <?php }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" height="22"  width="2">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					    <td>--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+<div id="vacio"></div>
+
+<?$sisap->link_paginacion_ventanas('/casp01_ayudas/buscar_consulta_producto_2/'.$opcion.'/a', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

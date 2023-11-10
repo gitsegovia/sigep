@@ -1,0 +1,234 @@
+<?php
+set_time_limit(0);
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "NOTA DE ENTREGA";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"16", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"181"));
+    }
+
+    function cambia_fecha($var=null){
+		$fecha = $var;
+		$mes = '';
+		$year = '';
+		if($fecha!=''){
+			$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+			$mes = $fecha[5].$fecha[6];
+			$dia = $fecha[8].$fecha[9];
+			$var = $dia.'/'.$mes.'/'.$year;
+			return $var;
+	    }
+	}
+
+	function mascara($numero=0,$cantidad_relleno=1){
+        return str_pad($numero, $cantidad_relleno , "0", STR_PAD_LEFT);
+	}
+
+	function Formato_6_out($price) {
+	    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+	    if (substr($price,-7,1)=='.') {
+	        $sents = '.'.substr($price,-6);
+	        $price = substr($price,0,strlen($price)-7);
+	    } elseif (substr($price,-6,1)=='.') {
+	        $sents = '.'.substr($price,-1);
+	        $price = substr($price,0,strlen($price)-6);
+	    } else {
+	        $sents = '.000000';
+	    }
+
+	   if($sents==".000000"){
+	   	   	return $price;
+	   }else{
+	    $price = preg_replace("/[^0-9]/", "", $price);
+	    $var = number_format($price.$sents,6,'.','');
+	    $var = str_replace('.',',',$var);
+	    return $var;
+	   }//fin else
+	}//fin function
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(15);
+$pdf->SetRightMargin(15);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+if(empty($cuerpo_nota_ent)){
+	$pdf->SetFont('vera','B',9);
+	$pdf->Cell(0,15,'NO EXISTE ESE NUMERO DE NOTA DE ENTREGA, PARA EL ALMACEN SELECCIONADO','TRBL',0,'C');
+
+}else{
+
+$numero_orden_salida = $pdf->mascara($cuerpo_nota_ent[0][0]['numero_orden_salida'], 8);
+$fecha_orden_salida = $pdf->cambia_fecha($cuerpo_nota_ent[0][0]['fecha_orden_salida']);
+$observaciones = $cuerpo_nota_ent[0][0]['observaciones'];
+$cod_dep_receptora = $cuerpo_nota_ent[0][0]['cod_dep_receptora'];
+$cod_almacen_receptor = $pdf->mascara($cuerpo_nota_ent[0][0]['cod_almacen_receptor'], 2);
+$almacen = $cuerpo_nota_ent[0][0]['almacen'];
+$hora_salida = $cuerpo_nota_ent[0][0]['hora_salida'];
+$titular = $cuerpo_nota_ent[0][0]['titular'];
+$ci_titular = $cuerpo_nota_ent[0][0]['ci_titular'];
+$beneficiario = $cuerpo_nota_ent[0][0]['beneficiario'];
+$ci_beneficiario = $cuerpo_nota_ent[0][0]['ci_beneficiario'];
+$entregado_por = $cuerpo_nota_ent[0][0]['entregado_por'];
+$ci_entregado = $cuerpo_nota_ent[0][0]['ci_entregado'];
+$recibido_por = $cuerpo_nota_ent[0][0]['recibido_por'];
+$ci_recibido = $cuerpo_nota_ent[0][0]['ci_recibido'];
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(90,6,'NOTA DE ENTREGA','TRBL',0,'C');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,6,'DEPOSITO','TRB',1,'C');
+
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(30,4,'NÚMERO','TRBL',0,'C');
+$pdf->Cell(30,4,'FECHA','TRBL',0,'C');
+$pdf->Cell(30,4,'HORA','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(30,6,$numero_orden_salida,'RL',0,'C');//--NÚMERO
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(30,6,$fecha_orden_salida,'R',0,'C');//--FECHA
+$pdf->Cell(30,6,$hora_salida,'R',1,'C');//--HORA
+
+$varX += 90;
+$pdf->SetXY($varX,$varY);
+
+$pdf->SetFont('vera','',7);
+$pdf->MultiCell(95,3,$almacen,'','L');//--DATOS DEL DEPOSITO
+
+$varX += 95;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,10,'','R',1,'C');
+$pdf->Cell(0,0,'','T',1,'C');
+
+
+$pdf->Ln(8);
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(150,4,'TITULAR','TRBL',0,'C');
+$pdf->Cell(0,4,'C.I.','TRB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(150,5,$titular,'RBL',0,'L');//--TITULAR
+$pdf->Cell(0,5,$ci_titular,'RB',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(150,4,'BENEFICIARIO','RBL',0,'C');
+$pdf->Cell(0,4,'C.I.','RB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(150,5,$beneficiario,'RBL',0,'L');//--BENEFICIARIO
+$pdf->Cell(0,5,$ci_beneficiario,'RB',1,'C');
+
+$pdf->Ln(8);//--espacio
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,4,'CÓDIGO','TRBL',0,'C');
+$pdf->Cell(95,4,'DENOMINACION','TRBL',0,'C');
+$pdf->Cell(20,4,'CANTIDAD','TRBL',0,'C');
+$pdf->Cell(25,4,'PRECIO','TRBL',0,'C');
+$pdf->Cell(0,4,'TOTAL','TRB',1,'C');
+
+$cant_registros = count($detalles_salida);
+
+$pdf->SetFont('vera','',7);
+for($i=0; $i<$cant_registros; $i++){
+
+	$cantidad 		 = $detalles_salida[$i][0]['cantidad'];
+	if($detalles_salida[$i][0]['costo_maximo'] == 0 && $detalles_salida[$i][0]['costo_minimo'] == 0){
+		$precio_unitario = 0;
+	}else{
+		$precio_unitario = ($detalles_salida[$i][0]['costo_maximo'] + $detalles_salida[$i][0]['costo_minimo']) / 2;
+	}
+	$precio_total 	 = $precio_unitario * $cantidad;
+
+	$pdf->Cell(20,6,$detalles_salida[$i][0]['codigo_prod_serv'],'RL',0,'C');//--CÓDIGO
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(95,1,"",'',2,'C');
+		$pdf->MultiCell(94,2,$detalles_salida[$i][0]['producto'],'','L');//--DENOMINACION
+		$varX = $varX+95;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,6,$pdf->Formato_6_out($cantidad),'RL',0,'C');//--CANTIDAD
+	$pdf->Cell(25,6,$precio_unitario != 0 ? $sisap->Formato2($precio_unitario) : '','R',0,'R');//--PRECIO
+	$pdf->Cell(0,6,$precio_total != 0 ? $sisap->Formato2($precio_total) : '','R',1,'R');//--TOTAL
+	$pdf->Cell(0,0,'','T',1);//--Linea
+}
+
+$pdf->Ln(8);//--espacio
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(92,5,'RECIBIDO POR:','TRBL',0,'C');
+$pdf->Cell(0,5,'ENTREGADO POR:','TRB',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(56,5,'NOMBRES Y APELLIDOS','RBL',0,'C');
+$pdf->Cell(36,5,'C.I.','RB',0,'C');
+$pdf->Cell(56,5,'NOMBRES Y APELLIDOS','RB',0,'C');
+$pdf->Cell(0,5,'C.I.','RB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(56,5,$recibido_por,'RL',0,'C');
+$pdf->Cell(36,5,$ci_recibido,'R',0,'C');
+$pdf->Cell(56,5,$entregado_por,'R',0,'C');
+$pdf->Cell(0,5,$ci_entregado,'R',1,'C');
+
+$pdf->Cell(56,10,'','RL',0,'C');
+$pdf->Cell(36,10,'','R',0,'C');
+$pdf->Cell(56,10,'','R',0,'C');
+$pdf->Cell(0,10,'','R',1,'C');
+
+$pdf->Cell(56,5,'_________________________','RL',0,'C');
+$pdf->Cell(36,5,'','R',0,'C');
+$pdf->Cell(56,5,'_________________________','R',0,'C');
+$pdf->Cell(0,5,'','R',1,'C');
+
+$pdf->Cell(56,3,'FIRMA','RBL',0,'C');
+$pdf->Cell(36,3,'','RB',0,'C');
+$pdf->Cell(56,3,'FIRMA','RB',0,'C');
+$pdf->Cell(0,3,'','RB',1,'C');
+
+$pdf->Ln(8);//--espacio
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,4,'OBSERVACIONES','TRBL',1,'C');
+$pdf->Cell(1,25,'','TL',0);
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(184,1,"",'',2,'C');
+	$pdf->MultiCell(184,2,$observaciones,'','L');//--OBSERVACIONES
+	$varX = $varX+184;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,25,'','TR',1);
+
+$pdf->Cell(0,0,'','T',1);
+}
+$pdf->Output('Nota_de_entrega.pdf','D');
+?>

@@ -1,0 +1,80 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+ ?>
+
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+	<tr>
+	    <th width="8%">C&oacute;digo del cargo</th>
+		<th width="8%">C&oacute;digo del puesto</th>
+		<th width="22%">Denominaci&oacute;n puesto</th>
+		<th width="26%">Denominaci&oacute;n dirección</th>
+	    <th width="10%">Condición del cargo</th>
+	    <th width="10%">Código ficha</th>
+		<th width="8%">ACCIÓN</th>
+	</tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){
+		        		      if($ve["v_cnmd06"]["condicion_actividad"]==2){ $ve["v_cnmd06"]["condicion_actividad"] = "Ocupado";
+		        		}else if($ve["v_cnmd06"]["condicion_actividad"]!=2){ $ve["v_cnmd06"]["condicion_actividad"] = "Vacante";}
+
+		        		if($ve["v_cnmd06"]["cod_ficha"]=="0"){ $ve["v_cnmd06"]["cod_ficha"] = "";}
+
+
+
+		        		if($ve["v_cnmd06"]["cod_ficha"]=="" && $ve["v_cnmd06"]["condicion_actividad"]=="Vacante"){
+		        			$capa = 'funcion';
+		        		}else {
+		        			$capa = 'principal';
+		        		}
+
+
+
+		        		?>
+		        		<?php if($color==1){$color=0;}else{$color=1;} ?>
+
+					      <tr class="row<?php echo $color; ?>">
+						    <td class="" width="8%" height="22"  width="2" align='center'>	<?= mascara_seis($ve["v_cnmd06"]["cod_cargo"]) ?></td>
+						    <td class="" width="8%" align='center'>                       	<?= $sisap->AddCero2($ve["v_cnmd06"]["cod_puesto"]) ?></td>
+						    <td class="" width="22%">                      					<?= $ve["v_cnmd06"]["demonimacion_puesto"] ?></td>
+						    <td class="" width="26%">                      					<?= $ve["v_cnmd06"]["deno_cod_direccion"] ?></td>
+						    <td class="" width="10%" align='center'>                      	<?= $ve["v_cnmd06"]["condicion_actividad"] ?></td>
+						    <td class="" width="10%" align='center'>                        <?= mascara_seis($ve["v_cnmd06"]["cod_ficha"]) ?></td>
+						    <td class="" width="5%" align='center'>
+						     <?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/cnmp06_fichas_h_c_a/seleccion_busqueda_venta/'.'/'.$ve["v_cnmd06"]["cod_cargo"].'/'.$ve["v_cnmd06"]["cod_puesto"]."/".$ve["v_cnmd06"]["cod_ficha"], array('update'=>"cuerpo",'title'=>'ver'),'',false,true); ?>
+                            </td>
+						  </tr>
+                     <?php } ?>
+				  <?php }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" height="22"  width="2">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					    <td>--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/cnmp06_fichas_h_c_a/buscar_por_pista/'.$opcion.'/a', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

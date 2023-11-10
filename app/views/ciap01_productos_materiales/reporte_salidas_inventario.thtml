@@ -1,0 +1,226 @@
+<?php
+if($opcion=="no"){
+
+echo $sisap->Tabla_modulos($session->read('entidad_federal'),true,strtoupper('SALIDAS DE INVENTARIO'),'','950',"ciap");
+echo $sisap->OpenTable('950');
+
+?>
+
+<form name='data[reporte]' method="post" id='reporte_inventario' action="<?php echo  $html->url('/ciap01_productos_materiales/reporte_salidas_inventario/si'); ?>" >
+
+<center>
+
+<table width="55%" border="0" align="center" class="" cellspacing="0" cellpadding="0">
+	<tr>
+		<td width="10%">Almacén&nbsp;&nbsp;&nbsp;</td>
+		<td>
+			<?if($readonly=='readonly'){ ?>
+				<?= $sisap->selectTagRemote('reporte/cod_almacen',$almacenes,  array('value1'=>'otros'), $almacen, array('onchange1'=>'', 'update1'=>'', 'id'=>'cod_almacen','readonly'=>$readonly, 'onchange'=>'vacio', true), null, true);?>
+			<? }else{ ?>
+				<?= $sisap->selectTagRemote('reporte/cod_almacen',$almacenes,  array('value1'=>'otros'), $almacen, array('onchange1'=>'', 'update1'=>'', 'id'=>'cod_almacen', 'onchange'=>'vacio', true), null, true);?>
+			<? } ?>
+		</td>
+	</tr>
+</table>
+
+<br />
+
+<table width="65%" border="0" align="center" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">Fecha desde</td>
+	    <td align="center"><?= $sisap->input_fecha('reporte', 'fecha_desde', 'fecha_desde') ?></td>
+	    <td align="center">Fecha hasta</td>
+	    <td align="center"><?= $sisap->input_fecha('reporte', 'fecha_hasta', 'fecha_hasta') ?></td>
+	</tr>
+</table>
+</center>
+
+
+<?= $html->submit('Generar') ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>
+
+<?php
+
+} elseif ($opcion=="si") {
+
+$_SESSION['almacen'] = $almacen;
+$_SESSION['fechas']  = $fechas;
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$titulo_A = "SALIDAS DE INVENTARIO";
+       	$this->top_reporte2(array($titulo_A, $_SESSION['almacen'], $_SESSION['fechas']), array("Y"=>"11", "X"=>"21", "Z"=>"13"), array("Y"=>"23", "X"=>"326"));
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(32,6,'SALIDA','TRBL',0,'C');
+		$this->Cell(138,6,'SALIDA VÍA TRANSFERENCIA','TRB',0,'C');
+		$this->Cell(40,6,'RECIBIDO POR','TRB',0,'C');
+		$this->Cell(0,6,'PRODUCTOS O MATERIALES','TRB',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,3,'','TRL',0,'C');
+		$this->Cell(17,3,'','TR',0,'C');
+		$this->Cell(54,3,'','TR',0,'C');
+		$this->Cell(54,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(20,3,'Número','TR',0,'C');
+		$this->Cell(40,3,'','TR',0,'C');
+		$this->Cell(18,3,'','TR',0,'C');
+		$this->Cell(82,3,'','TR',0,'C');
+		$this->Cell(0,3,'','TR',1,'C');
+
+		//----------------------------------------
+
+		$this->Cell(15,3,'Número','RBL',0,'C');
+		$this->Cell(17,3,'Fecha','RB',0,'C');
+		$this->Cell(54,3,'Dependencia','RB',0,'C');
+		$this->Cell(54,3,'Almacén','RB',0,'C');
+		$this->Cell(10,3,'Año','RB',0,'C');
+		$this->Cell(20,3,'Recepción','RB',0,'C');
+		$this->Cell(40,3,'Nombres y Apellidos','RB',0,'C');
+		$this->Cell(18,3,'Código','RB',0,'C');
+		$this->Cell(82,3,'Denominación','RB',0,'C');
+		$this->Cell(0,3,'Cantidad','RB',1,'C');
+    }
+
+    function Formato_6_out($price) {
+	    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+	    if (substr($price,-7,1)=='.') {
+	        $sents = '.'.substr($price,-6);
+	        $price = substr($price,0,strlen($price)-7);
+	    } elseif (substr($price,-6,1)=='.') {
+	        $sents = '.'.substr($price,-1);
+	        $price = substr($price,0,strlen($price)-6);
+	    } else {
+	        $sents = '.000000';
+	    }
+
+	   if($sents==".000000"){
+	   	   	return $price;
+	   }else{
+	    $price = preg_replace("/[^0-9]/", "", $price);
+	    $var = number_format($price.$sents,6,'.','');
+	    $var = str_replace('.',',',$var);
+	    return $var;
+	   }//fin else
+	}//fin function
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LEGAL');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+$numero_orden_salida_2 = "";
+
+$cant_registros = count($datos);
+
+for($i=0; $i<$cant_registros; $i++){
+
+	$numero_orden_salida_1 = $datos[$i][0]['numero_orden_salida'];
+
+	if($numero_orden_salida_1 != $numero_orden_salida_2){
+
+		$pdf->Cell(15,8,mascara($datos[$i][0]['numero_orden_salida'], 5),'RL',0,'C');
+		$pdf->Cell(17,8,$sisap->cambia_fecha($datos[$i][0]['fecha_orden_salida']),'R',0,'C');
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(54,1,"",'',2,'C');
+		   $pdf->MultiCell(54,2,$datos[$i][0]['deno_dep_receptora'],'','L');//--deno_dep_receptora
+		   $varX = $varX+54;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,8,'','L',0,'C');
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(53,1,"",'',2,'C');
+		   $pdf->MultiCell(53,2,$datos[$i][0]['deno_almacen_receptor'],'','L');//--deno_almacen_receptor
+		   $varX = $varX+53;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(10,8,$datos[$i][0]['ano_recepcion'] == 0 ? "" : $datos[$i][0]['ano_recepcion'],'RL',0,'C');//--ano_recepcion
+		$pdf->Cell(20,8,$datos[$i][0]['numero_recepcion'] == 0 ? "" : mascara($datos[$i][0]['numero_recepcion'], 5),'R',0,'C');//--numero_recepcion
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(40,1,"",'',2,'C');
+		   $pdf->MultiCell(40,2,$datos[$i][0]['recibido_por'] == '0' ? "" : $datos[$i][0]['recibido_por'],'','L');//--Nombres y Apellidos
+		   $varX = $varX+40;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(18,8,$datos[$i][0]['codigo_prod_serv'],'RL',0,'C');//--codigo_prod_serv
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(82,1,"",'',2,'C');
+		   $pdf->MultiCell(82,2,$datos[$i][0]['denominacion_producto'],'','L');//--Denominación
+		   $varX = $varX+82;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,8,$pdf->Formato_6_out($datos[$i][0]['cantidad']),'RL',1,'C');//--Cantidad
+
+		$numero_orden_salida_2 = $datos[$i][0]['numero_orden_salida'];
+
+	}else{
+
+		$pdf->Cell(15,8,"",'RL',0,'C');
+		$pdf->Cell(17,8,"",'R',0,'C');
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(54,1,"",'',2,'C');
+		   $pdf->MultiCell(54,2,"",'','L');//--deno_dep_receptora
+		   $varX = $varX+54;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,8,'','L',0,'C');
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(53,1,"",'',2,'C');
+		   $pdf->MultiCell(53,2,"",'','L');//--deno_almacen_receptor
+		   $varX = $varX+53;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(10,8,"",'RL',0,'C');//--ano_recepcion
+		$pdf->Cell(20,8,"",'R',0,'C');//--numero_recepcion
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(40,1,"",'',2,'C');
+		   $pdf->MultiCell(40,2,"",'','L');//--Nombres y Apellidos
+		   $varX = $varX+40;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(18,8,$datos[$i][0]['codigo_prod_serv'],'RL',0,'C');//--codigo_prod_serv
+		   $varX = $pdf->GetX();
+		   $varY = $pdf->GetY();
+		   $pdf->Cell(82,1,"",'',2,'C');
+		   $pdf->MultiCell(82,2,$datos[$i][0]['denominacion_producto'],'','L');//--Denominación
+		   $varX = $varX+82;
+		   $pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,8,$pdf->Formato_6_out($datos[$i][0]['cantidad']),'RL',1,'C');//--Cantidad
+
+		$numero_orden_salida_2 = $datos[$i][0]['numero_orden_salida'];
+
+	}
+
+	$pdf->Cell(0,0,'','T',1);
+
+}
+
+
+$pdf->Output('reporte_salidas_del_inventario.pdf','D');
+
+}//fin function
+
+?>

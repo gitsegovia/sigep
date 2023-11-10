@@ -1,0 +1,177 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+
+ $_SESSION["tipo_presupues_recurso"]='';
+switch($tipo_recurso){
+    case 1:$_SESSION["tipo_presupues_recurso"]='Ordinario';break;
+    case 2:$_SESSION["tipo_presupues_recurso"]='Coordinado';break;
+    case 3: if($ANO < 2012){ $_SESSION["tipo_presupues_recurso"]='Laee'; } else { $_SESSION["tipo_presupues_recurso"]='Fci'; } break;
+    case 4: if($ANO < 2012){ $_SESSION["tipo_presupues_recurso"]='Fides'; } else { $_SESSION["tipo_presupues_recurso"]='Mpps'; } break;
+    case 5:$_SESSION["tipo_presupues_recurso"]='Ingresos extraordinarios';break;
+    case 6:$_SESSION["tipo_presupues_recurso"]='Ingresos propios';break;
+    case 7:$_SESSION["tipo_presupues_recurso"]='Todo';break;
+
+}
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		 $this->top_reporte("PROYECCIÓN DE GASTO POR SECTORES Y PARTIDAS", 'TIPO RECURSO: '.$_SESSION["tipo_presupues_recurso"], 'AÑO: '.$_SESSION['ANO'], array("Y"=>"12", "X"=>"15", "Z"=>"13"), null);
+    }//fin funtion
+
+}//fin clase
+
+$_SESSION['ANO']=$ANO;
+$fpdf = new fpdfview('P','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(10);
+$fpdf->SetRightMargin(10);
+$fpdf->SetAutoPageBreak(true, 10);
+
+
+foreach($proyeccion_gasto as $pg){
+
+$cod_sector     = $pg[0]["cod_sector"];
+$cod_partida    = $pg[0]["cod_partida"];
+
+foreach ($denominaciones as $deno){
+	$dcod_sector      = $deno[0]["cod_sector"];
+	$dcod_partida     = $deno[0]["cod_partida"];
+	if($cod_sector==$dcod_sector  && $cod_partida==$dcod_partida){//} && $cod_generica==$dcod_generica && $cod_especifica==$dcod_especifica && $cod_sub_espec==$dcod_sub_espec){
+       $deno_sector      = $deno[0]["deno_sector"];
+       $deno_partida     = $deno[0]["deno_partida"];
+       break;
+	}
+}//fin denominaciones
+$fpdf->AddPage();
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(23,4,"SECTOR",'TRL',0,'L');
+$fpdf->Cell(0,4," DENOMINACIÓN",'TRL',1,'L');
+$fpdf->SetFont('vera','',6);
+$fpdf->Cell(23,4,$sisap->AddCero3($cod_sector),'TRL',0,'C'); //-----[Sector]
+$fpdf->Cell(0,4," ".$deno_sector,'TRL',1,'L');  //-----[Denominacion]
+
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(23,4,"PARTIDA",'TRL',0,'L');
+$fpdf->Cell(0,4," DENOMINACIÓN",'TRL',1,'L');
+$fpdf->SetFont('vera','',6);
+$fpdf->Cell(23,4,$sisap->AddCero3($cod_partida),'TRBL',0,'C');//-----[Partida]
+$fpdf->Cell(0,4," ".$deno_partida,'TRBL',1,'L'); //-----[Denominacion]
+
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(0,3,"",'',1,'C');
+$fpdf->Cell(23,4,"MES",'TRLB',0,'C');
+$fpdf->Cell(40,4,"DISTRIBUCIÓN",'TRB',0,'C');
+$fpdf->Cell(50,4,"COMPROMISO",'TRB',0,'C');
+$fpdf->Cell(50,4,"DIFERENCIA",'TRB',0,'C');
+$fpdf->Cell(0,4,"STATUS",'TRB',1,'C');
+
+$mes=array(1=>"ENE",2=>"FEB",3=>"MAR",4=>"ABR",5=>"MAY",6=>"JUN",7=>"JUL",8=>"AGO",9=>"SEP",10=>"OCT",11=>"NOV",12=>"DIC");
+$fpdf->SetFont('vera','',6);
+
+$rm=$pg[0];
+$td=0;
+$tds=0;
+$tc=0;
+$tdf=0;
+for($i=1;$i<=12;$i++){
+	    $distribucion_mensual=$rm["dm_".strtolower($mes[$i])];
+    	$compromiso_mensual=$rm["compromiso_".strtolower($mes[$i])];
+    	if($rm["compromiso_".strtolower($mes[$i])]!=0){
+    	   $diferencia=$rm["dm_".strtolower($mes[$i])]-$rm["compromiso_".strtolower($mes[$i])];
+    	}else{
+    		$diferencia=0;
+    	}
+    	//$diferencia=$diferencia<0?$diferencia:0;
+        $vector1[$i]["dm"]=$distribucion_mensual;
+        $vector1[$i]["co"]=$compromiso_mensual;
+        $vector1[$i]["df"]=$diferencia;
+        $vector1[$i]["status"]=" ";
+        $td=$td+$diferencia;
+        $td2=$td*(-1);
+		$tds=$tds+$vector1[$i]["dm"];
+	    $tc=$tc+$vector1[$i]["co"];
+	    $tdf=$tdf+$vector1[$i]["df"];
+
+}
+//////////////////////////////////////7
+$x=1;
+if($tdf<0){
+	$diferencia=$tdf;
+	$diferencia=$diferencia*(-1);
+}
+$A=0;
+$B=0;
+$VB=null;
+  for($i=1;$i<=12;$i++){
+    	$A+=$rm["dm_".strtolower($mes[$i])];
+    	$B+=$rm["compromiso_".strtolower($mes[$i])];
+    	$VB[$i]=$B;
+  }//fin for
+for($i=1;$i<=12;$i++){
+            if($VB[$i]>=$A){
+                 $diferencia=$diferencia-$vector1[$i]["dm"];
+		         $vector1[$i]["status"]=" NO DISPONIBLE";
+            }else{
+			        $vector1[$i]["status"]=" ";
+            }
+$x++;
+}//fin for
+/*
+for($i=12;$i>1;$i--){
+            if($vector1[$i]["df"]!=0.00)break;
+            if($diferencia> $vector1[$i]["dm"] && $vector1[$i]["dm"]!=0.00){
+                 $diferencia=$diferencia-$vector1[$i]["dm"];
+		         $vector1[$i]["status"]=" NO DISPONIBLE";
+            }else{
+			        $vector1[$i]["status"]=" ";
+            }
+$x++;
+}//fin for*/
+
+
+$td=0;
+$tds=0;
+$tc=0;
+$tdf=0;
+for($i=1;$i<=12;$i++){
+        $fpdf->SetFont('vera','B',6);
+		$fpdf->Cell(23,6,"".$mes[$i],'TRLB',0,'C');//--[Mes]
+		$fpdf->SetFont('vera','',6);
+		$fpdf->Cell(40,6,$sisap->Formato2($vector1[$i]["dm"]),'TRB',0,'R'); //--[Distribucion]
+		$fpdf->Cell(50,6,$sisap->Formato2($vector1[$i]["co"]),'TRB',0,'R'); //--[Compromiso]
+		$fpdf->Cell(50,6,$sisap->Formato2($vector1[$i]["df"]),'TRB',0,'R'); //--[Diferencia]
+		$fpdf->Cell(0,6,$vector1[$i]["status"],'TRB',1,'R');  //--[Status]
+		$tds=$tds+$vector1[$i]["dm"];
+	    $tc=$tc+$vector1[$i]["co"];
+	    $tdf=$tdf+$vector1[$i]["df"];
+
+}
+
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(23,4,"TOTALES:",'TRLB',0,'R');
+$fpdf->Cell(40,4,$sisap->Formato2($tds),'TRB',0,'R'); //--[Total Distribucion]
+$fpdf->Cell(50,4,$sisap->Formato2($tc),'TRB',0,'R'); //--[Total Compromiso]
+$fpdf->Cell(50,4,$sisap->Formato2($tdf),'TRB',0,'R'); //--[Total Diferencia]
+$fpdf->Cell(0,4,"",'TRB',1,'R');  //--[Status]
+
+}//fin foreach proyeccion_gasto
+$fpdf->Output('proyeccion_gasto_'.date("d-m-Y").".pdf",'D');
+?>

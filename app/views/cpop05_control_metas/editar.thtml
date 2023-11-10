@@ -1,0 +1,121 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$modelo_form="cpop02_recurso_humano";
+$color="";
+
+?>
+
+<?$sisap->Tabla_modulos("",true,"Recurso Humano","","950","cpop")?>
+<?$sisap->OpenTable("950");?>
+
+	<form name='data[cpop02_recurso_humano]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="35%">EJERCICIO A FORMULAR</td>
+				<td>
+					<?= $sisap->inputTagRemote($modelo_form.'/ano', array('url'=>'/'.$modelo_form.'/index/'.$this->data['cpop02_recurso_humano']['ano'],'update'=>'principal','size'=>'4' , 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$datos_cargo['cpod02_recurso_humano']['ano']));?>
+					<?= $html->input($modelo_form.'/cod_cargo',array('id'=>'cod_cargo', 'value'=>$datos_cargo['cpod02_recurso_humano']['cod_cargo'], 'readonly'=>'readonly', 'type'=>'hidden'));?>
+				</td>
+			</tr>
+			<tr>
+				<td>Numero de Cargos</td>
+				<td><?= $html->input($modelo_form.'/numero_cargos',array('id'=>'numero_cargos', 'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'3', 'value'=>$datos_cargo['cpod02_recurso_humano']['numero_cargos']));?>
+				</td>
+			</tr>
+			<tr>
+				<td>Denominación del Cargo</td>
+				<td><?= $html->textarea($modelo_form.'/denominacion_cargo', array('id'=>'denominacion_cargo','rows'=>'2',  'cols' => '40', 'class'=>'inputtext', 'value'=>$datos_cargo['cpod02_recurso_humano']['denominacion_cargo']),  false) ?></td>
+			</tr>
+			<tr>
+				<td>responsabilidades</td>
+				<td><?= $html->textarea($modelo_form.'/responsabilidades', array('id'=>'responsabilidades','rows'=>'2',  'cols' => '40', 'class'=>'inputtext', 'value'=>$datos_cargo['cpod02_recurso_humano']['responsabilidades']),  false) ?></td>
+			</tr>
+			<tr>
+				<td>Remuneración Mensual</td>
+				<td><?= $html->input($modelo_form.'/remuneracion_mensual', array('id'=>'remuneracion_mensual', 'size'=>'10', 'onKeyPress'=>'return solonumeros_con_punto(event);', 'style'=>'text-align:right;padding-left: 2px;border: 1px solid RGB(127, 157, 185);', 'onChange' => 'moneda(\'remuneracion_mensual\')', 'value'=>$datos_cargo['cpod02_recurso_humano']['remuneracion_mensual']));?>
+				</td>
+			</tr>
+			<tr>
+				<td>Situación Laboral</td>
+				<td>
+					<?= $html->selectTag($modelo_form.'/situacion_laboral', array('1'=>'Contratado', '2'=>'Fijo', '3'=>'Libre Nombramiento', '4'=>'Honorario Profesional', '5'=>'Obrero'), $datos_cargo['cpod02_recurso_humano']['situacion_laboral'], array('id'=>'situacion_laboral')); ?>
+				</td>
+			</tr>
+			<tr>
+        		<? if(!$consulta){?>
+				<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Cargo', array('funcion'=>'valida_cpop02_recurso_humano','url1' => '/cpop02_recurso_humano/guardar/', 'update1'=>'principal')); ?></td>
+				<?}?>
+			</tr>
+		</table>
+	</form>
+
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="7" align="center">CARGOS REGISTRADOS PARA ESTE EJERCICIO PRESUPUESTARIO:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="5%" align="center">C&oacute;digo</td>
+				<td width="5%" align="center">Numero de Cargos</td>
+				<td width="20%" align="center">Denominación del Cargo</td>
+				<td width="25%" align="center">Responsabilidades</td>
+				<td width="15%" align="center">Remuneración Mensual</td>
+				<td width="15%" align="center">Situación Laboral</td>
+				<td width="15%" align="center">Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+			if(isset($transferir) && !$transferir){
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $cargos){
+        				$param = $cargos['cpod02_recurso_humano']['cod_cargo']."/".$cargos['cpod02_recurso_humano']['ano'];
+
+						if($color=="#DAEBFF"){
+		    				$color="#CDF2FF";
+			    		}else{
+				    		$color="#DAEBFF";
+				    	}
+					?>
+
+						<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							<td width="5%" align="center"><?= $id ?></td>
+							<td width="5%" align="center"><?= $cargos['cpod02_recurso_humano']['numero_cargos'] ?></td>
+							<td width="20%" align="center"><?= $cargos['cpod02_recurso_humano']['denominacion_cargo'] ?></td>
+							<td width="25%" align="center"><?= $cargos['cpod02_recurso_humano']['responsabilidades'] ?></td>
+							<td width="15%" align="center"><?= $cargos['cpod02_recurso_humano']['remuneracion_mensual'] ?></td>
+							<td width="15%" align="center"><?= $cargos['cpod02_recurso_humano']['situacion_laboral'] ?></td>
+							<td width="15%" align="center">
+						        <?if(!$consulta){?>
+							        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop02_recurso_humano/eliminar/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpop02_recurso_humano/editar/'.$param, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+								<?}?>
+							</td>
+						</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				} // fin datos
+			} // fin transferir
+			?>
+		</table>
+	</div>
+<?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>

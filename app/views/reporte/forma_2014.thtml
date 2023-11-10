@@ -1,0 +1,469 @@
+<?php
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+$_SESSION['cod_sector_deno']='';
+$_SESSION['cod_programa_deno'] = '';
+$_SESSION['cod_sector']='';
+$_SESSION['cod_programa'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF  {
+
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.014 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+function Header()
+{
+
+//$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,32,23);
+$this->image_escudo(12,32,23);
+$this->SetFont('vera','B',10);
+$this->Cell(20,6,"",'TL',0);
+$this->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);
+$this->Cell(25,4,"",'L',0);
+$this->SetFont('vera','',9);
+$this->Cell(0,4,$_SESSION['titulo_a'],'R',1);
+$this->SetFont('vera','B',12);
+$this->Cell(30,10,"",'L',0);
+$this->MultiCell(0,5,"RECURSOS HUMANOS DEL PROGRAMA\n CLASIFICADOS SEGÚN SU TIPO",'R','C');
+$this->SetFont('vera','',7);
+$this->Cell(30,3,"",'L',0);
+$this->Cell(0,3,"(EN BOLIVARES)",'R',1,'C');
+$this->SetFont('vera','',9);
+$this->Cell(22,5,"",'BL',0);
+$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);
+$this->Ln(7);
+
+
+$this->SetFont('vera','',6);
+$this->Cell(22,5,"",'TRL',0);
+$this->Cell(15,5," CÓDIGO",'TR',0,'C');
+$this->Cell(0,5," DENOMINACIÓN",'TR',1,'L');
+
+$this->Cell(22,5,"SECTOR",'TRL',0);
+$this->Cell(15,5,$_SESSION['cod_sector'],'TR',0,'C');
+$this->Cell(0,5,$_SESSION['cod_sector_deno'],'TR',1,'L');
+
+$this->Cell(22,5,"PROGRAMA",'TRLB',0);
+$this->Cell(15,5,$_SESSION['cod_programa'],'TRB',0,'C');
+$this->Cell(0,5,$_SESSION['cod_programa_deno'],'TRB',1,'L');
+
+$this->Ln(2);
+
+$this->Cell(60,4,"",'TRL',0,'C');
+$this->Cell(100,4,"PRESUPUESTO DEL AñO ANTERIOR: ".($_SESSION['ejercicio']-1),'TRLB',0,'C');
+$this->Cell(0,4,"PRESUPUESTO DEL AñO PROGRAMADO: ".$_SESSION['ejercicio'],'TRLB',1,'C');
+
+$this->Cell(60,4,"",'RL',0,'C');
+$this->Cell(20,4,"",'RL',0,'C');
+$this->SetFont('vera','',7);
+$this->Cell(80,4,"EN MILES DE BOLÍVARES ANUALES",'RLB',0,'C');
+//PRESUPUESTO ANO PROG
+$this->Cell(20,4,"",'RL',0,'C');
+$this->Cell(0,4,"EN MILES DE BOLÍVARES ANUALES",'RLB',1,'C');
+
+$this->Cell(60,4,"T I P O  DE  P E R S O N A L",'RL',0,'C');
+$this->SetFont('vera','',6);
+$this->Cell(20,4,"Nro.",'R',0,'C');
+$this->Cell(20,4,"SUELDOS Y",'R',0,'C');
+$this->Cell(20,4,"",'R',0,'C');
+$this->Cell(20,4,"",'R',0,'C');
+$this->Cell(20,4,"",'R',0,'C');
+
+$this->Cell(20,4,"Nro.",'R',0,'C');
+$this->Cell(20,4,"SUELDOS Y",'R',0,'C');
+$this->Cell(20,4,"",'R',0,'C');
+$this->Cell(20,4,"",'R',0,'C');
+$this->Cell(0,4,"",'R',1,'C');
+
+
+
+$this->Cell(60,3,"",'RBL',0,'C');
+$this->Cell(20,3,"CARGOS",'RB',0,'C');
+$this->Cell(20,3,"SALARIOS",'RB',0,'C');
+$this->SetFont('vera','',5);
+$this->Cell(20,3,"COMPENSACIONES",'RB',0,'C');
+$this->SetFont('vera','',6);
+$this->Cell(20,3,"PRIMAS",'RB',0,'C');
+$this->Cell(20,3,"TOTAL",'RB',0,'C');
+
+$this->Cell(20,3,"CARGOS",'RB',0,'C');
+$this->Cell(20,3,"SALARIOS",'RB',0,'C');
+$this->SetFont('vera','',5);
+$this->Cell(20,3,"COMPENSACIONES",'RB',0,'C');
+$this->SetFont('vera','',6);
+$this->Cell(20,3,"PRIMAS",'RB',0,'C');
+$this->Cell(0,3,"TOTAL",'RB',1,'C');
+
+}
+
+
+}//fin function
+
+
+if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RECURSOS HUMANOS DEL PROGRAMA\n CLASIFICADOS SEGúN SU TIPO",NULL,"750"); ?>
+
+<div id="actualizar"></div>
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/forma_2014/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cnmp05][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4" readonly onKeyPress="return solonumeros(event);"  /><br><br>
+
+<? $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true) ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+$l= 0;
+
+/*
+
+
+foreach($datos as $aux_d){ $l++;
+
+		$var_cnmd05_clasificacion[$l]['cod_sector']               =     $aux_d['cnmd05_clasificacion']['cod_sector'];
+		$var_cnmd05_clasificacion[$l]['cod_programa']             =     $aux_d['cnmd05_clasificacion']['cod_programa'];
+		$var_cnmd05_clasificacion[$l]['cod_nivel_i']              =     $aux_d['cnmd05_clasificacion']['cod_nivel_i'];
+		$var_cnmd05_clasificacion[$l]['cod_nivel_ii']             =     $aux_d['cnmd05_clasificacion']['cod_nivel_ii'];
+
+		        $var_cnmd05_clasificacion[$l]['numero_cargo_anterior']    =     0;
+				$var_cnmd05_clasificacion[$l]['sueldo_anterior']          =     0;
+				$var_cnmd05_clasificacion[$l]['compensaciones_anterior']  =     0;
+				$var_cnmd05_clasificacion[$l]['primas_anterior']          =     0;
+
+
+		//foreach($datos_aux as $aux_d_ax){
+             if($aux_d['cnmd05_clasificacion']['cod_sector']   == $aux_d_ax['cnmd05_clasificacion']['cod_sector'] &&
+	            $aux_d['cnmd05_clasificacion']['cod_programa'] == $aux_d_ax['cnmd05_clasificacion']['cod_programa'] &&
+	            $aux_d['cnmd05_clasificacion']['cod_nivel_i']  == $aux_d_ax['cnmd05_clasificacion']['cod_nivel_i'] &&
+	            $aux_d['cnmd05_clasificacion']['cod_nivel_ii'] == $aux_d_ax['cnmd05_clasificacion']['cod_nivel_ii']
+               ){
+				$var_cnmd05_clasificacion[$l]['numero_cargo_anterior']    =     $aux_d_ax[0]['numero_cargo_actual'];
+				$var_cnmd05_clasificacion[$l]['sueldo_anterior']          =     $aux_d_ax[0]['sueldo_actual'];
+				$var_cnmd05_clasificacion[$l]['compensaciones_anterior']  =     $aux_d_ax[0]['compensaciones_actual'];
+				$var_cnmd05_clasificacion[$l]['primas_anterior']          =     $aux_d_ax[0]['primas_actual'];
+            }//fin if
+		//}//fin foreach
+
+		$var_cnmd05_clasificacion[$l]['numero_cargo_actual']      =     $aux_d[0]['numero_cargo_actual'];
+		$var_cnmd05_clasificacion[$l]['sueldo_actual']            =     $aux_d[0]['sueldo_actual'];
+		$var_cnmd05_clasificacion[$l]['compensaciones_actual']    =     $aux_d[0]['compensaciones_actual'];
+		$var_cnmd05_clasificacion[$l]['primas_actual']            =     $aux_d[0]['primas_actual'];
+		$var_cnmd05_clasificacion[$l]['ano']                      =     $aux_d['cnmd05_clasificacion']['ano'];
+
+
+}//fin foreach
+
+
+
+
+
+foreach($datos_aux as $aux_d_ax){ $marca = 0;
+    for($i=1; $i<=$l; $i++){
+              if($var_cnmd05_clasificacion[$i]['cod_sector']   == $aux_d_ax['cnmd05_clasificacion']['cod_sector'] &&
+	            $var_cnmd05_clasificacion[$i]['cod_programa'] == $aux_d_ax['cnmd05_clasificacion']['cod_programa'] &&
+	            $var_cnmd05_clasificacion[$i]['cod_nivel_i']  == $aux_d_ax['cnmd05_clasificacion']['cod_nivel_i'] &&
+	            $var_cnmd05_clasificacion[$i]['cod_nivel_ii'] == $aux_d_ax['cnmd05_clasificacion']['cod_nivel_ii']
+               ){ $marca++;
+				$var_cnmd05_clasificacion[$i]['numero_cargo_anterior']    =     $aux_d_ax[0]['numero_cargo_actual'];
+				$var_cnmd05_clasificacion[$i]['sueldo_anterior']          =     $aux_d_ax[0]['sueldo_actual'];
+				$var_cnmd05_clasificacion[$i]['compensaciones_anterior']  =     $aux_d_ax[0]['compensaciones_actual'];
+				$var_cnmd05_clasificacion[$i]['primas_anterior']          =     $aux_d_ax[0]['primas_actual'];
+            }//fin if
+   }//fin foreach
+   if($marca==0){$l++;
+   	            $var_cnmd05_clasificacion[$l]['cod_sector']               =     $aux_d_ax['cnmd05_clasificacion']['cod_sector'];
+		        $var_cnmd05_clasificacion[$l]['cod_programa']             =     $aux_d_ax['cnmd05_clasificacion']['cod_programa'];
+		        $var_cnmd05_clasificacion[$l]['cod_nivel_i']              =     $aux_d_ax['cnmd05_clasificacion']['cod_nivel_i'];
+		        $var_cnmd05_clasificacion[$l]['cod_nivel_ii']             =     $aux_d_ax['cnmd05_clasificacion']['cod_nivel_ii'];
+		        $var_cnmd05_clasificacion[$l]['ano']                      =     $aux_d_ax['cnmd05_clasificacion']['ano']+1;
+                $var_cnmd05_clasificacion[$l]['numero_cargo_anterior']    =     $aux_d_ax[0]['numero_cargo_actual'];
+				$var_cnmd05_clasificacion[$l]['sueldo_anterior']          =     $aux_d_ax[0]['sueldo_actual'];
+				$var_cnmd05_clasificacion[$l]['compensaciones_anterior']  =     $aux_d_ax[0]['compensaciones_actual'];
+				$var_cnmd05_clasificacion[$l]['primas_anterior']          =     $aux_d_ax[0]['primas_actual'];
+				$var_cnmd05_clasificacion[$l]['numero_cargo_actual']      =     0;
+				$var_cnmd05_clasificacion[$l]['sueldo_actual']            =     0;
+				$var_cnmd05_clasificacion[$l]['compensaciones_actual']    =     0;
+				$var_cnmd05_clasificacion[$l]['primas_actual']            =     0;
+    }//fin if
+}//fin for
+
+
+
+
+*/
+
+
+
+
+
+
+foreach($datos as $aux_d){ $l++;
+		$var_cnmd05_clasificacion[$l]['cod_sector']               =     $aux_d[0]['cod_sector'];
+		$var_cnmd05_clasificacion[$l]['cod_programa']             =     $aux_d[0]['cod_programa'];
+		$var_cnmd05_clasificacion[$l]['cod_nivel_i']              =     $aux_d[0]['cod_nivel_i'];
+		$var_cnmd05_clasificacion[$l]['cod_nivel_ii']             =     $aux_d[0]['cod_nivel_ii'];
+		$var_cnmd05_clasificacion[$l]['numero_cargo_anterior']    =     $aux_d[0]['numero_cargo_anterior'];
+		$var_cnmd05_clasificacion[$l]['sueldo_anterior']          =     $aux_d[0]['sueldo_anterior'];
+		$var_cnmd05_clasificacion[$l]['compensaciones_anterior']  =     $aux_d[0]['compensaciones_anterior'];
+		$var_cnmd05_clasificacion[$l]['primas_anterior']          =     $aux_d[0]['primas_anterior'];
+        $var_cnmd05_clasificacion[$l]['numero_cargo_actual']      =     $aux_d[0]['numero_cargo_actual'];
+		$var_cnmd05_clasificacion[$l]['sueldo_actual']            =     $aux_d[0]['sueldo_actual'];
+		$var_cnmd05_clasificacion[$l]['compensaciones_actual']    =     $aux_d[0]['compensaciones_actual'];
+		$var_cnmd05_clasificacion[$l]['primas_actual']            =     $aux_d[0]['primas_actual'];
+		$var_cnmd05_clasificacion[$l]['ano']                      =     $aux_d[0]['ano'];
+}//fin foreach
+
+
+
+
+$a=0;
+$b=0;
+$c=0;
+$d=0;
+$total_anterior= 0;
+$total_actual = 0;
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+$total_e = 0;
+$total_f = 0;
+$total_g = 0;
+$total_h = 0;
+$total_i = 0;
+$total_j = 0;
+
+foreach($sector as $s){$a++;
+         $s_aux[$a]['cod_sector'] = $s['cfpd02_sector']['cod_sector'];
+         $s_aux[$a]['denominacion'] = $s['cfpd02_sector']['denominacion'];
+ }
+
+foreach($programa as $p){$b++;
+         	$p_aux[$b]['cod_sector'] = $p['cfpd02_programa']['cod_sector'];
+         	$p_aux[$b]['cod_programa'] = $p['cfpd02_programa']['cod_programa'];
+         	$p_aux[$b]['denominacion'] = $p['cfpd02_programa']['denominacion'];
+}
+
+foreach($cnmd04_ocupacion as $aux_a){ $c++;
+		$var_cnmd04_ocupacion[$c]['cod_nivel_i'] = $aux_a['cnmd04_ocupacion']['cod_nivel_i'];
+		$var_cnmd04_ocupacion[$c]['cod_nivel_ii'] = $aux_a['cnmd04_ocupacion']['cod_nivel_ii'];
+		$var_cnmd04_ocupacion[$c]['denominacion'] = $aux_a['cnmd04_ocupacion']['denominacion'];
+    }//fin foreach
+
+foreach($cnmd04_tipo as $aux_b){ $d++;
+		$var_cnmd04_tipo[$d]['cod_nivel_i']  = $aux_b['cnmd04_tipo']['cod_nivel_i'];
+		$var_cnmd04_tipo[$d]['denominacion'] = $aux_b['cnmd04_tipo']['denominacion'];
+    }//fin foreach
+
+//Creacion del objeto de la clase heredada
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMargin(10);
+$pdf->SetRightMargin(9);
+$pdf->SetAutoPageBreak(true, 5);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['titulo_a'] = $titulo_a;
+   $z = 1;
+   $var_aux[$z]['cod_sector']='';
+   $var_aux[$z]['cod_programa']='';
+
+
+
+
+for($i=1; $i<=$l; $i++){
+
+$_SESSION['cod_sector'] = $sisap->AddCero2($var_cnmd05_clasificacion[$i]['cod_sector']);
+$_SESSION['cod_programa'] = $sisap->AddCero2($var_cnmd05_clasificacion[$i]['cod_programa']);
+$_SESSION['ejercicio'] = $var_cnmd05_clasificacion[$i]['ano'];
+
+if($var_cnmd05_clasificacion[$i]['cod_sector']!=$var_aux[$z]['cod_sector'] || $var_cnmd05_clasificacion[$i]['cod_programa']!=$var_aux[$z]['cod_programa']){
+        $var_aux[$z]['cod_sector']=$var_cnmd05_clasificacion[$i]['cod_sector'];
+	    $var_aux[$z]['cod_programa']=$var_cnmd05_clasificacion[$i]['cod_programa'];
+
+for($h=1; $h<=$a; $h++){
+      	if($s_aux[$h]['cod_sector']==$var_aux[$z]['cod_sector']){
+      		$denominacion = $s_aux[$h]['denominacion'];
+      		$_SESSION['cod_sector_deno'] = $denominacion;
+      		}
+      	}
+
+      for($h=1; $h<=$b; $h++){
+      	if($p_aux[$h]['cod_sector']==$var_aux[$z]['cod_sector'] && $p_aux[$h]['cod_programa']==$var_aux[$z]['cod_programa']){
+      		$denominacion = $p_aux[$h]['denominacion'];
+      		$_SESSION['cod_programa_deno'] = $denominacion;
+      		}
+      	}
+
+$total_anterior= 0;
+$total_actual = 0;
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+$total_e = 0;
+$total_f = 0;
+$total_g = 0;
+$total_h = 0;
+$total_i = 0;
+$total_j = 0;
+
+
+
+
+
+$otra_pag = 2;
+for($jjj=1; $jjj<=$l; $jjj++){
+  	if($var_cnmd05_clasificacion[$jjj]['cod_sector']==$var_aux[$z]['cod_sector'] && $var_cnmd05_clasificacion[$jjj]['cod_programa']==$var_aux[$z]['cod_programa']){
+    	if($var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']==""){  $var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']=0;}
+		if($var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']==""){$var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']=0;}
+		if(($var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']=='0' && $var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']=='0')){}else{$otra_pag=1;}
+  	}//fin if
+}//fin for
+if($otra_pag==1){$pdf->AddPage();
+
+
+
+
+
+
+
+for($jjj=1; $jjj<=$l; $jjj++){
+  	if($var_cnmd05_clasificacion[$jjj]['cod_sector']==$var_aux[$z]['cod_sector'] && $var_cnmd05_clasificacion[$jjj]['cod_programa']==$var_aux[$z]['cod_programa']){
+$aux = "";
+
+for($h=1; $h<=$d; $h++){
+      	if($var_cnmd04_tipo[$h]['cod_nivel_i']==$var_cnmd05_clasificacion[$jjj]['cod_nivel_i']){
+      		$denominacion = $var_cnmd04_tipo[$h]['denominacion'];
+      		}
+      	}
+
+      for($h=1; $h<=$c; $h++){
+      	if($var_cnmd04_ocupacion[$h]['cod_nivel_i']==$var_cnmd05_clasificacion[$jjj]['cod_nivel_i'] && $var_cnmd04_ocupacion[$h]['cod_nivel_ii']==$var_cnmd05_clasificacion[$jjj]['cod_nivel_ii']){
+      		$denominacion = $var_cnmd04_ocupacion[$h]['denominacion'] ;
+      		$aux= '.'.$var_cnmd04_ocupacion[$h]['cod_nivel_ii'];
+
+      		}
+      	}
+
+      	switch($var_cnmd05_clasificacion[$jjj]['cod_nivel_i']){
+      		case'1':{$cod_nivel_i = "I";}break;
+      		case'2':{$cod_nivel_i = "II";}break;
+      		case'3':{$cod_nivel_i = "III";}break;
+      		case'4':{$cod_nivel_i = "IV";}break;
+      		case'5':{$cod_nivel_i = "V";}break;
+      	}//fin
+
+
+      	$total_anterior = $var_cnmd05_clasificacion[$jjj]['sueldo_anterior'] + $var_cnmd05_clasificacion[$jjj]['compensaciones_anterior'] + $var_cnmd05_clasificacion[$jjj]['primas_anterior'];
+      	$total_actual = $var_cnmd05_clasificacion[$jjj]['sueldo_actual'] + $var_cnmd05_clasificacion[$jjj]['compensaciones_actual'] + $var_cnmd05_clasificacion[$jjj]['primas_actual'];
+if($aux!=''){$pdf->SetFont('vera','',6); $pdf->Cell(60,5, '     '.$cod_nivel_i.$aux.'. '.$denominacion,'RL',0,'L');
+       }else{$pdf->SetFont('vera','B',6);$pdf->Cell(60,5, $cod_nivel_i.'.'.$aux.' '.$denominacion,'RL',0,'L');}
+
+
+if($var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']==""){  $var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']=0;}
+if($var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']==""){$var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']=0;}
+
+if($var_cnmd05_clasificacion[$jjj]['numero_cargo_actual']=='0' && $var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior']=='0'){
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(20,5,'','R',0,'R');
+$pdf->Cell(0,5,'','R',1,'R');
+$pdf->Cell(0,0,'','T',1);
+}else{
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,5,$var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior'],'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['sueldo_anterior']),'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['compensaciones_anterior']),'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['primas_anterior']),'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_anterior),'R',0,'R');
+$pdf->Cell(20,5,$var_cnmd05_clasificacion[$jjj]['numero_cargo_actual'],'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['sueldo_actual']),'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['compensaciones_actual']),'R',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($var_cnmd05_clasificacion[$jjj]['primas_actual']),'R',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_actual),'R',1,'R');
+$pdf->Cell(0,0,'','T',1);
+$pdf->SetFont('vera','',6);
+}//fin else
+
+if($aux==''){
+$total_a += $var_cnmd05_clasificacion[$jjj]['numero_cargo_anterior'];
+$total_b += $var_cnmd05_clasificacion[$jjj]['sueldo_anterior'];
+$total_c += $var_cnmd05_clasificacion[$jjj]['compensaciones_anterior'];
+$total_d += $var_cnmd05_clasificacion[$jjj]['primas_anterior'];
+$total_e += $total_anterior;
+$total_f += $var_cnmd05_clasificacion[$jjj]['numero_cargo_actual'];
+$total_g += $var_cnmd05_clasificacion[$jjj]['sueldo_actual'];
+$total_h += $var_cnmd05_clasificacion[$jjj]['compensaciones_actual'];
+$total_i += $var_cnmd05_clasificacion[$jjj]['primas_actual'];
+$total_j += $total_actual;
+}
+
+
+      }//fin for
+    }//fin for
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(60,5,"T O T A L E S     ",'RBL',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(20,5,$total_a,'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_b),'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_c),'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_d),'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_e),'RB',0,'R');
+$pdf->Cell(20,5,$total_f,'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_g),'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_h),'RB',0,'R');
+$pdf->Cell(20,5,$sisap->Formato2($total_i),'RB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_j),'RB',1,'R');
+
+//$pdf->Cell(0,4,"FORMA: 2.014 ",'',1,'R');
+
+    }//fin
+  }//fin if
+}// fin for I
+
+
+$pdf->OutPut('forma_2014_'.date("d-m-Y"),'D');
+
+}//fin else
+?>

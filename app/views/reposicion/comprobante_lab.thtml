@@ -1,0 +1,397 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+$_SESSION['estado'] = $estado;
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+    function Header()
+    {
+        //$this->image_escudo_sin_consolidado(14,11,13);
+        //$this->SetFont('vera','B',9);
+        //$this->Cell(0,6,"",'TRL',1);
+        //$this->Cell(100,6,"             ".$_SESSION["entidad_federal"],'L',0);
+        //$this->Cell(0,6,"",'R',1,'L');
+        //$this->SetFont('vera','',8);
+        //$this->Cell(100,6,"                DIRECCION GENERAL DE PRESUPUESTO",'LB',0);
+        //$this->Cell(0,6,"",'RB',1);
+    }//fin funtion
+}//fin de la clase PDF
+
+
+
+
+
+
+
+ if($opcion==null){?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"REPOSICIÓN DE COMPROBANTE RETENCIÓN LABORAL",null,"950");?>
+
+<?= $sisap->OpenTable('950'); ?>
+
+
+Indique el año: <?= $sisap->inputTagRemote('reposicion/year_reposicion', array('url1'=>'/reposicion/select_reposcion/'.$opcion_dirrecion, 'update1'=>'select_beneficiario', 'url2'=>'/reposicion/distribuir', 'update2'=>'distribuir', 'value'=>$year, 'id'=>'year', 'size'=>'6', 'style'=>"text-align:center", "onKeyPress"=>"return solonumeros(event);")); ?>
+
+<br><br>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+    <tr>
+        <td width="30" >Beneficiario</td>
+        <td id = "select_beneficiario"><?= $sisap->selectTagRemote('reposicion/select_beneficiario',  $lista,  null,  null ,array('onchange1'=>'/reposicion/direccion_reposcion/'.$opcion_dirrecion.'/'.$year, 'update1'=>'distribuir',  'id'=>'select', 'style'=>'width:450px', true), null, true); ?></td>
+    </tr>
+</table>
+<br>
+<div id="distribuir" style="height:150px; overflow:auto;">
+
+
+
+        <table width="99%" cellspacing="0" cellpadding="0" id="grid"  CLASS="TR_NEGRO">
+        <tr bgcolor="#333">
+            <td class="td4"  height="30" >Nº Contrato</td>
+            <td class="td4" >Fecha</td>
+            <!--td class="td4" >Nº Comprobante</td-->
+            <td class="td4" >Monto</td>
+            <td class="td2" ></td>
+        </tr>
+        <tr bgcolor="#CDF2FF" class="textNegro2">
+            <td class="td2center" height="22"  width="2">--</td>
+            <td class="td2center">--</td>
+            <!--td class="td2center">--</td-->
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+        </tr>
+
+        </table>
+
+
+
+<div>
+
+
+
+<div id="capa_comprobante"></div>
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+
+
+
+
+
+
+
+
+<?php }else if($opcion==1){?>
+
+
+
+
+
+<table width="99%" cellspacing="0" cellpadding="0" id="grid"  CLASS="TR_NEGRO">
+<tr bgcolor="#333">
+    <td class="td4"  height="30">Nº Contrato</td>
+    <td class="td4" >Fecha</td>
+    <!--td class="td4" >Nº Comprobante</td-->
+    <td class="td4" >Monto</td>
+    <td class="td4" ></td>
+</tr>
+
+
+<?php
+
+    $i=0;
+    $total=0;
+
+ if(isset($lista)){
+  if($lista!=null){
+    foreach($lista as $ve){
+        //print_r($ve);
+
+        $monto = 0;
+
+        if($i%2==0){
+?>
+
+
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="200"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_cuerpo']['numero_documento_origen']) ?></td>
+    <td class="td2center" width="20"><?= $sisap->cambia_fecha($ve['cepd03_ordenpago_cuerpo']['fecha_orden_pago'])?></td>
+    <!--td class="td2center" width="30"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_cuerpo']['numero_comprobante_responsabilidad']) ?></td-->
+    <td class="td2" width="200" style="text-align:right; padding-right:5px; "><?= $sisap->Formato2($ve['cepd03_ordenpago_cuerpo']['monto_total']) ?></td>
+    <td class="td2center" width="50">
+     <form name="form_<?= $i ?>"  method = "post" id='form_<?= $i ?>' action="<?php echo  $html->url('/reposicion/comprobante_lab/si/'.$i); ?>">
+        <input name="data[reposicion][ano_orden_pago_<?= $i ?>]"    value="<?= $ve['cepd03_ordenpago_cuerpo']['ano_orden_pago']?>" type="hidden">
+        <input name="data[reposicion][numero_orden_pago_<?= $i ?>]" value="<?= $ve['cepd03_ordenpago_cuerpo']['numero_orden_pago']?>" type="hidden">
+      <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+     </form>
+    </td>
+</tr>
+
+
+<?php }else{ ?>
+
+
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="200"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_cuerpo']['numero_documento_origen']) ?></td>
+    <td class="td2center" width="20"><?= $sisap->cambia_fecha($ve['cepd03_ordenpago_cuerpo']['fecha_orden_pago'])?></td>
+    <!--td class="td2center" width="30"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_cuerpo']['numero_comprobante_responsabilidad']) ?></td-->
+    <td class="td2" width="200" style="text-align:right; padding-right:5px; "><?= $sisap->Formato2($ve['cepd03_ordenpago_cuerpo']['retencion_responsabilidad']) ?></td>
+    <td class="td2center" width="50">
+     <form name="form_<?= $i ?>"  method = "post" id='form_<?= $i ?>' action="<?php echo  $html->url('/reposicion/comprobante_lab/si/'.$i); ?>">
+        <input name="data[reposicion][ano_orden_pago_<?= $i ?>]"    value="<?= $ve['cepd03_ordenpago_cuerpo']['ano_orden_pago']?>" type="hidden">
+        <input name="data[reposicion][numero_orden_pago_<?= $i ?>]" value="<?= $ve['cepd03_ordenpago_cuerpo']['numero_orden_pago']?>" type="hidden">
+      <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+     </form>
+    </td>
+</tr>
+
+
+
+<?php
+
+        }//fine
+
+        $i++; $total += $monto;
+
+    }//fin foreach
+  }//finif
+ }else{ ?>
+
+ <tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="200">--</td>
+    <td class="td2center" width="20">--</td>
+    <td class="td2center" width="30">--</td>
+    <td class="td2" width="200" style="text-align:right; padding-right:5px; ">--</td>
+    <td class="td2center" width="50">--</td>
+</tr>
+
+<?php }//fin else ?>
+
+
+
+
+
+
+<?php }else{
+if(isset($datos_cepd03_ordenpago_cuerpo)){
+    if($datos_cepd03_ordenpago_cuerpo!=null){
+        foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+
+                    $ano_comprobante_fc         =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+                    //$numero_comprobante_fc[$comprobante_egreso]      =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_comprobante_responsabilidad'];
+                    $ano_orden_pago          =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+                    $numero_doc       =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+                    $fecha_orden_pago   = $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['fecha_orden_pago'];
+                    //$cod_tipo_inst           =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_inst'];
+                    //$cod_inst                =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_inst'];
+                   //$cod_dep                 =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_dep'];
+
+                    $monto =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_total'];
+                    $numero_cheque  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+                    $autorizado     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+                    //$beneficiario   =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+                    $rif       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+                    $cuenta_bancaria       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+                    $cod_entidad_bancaria =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+                    $cod_tipo_documento = $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_documento'];
+                    
+        }//fin function
+    }//fin for
+}//fin for
+
+if(isset($cod_entidad_bancaria22)){
+    foreach($cod_entidad_bancaria22 as $ve11){
+           if($cod_entidad_bancaria == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+              $cod_entidad_bancaria =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+              break;}
+    }//fin for
+}//
+
+foreach($tipodocu as $vera){
+    if($cod_tipo_documento == $vera['cepd03_tipo_documento']['cod_tipo_documento']){
+        $tipo_documento =  $vera['cepd03_tipo_documento']['denominacion'];
+    }//fin foreach
+}//fin foreach
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(8);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+//for($aux_aux=1; $aux_aux<=$comprobante_egreso; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+
+        $pdf->AddPage();
+
+        $long_entid = strlen($_SESSION["entidad_federal"]);
+        $long_depen = strlen($_SESSION["dependencia"]);
+        if ($long_entid>$long_depen){$longitud=$long_entid+82;}
+        if ($long_depen>$long_entid){$longitud=$long_depen+82;}
+        if ($longitud<106){$longitud=106;}
+
+
+        $pdf->image_escudo(14,10,15);
+
+        $pdf->SetFont('vera','B',9);
+        $pdf->Cell(0,4,"",'TRL',1);
+        $pdf->SetFont('vera','B',8);
+        $pdf->Cell($longitud,3,'REPÚBLICA BOLIVARIANA DE VENEZUELA','L',0,'C');
+        $pdf->Cell(0,3,'','R',1,'L');
+
+        $pdf->Cell($longitud,3,$_SESSION['estado'],'L',0,'C');
+        $pdf->Cell(0,3,'','R',1,'L');
+        $pdf->SetFont('vera','B',8);
+        $pdf->Cell($longitud,3,$_SESSION["entidad_federal"],'L',0,'C');
+        $pdf->Cell(0,3,"",'R',1,'R');
+        $pdf->SetFont('vera','B',8);
+        $pdf->Cell($longitud,3,$_SESSION['dependencia'],'LB',0,'C');
+        $pdf->Cell(0,3,"",'RB',1);
+
+    $pdf->Ln(2);
+    $pdf->Cell(70,4,$numero_cheque,'',0,'R');
+    $pdf->Cell(35,4,"       ".$sisap->Formato2($monto),'',1,'R');
+    $pdf->Ln(2);
+    $pdf->SetFont('vera','',7);
+    $pdf->Cell(5,4,"",'',0);
+    $pdf->Cell(0,4,$beneficiario,'',1,'L');
+    $pdf->Ln(3);
+    $pdf->SetFont('vera','B',5);
+    $pdf->Cell(5,4,"",'',0);
+    $pdf->Cell(0,4,$sisap->convertir($monto).'----------------','',1,'L');
+    $pdf->Ln(3);
+    $pdf->SetFont('vera','',6);
+    $pdf->Cell(5,4,"",'',0);
+    $pdf->Cell(0,4,$sisap->fecha_alfabetico($datos_cheque_egreso[0]['v_cstd06_comprobante_egreso']['fecha_cheque'], $cod_entidad_bancaria),'',1,'L');
+    $pdf->Ln(8);
+    $tope_e=18;
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,"COMPROBANTE DE EGRESO NÚMERO: ".$sisap->mascara_ocho($datos_cheque_egreso[0]['v_cstd06_comprobante_egreso']['numero_comprobante_egreso']),'B',1,'C');
+//$pdf->Cell(0,5,"COMPROBANTE DE EGRESO NÚMERO: ".$sisap->mascara_ocho($numero_comprobante_egreso),'B',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(20,9,"AÑO",'TBRL',0,'C');
+$pdf->Cell(28,9,"N° CONTRATO",'TBR',0,'C');
+$pdf->Cell(28,9,"FECHA",'TBR',0,'C');
+$pdf->Cell(43,9,"MONTO",'TBR',0,'C');
+$pdf->Cell(0,9,"MOTIVO DE LA ORDEN",'TBR',1,'C');
+
+
+/// ********************************************* IMPRESION DEL COMPROBANTE DE EGRESO. ********************** //////
+
+$pdf->Cell(20,4,$ano_orden_pago,'L',0,'C');
+$pdf->Cell(28,4,$numero_doc,'',0,'C');
+$pdf->Cell(28,4,$sisap->cambia_fecha($fecha_orden_pago),'',0,'C');
+$pdf->Cell(43,4,$sisap->Formato2($monto),'',0,'C');
+$pdf->Cell(0,4,$tipo_documento,'R',1,'L');
+
+for($i=1;$i<$tope_e;$i++){
+        $pdf->Cell(20,4,"",'L',0,'C');
+        $pdf->Cell(28,4,"",'',0,'C');
+        $pdf->Cell(28,4,"",'',0,'C');
+        $pdf->Cell(43,4,"",'',0,'C');
+        $pdf->Cell(0,4,"",'R',1,'L');
+}
+
+
+
+$pdf->Cell(0,4,"",'T',1);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"CONCEPTO",'TRBL',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(1,42,"",'LB',0);//margen izquierdo
+    $varX = $pdf->GetX();//capturo X
+    $varY = $pdf->GetY();//capturo Y
+
+    $pdf->MultiCell(195,4,$concepto,'','L');//Concepto Orden de Pago
+    //$pdf->MultiCell(195,4,$concepto,'','L');//Concepto Orden de Pago
+
+    $varX = $varX+195;//le sumo a X ---> 148.
+    $pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,42,"",'RB',1,'L');
+$pdf->Cell(0,2,"",'TRL',1);
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(25,3,"BANCO:",'L',0,'L');
+$pdf->Cell(0,3,$cod_entidad_bancaria,'R',1,'L');
+
+$pdf->Cell(25,4,"CUENTA No.",'L',0,'L');
+$pdf->Cell(120,4,$cuenta_bancaria,'',0,'L');
+$pdf->Cell(20,4,"FECHA:",'',0,'L');
+$pdf->Cell(0,4,$sisap->cambia_fecha($datos_cheque_egreso[0]['v_cstd06_comprobante_egreso']['fecha_cheque']),'R',1,'L');
+
+$pdf->Cell(25,4,"CHEQUE No.",'L',0,'L');
+$pdf->Cell(120,4,$numero_cheque,'',0,'L');
+$pdf->Cell(20,4,"MONTO:",'',0,'L');
+$pdf->Cell(0,4,$sisap->Formato2($monto),'R',1,'L');
+$pdf->Cell(0,2,"",'T',1,'L');
+//$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"A P R O B A C I O N",'TRBL',1,'C');
+
+    $pdf->SetFont('vera','',7);
+    $pdf->Cell(48,9,"",'L',0,'C');
+    $pdf->Cell(50,9,"",'',0,'C');
+    $pdf->Cell(51,9,"",'',0,'C');
+    $pdf->Cell(0,9,"",'R',1,'C');
+
+    $pdf->Cell(65,3,"_______________________",'L',0,'C');
+    $pdf->Cell(65,3,"_______________________",'',0,'C');
+    $pdf->Cell(0,3, "_______________________",'R',1,'C');
+
+    $pdf->Cell(65,5,"REVISADO POR:",'L',0,'C');
+    $pdf->Cell(65,5,"AUTORIZADO POR:",'',0,'C');
+    $pdf->Cell(0,5,"PAGADO POR:",'R',1,'C');
+    
+
+$pdf->Cell(0,2,"",'TB',1,'L');
+
+$pdf->Cell(26,8,"",'LR',0,'L');
+$pdf->Cell(100,8,"",'R',0,'L');
+$pdf->Cell(45,8,"",'R',0,'L');
+$pdf->Cell(0,8,"",'R',1,'L');
+
+$pdf->Cell(26,5,"BENEFICIARIO",'LR',0,'L');
+$pdf->Cell(100,5,$beneficiario,'R',0,'L');
+$pdf->Cell(45,5,"_____________________________",'R',0,'C');
+$pdf->Cell(0,5,"________________",'R',1,'C');
+
+$pdf->Cell(26,5,"C.I. / R.I.F:",'RLB',0,'L');
+$pdf->Cell(100,5,$rif,'RB',0,'L');
+$pdf->Cell(45,5,"FIRMA",'RB',0,'C');
+$pdf->Cell(0,5,"FECHA",'RB',1,'C');
+$pdf->Cell(0,5,"",'',1);
+
+$pdf->Output('retencion_laboral'.date("d-m-Y"),'D');
+//}//fin for
+}
+?>

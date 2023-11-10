@@ -1,0 +1,345 @@
+<?php
+if(isset($pdf) && $pdf=='no'){
+if(isset($errorMessage)) {
+  echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+  echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<?php
+  $sisap->Tabla('', true, "LISTADO DE PERSONAL COMISIÓN DE SERVICIO EXTERNA - (MÓDULO DE COMIDA)", '', "950");
+?>
+
+<?php $sisap->OpenTable("950"); ?>
+
+
+<form name='data[reporte_personal]' method = "post" id='form_reporte_personal' action="/reporte_personal/listado_alimentacion_servicio/pdf">
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <?php if ($cod_dep==1) { ?>
+    <tr>
+      <td>DEPENDENCIA:</td>               
+      <td colspan="3">
+        <?=  $html->selectTag('reporte_personal/select_dependencia', $listadependencia, null, array('id' =>'select_dependencia', 'class' => 'campoText', 'style' => 'border:1px solid cyan;'), null, true)?>
+      </td>
+    </tr>          
+    <?php } ?>
+    <tr>
+      <td width="15%" class="fila_titulos">AÑO:</td>
+      <td width="15%">
+        <input type="text" name="data[reporte_personal][ano]" value="" maxlength="4" id="ano" class="campoText" />
+      </td>
+      <td width="25%" class="fila_titulos">SELECCIONE EL MES:</td>
+      <td >
+        <?= $sisap->selectTagRemote('reporte_personal/mes', $meses, null, null, array('id'=>'mes', true), null, true); ?>
+      </td>
+    </tr>
+  </table>
+
+
+
+<?= $html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('reporte_personal/principal', array ('value'=>'Salir'), array('url1'=>'/modulos/vacio','update1'=>'principal')); ?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>
+
+<br /><br />
+<?php } else if(isset($pdf) && $pdf=='si'){
+set_time_limit(0);
+vendor('tcpdfs/tcpdf');
+
+$_SESSION["codigo_certificacion"]=$codigo_certificacion;
+$url = $this->themeWeb . IMAGES_URL . "logos_constancia/";
+if(!empty($datos_imgs[0][0]['tipo_logo_derecho'])){
+  $_SESSION["logo_derecho"] = $url.'logo_derecho_'.$cod_imagen.'.jpeg';
+}else{
+  $_SESSION["logo_derecho"] = "";
+}
+if(!empty($datos_imgs[0][0]['tipo_logo_izquierdo'])){
+  $_SESSION["logo_izquierdo"] = $url.'logo_izquierdo_'.$cod_imagen.'.jpeg';
+}else{
+  $_SESSION["logo_izquierdo"] = '';
+}
+$_SESSION["cod_dep_set"] = $cod_dep_set;
+
+function smes($mes){
+  switch ($mes) {
+          case "01": {
+                  $var = "ENERO";
+              }break;
+          case "02": {
+                  $var = "FEBRERO";
+              }break;
+          case "03": {
+                  $var = "MARZO";
+              }break;
+          case "04": {
+                  $var = "ABRIL";
+              }break;
+          case "05": {
+                  $var = "MAYO";
+              }break;
+          case "06": {
+                  $var = "JUNIO";
+              }break;
+          case "07": {
+                  $var = "JULIO";
+              }break;
+          case "08": {
+                  $var = "AGOSOTO";
+              }break;
+          case "09": {
+                  $var = "SEPTIEMBRE";
+              }break;
+          case "10": {
+                  $var = "OCTUBRE";
+              }break;
+          case "11": {
+                  $var = "NOVIEMBRE";
+              }break;
+          case "12": {
+                  $var = "DICIEMBRE";
+              }break;
+          default: $var = "";
+               break;
+      }//fin
+
+      return $var;
+}
+
+
+function strtoupper_str($var=null){
+
+  $var = strtoupper($var);
+
+         $var = str_replace("ñ","Ñ", $var);
+         $var = str_replace("á","Á", $var);
+         $var = str_replace("é","É", $var);
+         $var = str_replace("í","Í", $var);
+         $var = str_replace("ó","Ó", $var);
+         $var = str_replace("ú","Ú", $var);
+
+  return $var;
+
+}//fin function
+
+function strtolower_str($var=null){
+
+  $var = strtolower($var);
+
+       $var = str_replace("Ñ","ñ", $var);
+       $var = str_replace("Á","á", $var);
+       $var = str_replace("É","é", $var);
+       $var = str_replace("Í","í", $var);
+       $var = str_replace("Ó","ó", $var);
+       $var = str_replace("Ú","ú", $var);
+
+  return $var;
+
+}//fin function
+
+
+
+
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+      $this->SetY(-12);
+        // Set font
+        $this->SetFont('helvetica', 'IB', 7);
+        // Page number
+        $this->Cell(40, 15, $_SESSION["codigo_certificacion"], 0, false, 'C');
+        $this->Cell(0, 15, 'Pagina '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+    }
+
+    function Header() {
+      $this->setJPEGQuality(75);
+      if($_SESSION["logo_derecho"]!==''){$this->Image($_SESSION["logo_derecho"], 12, 5, 30, 30);}
+      if($_SESSION["logo_izquierdo"]!==''){$this->Image($_SESSION["logo_izquierdo"], 165, 5, 30, 30);}
+    }
+}
+//fin clase
+
+
+$pdf = new fpdfview('P', 'mm', 'Letter');
+$pdf->SetTopMargin(40);
+$pdf->SetLeftMArgin(15);
+$pdf->setFooterData(array(0,64,0), array(0,64,128));
+$pdf->SetRightMargin(15);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+$pdf->AddPage();
+
+
+$pdf->SetFont('helvetica', 'BIU', 13);
+
+$pdf->Cell(0, 8, "LISTADO DE PERSONAL COMISIÓN DE SERVICIO EXTERNA (MÓDULO DE COMIDA)", '', 1, 'C');
+
+$pdf->Cell(0, 3, "", '', 1, 'C');
+  
+/** IMPRIME CERTIFICACION */
+
+  $pdf->SetFont('helvetica', 'B', 8);
+  $pdf->SetFillColor(0, 70, 130);
+  $pdf->SetTextColor(255, 255, 255);
+  $pdf->Cell(0,5,"LISTADO DE PERSONAL DEL MES DE ".smes($mes).' DEL AÑO '.$ano,'TRL',1,'C',1);
+  $pdf->SetFillColor(255, 255, 255);
+  $pdf->SetTextColor(0, 0, 0);
+
+  $pdf->SetFont('helvetica', '', 5);
+  $count=1;
+  $countS=1;
+  $totalDir=0;
+  $total=0;
+$empleados=0;
+$obreros=0;
+$contratado_empleado=0;
+$contratado_obreros=0; 
+  $deno_cod_dir='';
+  $deno_secretaria='';
+  $pdf->SetFillColor(0, 70, 130);
+  $pdf->SetTextColor(255, 255, 255);
+  $pdf->Cell(0,5,"Secretaría: ".$datos[0][0]['deno_cod_secretaria'],'TRL',1,'C',1);
+  $pdf->Cell(0,5,"Dirección: ".$datos[0][0]['deno_cod_direccion'],'TRL',1,'C',1);
+  $pdf->SetFillColor(255, 255, 255);
+  $pdf->SetTextColor(0, 0, 0);
+
+  $pdf->SetFont('helvetica', 'B', 5);
+  $pdf->Cell(4, 6, "N*", 'TRL', 0, 'C');
+  $pdf->Cell(10, 6, "CÉDULA", 'TR', 0, 'C');
+  $pdf->Cell(19, 6, "NOMBRE", 'TR', 0, 'C');
+  $pdf->Cell(33, 6, "NOMINA", 'TR', 0, 'C');
+  $pdf->Cell(30, 6, "CARGO", 'TR', 0, 'C');
+  $pdf->Cell(25, 6, "SECRETARÍA", 'TR', 0, 'C');
+  $pdf->Cell(23, 6, "DIRECCIÓN", 'TR', 0, 'C');
+  $pdf->Cell(12, 6, "CONDICIÓN", 'TR', 0, 'C');
+  $pdf->Cell(0, 6, "JUSTIFICACIÓN", 'TR', 1, 'C');
+ foreach ($datos as $empleado) {
+  if($empleado[0]['clasificacion_personal']==1) {$empleados++; }
+if($empleado[0]['clasificacion_personal']==2) {$obreros++; }
+if($empleado[0]['clasificacion_personal']==5) {$contratado_empleado++; }
+if($empleado[0]['clasificacion_personal']==16) {$contratado_obreros++; }
+   if($deno_cod_dir!='' && $empleado[0]['deno_cod_direccion']!=$deno_cod_dir){    
+    $pdf->SetFont('helvetica', 'B', 5);
+    $pdf->Cell(14, 6, "Total Registros", 'LTRB', 0, 'C');
+    $pdf->Cell(0, 6, $count-1, 'TRB', 1, 'L');
+   }
+   if($deno_secretaria!='' && $empleado[0]['deno_cod_secretaria']!=$deno_secretaria){
+
+    $pdf->SetFont('helvetica', 'B', 5);
+    $pdf->Cell(25, 6, "Total Registros Secretaría", 'LTRB', 0, 'C');     
+    $pdf->Cell(0, 6, $countS-1, 'TRB', 1, 'L');
+    $pdf->SetFillColor(0, 70, 130);
+    $pdf->SetTextColor(255, 255, 255);
+    $pdf->Cell(0,5,"Secretaría: ".$empleado[0]['deno_cod_secretaria'],'TRL',1,'C',1);
+   }
+   if($deno_cod_dir!='' && $empleado[0]['deno_cod_direccion']!=$deno_cod_dir){
+    $pdf->SetFillColor(0, 70, 130);
+    $pdf->SetTextColor(255, 255, 255);
+    $pdf->Cell(0,5,"Dirección: ".$empleado[0]['deno_cod_direccion'],'TRL',1,'C',1);    
+    $pdf->SetFillColor(255, 255, 255);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetFont('helvetica', 'B', 5);
+    $pdf->Cell(4, 6, "N*", 'TRL', 0, 'C');
+    $pdf->Cell(10, 6, "CÉDULA", 'TR', 0, 'C');
+    $pdf->Cell(19, 6, "NOMBRE", 'TR', 0, 'C');
+    $pdf->Cell(33, 6, "NOMINA", 'TR', 0, 'C');
+    $pdf->Cell(30, 6, "CARGO", 'TR', 0, 'C');
+    $pdf->Cell(25, 6, "SECRETARÍA", 'TR', 0, 'C');
+    $pdf->Cell(24, 6, "DIRECCIÓN", 'TR', 0, 'C');
+    $pdf->Cell(12, 6, "ONDICIÓN", 'TR', 0, 'C');
+    $pdf->Cell(0, 6, "JUSTIFICACIÓN", 'TR', 1, 'C');
+
+   }
+   if($empleado[0]['deno_cod_direccion']!=$deno_cod_dir){
+     $count=1;
+     $deno_cod_dir=$empleado[0]['deno_cod_direccion'];
+   }
+   if($empleado[0]['deno_cod_secretaria']!=$deno_secretaria){
+     $countS=1;
+     $deno_secretaria=$empleado[0]['deno_cod_secretaria'];
+   }
+    $pdf->SetFont('helvetica', '', 5);
+    $pdf->MultiCell($w=4, $h=9, $count, $border='TRLB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false); 
+    $pdf->MultiCell($w=10, $h=9, $empleado[0]['cedula_identidad'], $border='TRB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=19, $h=9, $empleado[0]['nombre_completo'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false); 
+    $pdf->MultiCell($w=33, $h=9, $empleado[0]['denominacion_nomina'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=30, $h=9, $empleado[0]['denominacion_puesto'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=25, $h=9, $empleado[0]['deno_cod_secretaria'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=23, $h=9, $empleado[0]['deno_cod_direccion'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=12, $h=9, $empleado[0]['condicion'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=0, $h=9, $empleado[0]['justificacion'], $border='TRB', $align='L', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $count++;
+    $countS++;
+    $total++;
+    if($empleado[0]['cedula_identidad']=="24237704"){
+      $pdf->MultiCell($w=4, $h=9, $count, $border='TRLB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=10, $h=9, "24238612", $border='TRB', $align='C', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+    $pdf->MultiCell($w=19, $h=9, "ELVIS RAMON HERNÁDEZ RAMOS", $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false); 
+      $pdf->MultiCell($w=33, $h=9, $empleado[0]['denominacion_nomina'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $pdf->MultiCell($w=30, $h=9, 'PROGRAMADOR', $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $pdf->MultiCell($w=25, $h=9, $empleado[0]['deno_cod_secretaria'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $pdf->MultiCell($w=23, $h=9, $empleado[0]['deno_cod_direccion'], $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $pdf->MultiCell($w=12, $h=9,'', $border='TRB', $align='L', $fill=false, $ln=0, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $pdf->MultiCell($w=0, $h=9, '', $border='TRB', $align='L', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+      $count++;
+      $countS++;
+      $total++;
+    }
+  }
+
+    $pdf->SetFont('helvetica', 'B', 5);
+  $pdf->Cell(14, 6, "Total Registros", 'LTRB', 0, 'C');  
+  $pdf->Cell(0, 6, $count-1, 'TRB', 1, 'L');
+  $pdf->Cell(25, 6, "Total Registros Secretaría", 'LTRB', 0, 'C');     
+  $pdf->Cell(0, 6, $countS-1, 'TRB', 1, 'L');
+  $pdf->Cell(25, 6, "Total Empleados Listado", 'LTRB', 0, 'C');
+  $pdf->Cell(0, 6, $total, 'TRB', 1, 'L');
+  $pdf->Ln(7);
+  $pdf->Cell(0, 6, "Total Registros Por Tipo de Nomina", 'LTRB', 1, 'L');
+  $pdf->Cell(0, 6, "Total Empleados: ". $empleados, 'LTRB', 1, 'L');
+  $pdf->Cell(0, 6, "Total Obreros: ". $obreros, 'LTRB', 1, 'L');
+  $pdf->Cell(0, 6, "Total Contratados Empleados: ". $contratado_empleado, 'LTRB', 1, 'L');
+  $pdf->Cell(0, 6, "Total Contratados Obreros: ". $contratado_obreros, 'LTRB', 1, 'L');
+  $pdf->Ln(7);
+  $pdf->SetFont('helvetica', '', 8);
+  $pdf->MultiCell($w=0, $h=5, "Datos existentes en el Sistema Automatizado de la <b>Gobernación del Estado Bolivariano de Guárico</b> a la fecha <b>".date("d/m/Y")."</b>", $border=0, $align='L', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+// VARs INFORMACION PIE DE PAG.:
+
+  $art_footer = "Listado del personal activo.";
+
+
+  $pdf->SetFont('helvetica', '', 10);
+
+
+  $pdf->Ln(12);
+  $pdf->SetFont('helvetica', '', 7);
+  $pdf->MultiCell($w=0, $h=5, "Este reporte ha sido generada electrónicamente, su autenticidad y los datos están sujetos a verificación la dirección general de informática de la gobernación del estado bolivariano de guárico, a través de el siguiente código de certificación: <b>".$codigo_certificacion."</b>", $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+  $pdf->SetFont('helvetica', 'BI', 7);
+  $pdf->Cell(0, 5, "No Requiere sello húmedo", '', 1, 'C', 0, '', 0, true);
+  $pdf->Ln(7);
+  $pdf->SetFont('helvetica', 'B', 9);
+  $pdf->Ln(4);
+  $pdf->Cell(0, 2, "", 'T', 1, 'C');
+  $pdf->SetFont('helvetica', '', 7);
+  $pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+  $pdf->SetFont('helvetica', 'B', 7);
+
+
+  $pdf->Output('listado_personal_'.date("d-m-Y").".pdf",'D');
+
+}
+?>

@@ -1,0 +1,137 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: proveedor_suministro_pdf.thtml
+ * Fecha de creacion: 12/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+ vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['articulo'] = $articulo;
+
+class fpdfview extends TCPDF{
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+
+		$this->top_reporte($titulo_A = "PROVEEDORES QUE SUMINISTRAN ARTÍCULOS", $_SESSION['articulo'], null, array("Y"=>"5", "X"=>"15", "Z"=>"13"), array("Y"=>"17", "X"=>"255"));
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(140,4,"PROVEEDOR",'TRL',0,'C');
+		$this->Cell(50,4,"ORDEN DE COMPRA",'TRL',0,'C');
+		$this->Cell(0,4,"NOTA DE ENTREGA",'TRL',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(20,3,"R.I.F.",'TRBL',0,'C');
+		$this->Cell(90,3,"DENOMINACIÓN COMERCIAL",'TRBL',0,'C');
+		$this->Cell(30,3,"TELEFONOS",'TRBL',0,'C');
+
+		$this->Cell(10,3,"AÑO",'TRBL',0,'C');
+		$this->Cell(25,3,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,3,"FECHA",'TRBL',0,'C');
+
+		$this->Cell(10,3,"AÑO",'TRBL',0,'C');
+		$this->Cell(20,3,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,3,"FECHA",'TBRL',0,'C');
+		$this->Cell(15,3,"CANTIDAD",'TRBL',0,'C');
+		$this->Cell(0,3,"PRECIO UNITARIO",'TRBL',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(3);
+$pdf->SetRightMargin(3);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+/*
+* Luis Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+
+$dep_aux = 0;
+
+foreach($datos as $row){
+
+							$cod_dep              = $row['cscd05_cpcd02_suministro']['cod_dep'];
+							$denominacion_dep     = $row['cscd05_cpcd02_suministro']['denominacion_dep'];
+							$rif                  = $row['cscd05_cpcd02_suministro']['rif'];
+							$denominacion_comercial = $row['cscd05_cpcd02_suministro']['denominacion_comercial'];
+							$codigo_area_empresa = $row['cscd05_cpcd02_suministro']['codigo_area_empresa'];
+							$telefonos = $row['cscd05_cpcd02_suministro']['telefonos'];
+							$phone = $codigo_area_empresa.' - '.$telefonos;
+							$telefonos_fijos_representante = $row['cscd05_cpcd02_suministro']['telefonos_fijos_representante'];
+							$telefonos_moviles_representante = $row['cscd05_cpcd02_suministro']['telefonos_moviles_representante'];
+							$ano_orden_compra = $row['cscd05_cpcd02_suministro']['ano_orden_compra'];
+							$numero_orden_compra = $row['cscd05_cpcd02_suministro']['numero_orden_compra'];
+							$fecha_orden_compra = $row['cscd05_cpcd02_suministro']['fecha_orden_compra'];
+							$ano_nota_entrega = $row['cscd05_cpcd02_suministro']['ano_nota_entrega'];
+							$numero_nota_entrega = $row['cscd05_cpcd02_suministro']['numero_nota_entrega'];
+							$fecha_nota_entrega = $row['cscd05_cpcd02_suministro']['fecha_nota_entrega'];
+							$precio_unitario = $row['cscd05_cpcd02_suministro']['precio_unitario'];
+							$cantidad = $row['cscd05_cpcd02_suministro']['cantidad'];
+
+                            if($dep_aux!=$cod_dep && $dep_reporte==1 && $cosolidado==1){
+                            	        $pdf->SetFont('vera','B',6);
+										$pdf->Cell(0,7,$denominacion_dep,'TRLB',1,'C');
+										$pdf->SetFont('vera','',6);
+										$dep_aux = $cod_dep;
+                            }//fi function
+
+						$pdf->Cell(20,6,$rif,'TRL',0,'C');//-------[RIF PROVEEDOR]
+						    $varX = $pdf->GetX();
+						    $varY = $pdf->GetY();
+						    $pdf->Cell(90,1,"",'T',2,'C');
+						    $pdf->MultiCell(89,2,$denominacion_comercial,'','L');//--[DENOMINACIÓN C. PROVEEDOR]
+						    $varX = $varX+90;
+						    $pdf->SetXY($varX,$varY);
+						$pdf->Cell(1,6,"",'TL',0,'C');
+							$varX = $pdf->GetX();
+						    $varY = $pdf->GetY();
+						    $pdf->Cell(29,1,"",'T',2,'C');
+						    $pdf->MultiCell(28,2,$phone,'','C');//-----[TELEFONOS PROVEEDOR]
+						    $varX = $varX+29;
+						    $pdf->SetXY($varX,$varY);
+						$pdf->Cell(10,6,$ano_orden_compra,'TRL',0,'C');//-----------[ANO ORDEN COMPRA]
+						$pdf->Cell(25,6,$sisap->zero($numero_orden_compra),'TRL',0,'C');//--------[NUMERO ORDEN COMPRA]
+						$pdf->Cell(15,6,$sisap->Cfecha($fecha_orden_compra, 'D/M/A'),'TRL',0,'C');//---------[FECHA ORDEN COMPRA]
+						$pdf->Cell(10,6,$ano_nota_entrega,'TRL',0,'C');//-----------[ANO NOTA ENTREGA]
+						$pdf->Cell(20,6,$sisap->zero($numero_nota_entrega),'TRL',0,'C');//--------[NUMERO NOTA ENTREGA]
+						$pdf->Cell(15,6,$sisap->Cfecha($fecha_nota_entrega, 'D/M/A'),'TRL',0,'C');//---------[FECHA NOTA ENTREGA]
+						$pdf->Cell(15,6,$sisap->Formato_6_out($cantidad),'TRL',0,'C');//-----------[ANO ORDEN COMPRA]
+						$pdf->Cell(0,6,$sisap->Formato2($precio_unitario),'TRL',1,'C');//----[PRECIO UNIT]
+						$pdf->Cell(0,0,"",'T',1,'C');
+
+
+
+}//fin if
+
+
+
+
+
+$articulo_footer = $_SESSION['articulo'];
+$pdf->Output('PROVEEDORES_QUE_SUMINISTRAN_'.$articulo_footer."_".date("d-m-y").".pdf",'D');
+?>

@@ -1,0 +1,131 @@
+<?php
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'P', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("COSTO TOTAL NÓMINAS"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"189"));
+
+            $this->SetFont('vera', 'B', 7);
+            $this->Cell(15, 3, '', 'RTL', 0, 'C');
+            $this->Cell(64, 3, '', 'RTL', 0, 'C');
+            $this->Cell(40, 3, '', 'RTL', 0, 'C');
+            $this->Cell(23, 3, '', 'RT', 0, 'C');
+            $this->Cell(23, 3, '', 'RT', 0, 'C');
+            $this->Cell(23, 3, 'NETO A', 'RT', 0, 'C');
+            $this->Cell(0, 3, '', 'RT', 1, 'C');
+
+            $this->Cell(15, 3, 'CÓDIGO', 'RBL', 0, 'C');
+            $this->Cell(64, 3, 'NÓMINA', 'RBL', 0, 'C');
+            $this->Cell(40, 3, 'CORRESPONDIENTE', 'RBL', 0, 'C');
+            $this->Cell(23, 3, 'ASIGNACIONES', 'RB', 0, 'C');
+            $this->Cell(23, 3, 'DEDUCCIONES', 'RB', 0, 'C');
+            $this->Cell(23, 3, 'COBRAR', 'RB', 0, 'C');
+            $this->Cell(0, 3, 'PERSONAS', 'RB', 1, 'C');
+        }
+
+        function Footer() {
+        }
+
+    function tam_celda($total_char){
+		if($total_char<25){
+			$heigth = 6;
+        }elseif($total_char>=25 && $total_char<35){
+            $heigth = 8;
+		}elseif($total_char>=35 && $total_char<55){
+			$heigth = 10;
+        }elseif($total_char>=55 && $total_char<70){
+            $heigth = 12;
+		}elseif($total_char>=70 && $total_char<85){
+			$heigth = 14;
+        }elseif($total_char>=85 && $total_char<110){
+            $heigth = 16;
+		}elseif($total_char>=110 && $total_char<160){
+			$heigth = 18;
+		}elseif($total_char>=160 && $total_char<200){
+			$heigth = 22;
+		}elseif($total_char>=200 && $total_char<240){
+			$heigth = 26;
+		}elseif($total_char>=240 && $total_char<280){
+			$heigth = 30;
+		}elseif($total_char>=280 && $total_char<320){
+			$heigth = 34;
+		}elseif($total_char>=320 && $total_char<360){
+			$heigth = 38;
+		}else{
+			$heigth = 42;
+		}
+		return $heigth;
+    }
+    } // End Of fpdfview ext. TCPDF Class
+
+    $pdf = new fpdfview('P', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+	if(!empty($nom_ctotal)){ 
+	foreach($nom_ctotal as $rnom_ctotal){
+		$nomina = str_replace("\n", "", $rnom_ctotal['v_cnmp99_costo_nominas']['nomina']);
+        $correspondiente = str_replace("\n", "", $rnom_ctotal['v_cnmp99_costo_nominas']['correspondiente']);
+        $total_char_nomina = strlen($nomina);
+        $total_char_correspondiente = strlen($correspondiente);
+        if($total_char_nomina>=$total_char_correspondiente){
+            $theigth = $pdf->tam_celda($total_char_nomina);
+        }else{
+            $theigth = $pdf->tam_celda($total_char_correspondiente);
+        }
+
+                $pdf->Cell(15, $theigth,$rnom_ctotal['v_cnmp99_costo_nominas']['cod_tipo_nomina'], 'LR', 0, 'C'); // --------[COD_TIPO_NOMINA]
+
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(63, 1, "", '', 2, '');
+                $pdf->MultiCell(63, 3, $nomina, '', 'L'); // --------[NOMINA]
+                $varX = $varX + 63;
+                $pdf->SetXY($varX, $varY);
+
+                
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(39, 1, "", '', 2, '');
+
+                if($correspondiente=="0"){$correspondiente="";}  //-----CUANDO ES 0
+
+                $pdf->MultiCell(39, 3, $correspondiente, '', 'L'); // --------[CORRESPONDIENTE]
+                $varX = $varX + 39;
+                $pdf->SetXY($varX, $varY);
+
+				$pdf->Cell(23, $theigth, $sisap->Formato2($rnom_ctotal['v_cnmp99_costo_nominas']['asignacion']), 'LR', 0, 'R'); // --------[ASIGNACIONES]
+                $pdf->Cell(23, $theigth, $sisap->Formato2($rnom_ctotal['v_cnmp99_costo_nominas']['deduccion']), 'R', 0, 'R'); // --------[DEDUCCIONES]
+		    	$pdf->Cell(23, $theigth, $sisap->Formato2($rnom_ctotal['v_cnmp99_costo_nominas']['neto_cobrar']), 'R', 0, 'R'); // --------[NETO COBRAR]
+				$pdf->Cell(0, $theigth, $rnom_ctotal['v_cnmp99_costo_nominas']['funcionarios'], 'R', 1, 'C'); // --------[NRO. FUNCIONARIOS - PERSONAS]
+				$pdf->Cell(0, 0, "", 'T', 1, 'L');
+	} // END FOREACH 
+
+	}else{
+		$pdf->SetFont('vera', 'B', 14);
+		$pdf->Ln(8);
+		$pdf->Cell(0, 28, "NO SE ENCONTRARON DATOS ...", 'TRBL', 1, 'C');
+	} // END ELSE IF !EMPTY
+
+    $pdf->Output('costo_total_nominas.pdf', 'D');
+
+?>

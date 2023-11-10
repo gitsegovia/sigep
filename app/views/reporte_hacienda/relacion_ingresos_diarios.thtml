@@ -1,0 +1,245 @@
+<?php
+if($tipo=='html'){
+?>
+<?= $sisap->Tabla('',true,'RELACIÓN DE INGRESOS DIARIOS','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[reporte_hacienda]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_hacienda/relacion_ingresos_diarios/pdf'); ?>" onSubmit="return document.getElementById('lista_ano').value!=''?true:false;">
+
+
+                   <table width="100%" border="0" >
+				  		<tr>
+		 	        		<td height="30" align="center"><?= $sisap->radioTagRemote("reporte_hacienda/condicion_actividad", array('3'=>'Todos', '1'=>'Activo', '2'=>'Anulados'), array('url1'=>'', 'update1'=>'','id'=>'condicion_actividad','disabled'=>''), null, 3);?></td>
+				  		</tr>
+				  	</table>
+
+				  	<table width="300" cellspacing="0" cellpadding="0">
+						<tr><td align="center">&nbsp;</td></tr>
+						<tr><td align="center">&nbsp;&nbsp;<b>Fecha Desde:</b>&nbsp;&nbsp;
+						        <?$sisap->input_fecha("reporte_hacienda","fecha_desde","fecha_desde", null);?>
+							</td>
+						    <td align="center">&nbsp;&nbsp;<b>Fecha Hasta:</b>&nbsp;&nbsp;
+								<?$sisap->input_fecha("reporte_hacienda","fecha_hasta","fecha_hasta", null);?>
+							</td>
+						</tr>
+						<tr><td align="center">&nbsp;</td></tr>
+					</table>
+
+
+<div id="none"></div>
+
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<br><br>
+</form>
+<?=$sisap->CloseTable()?>
+<?
+
+
+
+
+}else if($tipo=='pdf'){
+
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+set_time_limit(0);
+
+
+function altura_celda($denominacion) {
+    $denominacion = str_replace("\n", "", $denominacion);
+    $denominacion = str_replace("\r", "", $denominacion);
+    $denominacion = str_replace("  ", " ", $denominacion);
+    $denominacion = trim($denominacion);
+    $c = strlen($denominacion);
+    if ($c <= 60) {
+        $alturad = 5;
+    } else if ($c > 60 && $c <= 120) {
+        $alturad = 7;
+    } else if ($c > 120 && $c <= 180) {
+        $alturad = 9;
+    } else if ($c > 180 && $c <= 240) {
+        $alturad = 11;
+    } else if ($c > 240 && $c <= 300) {
+        $alturad = 13;
+    } else if ($c > 300 && $c <= 360) {
+        $alturad = 15;
+    } else if ($c > 360 && $c <= 420) {
+        $alturad = 17;
+    } else if ($c > 420 && $c <= 480) {
+        $alturad = 19;
+    }else if ($c > 480 && $c <= 540) {
+        $alturad = 21;
+    }else if ($c > 540 && $c <= 600) {
+        $alturad = 23;
+    }else if ($c > 600 && $c <= 660) {
+        $alturad = 25;
+    }else if ($c > 660 && $c <= 720) {
+        $alturad = 27;
+    }else if ($c > 720 && $c <= 780) {
+        $alturad = 29;
+    }else if ($c > 780 && $c <= 840) {
+        $alturad = 31;
+    }else if ($c > 840 && $c <= 900) {
+        $alturad = 33;
+    }else if ($c > 900 && $c <= 960) {
+        $alturad = 35;
+    }else if ($c > 960 && $c <= 1020) {
+        $alturad = 37;
+    }else if ($c > 1020 && $c <= 1080) {
+        $alturad = 39;
+    }else if ($c > 1080 && $c <= 1140) {
+        $alturad = 41;
+    }else if ($c > 1140 && $c <= 1200) {
+        $alturad = 43;
+    }else if ($c > 1200 && $c <= 1260) {
+        $alturad = 45;
+    }else if ($c > 1260 && $c <= 1320) {
+        $alturad = 47;
+    }else {
+        $alturad = 49;
+    }
+    return $alturad;
+}
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+
+class fpdfview extends TCPDF{
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+    function Header(){
+	    $titulo_A = "RELACIÓN DE INGRESOS DIARIOS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"190"));
+
+       	$this->SetFont('vera','B',6);
+		$this->Cell(25,7,'Código','TRL',0,'C');
+		$this->Cell(25,7,$_SESSION["CODIGO"],'TR',0,'C');
+		$this->Cell(0,7, $_SESSION["DENOMINACION_CODIGO"],'TR',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,4,'Nº','TRL',0,'C');
+		$this->Cell(15,4,'','TR',0,'C');
+		$this->Cell(15,4,'','TR',0,'C');
+		$this->Cell(25,4,'','TR',0,'C');
+		$this->Cell(60,4,'','TR',0,'C');
+		$this->Cell(0,4,' ','TR',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,5,'COMPROBANTE','BRL',0,'C');
+		$this->Cell(15,5,'STATUS','BR',0,'C');
+		$this->Cell(15,5,'FECHA','BR',0,'C');
+		$this->Cell(25,5,'MONTO','BR',0,'C');
+		$this->Cell(60,5,'CONTRIBUYENTE','BR',0,'C');
+		$this->Cell(0,5,' CONCEPTO','BR',1,'C');
+    }
+}//fin clase
+
+
+
+	$pdf = new fpdfview('P','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(5);
+	$pdf->SetRightMargin(5);
+	$pdf->SetAutoPageBreak(true, 5);
+
+    $CODIGO      = "";
+    $total       = 0;
+    $contador    = 0;
+    $total_total = 0;
+
+
+foreach($datos as $datos_aux){
+
+	 	$cod_aux = $datos_aux[0]["cod_partida"].".".mascara2($datos_aux[0]["cod_generica"]).".".mascara2($datos_aux[0]["cod_especifica"]).".".mascara2($datos_aux[0]["cod_sub_espec"]).".".mascara_cuatro($datos_aux[0]["cod_auxiliar"]);
+
+	 	if($CODIGO!=$cod_aux){
+	 	    $CODIGO                          = $cod_aux;
+	 	    $_SESSION["CODIGO"]              = $cod_aux;
+	 	    $_SESSION["DENOMINACION_CODIGO"] = $datos_aux[0]["deno_ingreso"];
+
+	 	    if($contador!=0){
+	 	    	$pdf->SetFont('vera','B',6);
+				$pdf->Cell(50,5,'TOTAL','BRL',0,'R');
+				$pdf->Cell(25,5,$sisap->Formato2($total),'BR',0,'R');
+				$pdf->Cell(60,5,'','',0,'C');
+				$pdf->Cell(0,5,' ','',1,'C');
+				$total = 0;
+	 	    }
+
+	        $pdf->AddPage();
+          }
+
+                if($datos_aux[0]["condicion_documento"]==2){
+                	$status = "ANULADO";
+                }else{
+                	$status = "";
+                }
+
+                $monto        = ($datos_aux[0]["deuda_anterior"] + $datos_aux[0]["deuda_vigente"] + $datos_aux[0]["monto_recargo"] + $datos_aux[0]["monto_multa"] + $datos_aux[0]["monto_intereses"]) - $datos_aux[0]["monto_descuento"];
+                $total       += $monto;
+                $total_total += $monto;
+
+ 				$altura = altura_celda($datos_aux[0]["concepto_comprobante"]);
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,$altura,mascara($datos_aux[0]["numero_comprobante"],8),'BRL',0,'C');
+				$pdf->Cell(15,$altura,$status,'BR',0,'C');
+				$pdf->Cell(15,$altura,cambiar_formato_fecha($datos_aux[0]["fecha_comprobante"]),'BR',0,'C');
+				$pdf->Cell(25,$altura,$sisap->Formato2($monto),'BR',0,'R');
+
+				$pdf->SetFont('vera','',5);
+
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(59,1,'','',2,'C');
+			    $pdf->MultiCell(58,2,$datos_aux[0]["constribuyente"],'','L');
+			    $varX = $varX+59;
+			    $pdf->SetXY($varX,$varY);
+
+			    $pdf->Cell(1,$altura,'','R',0,'C');
+
+			    $datos_aux[0]["concepto_comprobante"] = str_replace("\n",   "",       $datos_aux[0]["concepto_comprobante"]);
+
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->Cell(65,1,'','',2,'C');
+			    $pdf->MultiCell(65,2,$datos_aux[0]["concepto_comprobante"],'','L');
+			    $varX = $varX+65;
+			    $pdf->SetXY($varX,$varY);
+			    $pdf->Cell(0,$altura,'','R',1,'C');
+
+				$pdf->Cell(0,0,'','T',1,'C');
+
+				$contador++;
+
+}
+
+
+
+
+                $pdf->SetFont('vera','B',6);
+				$pdf->Cell(50,5,'TOTAL','BRL',0,'R');
+				$pdf->Cell(25,5,$sisap->Formato2($total),'BR',0,'R');
+				$pdf->Cell(60,5,'','',0,'C');
+				$pdf->Cell(0,5,' ','',1,'C');
+
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(50,5,'TOTAL GENERAL','BRL',0,'R');
+				$pdf->Cell(25,5,$sisap->Formato2($total_total),'BR',0,'R');
+				$pdf->Cell(60,5,'','',0,'C');
+				$pdf->Cell(0,5,' ','',1,'C');
+
+
+
+	$pdf->Output('relacion_ingresos_diarios_'.date("dmY-hi").'.pdf','D');
+}//fin es pdf
+
+?>

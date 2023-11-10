@@ -1,0 +1,114 @@
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+?>
+
+<?php $sisap->CssSelect();?>
+<?= $sisap->Tabla($entidad_federal,true,"BENEFICIARIOS PERSONAS NATURALES","","950");?>
+
+<form name="data[cepp01_compromiso_beneficiario_cedula]" method="POST" id='form'>
+<?= $sisap->OpenTable("950")?>
+<div id="cepp01_compromiso_beneficiario_cedula">
+<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr>
+	<td width="20%" align="center">Seleccione</td>
+	<td width="20%" align="center">Cedula Beneficiario</td>
+	<td width="50" align="center">Denominaci&oacute;n Beneficiario</td>
+	<td width="10%" align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td width="20%" align="center">
+		<?= $sisap->selectTagRemote('cepp01_compromiso_beneficiario_cedula/cedula_beneficiario', $beneficiarios,  null,  '',array('onchange1'=>'/cepp01_compromiso_beneficiario_cedula/mostrar1/', 'update1'=>'mostrar1', 'id'=>'select_1'  ,'class'=>'inputtext', 'style'=>'width:100%', true), null, true); ?>
+	</td>
+
+	<td align="center" colspan="3" id="mostrar1">
+		<table width="100%" border="0" cellspacing="0" style="border:0px #000000 solid !important;">
+			<tr  style="border:0px #000000 solid !important;">
+				<td width="20%" align="center"  style="border:0px #000000 solid !important;">
+					<input type="text" name="data[cepp01_compromiso_beneficiario_cedula][cedula]" style="text-align:center;font-weight:bold; font-size:14" id="cedula" maxlength="10" onKeyPress="return solonumeros(event);" class="inputtext" />
+				</td>
+
+				<td width="50%" align="center"  style="border:0px #000000 solid !important;">
+					<input type="text" name="data[cepp01_compromiso_beneficiario_cedula][denominacion]" style="text-align:left;font-weight:bold; font-size:14" id="denominacion" maxlength="100" class="inputtext" />
+				</td>
+
+				<td width='10%' align="center"  style="border:0px #000000 solid !important;">
+					<?= $sisap->submitTagRemote('    AGREGAR    ', array('funcion'=>'valida_cepp01_compromiso_beneficiario_cedula_rif', 'url1' => '/cepp01_compromiso_beneficiario_cedula/guardar', 'update1'=>'guardar', 'disabled'=>'enable', 'id'=>'b_guardar')); ?>
+				</td>
+			</tr>
+		</table>
+	</td>
+</tr>
+</table>
+</div>
+
+<br><br>
+
+<div id="guardar">
+<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+	<td width="20%" align="center"><?= $ajax->link('Cedula Beneficiario', '/cepp01_compromiso_beneficiario_cedula/consulta/1/1', array('update'=>'guardar', 'title'=>'Ordenar por Cedula', 'style'=>'font-size:9pt; color:ffffff'), false, true); ?></td>
+	<td width="70%" align="center"><?= $ajax->link('Denominación Beneficiario', '/cepp01_compromiso_beneficiario_cedula/consulta/1/2', array('update'=>'guardar', 'title'=>'Ordenar por Denominacion', 'style'=>'font-size:9pt; color:ffffff'), false, true); ?></td>
+	<td width="10%" align="center">Acciones</td>
+   </tr>
+</table>
+
+<div id="distribuir" style="height:350px; overflow:auto;">
+<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+<?php
+if(isset($datos) && $datos!=null){
+$k = 1;
+$j = 0;
+foreach($datos as $dato){
+	$cedula=$dato['cepd01_compromiso_beneficiario_cedula']['cedula'];
+	$deno=$dato['cepd01_compromiso_beneficiario_cedula']['beneficiario'];
+
+	if($k%2 == 0){
+		$color = "#CDF2FF";
+	}else{
+		$color = "#DAEBFF";
+	}
+	$k++;
+?>
+		<tr id="fila_<?= $j ?>" bgcolor="<?=$color?>">
+	   	   	<td width="20%" align="center"><?= mascara($cedula,9) ?>&nbsp;&nbsp;&nbsp;</td>
+		   	<td width="71%">&nbsp;<?= strtoupper($deno) ?></td>
+	       	<td width="9%" align="center">
+	       		<a href="#modificar" onClick="ver_documento('/cepp01_compromiso_beneficiario_cedula/mostrar1/<?=$cedula?>/<?=$j?>','mostrar1');"><?=$html->image('edit.png', array('border'=>'0'))?>
+	       		<a href="#eliminar" onClick="ver_documento('/cepp01_compromiso_beneficiario_cedula/eliminar/<?=$cedula?>','principal');"><?=$html->image('delete.png', array('border'=>'0'))?>
+	       	</td>
+    	</tr>
+
+<?php
+$j++;
+}//fin del foreach dependencia
+}else{
+	?>
+	<tr bgcolor="#CDF2FF">
+		<td width="20%">&nbsp;</td>
+		<td width="70%">&nbsp;</td>
+		<td width="10%">&nbsp;</td>
+    </tr>
+	<?
+}
+?>
+</table>
+</div>
+<? $sisap->link_paginacion_ventanas('/cepp01_compromiso_beneficiario_cedula/consulta/', 'guardar', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+<br /><br />
+<?= $sisap->buttonTagRemote('cepp01_compromiso_beneficiario_cedula/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cepp01_compromiso_beneficiario_cedula/consulta/1/1', 'update1'=>'guardar')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cepp01_compromiso_beneficiario_cedula/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cepp01_compromiso_beneficiario_cedula/consulta/'.$anterior.'/1', 'update1'=>'guardar')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cepp01_compromiso_beneficiario_cedula/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cepp01_compromiso_beneficiario_cedula/consulta/'.$siguiente.'/1', 'update1'=>'guardar')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cepp01_compromiso_beneficiario_cedula/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cepp01_compromiso_beneficiario_cedula/consulta/'.$ultimo.'/1', 'update1'=>'guardar')) ?>
+
+<br /><br />
+<? //$sisap->link_paginacion('/cepp01_compromiso_beneficiario_cedula/consulta','guardar',$total_paginas,$pagina_actual);?>
+<br />
+<?$pag_cant;?>
+</div><!--guardar-->
+<div id="elimina"></div>
+</div>
+</div>
+<?= $sisap->buttonTagRemote('cepp01_compromiso_beneficiario_cedula/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?= $sisap->CloseTable()?>
+</form>

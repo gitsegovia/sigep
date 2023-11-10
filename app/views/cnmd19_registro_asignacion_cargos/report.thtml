@@ -1,0 +1,172 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+function tipoCargo($tipo)
+{
+	switch ($tipo) {
+		case '1':
+			return "C";
+			break;
+		
+		case '2':
+			return "F";
+			break;
+
+		case '3':
+			return "LN";
+			break;
+
+		case '4':
+			return "OC";
+			break;
+
+		case '5':
+			return "ONC";
+			break;
+	}
+}
+
+class fpdfview extends TCPDF{
+
+	function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+		$this->TCPDF($orientation, $unit, $format);
+	}
+
+	function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+		return $this->Output($name, $destination);
+	}
+
+	function Header(){
+		$titulo_A="REGISTRO DE ASIGNACION DE CARGOS";
+		$titulo_B="";
+		$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"190", "Z"=>"12"));
+	}//fin funtion
+
+
+	function Footer(){
+
+	}
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+$pdf->AddPage();
+
+/**
+ * Cabecera del la información
+ */
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(91,3,'Sector:','TL',0,'L');
+$pdf->Cell(0,3,$deno[0][0]['deno_sector'],'TR',1,'L');
+$pdf->Cell(91,3,'Programa:','L',0,'L');
+$pdf->Cell(0,3,$deno[0][0]['deno_programa'],'R',1,'L');
+$pdf->Cell(91,3,'Actividad:','L',0,'L');
+$pdf->Cell(0,3,$deno[0][0]['deno_activ_obra'],'R',1,'L');
+$pdf->Cell(91,3,'Unidad Ejecutora:','L',0,'L');
+$pdf->Cell(0,3,$unid[0]['arrd05']['denominacion'],'R',1,'L');
+
+$pdf->SetFont('vera','B',4);
+
+if(!empty($data)){
+	$pdf->Cell(5,3,'Tipo','TRL',0,'C');
+	$pdf->Cell(48,3,'','TR',0,'C');
+	$pdf->Cell(38,3,'','TR',0,'C');
+	$pdf->Cell(9,3,'','TR',0,'C');
+	$pdf->Cell(4,3,'','TR',0,'C');
+	$pdf->Cell(6,3,'Cód','TR',0,'C');
+	$pdf->Cell(4,3,'','TR',0,'C');
+	$pdf->Cell(10,3,'Fecha','TR',0,'C');
+	$pdf->Cell(6,3,'Años','TR',0,'C');
+	$pdf->Cell(12,3,'Fecha de últ','TR',0,'C');
+	$pdf->Cell(9,3,'Años en','TR',0,'C');
+	$pdf->Cell(6,3,'','TR',0,'C');
+	$pdf->Cell(8,3,'N° de','TR',0,'C');
+	$pdf->Cell(10,3,'Sueldo B.','TR',0,'C');
+	$pdf->Cell(10,3,'Monto A.','TR',0,'C');
+	$pdf->Cell(11,3,'Comp.','TR',0,'C');
+	$pdf->Cell(10,3,'Comp.','TR',1,'C');
+
+	$pdf->Cell(5,3,'Car','RBL',0,'C');
+	$pdf->Cell(48,3,'Descripción del Cargo','RB',0,'C');
+	$pdf->Cell(38,3,'Nombres y Apellidos','RB',0,'C');
+	$pdf->Cell(9,3,'C.I','RB',0,'C');
+	$pdf->Cell(4,3,'Gén','RB',0,'C');
+	$pdf->Cell(6,3,'Clase','RB',0,'C');
+	$pdf->Cell(4,3,'G°','RB',0,'C');
+	$pdf->Cell(10,3,'Ing','RB',0,'C');
+	$pdf->Cell(6,3,'Serv','RB',0,'C');
+	$pdf->Cell(12,3,'asc P y B','RB',0,'C');
+	$pdf->Cell(9,3,'el grado','RB',0,'C');
+	$pdf->Cell(6,3,'Paso','RB',0,'C');
+	$pdf->Cell(8,3,'Cargos','RB',0,'C');
+	$pdf->Cell(10,3,'Mensual','RB',0,'C');
+	$pdf->Cell(10,3,'Suel Bás','RB',0,'C');
+	$pdf->Cell(11,3,'Mensual','RB',0,'C');
+	$pdf->Cell(10,3,'Anual','RB',1,'C');
+	
+	/**
+	 * Data a mostrar
+	 */
+	$cantCargos = 0;
+	$totalMonto = 0;
+	$totalAnual = 0;
+	$pdf->SetFont('vera','B',4);
+	foreach ($data as $d) {
+		$cantCargos += $d[0]['numero_cargos'];
+		$totalMonto += $d[0]['monto_anual_sueldo_basico'];
+		$totalAnual += $d[0]['compensacion_anual'];
+
+		$pdf->Cell(5,3,tipoCargo($d[0]['tipo_cargo']),'RBL',0,'C');
+		$pdf->Cell(48,3,$d[0]['descripcion_cargo'],'RB',0,'C');
+		$pdf->Cell(38,3,$d[0]['primer_nombre'].' '.$d[0]['segundo_nombre'].' '.$d[0]['primer_apellido'].' '.$d[0]['segundo_apellido'],'RB',0,'C');
+		$pdf->Cell(9,3,$d[0]['cedula_identidad'],'RB',0,'C');
+		$pdf->Cell(4,3,$d[0]['genero'],'RB',0,'C');
+		$pdf->Cell(6,3,$d[0]['codigo_clase'],'RB',0,'C');
+		$pdf->Cell(4,3,intval($d[0]['grado']),'RB',0,'C');
+		$pdf->Cell(10,3,date('d/m/Y', strtotime($d[0]['fecha_ingreso'])),'RB',0,'C');
+		$pdf->Cell(6,3,intval($d[0]['anos_servicios']),'RB',0,'C');
+		$pdf->Cell(12,3,date('d/m/Y', strtotime($d[0]['fecha_ascenso'])),'RB',0,'C');
+		$pdf->Cell(9,3,intval($d[0]['anos_grado']),'RB',0,'C');
+		$pdf->Cell(6,3,intval($d[0]['paso']),'RB',0,'C');
+		$pdf->Cell(8,3,intval($d[0]['numero_cargos']),'RB',0,'C');
+		$pdf->Cell(10,3,$d[0]['sueldo_basico_mensual'],'RB',0,'C');
+		$pdf->Cell(10,3,$d[0]['monto_anual_sueldo_basico'],'RB',0,'C');
+		$pdf->Cell(11,3,$d[0]['compensacion_mensual'],'RB',0,'C');
+		$pdf->Cell(10,3,$d[0]['compensacion_anual'],'RB',1,'C');
+	}
+
+	/**
+	 * Ultima linea
+	 */
+	$pdf->Cell(5,2,'Sub','TRL',0,'C');
+	$pdf->Cell(152,2,'','TR',0,'C');
+	$pdf->Cell(8,2,'','TR',0,'C');
+	$pdf->Cell(10,2,'','TR',0,'C');
+	$pdf->Cell(10,2,'','TR',0,'C');
+	$pdf->Cell(11,2,'','TR',0,'C');
+	$pdf->Cell(10,2,'','TR',1,'C');
+
+	$pdf->Cell(5,2,'Total','RBL',0,'C');
+	$pdf->Cell(152,2,'','RB',0,'C');
+	$pdf->Cell(8,2,$cantCargos,'RB',0,'C');
+	$pdf->Cell(10,2,'','RB',0,'C');
+	$pdf->Cell(10,2,$sisap->Formato1($totalMonto),'RB',0,'C');
+	$pdf->Cell(11,2,'','RB',0,'C');
+	$pdf->Cell(10,2,$sisap->Formato1($totalAnual),'RB',1,'C');
+}else{
+
+		$pdf->AddPage();
+		$pdf->SetFont('vera','B',12);
+		$pdf->Cell(0,8,'No se encontrarón datos','',1,'C');
+
+}
+$pdf->Output('Registro_Asignacion_Cargos'."_".date('d-m-Y').'.pdf','D');
+?>

@@ -1,0 +1,477 @@
+<?php
+/*
+ * Created on 20/01/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ if($opcion==1){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"DISTRIBUCIÓN PRESUPUESTARIA DE NÓMINA - Historico","","850");?>
+
+<form name="data[reporte_personal]" method="post" id='form' action="<?php echo $html->url('/reporte_juan_nomina/distribucion_disponibilidad_nomina_historico/2'); ?>">
+<?= $sisap->OpenTable("850")?>
+	<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+					<tr>
+					    <td width="10%" align="center" align='center'>Seleccione</td>
+					    <td width="10%" align="center" align='center'>C&oacute;digo</td>
+					    <td width="80%" align="center" align='center'>Denominaci&oacute;n tipo n&oacute;mina</td>
+					</tr>
+					<tr>
+					    <td width="10%" align="center"><?= $sisap->selectTagRemote('cnmp06_diskett_historico/cod_nomina', $lista_nomina , null , null, array('onchange1'=>'/reporte_juan_nomina/ver_cod_nomina_recibos/', 'update1'=>'sdenonomina',  'onchange2'=>'/reporte_juan_nomina/ver_ano_nomina_recibos/', 'update2'=>'ano_nomina2'   , 'id'=>'sel_cod_nomina', true), null, true); ?></td>
+						<td width="10%" align="center">
+				         <div id="scodnomina">
+						  <?= $html->input('cnmp06_diskett_historico/cod_nomina', $htmlAttributes = array('id'=>'cod_nomina', 'style'=>"text-align:center", 'size'=>'6', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+						 </div>
+				        </td>
+						<td width="80%" align="center">
+				          <div id="sdenonomina">
+					        <?= $html->input('cnmp06_diskett_historico/denominacion_nomina', $htmlAttributes = array('id'=>'denominacion_nomina', 'style'=>'width:98%', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+					      </div>
+				        </td>
+					</tr>
+		</table>
+		<br><br>
+		<table width="30%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			  <tr>
+			    <td align="center" width="10%">Año Nómina</td>
+			    <td align="center" width="20%">Número Nómina</td>
+			  </tr>
+			  <tr>
+			    <td align="center" id="ano_nomina2"> <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/ano_nomina',    null,  null,  null, array('id'=>'ano_nomina', 'style'=>'width:100%;text-align:center;',  true), null, true); ?></td>
+			    <td align="center" id="numero_nomina2"> <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/numero_nomina', null,  null,  null, array('id'=>'numero_nomina', true), null, true); ?></td>
+		     </tr>
+		</table>
+
+		<div id="select_busqueda"></div>
+
+		<div id="funcion"></div>
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/reporte_personal/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}else  if($opcion==2){
+set_time_limit(300);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+	    $titulo_A = "DISTRIBUCIÓN PRESUPUESTARIA DE NÓMINA - HISTORICO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"12"), array("Y"=>"17", "X"=>"185"));
+
+       	$this->SetFont('vera','B',7);
+		$this->Cell(40,4,'','',0,'C');
+		$this->Cell(30,4,'TIPO DE NÓMINA:','',0,'R');
+		$this->SetFont('vera','',8);
+		$this->Cell(110,4,$_SESSION["TIPO_TOP"],'B',0,'L');
+		$this->Cell(0,4,'','',1,'C');
+
+       	$this->SetFont('vera','B',7);
+		$this->Cell(40,5,'','',0,'C');
+		$this->Cell(30,5,'CORRESPONDIENTE:','',0,'R');
+		$this->SetFont('vera','',8);
+		$this->Cell(110,5,$_SESSION["CORRESPONDIENTE_TOP"],'B',0,'L');
+		$this->Cell(0,5,'','',1,'C');
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(40,5,'','',0,'C');
+		$this->Cell(30,5,'NÓMINA N°: ','',0,'R');
+		$this->SetFont('vera','',8);
+		$this->Cell(110,5,$_SESSION["PERIODO_TOP"],'B',0,'L');
+		$this->Cell(0,5,'','',1,'C');
+		$this->Ln(3);
+
+
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',7);
+        $this->Cell(33,4,'','TRBL',0,'C');
+		$this->Cell(18,4,'CÓDIGO','TRB',0,'C');
+		$this->Cell(0,4,'DENOMINACIÓN','TRB',1,'C');
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,5,'SECTOR','RBL',0,'L');
+		$this->SetFont('vera','',10);
+		$this->Cell(18,5,mascara2($_SESSION["cod_sector"]),'RB',0,'C');//--------[COD. SECTOR]
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION["deno_sector"],'RB',1,'L');//---------[DENO. SECTOR]
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,5,'PROGRAMA','RBL',0,'L');
+		$this->SetFont('vera','',10);
+		$this->Cell(18,5,mascara2($_SESSION["cod_programa"]),'RB',0,'C');//--------[COD. PROGRAMA]
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION["deno_programa"],'RB',1,'L');//---------[DENO. PROGRAMA]
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,5,'SUBPROGRAMA','RBL',0,'L');
+		$this->SetFont('vera','',10);
+		$this->Cell(18,5,mascara2($_SESSION["cod_sub_prog"]),'RB',0,'C');//--------[COD. SUBPROGRAMA]
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION["deno_sub_prog"],'RB',1,'L');//---------[DENO. SUBPROGRAMA]
+
+        if($_SESSION["cod_proyecto"]!=0){
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,5,"PROYECTO",'RBL',0,'L');
+		$this->SetFont('vera','',10);
+		$this->Cell(18,5,mascara2($_SESSION["cod_proyecto"]),'RBL',0,'C');//-----------------------[COD. PROYECTO]
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION["deno_proyecto"],'RBL',1,'L');//------------------------[DENO PROYECTO]
+	    }
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,5,'ACTIVIDAD U OBRA:','RBL',0,'L');
+		$this->SetFont('vera','',10);
+		$this->Cell(18,5,mascara2($_SESSION["cod_activ_obra"]),'RB',0,'C');//--------[COD. ACTIVIDAD U OBRA:]
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION["deno_activ_obra"],'RB',1,'L');//---------[DENO. ACTIVIDAD U OBRA:]
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(51,4,'CÓDIGOS','RL',0,'C');
+		$this->Cell(0,4,'','R',1);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(7,3,'','TRL',0,'C');
+		$this->Cell(6,3,'','TR',0,'C');
+		$this->Cell(6,3,'','TR',0,'C');
+		$this->Cell(6,3,'SUP','TR',0,'C');
+		$this->Cell(8,3,'','TR',0,'C');
+		$this->Cell(18,3,'CÓDIGO','TR',0,'C');
+		$this->Cell(100,3,'','TR',0,'C');
+		$this->Cell(0,3,'','TR',1,'C');
+
+		//------------------------------------------
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(7,3,'PART','RBL',0,'C');
+		$this->Cell(6,3,'GEN','RB',0,'C');
+		$this->Cell(6,3,'ESP','RB',0,'C');
+		$this->Cell(6,3,'ESP','RB',0,'C');
+		$this->Cell(8,3,'ORD','RB',0,'C');
+		$this->Cell(18,3,'TRANSACCIÓN','RB',0,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(100,3,'DENOMINACIÓN TRANSACCIÓN','RB',0,'C');
+		$this->Cell(0,3,'BOLIVARES','RB',1,'C');
+
+
+
+
+    }//fin funtion
+
+
+
+    function Footer() {
+
+		$this->SetY(-28);
+
+		$this->SetFont('vera','',7);
+
+        $this->Cell(5,5,'','',0,'C');
+        $this->Cell(35,5,'ELABORADO POR:','T',0,'C');
+        $this->Cell(15,5,'','',0,'C');
+		$this->Cell(35,5,'REVISADO POR:','T',0,'C');
+		$this->Cell(15,5,'','',0,'C');
+		$this->Cell(35,5,'CONFORMADO POR:','T',0,'C');
+		$this->Cell(15,5,'','',0,'C');
+		$this->Cell(35,5,'CONFORMADO PRESUPUESTARIAMENTE POR:','T',0,'C');
+		$this->Cell(0,5, '','',1,'C');
+
+
+		$this->Cell(5,15,'','',0,'C');
+        $this->Cell(35,15,'','',0,'C');
+        $this->Cell(15,15,'','',0,'C');
+		$this->Cell(35,15,'','',0,'C');
+		$this->Cell(15,15,'','',0,'C');
+		$this->Cell(35,15,'','',0,'C');
+		$this->Cell(15,15,'','',0,'C');
+		$this->Cell(35,15,'','',0,'C');
+		$this->Cell(0,15, '','',1,'C');
+	}
+
+
+
+
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 35);
+
+
+	$_SESSION["CORRESPONDIENTE_TOP"] = $datos_tipo_nomina[0]['v_cnmd08_historia_trans_con']['correspondiente'];
+	$_SESSION["PERIODO_TOP"]         = mascara($datos_tipo_nomina[0]['v_cnmd08_historia_trans_con']['numero_nomina'],3).' Periodo Desde: '.$sisap->cambia_fecha($datos_tipo_nomina[0]['v_cnmd08_historia_trans_con']['periodo_desde']).' Hasta: '.$sisap->cambia_fecha($datos_tipo_nomina[0]['v_cnmd08_historia_trans_con']['periodo_hasta']);
+    $_SESSION["TIPO_TOP"]            = mascara($cod_tipo_nomina_reporte,3)." - ".$denominacion_nomina_reporte;
+
+    $tipo_transs_aux = "";
+
+                $_SESSION["cod_sector"]      = "";
+		        $_SESSION["deno_sector"]     = "";
+		        $_SESSION["cod_programa"]    = "";
+		        $_SESSION["deno_programa"]   = "";
+		        $_SESSION["cod_sub_prog"]    = "";
+		        $_SESSION["deno_sub_prog"]   = "";
+		        $_SESSION["cod_proyecto"]    = "";
+		        $_SESSION["deno_proyecto"]   = "";
+		        $_SESSION["cod_activ_obra"]  = "";
+		        $_SESSION["deno_activ_obra"] = "";
+
+		        $tipo_transs_aux = "";
+
+$cantidad_registros=count($data);
+if($cantidad_registros==0){
+	$pdf->AddPage();
+	$pdf->Ln(20);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,6,'SE ENCONTRARÓN DATOS PARA LA NÓMINA','',1,'C');
+}else{
+
+               foreach($data as $ve){
+
+               	    $cod_tipo_nomina      = $ve["v_distribucion_disponibilidad_2_historico"]["cod_tipo_nomina"];
+                    $cod_tipo_transaccion = $ve["v_distribucion_disponibilidad_2_historico"]["cod_tipo_transaccion"];
+                    $cod_transaccion      = $ve["v_distribucion_disponibilidad_2_historico"]["cod_transaccion"];
+                    $denominacion         = $ve["v_distribucion_disponibilidad_2_historico"]["denominacion"];
+                    $ano                  = $ve["v_distribucion_disponibilidad_2_historico"]["ano"];
+                    $cod_sector           = $ve["v_distribucion_disponibilidad_2_historico"]["cod_sector"];
+                    $cod_programa         = $ve["v_distribucion_disponibilidad_2_historico"]["cod_programa"];
+                    $cod_sub_prog         = $ve["v_distribucion_disponibilidad_2_historico"]["cod_sub_prog"];
+                    $cod_proyecto         = $ve["v_distribucion_disponibilidad_2_historico"]["cod_proyecto"];
+                    $cod_activ_obra       = $ve["v_distribucion_disponibilidad_2_historico"]["cod_activ_obra"];
+                    $deno_sector          = $ve["v_distribucion_disponibilidad_2_historico"]["deno_sector"];
+                    $deno_programa        = $ve["v_distribucion_disponibilidad_2_historico"]["deno_programa"];
+                    $deno_sub_prog        = $ve["v_distribucion_disponibilidad_2_historico"]["deno_sub_prog"];
+                    $deno_proyecto        = $ve["v_distribucion_disponibilidad_2_historico"]["deno_proyecto"];
+                    $deno_activ_obra      = $ve["v_distribucion_disponibilidad_2_historico"]["deno_activ_obra"];
+                    $cod_partida          = $ve["v_distribucion_disponibilidad_2_historico"]["cod_partida"];
+                    $cod_generica         = $ve["v_distribucion_disponibilidad_2_historico"]["cod_generica"];
+                    $cod_especifica       = $ve["v_distribucion_disponibilidad_2_historico"]["cod_especifica"];
+                    $cod_sub_espec        = $ve["v_distribucion_disponibilidad_2_historico"]["cod_sub_espec"];
+                    $cod_auxiliar         = $ve["v_distribucion_disponibilidad_2_historico"]["cod_auxiliar"];
+                    $monto_nomina         = $ve["v_distribucion_disponibilidad_2_historico"]["monto_nomina"];
+                    $disponibilidad       = $ve["v_distribucion_disponibilidad_2_historico"]["disponibilidad"];
+                    $tipo_orden           = $ve["v_distribucion_disponibilidad_2_historico"]["tipo_orden"];
+
+
+                     if($_SESSION["cod_sector"]      != $cod_sector       ||
+				        $_SESSION["deno_sector"]     != $deno_sector      ||
+
+				        $_SESSION["cod_programa"]    != $cod_programa     ||
+				        $_SESSION["deno_programa"]   != $deno_programa    ||
+
+				        $_SESSION["cod_sub_prog"]    != $cod_sub_prog     ||
+				        $_SESSION["deno_sub_prog"]   != $deno_sub_prog    ||
+
+				        $_SESSION["cod_proyecto"]    != $cod_proyecto     ||
+				        $_SESSION["deno_proyecto"]   != $deno_proyecto    ||
+
+				        $_SESSION["cod_activ_obra"]  != $cod_activ_obra   ||
+				        $_SESSION["deno_activ_obra"] != $deno_activ_obra){
+
+                                $_SESSION["cod_sector"]      = $cod_sector;
+						        $_SESSION["deno_sector"]     = $deno_sector;
+
+						        $_SESSION["cod_programa"]    = $cod_programa;
+						        $_SESSION["deno_programa"]   = $deno_programa;
+
+						        $_SESSION["cod_sub_prog"]    = $cod_sub_prog;
+						        $_SESSION["deno_sub_prog"]   = $deno_sub_prog;
+
+						        $_SESSION["cod_proyecto"]    = $cod_proyecto;
+						        $_SESSION["deno_proyecto"]   = $deno_proyecto;
+
+						        $_SESSION["cod_activ_obra"]  = $cod_activ_obra;
+						        $_SESSION["deno_activ_obra"] = $deno_activ_obra;
+
+						        if($tipo_transs_aux!=""){
+						        	         $pdf->SetFont('vera','B',5);
+							            if($tipo_transs_aux==1){
+							            	$pdf->SetFont('vera','B',9);
+				                             $pdf->Cell(51,5,"TOTAL ASIGNACIONES",'RBL',0,'C');
+				                             $pdf->SetFont('vera','B',10);
+				                             $pdf->Cell(100,5,$sisap->Formato2($total_a),'RB',0,'R');
+								             $pdf->Cell(0,5,"",'RBL',1,'R');
+								             $pdf->Cell(0,0,"",'T',1,'C');
+								         }else{
+								         	$pdf->SetFont('vera','B',9);
+				                             $pdf->Cell(51,5,"TOTAL DEDUCCIONES",'RBL',0,'C');
+				                             $pdf->SetFont('vera','B',10);
+				                             $pdf->Cell(100,5,$sisap->Formato2($total_b),'RB',0,'R');
+								             $pdf->Cell(0,5,"",'RBL',1,'R');
+								             $pdf->Cell(0,0,"",'T',1,'C');
+				                         }
+											$pdf->SetFont('vera','B',9);
+											$pdf->Cell(91,5,"NETO A COBRAR (ASIGNACIONES-DEDUCCIONES)",'RBL',0,'C');
+											$pdf->SetFont('vera','B',10);
+											$pdf->Cell(60,5,$sisap->Formato2($total_a - $total_b),'RB',0,'R');
+											$pdf->Cell(0,5,"",'RBL',1,'R');
+											$pdf->Cell(0,0,"",'T',1,'C');
+						          }//fin
+
+                                 $pdf->AddPage();
+
+                                 $tipo_transs_aux = $cod_tipo_transaccion;
+                            	 $total_a = 0;
+							     $total_b = 0;
+
+				        }//fin comparación
+
+				                  if($tipo_transs_aux != $cod_tipo_transaccion){
+	                                     if($tipo_transs_aux==1){
+	                                     	 $pdf->SetFont('vera','B',9);
+	                                         $pdf->Cell(51,5,"TOTAL ASIGNACIONES",'RL',0,'C');
+	                                         $pdf->SetFont('vera','B',10);
+	                                         $pdf->Cell(100,5,$sisap->Formato2($total_a),'R',0,'R');
+								             $pdf->Cell(0,5,"",'RL',1,'R');
+								             $pdf->Cell(0,0,"",'T',1,'C');
+								         }else{
+								         	 $pdf->SetFont('vera','B',9);
+	                                         $pdf->Cell(51,5,"TOTAL DEDUCCIONES",'RL',0,'C');
+	                                         $pdf->SetFont('vera','B',10);
+	                                         $pdf->Cell(100,5,$sisap->Formato2($total_b),'R',0,'R');
+								             $pdf->Cell(0,5,"",'RL',1,'R');
+								             $pdf->Cell(0,0,"",'T',1,'C');
+	                                     }
+	                                     $tipo_transs_aux  = $cod_tipo_transaccion;
+                                  }
+
+
+                          if($cod_tipo_transaccion!=2){
+			                            $cod_partida = $sisap->AddCero2(substr($cod_partida,-2),CE);
+								        $pdf->SetFont('vera','',8);
+										$pdf->Cell(7,6,$cod_partida,'RL',0,'C');
+										$pdf->Cell(6,6,mascara2($cod_generica),'R',0,'C');
+										$pdf->Cell(6,6,mascara2($cod_especifica),'R',0,'C');
+										$pdf->Cell(6,6,mascara2($cod_sub_espec),'R',0,'C');
+										$pdf->Cell(8,6,mascara_cuatro($cod_auxiliar),'R',0,'C');
+										$pdf->SetFont('vera','',10);
+										$pdf->Cell(18,6,mascara_tres($cod_transaccion),'R',0,'C');
+										$pdf->SetFont('vera','',9);
+											$varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(100,1,"",'',2,'C');
+											$pdf->MultiCell(99,2,$denominacion,'','L');//--[DENOMINACIÓN]
+											$varX = $varX+100;
+											$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',10);
+										$pdf->Cell(0,6,$sisap->Formato2($monto_nomina),'RL',1,'R');
+										$pdf->Cell(0,0,"",'T',1,'C');
+
+										if($tipo_transs_aux==1){
+											$total_a +=$monto_nomina;
+										}else{
+			                                $total_b +=$monto_nomina;
+										}
+
+                          }else{
+                                       if($tipo_orden==1){
+		                          	            $cod_partida = $sisap->AddCero2(substr($cod_partida,-2),CE);
+										        $pdf->SetFont('vera','',8);
+												$pdf->Cell(7,6,$cod_partida,'RBL',0,'C');
+												$pdf->Cell(6,6,mascara2($cod_generica),'RB',0,'C');
+												$pdf->Cell(6,6,mascara2($cod_especifica),'RB',0,'C');
+												$pdf->Cell(6,6,mascara2($cod_sub_espec),'RB',0,'C');
+												$pdf->Cell(8,6,mascara_cuatro($cod_auxiliar),'RB',0,'C');
+												$pdf->SetFont('vera','',10);
+												$pdf->Cell(18,6,mascara_tres($cod_transaccion),'R',0,'C');
+												$pdf->SetFont('vera','',9);
+													$varX = $pdf->GetX();
+													$varY = $pdf->GetY();
+													$pdf->Cell(100,1,"",'',2,'C');
+													$pdf->MultiCell(99,2,$denominacion,'','L');//--[DENOMINACIÓN]
+													$varX = $varX+100;
+													$pdf->SetXY($varX,$varY);
+												$pdf->SetFont('vera','',10);
+												$pdf->Cell(0,6,$sisap->Formato2($monto_nomina),'RL',1,'R');
+												$pdf->Cell(0,0,"",'T',1,'C');
+                                       }else{
+	                                       	$cod_partida = $sisap->AddCero2(substr($cod_partida,-2),CE);
+									        $pdf->SetFont('vera','',8);
+											$pdf->Cell(7,6,$cod_partida,'RL',0,'C');
+											$pdf->Cell(6,6,mascara2($cod_generica),'R',0,'C');
+											$pdf->Cell(6,6,mascara2($cod_especifica),'R',0,'C');
+											$pdf->Cell(6,6,mascara2($cod_sub_espec),'R',0,'C');
+											$pdf->Cell(8,6,mascara_cuatro($cod_auxiliar),'R',0,'C');
+											$pdf->SetFont('vera','',10);
+											$pdf->Cell(18,6,mascara_tres($cod_transaccion),'R',0,'C');
+											$pdf->SetFont('vera','',9);
+												$varX = $pdf->GetX();
+												$varY = $pdf->GetY();
+												$pdf->Cell(100,1,"",'',2,'C');
+												$pdf->MultiCell(99,2,$denominacion,'','L');//--[DENOMINACIÓN]
+												$varX = $varX+100;
+												$pdf->SetXY($varX,$varY);
+											$pdf->SetFont('vera','',10);
+											$pdf->Cell(0,6,$sisap->Formato2($monto_nomina)."<--NO SUMAN",'RL',1,'R');
+											$pdf->Cell(0,0,"",'T',1,'C');
+                                       }
+
+
+                                   if($tipo_orden==1){
+										if($tipo_transs_aux==1){
+											$total_a +=$monto_nomina;
+										}else{
+			                                $total_b +=$monto_nomina;
+										}
+                                   }
+
+
+                          }
+
+
+
+               }//fin foreach
+
+                         if($tipo_transs_aux==1){
+                         	 $pdf->SetFont('vera','B',9);
+                             $pdf->Cell(51,5,"TOTAL ASIGNACIONES",'RBL',0,'C');
+                             $pdf->SetFont('vera','B',10);
+                             $pdf->Cell(100,5,$sisap->Formato2($total_a),'RB',0,'R');
+				             $pdf->Cell(0,5,"",'RBL',1,'R');
+				             $pdf->Cell(0,0,"",'T',1,'C');
+				         }else{
+				         	 $pdf->SetFont('vera','B',9);
+                             $pdf->Cell(51,5,"TOTAL DEDUCCIONES",'RBL',0,'C');
+                             $pdf->SetFont('vera','B',10);
+                             $pdf->Cell(100,5,$sisap->Formato2($total_b),'RB',0,'R');
+				             $pdf->Cell(0,5,"",'RBL',1,'R');
+				             $pdf->Cell(0,0,"",'T',1,'C');
+                         }
+							 $pdf->SetFont('vera','B',9);
+                             $pdf->Cell(91,5,"NETO A COBRAR (ASIGNACIONES-DEDUCCIONES)",'RBL',0,'C');
+                             $pdf->SetFont('vera','B',10);
+                             $pdf->Cell(60,5,$sisap->Formato2($total_a - $total_b),'RB',0,'R');
+				             $pdf->Cell(0,5,"",'RBL',1,'R');
+				             $pdf->Cell(0,0,"",'T',1,'C');
+
+}
+
+
+
+
+
+
+$pdf->Output('distribucion_disponibilidad_'.date('d-m-Y').'.pdf','D');//Poner nombre y la opcion D
+
+}
+?>

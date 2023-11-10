@@ -1,0 +1,289 @@
+<?php
+if($opcion_year==2){
+	echo $sisap->Tabla($session->read('entidad_federal'),true,'Distribucion del plan de inversion en el presupuesto','','950');
+    echo $sisap->OpenTable('950');
+?>
+     Año del recurso: <?= $sisap->inputTagRemote('graficos1/ano', array('url1'=>'/graficos2/plan_inversion/', 'update1'=>'cuerpo', 'style'=>'text-align:center;',  'id'=>'ano', 'size'=>'6', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?>
+<div id="cuerpo">
+<?php
+
+
+
+}//fin if
+?><?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: plan_inversion.thtml
+ * Fecha de creacion: 17/06/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+
+
+ function get_nombre($opc){
+	switch ($opc) {
+		case 1:
+			return "ORDINARIO";
+			break;
+		case 2:
+			return "COORDINADO";
+			break;
+		case 3:
+			return "LAEE";
+			break;
+		case 4:
+			return "FIDES";
+			break;
+		case 5:
+			return "EXTRAORDINARIO";
+			break;
+		default:
+			return "PLAN INVERSION";
+			break;
+	}
+}
+
+ foreach($datos_grap1 as $row){
+	$asignacion_total = $row[0]['asignacion_total'];
+	$monto_presupuestado = $row[0]['monto_presupuestado'];
+	$diferencia = $row[0]['diferencia'];
+	//$ano_recurso = $row[0]['ano_recurso'];
+ }
+
+ foreach ($datos_grap2 as $row1){
+	$ordinario = $row1[0]['ordinario'];
+	if($ordinario != '0.00') $parametros_torta[]= $ordinario;
+	$laee = $row1[0]['laee'];
+	if($laee != '0.00') $parametros_torta[]= $laee;
+	$coordinado = $row1[0]['coordinado'];
+	if($coordinado != '0.00') $parametros_torta[] = $coordinado;
+	$fides = $row1[0]['fides'];
+	if($fides != '0.00') $parametros_torta[]= $fides;
+	$extraordinario = $row1[0]['ingreso_extraordinario'];
+	if($extraordinario != '0.00') $parametros_torta[]= $extraordinario;
+
+}
+
+foreach($datos_grap2_asignado as $row2){
+	$ordinario = $row2[0]['ordinario'];
+	if($ordinario != '0.00'){
+		$parametros_torta_asig[]= $ordinario;
+		$recursos_asignado[] = 'ORDINARIO';
+	}
+	$coordinado = $row2[0]['coordinado'];
+	if($coordinado != '0.00'){
+		$parametros_torta_asig[] = $coordinado;
+		$recursos_asignado[] = 'COORDINADO';
+	}
+	$laee = $row2[0]['laee'];
+	if($laee != '0.00'){
+		$parametros_torta_asig[]= $laee;
+		$recursos_asignado[] = 'LAEE';
+	}
+	$fides = $row2[0]['fides'];
+	if($fides != '0.00'){
+		$parametros_torta_asig[]= $fides;
+		$recursos_asignado[] = 'FIDES';
+	}
+	$extraordinario_asig = $row2[0]['ingreso_extraordinario'];
+	if($extraordinario_asig != '0.00'){
+		$parametros_torta_asig[]= $extraordinario_asig;
+		$recursos_asignado[] = 'EXTRAORDINARIO';
+	}
+}
+
+//pr($datos_inversion_indv);
+/*
+$j = 0;
+foreach ($datos_inversion_indv as $row3){
+	$asignacion_indv[$j] = $row3[0]['asignacion_total'];
+	$monto_presupuestado_indv[$j] = $row3[0]['monto_presupuestado'];
+	$diferencia_indv[$j] = $row3[0]['diferencia'];
+	$tipo_recurso_indv[$j] = $row3[0]['tipo_recurso'];
+
+	$j++;
+}*/
+//pr($asignacion_indv);
+//pr($parametros_torta_asig);
+$parametros_torta2 = implode(',' , $parametros_torta);
+$parametros_torta_asig2= implode(',' , $parametros_torta_asig);
+
+$rdm = rand();
+$_SESSION['rdm'] = $rdm;
+$_SESSION['titulo_a_b'] = get_nombre(6)." ".$ano_recurso;
+
+
+
+?>
+<form name='data[tipo_gastoPDF]'  method = "post" id='form' action="<?php echo $html->url('/graficos2/plan_inversion_pdf/');?>" >
+<table width="100%" cellspacing="0">
+<tr>
+<td colspan="3"><b>Recursos <?= $ano_recurso ?> (Presupuestado)</b></td>
+</tr>
+<tr bgcolor="#FFFFFF">
+<td align="center">
+<img src="/graficasPHP/graphbarras.php?dat=<?= $parametros_torta2 ?>,<?=$monto_presupuestado?>&bkg=FFFFFF&usr=<?=$usr?>2&rdm=<?=$rdm?>">
+</td>
+<td>
+<img src="/graficasPHP/graphpastel.php?dat=<?= $parametros_torta2 ?>&bkg=FFFFFF&wdt=250&hgt=180&usr=<?=$usr?>2&rdm=<?=$rdm?>"><br/><br/>
+</td>
+<td class="textnegro">
+<table border="0">
+<?php
+//echo count($datos_grap2[0][0]);
+$ref=5;
+$usr2 = $usr."2";
+//echo $usr2;
+for($i=0; $i<count($datos_grap2[0][0]);$i++){
+	//echo $ref;
+	switch ($i) {
+		case 0:
+			$_SESSION['ordinario']=$datos_grap2[0][0]['ordinario'];
+			if($datos_grap2[0][0]['ordinario'] != 0){
+				//echo "&usr=$usr2&k=4&rdm=$rdm";
+				echo "<tr><td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr2&k=0&rdm=$rdm'></td>";
+				echo "<td class='textnegro'>"."ORDINARIO: <b>".$sisap->get_porcentaje($monto_presupuestado, $datos_grap2[0][0]['ordinario'])."% - </b></td>";
+				echo "<td class='textnegro' align='right'><b>".$sisap->Formato2($datos_grap2[0][0]['ordinario'])."</b></td></tr>";
+				$ref += 3;
+			}
+			break;
+		case 1:
+			$_SESSION['coordinado']=$datos_grap2[0][0]['coordinado'];
+			if($datos_grap2[0][0]['coordinado'] != 0){
+				//echo "&usr=$usr2&k=1&rdm=$rdm";
+				echo "<tr><td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr2&k=1&rdm=$rdm'></td>";
+				echo "<td class='textnegro'>"."COORDINADO: <b>".$sisap->get_porcentaje($monto_presupuestado, $datos_grap2[0][0]['coordinado'])."% -</b></td>";
+				echo "<td class='textnegro' align='right'><b>".$sisap->Formato2($datos_grap2[0][0]['coordinado'])."</b></td></tr>";
+				$ref += 3;
+			}
+
+			break;
+		case 2:
+			$_SESSION['laee']=$datos_grap2[0][0]['laee'];
+			if($datos_grap2[0][0]['laee'] != 0){
+				//echo "&usr=$usr2&k=2&rdm=$rdm";
+				echo "<td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr2&k=2&rdm=$rdm'></td>";
+				echo "<td class='textnegro'>"."LAEE: <b>".$sisap->get_porcentaje($monto_presupuestado, $datos_grap2[0][0]['laee'])."% -</b></td>";
+				echo "<td class='textnegro' align='right'><b>".$sisap->Formato2($datos_grap2[0][0]['laee'])."</b></td></tr>";
+				$ref += 3;
+
+			}
+
+			break;
+		case 3:
+			$_SESSION['fides']=$datos_grap2[0][0]['fides'];
+			if($datos_grap2[0][0]['fides'] != 0){
+				//echo "&usr=$usr2&k=3&rdm=$rdm";
+				echo "<td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr2&k=3&rdm=$rdm'></td>";
+				echo "<td class='textnegro'>"."FIDES: <b>".$sisap->get_porcentaje($monto_presupuestado, $datos_grap2[0][0]['fides'])."% -</b></td>";
+				echo "<td class='textnegro' align='right'><b>".$sisap->Formato2($datos_grap2[0][0]['fides'])."</b></td></tr>";
+				$ref += 3;
+			}
+
+			break;
+		case 4:
+			$_SESSION['ingreso_extraordinario']=$datos_grap2[0][0]['ingreso_extraordinario'];
+			if($datos_grap2[0][0]['ingreso_extraordinario'] != 0){
+				//echo "&usr=$usr2&k=4&rdm=$rdm";
+				echo "<td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr2&k=4&rdm=$rdm'></td>";
+				echo "<td class='textnegro'>"."EXTRAORINARIO: <b>".$sisap->get_porcentaje($monto_presupuestado, $datos_grap2[0][0]['ingreso_extraordinario'])."% -</b></td>";
+				echo "<td class='textnegro' align='right'><b>".$sisap->Formato2($datos_grap2[0][0]['ingreso_extraordinario'])."</b></td></tr>";
+				$ref += 3;
+
+			}
+
+			break;
+		default:
+			break;
+	}
+}
+?>
+<tr>
+<td><img src='/graficasPHP/graphref.php?ref=<?=$ref?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$usr2?>&k=5&rdm=<?=$rdm?>'></td>
+<td class='textnegro'>TOTAL PRESUPUESTADO: </td>
+<td class='textnegro' align='right'><b><?= $sisap->Formato2($monto_presupuestado) ?></b>
+<input type="hidden" name="data[graficos2][monto_presupuestado]" value="<?= $sisap->Formato2($monto_presupuestado) ?>">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<?php
+if($extraordinario != '0.00'){
+	//pr($datos_grap3);
+	$i = 0;
+	foreach($datos_grap3 as $row3){
+		$recurso[$i] = $row3[0]['denominacion'];
+		$monto_recurso[$i] = $row3[0]['monto_presupuestado'];
+
+		$i++;
+	}
+
+	$datos_graficos = implode(',', $monto_recurso);
+	//pr($datos_graficos);
+?>
+
+<tr>
+<td colspan="3"><b>Recursos Extraordinarios <?= $ano_recurso ?></b></td>
+</tr>
+<tr bgcolor="#FFFFFF">
+<td align="center">
+<img src="/graficasPHP/graphbarras.php?dat= <?=$datos_graficos?>,<?=$extraordinario?>&bkg=FFFFFF&usr=<?=$usr.'3'?>&rdm=<?=$rdm?>">
+</td>
+<td align="center">
+<img src="/graficasPHP/graphpastel.php?dat=<?= $datos_graficos ?>&bkg=FFFFFF&wdt=250&hgt=180&usr=<?=$usr.'3'?>&rdm=<?=$rdm?>">
+</td>
+<td>
+<table>
+<?php
+$ref=5;
+$usr3 = $usr."3";
+	for($i=0; $i<count($recurso);$i++){
+		echo "<tr><td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr3&k=$i&rdm=$rdm'></td>";
+		echo "<td class='textnegro'>".strtoupper($recurso[$i]).": </td>";
+		echo "<td class='textnegro'><b>".$sisap->Formato2($monto_recurso[$i])."</b></td></tr>";
+		$ref += 3;
+	}
+	echo "<tr><td><img src='/graficasPHP/graphref.php?ref=$ref&typ=2&dim=10&bkg=EEEEEE&usr=$usr3&k=$i&rdm=$rdm'></td>";
+	echo "<td class='textnegro'>".strtoupper('EXTRAORDINARIO').":&nbsp;</td>";
+	echo "<td class='textnegro'><b>".$sisap->Formato2($extraordinario)."</b></td></tr>";
+?>
+</table>
+</td>
+</tr>
+<?php
+}
+?>
+<tr>
+<td align="center" colspan="3">
+<br/>
+<?= $html->submit('GENERAR PDF') ?> &nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+</td>
+</tr>
+</table>
+</form>
+
+
+
+
+<?php
+if($opcion_year==2){
+?>
+</div>
+<?= $sisap->CloseTable(); ?>
+<?php
+}//fin if
+?>
+
+
+
+
+
+
+
+
+
+

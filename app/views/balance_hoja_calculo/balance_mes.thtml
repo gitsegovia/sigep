@@ -1,0 +1,632 @@
+<?
+error_reporting(E_ALL);
+set_include_path(get_include_path() . PATH_SEPARATOR . '/var/www/sigep/excel/');
+require_once('/var/www/sigep/excel/PHPExcel.php');
+require_once('/var/www/sigep/excel/PHPExcel/IOFactory.php');
+
+        //$objReader = PHPExcel_IOFactory::createReader('Excel5');
+        $nombre='balance_ejecucion_mes_';
+        //$nombre="ver_peso";
+
+        //$objPHPExcel = $objReader->load($nombre.".xls");
+        //$objPHPExcel->setActiveSheetIndex(0);
+        /**/
+        $objPHPExcel = new PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+        $objPHPExcel->getActiveSheet()->setTitle('balance');
+        $meses=array('01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
+
+    $objPHPExcel->getActiveSheet()->setCellValue('B1',''.$entidad_federal);
+    $objPHPExcel->getActiveSheet()->getStyle('B1')->getFont()->setBold(true);
+    $objPHPExcel->getActiveSheet()->setCellValue('B2',''.up($titulo_a));
+    $objPHPExcel->getActiveSheet()->getStyle('B2')->getFont()->setBold(true);
+    $objPHPExcel->getActiveSheet()->setCellValue('B3','PRESUPUESTO: '.$ANO .' - '.up($meses[$_SESSION["mes_solicitado"]]));
+    $objPHPExcel->getActiveSheet()->getStyle('B3')->getFont()->setBold(true);
+
+    $celdas=array('A'=>19,'B'=>40,'C'=>17,'D'=>17,'E'=>17,'F'=>17,'G'=>17,'H'=>17,'I'=>17,'J'=>17,'K'=>17,'L'=>17);
+    foreach($celdas as $x_cell =>$x_v){
+    	$objPHPExcel->getActiveSheet()->getColumnDimension($x_cell)->setWidth($x_v);
+    }
+
+$totaltotal=0;
+//-------------------------------------------------------
+   for($l=1;$l<6;$l++){
+		$totales[$l]['asignacion_anual']=0;
+		$totales[$l]['aumento']=0;
+		$totales[$l]['disminucion']=0;
+		$totales[$l]['compromiso']=0;
+		$totales[$l]['causado']=0;
+		$totales[$l]['pagado']=0;
+		$totales[$l]['compromiso_neg']=0;
+		$totales[$l]['causado_neg']=0;
+		$totales[$l]['pagado_neg']=0;
+		$totales[$l]['disponibilidad']=0;
+	}
+		  $titulo_x[1]='Total ';
+		  $titulo_x[2]='Total Sector ';
+		  $titulo_x[3]='Total Programa ';
+		  $titulo_x[4]='Total Sub-Programa ';
+		  $titulo_x[5]='Total Actividad ';
+            $entrada=0;
+            $cod_sector=0;
+            $cod_programa=0;
+            $cod_sub_prog=0;
+            $cod_proyecto=0;
+            $cod_activ_obra=0;
+
+            $fila_celda=0;
+foreach($distintos_sectores as $ds){
+	$var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+
+
+	foreach($cfpd05 as $denos_cfpd05){//inicio foreach #abc
+		if($var[1]==$denos_cfpd05[$modelo]["cod_sector"] && $var[2]==$denos_cfpd05[$modelo]["cod_programa"] && $var[3]==$denos_cfpd05[$modelo]["cod_sub_prog"] && $var[4]==$denos_cfpd05[$modelo]["cod_proyecto"] && $var[5]==$denos_cfpd05[$modelo]["cod_activ_obra"]){
+			$var[11]=$denos_cfpd05[$modelo]["deno_sector"];
+	        $var[12]=$denos_cfpd05[$modelo]["deno_programa"];
+	        $var[13]=$denos_cfpd05[$modelo]["deno_sub_prog"];
+	        $var[14]=$denos_cfpd05[$modelo]["deno_proyecto"];
+	        $var[15]=$denos_cfpd05[$modelo]["deno_activ_obra"];
+
+            if($entrada==0){
+	            $cod_sector=$var[1];
+	            $cod_programa=$var[2];
+	            $cod_sub_prog=$var[3];
+	            $cod_proyecto=$var[4];
+	            $cod_activ_obra=$var[5];
+	            $entrada=1;
+           }
+           if(($cod_sector!=$var[1] || ($cod_sector==$var[1] && $cod_programa!=$var[2]) || ($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog!=$var[3]) || ($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog==$var[3] && $cod_activ_obra!=$var[5])) && (isset($Ytotal) && $Ytotal>=170)){
+
+           }else{
+	           	$_SESSION["cod_sector"]=$sisap->AddCero3($var[1]);
+		        $_SESSION["deno_sector"]=$var[11];
+		        $_SESSION["cod_programa"]=$sisap->AddCero3($var[2]);
+		        $_SESSION["deno_programa"]=$var[12];
+		        $_SESSION["cod_sub_prog"]=$sisap->AddCero3($var[3]);
+		        $_SESSION["deno_sub_prog"]=$var[13];
+		        $_SESSION["cod_proyecto"]=$sisap->AddCero3($var[4]);
+		        $_SESSION["deno_proyecto"]=$var[14];
+		        $_SESSION["cod_activ_obra"]=$sisap->AddCero3($var[5]);
+		        $_SESSION["deno_activ_obra"]=$var[15];
+           }
+            /***/
+	        if($cod_sector!=$var[1]){//if#a
+	        	for($lx=5;$lx>1;$lx--){//for#a
+	        	            $fila_celda++;
+	        	            $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+					        $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,'');
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, $titulo_x[$lx]);
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $totales[$lx]['asignacion_anual']);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $totales[$lx]['aumento']);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $totales[$lx]['disminucion']);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $totales[$lx]['compromiso']);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $totales[$lx]['compromiso_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $totales[$lx]['causado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $totales[$lx]['causado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $totales[$lx]['pagado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $totales[$lx]['pagado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $totales[$lx]['disponibilidad']);
+						    $totales[$lx]['asignacion_anual']=0;
+							$totales[$lx]['aumento']=0;
+							$totales[$lx]['disminucion']=0;
+							$totales[$lx]['compromiso']=0;
+							$totales[$lx]['compromiso_neg']=0;
+							$totales[$lx]['causado']=0;
+							$totales[$lx]['causado_neg']=0;
+							$totales[$lx]['pagado']=0;
+							$totales[$lx]['pagado_neg']=0;
+							$totales[$lx]['disponibilidad']=0;
+	        	}//for#a
+				$cod_sector=$var[1];
+	            $cod_programa=$var[2];
+	            $cod_sub_prog=$var[3];
+	            $cod_proyecto=$var[4];
+	            $cod_activ_obra=$var[5];
+        }//if#a
+
+        if($cod_sector==$var[1] && $cod_programa!=$var[2]){//if#b
+            for($lx=5;$lx>2;$lx--){//for#b
+            $fila_celda++;
+                            $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+                            $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,'');
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, $titulo_x[$lx]);
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $totales[$lx]['asignacion_anual']);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $totales[$lx]['aumento']);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $totales[$lx]['disminucion']);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $totales[$lx]['compromiso']);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $totales[$lx]['compromiso_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $totales[$lx]['causado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $totales[$lx]['causado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $totales[$lx]['pagado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $totales[$lx]['pagado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $totales[$lx]['disponibilidad']);
+						    $totales[$lx]['asignacion_anual']=0;
+							$totales[$lx]['aumento']=0;
+							$totales[$lx]['disminucion']=0;
+							$totales[$lx]['compromiso']=0;
+							$totales[$lx]['compromiso_neg']=0;
+							$totales[$lx]['causado']=0;
+							$totales[$lx]['causado_neg']=0;
+							$totales[$lx]['pagado']=0;
+							$totales[$lx]['pagado_neg']=0;
+							$totales[$lx]['disponibilidad']=0;
+	        	}//for#b
+        }//if#b
+
+        if($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog!=$var[3]){//if#c
+            for($lx=5;$lx>3;$lx--){//for#c
+            $fila_celda++;
+                            $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+					        $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,'');
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, $titulo_x[$lx]);
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $totales[$lx]['asignacion_anual']);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $totales[$lx]['aumento']);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $totales[$lx]['disminucion']);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $totales[$lx]['compromiso']);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $totales[$lx]['compromiso_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $totales[$lx]['causado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $totales[$lx]['causado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $totales[$lx]['pagado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $totales[$lx]['pagado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $totales[$lx]['disponibilidad']);
+						    $totales[$lx]['asignacion_anual']=0;
+							$totales[$lx]['aumento']=0;
+							$totales[$lx]['disminucion']=0;
+							$totales[$lx]['compromiso']=0;
+							$totales[$lx]['compromiso_neg']=0;
+							$totales[$lx]['causado']=0;
+							$totales[$lx]['causado_neg']=0;
+							$totales[$lx]['pagado']=0;
+							$totales[$lx]['pagado_neg']=0;
+							$totales[$lx]['disponibilidad']=0;
+	        	}//for#c
+
+
+        }//if#c
+
+        if($cod_sector==$var[1] && $cod_programa==$var[2] && $cod_sub_prog==$var[3] && $cod_activ_obra!=$var[5]){//if#d
+                        $lx=5;
+                        $fila_celda++;
+                            $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+					        $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,'');
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, $titulo_x[$lx]);
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $totales[$lx]['asignacion_anual']);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $totales[$lx]['aumento']);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $totales[$lx]['disminucion']);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $totales[$lx]['compromiso']);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $totales[$lx]['compromiso_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $totales[$lx]['causado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $totales[$lx]['causado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $totales[$lx]['pagado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $totales[$lx]['pagado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $totales[$lx]['disponibilidad']);
+						    $totales[$lx]['asignacion_anual']=0;
+							$totales[$lx]['aumento']=0;
+							$totales[$lx]['disminucion']=0;
+							$totales[$lx]['compromiso']=0;
+							$totales[$lx]['compromiso_neg']=0;
+							$totales[$lx]['causado']=0;
+							$totales[$lx]['causado_neg']=0;
+							$totales[$lx]['pagado']=0;
+							$totales[$lx]['pagado_neg']=0;
+							$totales[$lx]['disponibilidad']=0;
+        }//if#d
+	        break;
+	   }//fin if
+
+
+	}//fin for#sbc
+
+
+    if($var[4]!=0){
+    	$var[16]=" ";
+    }else{
+    	$var[16]=" ";
+    }
+		    $var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+			$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+			$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+			$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+			$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+	        $_SESSION["cod_sector"]=$var[1];
+	        $_SESSION["deno_sector"]=$var[11];
+	        $_SESSION["cod_programa"]=$var[2];
+	        $_SESSION["deno_programa"]=$var[12];
+	        $_SESSION["cod_sub_prog"]=$var[3];
+	        $_SESSION["deno_sub_prog"]=$var[13];
+	        $_SESSION["cod_proyecto"]=$var[4];
+	        $_SESSION["deno_proyecto"]=$var[14];
+	        $_SESSION["cod_activ_obra"]=$var[5];
+	        $_SESSION["deno_activ_obra"]=$var[15];
+
+
+
+	        //ESTATICO
+	$fila_celda+=5;
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, 'CÓDIGO');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, 'DENOMINACIÓN');
+    $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+    $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getFont()->setBold(true);
+	$objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+	//SECTOR
+	$fila_celda++;
+	$objPHPExcel->getActiveSheet()->getStyle('A'.$fila_celda)->getFont()->setBold(true);
+	$objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+	$objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda, 'SECTOR');
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, ''.mascara($var[1],2).' ');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $var[11]);
+	//PROGRAMA
+	$fila_celda++;
+	$objPHPExcel->getActiveSheet()->getStyle('A'.$fila_celda)->getFont()->setBold(true);
+	$objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+	$objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda, 'PROGRAMA');
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, ''.mascara($var[2],2).' ');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $var[12]);
+	//SUBPROGRAMA
+	$fila_celda++;
+	$objPHPExcel->getActiveSheet()->getStyle('A'.$fila_celda)->getFont()->setBold(true);
+	$objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+	$objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda, 'SUBPROGRAMA');
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, ''.mascara($var[4],2).' ');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $var[13]);
+	//ACTIVIDAD U OBRA
+	$fila_celda++;
+	$objPHPExcel->getActiveSheet()->getStyle('A'.$fila_celda)->getFont()->setBold(true);
+	$objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+	$objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda, 'ACTIVIDAD U OBRA');
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, ''.mascara($var[5],2).' ');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $var[15]);
+    $fila_celda++;
+    $fila_celda++;
+    $fila_celda++;
+    $celdas=array('A','B','C','D','E','F','G','H','I','J','K','L');
+    foreach($celdas as $x_cell){
+    	$objPHPExcel->getActiveSheet()->getStyle($x_cell.$fila_celda)->getFont()->setBold(true);
+    	$objPHPExcel->getActiveSheet()->getStyle($x_cell.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    }
+	$objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda, 'CÓDIGOS');
+	$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, 'DENOMINACIÓN');
+	$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, 'ASIGNACIÓN');
+	$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, 'AUMENTO');
+	$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, 'DISMINUCIÓN');
+	$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, 'COMPROMISO');
+	$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, 'DISMINUCIÓN COMPROMISO');
+	$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, 'CAUSADO');
+	$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, 'DISMINUCIÓN CAUSADO');
+	$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, 'PAGADO');
+	$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, 'DISMINUCIÓN PAGADO');
+	$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, 'DISPONIBILIDAD');
+
+
+    //$fpdf->AddPage();
+/////////////////////////////
+
+    $var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+	$var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+
+
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd[$modelo]['cod_sector'];
+		$var2[2]=$vcfpd[$modelo]['cod_programa'];
+		$var2[3]=$vcfpd[$modelo]['cod_sub_prog'];
+		$var2[4]=$vcfpd[$modelo]['cod_proyecto'];
+		$var2[5]=$vcfpd[$modelo]['cod_activ_obra'];
+		$var2[6]=$vcfpd[$modelo]['cod_partida'];
+		$var2[7]=$vcfpd[$modelo]['cod_generica'];
+		$var2[8]=$vcfpd[$modelo]['cod_especifica'];
+		$var2[9]=$vcfpd[$modelo]['cod_sub_espec'];
+		$var2[10]=$vcfpd[$modelo]['cod_auxiliar'];
+		$var2[11]=$vcfpd[$modelo]['asignacion_anual'];
+		switch($mes){
+        	case '01':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ene'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ene'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['enerom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_ene'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_ene'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_ene'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_ene_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_ene_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_ene_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['enerom'];
+			        $var2[11]=$vcfpd[$modelo]['enerom'];
+        	break;
+        	case '02':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_feb'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_feb'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['febrerom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_feb'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_feb'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_feb'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_feb_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_feb_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_feb_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['febrerom'];
+			        $var2[11]=$vcfpd[$modelo]['febrerom'];
+        	break;
+        	case '03':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_mar'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_mar'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['marzom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_mar'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_mar'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_mar'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_mar_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_mar_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_mar_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['marzom'];
+			        $var2[11]=$vcfpd[$modelo]['marzom'];
+        	break;
+        	case '04':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_abr'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_abr'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['abrilm']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_abr'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_abr'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_abr'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_abr_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_abr_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_abr_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['abrilm'];
+			        $var2[11]=$vcfpd[$modelo]['abrilm'];
+        	break;
+        	case '05':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_may'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_may'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['mayom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_may'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_may'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_may'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_may_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_may_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_may_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['mayom'];
+			        $var2[11]=$vcfpd[$modelo]['mayom'];
+        	break;
+        	case '06':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_jun'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_jun'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['juniom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_jun'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_jun'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_jun'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_jun_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_jun_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_jun_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['juniom'];
+			        $var2[11]=$vcfpd[$modelo]['juniom'];
+        	break;
+        	case '07':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_jul'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_jul'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['juliom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_jul'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_jul'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_jul'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_jul_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_jul_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_jul_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['juliom'];
+			        $var2[11]=$vcfpd[$modelo]['juliom'];
+        	break;
+        	case '08':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_ago'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_ago'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['agostom']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_ago'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_ago'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_ago'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_ago_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_ago_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_ago_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['agostom'];
+			        $var2[11]=$vcfpd[$modelo]['agostom'];
+        	break;
+        	case '09':
+        	       $var2["aumento"]=           $vcfpd[$modelo]['aumento_sep'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_sep'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['septiembrem']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_sep'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_sep'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_sep'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_sep_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_sep_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_sep_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['septiembrem'];
+			        $var2[11]=$vcfpd[$modelo]['septiembrem'];
+        	break;
+        	case '10':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_oct'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_oct'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['octubrem']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_oct'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_oct'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_oct'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_oct_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_oct_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_oct_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['octubrem'];
+			        $var2[11]=$vcfpd[$modelo]['octubrem'];
+        	break;
+        	case '11':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_nov'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_nov'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['noviembrem']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_nov'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_nov'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_nov'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_nov_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_nov_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_nov_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['noviembrem'];
+			        $var2[11]=$vcfpd[$modelo]['noviembrem'];
+        	break;
+        	case '12':
+        	        $var2["aumento"]=           $vcfpd[$modelo]['aumento_dic'];
+			        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion_dic'];
+			        $var2["total_asignacion"]=  $vcfpd[$modelo]['diciembrem']+($var2["aumento"]-$var2["disminucion"]);
+			        $var2["compromiso"]=        $vcfpd[$modelo]['xcompromiso_dic'];
+			        $var2["causado"]=           $vcfpd[$modelo]['xcausado_dic'];
+			        $var2["pagado"]=            $vcfpd[$modelo]['xpagado_dic'];
+			        $var2["compromiso_neg"]=    $vcfpd[$modelo]['xcompromiso_dic_neg'];
+			        $var2["causado_neg"]=       $vcfpd[$modelo]['xcausado_dic_neg'];
+			        $var2["pagado_neg"]=        $vcfpd[$modelo]['xpagado_dic_neg'];
+			        $var2["disponibilidad"]=    $var2["total_asignacion"]+$var2["compromiso_neg"]-$var2["compromiso"];
+			        $var2["disponibilidad_ant"]=    $vcfpd[$modelo]['diciembrem'];
+			        $var2[11]=$vcfpd[$modelo]['diciembrem'];
+        	break;
+        }//fin switch
+
+
+		if($var2[10]!=0){
+            $var2[12]=$vcfpd[$modelo]["deno_auxiliar"];
+		}else{
+			$var2[12]=$vcfpd[$modelo]["deno_sub_espec"];
+		}
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+
+
+          	  	     if($var[1]==$var2[1] && $var[2]==$var2[2] && $var[3]==$var2[3] && $var[4]==$var2[4] && $var[5]==$var2[5]){
+						    $cod_sector=$var2[1];
+				            $cod_programa=$var2[2];
+				            $cod_sub_prog=$var2[3];
+				            $cod_proyecto=$var2[4];
+				            $cod_activ_obra=$var2[5];
+                            $fila_celda++;
+                            $celdas=array('C','D','E','F','G','H','I','J','K','L');
+						    foreach($celdas as $x_cell){
+						    	$objPHPExcel->getActiveSheet()->getStyle($x_cell.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+						    }
+						    $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+                            $objPHPExcel->getActiveSheet()->getStyle('A'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+				            $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,''.$var2[6].'.'.$var2[7].'.'.$var2[8].'.'.$var2[9].'.'.mascara($var2[10],4)." ");
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, up($var2[12]));
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $var2[11]);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $var2["aumento"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $var2["disminucion"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $var2["compromiso"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $var2["compromiso_neg"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $var2["causado"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $var2["causado_neg"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $var2["pagado"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $var2["pagado_neg"]);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $var2["disponibilidad"]);
+
+
+                              for($l=1;$l<6;$l++){
+								$totales[$l]['asignacion_anual']+=$var2[11];
+								$totales[$l]['aumento']+=$var2["aumento"];
+								$totales[$l]['disminucion']+=$var2["disminucion"];
+								$totales[$l]['compromiso']+=$var2["compromiso"];
+								$totales[$l]['compromiso_neg']+=$var2["compromiso_neg"];
+								$totales[$l]['causado']+=$var2["causado"];
+								$totales[$l]['causado_neg']+=$var2["causado_neg"];
+								$totales[$l]['pagado']+=$var2["pagado"];
+								$totales[$l]['pagado_neg']+=$var2["pagado_neg"];
+								$totales[$l]['disponibilidad']+=$var2["disponibilidad"];
+							}
+
+							//$fila_celda++;
+
+				   }
+
+
+	}//fin foreach cfpd05
+
+
+}//fin foreach distintos_sectores
+
+             for($lx=5;$lx>0;$lx--){//for#a
+	        	            $fila_celda++;
+	        	            $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+							$objPHPExcel->getActiveSheet()->duplicateStyle( $objPHPExcel->getActiveSheet()->getStyle('C'.$fila_celda), 'C'.$fila_celda.':'.'L'.$fila_celda );
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+					        $objPHPExcel->getActiveSheet()->getStyle('B'.$fila_celda)->getFont()->setBold(true);
+					        $objPHPExcel->getActiveSheet()->setCellValue('A'.$fila_celda,'');
+							$objPHPExcel->getActiveSheet()->setCellValue('B'.$fila_celda, $titulo_x[$lx]);
+							$objPHPExcel->getActiveSheet()->setCellValue('C'.$fila_celda, $totales[$lx]['asignacion_anual']);
+							$objPHPExcel->getActiveSheet()->setCellValue('D'.$fila_celda, $totales[$lx]['aumento']);
+							$objPHPExcel->getActiveSheet()->setCellValue('E'.$fila_celda, $totales[$lx]['disminucion']);
+							$objPHPExcel->getActiveSheet()->setCellValue('F'.$fila_celda, $totales[$lx]['compromiso']);
+							$objPHPExcel->getActiveSheet()->setCellValue('G'.$fila_celda, $totales[$lx]['compromiso_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('H'.$fila_celda, $totales[$lx]['causado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('I'.$fila_celda, $totales[$lx]['causado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('J'.$fila_celda, $totales[$lx]['pagado']);
+							$objPHPExcel->getActiveSheet()->setCellValue('K'.$fila_celda, $totales[$lx]['pagado_neg']);
+							$objPHPExcel->getActiveSheet()->setCellValue('L'.$fila_celda, $totales[$lx]['disponibilidad']);
+
+	        	}//for#a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////77
+/////////////////////////////
+unset($v);
+$var_date=date('His');
+$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+$objWriter->save('descargas/'.$nombre.'_'.$var_date.'.xls');
+unset($objWriter);
+unset($objPHPExcel);/****/
+?>
+<script language="JavaScript" type="text/javascript">
+  //$('bt_balance').disabled=false;
+</script>
+<BR>
+<H2><a href="/<?='descargas/'.$nombre.'_'.$var_date.'.xls';?>" id="link_archivo">Descargar Archivo</a></H2>
+<script>
+  window.location.href = "/<?='descargas/'.$nombre.'_'.$var_date.'.xls';?>";
+</script>

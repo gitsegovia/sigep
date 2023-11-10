@@ -1,0 +1,336 @@
+<?php
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$this->top_reporte($titulo_A = "INVENTARIOS DE BIENES MUEBLES", null, null, array("Y"=>"6", "X"=>"11", "Z"=>"12"), array("Y"=>"15", "X"=>"190", "Z"=>"12"));
+		$varX_aux = $this->GetX() + 185;
+		$varY_aux = $this->GetY() - 17;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'FORMULARIO \'B.M-1\' ');
+		$this->Ln(3);
+    }
+
+    function footer(){
+		$this->SetY(-35);
+		$this->SetFont('vera','B',6);
+		$this->Cell(68,4,'PREPARACIÓN DE INVENTARIO','TRL',0,'C');
+		$this->Cell(69,4,'CONFORMACIÓN','TR',0,'C');
+		$this->Cell(0,4,'APROBACIÓN JEFE DE BIENES','TR',1,'C');
+		$this->Cell(68,15,'','TRBL',0,'C');
+		$this->Cell(69,15,'','TRB',0,'C');
+		$this->Cell(0,15,'','TRB',1,'C');
+		$this->Cell(68,4,'FIRMA Y SELLO','RBL',0,'C');
+		$this->Cell(69,4,'FIRMA Y SELLO','RB',0,'C');
+		$this->Cell(0,4,'FIRMA Y SELLO','RB',1,'C');
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 35);
+//$pdf->AddPage();
+
+
+$pdf->SetFont('vera','',6);
+$cantidad_sum=0;
+$valor_unit_sum=0;
+$total_valor_sum=0;
+$concatena=0;
+
+for($i=0; $i<count($datos); $i++){
+
+
+$deno = $datos[$i][0]['denominacion'];
+$char = strlen($deno);
+if($char < 54){
+	$height = 5;
+}elseif($char >= 54 && $char < 108){
+	$height = 6;
+}elseif($char >= 108 && $char < 162){
+	$height = 8;
+}elseif($char >= 162 && $char < 216){
+	$height = 10;
+}elseif($char >= 216 && $char < 270){
+	$height = 12;
+}elseif($char >= 270 && $char < 324){
+	$height = 14;
+}elseif($char >= 324 && $char < 378){
+	$height = 16;
+}elseif($char >= 378 && $char < 432){
+	$height = 18;
+}elseif($char >= 432 && $char < 486){
+	$height = 20;
+}elseif($char >= 486 && $char < 540){
+	$height = 22;
+}elseif($char >= 540 && $char < 594){
+	$height = 24;
+}elseif($char >= 594 && $char < 648){
+	$height = 26;
+}elseif($char >= 648 && $char < 702){
+	$height = 28;
+}elseif($char >= 702 && $char < 756){
+	$height = 30;
+}elseif($char >= 756 && $char < 810){
+	$height = 32;
+}elseif($char >= 810 && $char < 864){
+	$height = 34;
+}elseif($char >= 864 && $char < 918){
+	$height = 36;
+}elseif($char >= 918 && $char < 972){
+	$height = 38;
+}elseif($char >= 972 && $char < 1026){
+	$height = 40;
+}elseif($char >= 1026 && $char < 1080){
+	$height = 42;
+}elseif($char >= 1080 && $char < 1134){
+	$height = 44;
+}elseif($char >= 1134 && $char < 1188){
+	$height = 46;
+}elseif($char >= 1188 && $char < 1242){
+	$height = 48;
+}elseif($char >= 1242){
+	$height = 50;
+}
+
+$concatena2=$datos[$i][0]['cod_estado'].$datos[$i][0]['cod_municipio'].$datos[$i][0]['cod_parroquia'].$datos[$i][0]['cod_centro'].$datos[$i][0]['cod_institucion'].$datos[$i][0]['cod_dependencia'].$datos[$i][0]['cod_dir_superior'].$datos[$i][0]['cod_coordinacion'].$datos[$i][0]['cod_secretaria'].$datos[$i][0]['cod_direccion'].$datos[$i][0]['cod_division'].$datos[$i][0]['cod_departamento'].$datos[$i][0]['cod_oficina'];
+
+if($concatena!=$concatena2){
+	if($concatena!=$concatena2 && $concatena!=0){
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(8,5,'','RBLT',0,'C');
+		$pdf->Cell(8,5,'','RBT',0,'C');
+		$pdf->Cell(10,5,'','RBT',0,'C');
+		$pdf->Cell(10,5,'','RBT',0,'C');
+		$pdf->Cell(16,5,$sisap->Formato_3_out($cantidad_sum),'RBT',0,'C');//--[TOTAL CANTIDAD]
+		$pdf->Cell(22,5,'','RBT',0,'R');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(73,5,'TOTAL','RBT',0,'R');
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(20,5,$sisap->Formato2($valor_unit_sum),'RBT',0,'R');//--[TOTAL VALOR UNITARIO]
+		$pdf->Cell(20,5,$sisap->Formato2($total_valor_sum),'RBT',0,'R');//--[TOTAL VALOR TOTAL]
+		$pdf->Cell(0,5,'','RBT',1,'C');
+		$pdf->Ln(3);
+
+		$cantidad_sum=0;
+		$valor_unit_sum=0;
+		$total_valor_sum=0;
+
+	}
+	$pdf->AddPage();
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(103,5,'UBICACIÓN GEOGRÁFICA','TRL',0,'C');
+	$pdf->Cell(0,5,'UBICACIÓN ADMINISTRATIVA','TR',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,5,'','TRBL',0,'C');
+	$pdf->Cell(13,5,'CÓDIGO','TRB',0,'C');
+	$pdf->Cell(63,5,'DENOMINACIÓN','TRB',0,'C');
+	$pdf->Cell(30,5,'','TRB',0,'C');
+	$pdf->Cell(13,5,'CÓDIGO','TRB',0,'C');
+	$pdf->Cell(0,5,'DENOMINACIÓN','TRB',1,'C');
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,6,'ESTADO','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_estado']),'R',0,'C');//--[COD. ESTADO]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(63,1,"",'',2,'C');
+	$pdf->MultiCell(62,3,$datos[$i][0]['deno_estado'],'','L');//--[DENO. ESTADO]
+	$varX = $varX+63;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(30,6,'ENTIDAD PROPIETARIA','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_institucion']),'R',0,'C');//--[COD. ENTIDAD PROPIETARIA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(83,1,"",'',2,'C');
+	$pdf->MultiCell(82,3,$datos[$i][0]['deno_institucion'],'','L');//--[DENO. ENTIDAD PROPIETARIA]
+	$varX = $varX+83;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,6,'','R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,6,'MUNICIPIO','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_municipio']),'R',0,'C');//--[COD. MUNICIPIO]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(63,1,"",'',2,'C');
+	$pdf->MultiCell(62,3,$datos[$i][0]['deno_municipio'],'','L');//--[DENO. MUNICIPIO]
+	$varX = $varX+63;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(30,6,'ENTIDAD ASIGNADA','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_dependencia']),'R',0,'C');//--[COD. ENTIDAD ASIGNADA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(83,1,"",'',2,'C');
+	$pdf->MultiCell(82,3,$datos[$i][0]['deno_dependencia'],'','L');//--[DENO. ENTIDAD ASIGNADA]
+	$varX = $varX+83;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,6,'','R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,6,'PARROQUIA','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_parroquia']),'R',0,'C');//--[COD. PARROQUIA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(63,1,"",'',2,'C');
+	$pdf->MultiCell(62,3,$datos[$i][0]['deno_parroquia'],'','L');//--[DENO. PARROQUIA]
+	$varX = $varX+63;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(30,6,'SERVICIO','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_secretaria']),'R',0,'C');//--[COD. SERVICIO]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(83,1,"",'',2,'C');
+	$pdf->MultiCell(82,3,$datos[$i][0]['deno_secretaria'],'','L');//--[DENO. SERVICIO]
+	$varX = $varX+83;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,6,'','R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,6,'CENTRO POBLADO','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_centro']),'R',0,'C');//--[COD. CENTRO POBLADO]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(63,1,"",'',2,'C');
+	$pdf->MultiCell(62,3,$datos[$i][0]['deno_centro'],'','L');//--[DENO. CENTRO POBLADO]
+	$varX = $varX+63;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(30,6,'UNIDAD DE TRABAJO','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_direccion']),'R',0,'C');//--[COD. UNIDAD DE TRABAJO]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(83,1,"",'',2,'C');
+	$pdf->MultiCell(64,2,$datos[$i][0]['deno_direccion'],'','L');//--[DENO. UNIDAD DE TRABAJO]
+	$varX = $varX+64;//83
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,6,'','R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(27,6,'CIUDAD','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_municipio']),'R',0,'C');//--[COD. CIUDAD]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(63,1,"",'',2,'C');
+	$pdf->MultiCell(62,3,$datos[$i][0]['conocido'],'','L');
+	$varX = $varX+63;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(30,6,'OFICINA','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(13,6,$sisap->zero($datos[$i][0]['cod_oficina']),'R',0,'C');//--[COD. OFICINA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(83,1,"",'',2,'C');
+	$pdf->MultiCell(82,3,$datos[$i][0]['deno_oficina'],'','L');//--[DENO. OFICINA]
+	$varX = $varX+83;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,6,'','R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(36,6,'CLASIFICACIÓN FUNCIONAL ','RLB',0,'L');
+	$pdf->Cell(0,6,' ','RB',1,'L');
+
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(8,3,'','RL',0,'C');
+	$pdf->Cell(8,3,'','R',0,'C');
+	$pdf->Cell(10,3,'SUB','R',0,'C');
+	$pdf->Cell(10,3,'','R',0,'C');
+	$pdf->Cell(16,3,'','R',0,'C');
+	$pdf->Cell(22,3,'NÚMERO','R',0,'C');
+	$pdf->Cell(73,3,'','R',0,'C');
+	$pdf->Cell(20,3,'VALOR','R',0,'C');
+	$pdf->Cell(20,3,'VALOR','R',0,'C');
+	$pdf->Cell(0,3,'FECHA','R',1,'C');
+
+	$pdf->Cell(8,2,'TIPO','RBL',0,'C');
+	$pdf->Cell(8,2,'GRUPO','RB',0,'C');
+	$pdf->Cell(10,2,'GRUPO','RB',0,'C');
+	$pdf->Cell(10,2,'SECCIÓN','RB',0,'C');
+	$pdf->Cell(16,2,'CANTIDAD','RB',0,'C');
+	$pdf->Cell(22,2,'IDENTIFICACIÓN','RB',0,'C');
+	$pdf->Cell(73,2,'DENOMINACIÓN Y DESCRIPCIÓN DE LOS ELEMENTOS','RB',0,'C');
+	$pdf->Cell(20,2,'UNITARIO (BS)','RB',0,'C');
+	$pdf->Cell(20,2,'TOTAL (BS)','RB',0,'C');
+	$pdf->Cell(0,2,'INCORPORACIÓN','RB',1,'C');
+
+	$pdf->SetFont('vera','',5);
+
+	$concatena=$concatena2;
+
+}
+
+	$pdf->Cell(8,$height,$datos[$i][0]['cod_tipo'],'TRL',0,'C');
+	$pdf->Cell(8,$height,$sisap->zero($datos[$i][0]['cod_grupo']),'TR',0,'C');
+	$pdf->Cell(10,$height,$sisap->zero($datos[$i][0]['cod_subgrupo']),'TR',0,'C');
+	$pdf->Cell(10,$height,$sisap->mascara_cuatro($datos[$i][0]['cod_seccion']),'TR',0,'C');
+	$pdf->Cell(16,$height,$sisap->Formato_3_out($datos[$i][0]['cantidad']),'TR',0,'C');
+	$pdf->Cell(22,$height,$sisap->zero($datos[$i][0]['numero_identificacion']),'TR',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(73,1,"",'T',2,'C');
+	$pdf->MultiCell(72,2,$datos[$i][0]['denominacion'],'','L');
+	$varX = $varX+73;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,$height,$sisap->Formato2($datos[$i][0]['valor_unitario']),'TRL',0,'R');
+	$total_valor=$datos[$i][0]['cantidad']*$datos[$i][0]['valor_unitario'];
+	$pdf->Cell(20,$height,$sisap->Formato2($total_valor),'TR',0,'R');
+	$pdf->Cell(0,$height,$sisap->cambia_fecha($datos[$i][0]['fecha_incorporacion']),'TR',1,'C');
+	$pdf->Cell(0,0,'','T',1);
+	$cantidad_sum+=$datos[$i][0]['cantidad'];
+	$valor_unit_sum+=$datos[$i][0]['valor_unitario'];
+	$total_valor_sum+=$total_valor;
+
+}//fin for 1
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(8,5,'','RBLT',0,'C');
+	$pdf->Cell(8,5,'','RBT',0,'C');
+	$pdf->Cell(10,5,'','RBT',0,'C');
+	$pdf->Cell(10,5,'','RBT',0,'C');
+	$pdf->Cell(16,5,$sisap->Formato_3_out($cantidad_sum),'RBT',0,'C');//--[TOTAL CANTIDAD]
+	$pdf->Cell(22,5,'','RBT',0,'R');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(73,5,'TOTAL','RBT',0,'R');
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(20,5,$sisap->Formato2($valor_unit_sum),'RBT',0,'R');//--[TOTAL VALOR UNITARIO]
+	$pdf->Cell(20,5,$sisap->Formato2($total_valor_sum),'RBT',0,'R');//--[TOTAL VALOR TOTAL]
+	$pdf->Cell(0,5,'','RBT',1,'C');
+	$pdf->Ln(3);
+
+$pdf->Output('Inventario_bienes_muebles'.'.'.'pdf','D');
+?>

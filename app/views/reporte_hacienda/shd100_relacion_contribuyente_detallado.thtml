@@ -1,0 +1,303 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Relación de contribuyentes - Detallado'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd100_relacion_contribuyente_detallado/2/'); ?>" >
+			<table border="0" >
+
+
+			<tr>
+			   <td>
+			     ORDENADO POR:
+			     <?= $sisap->radioTagRemote("reporte3/ordenado", array('1'=>'Alfabético','2'=>'Rif', '3'=>'Ubicación Geografica'), array('url1'=>'/reporte_hacienda/funcion/', 'update1'=>'funcion', 'id'=>'tipo_ordenado'), null, $opc=1); ?>
+			   </td>
+		    </tr>
+
+
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "Relación de contribuyentes - Detallado", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"250", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(20,3,'','TRL',0,'C');
+		$this->Cell(20,3,'','TR',0,'C');
+		$this->Cell(48,3,'','TR',0,'C');
+		$this->Cell(17,3,'','TR',0,'C');
+		$this->Cell(20,3,'','TR',0,'C');
+		$this->Cell(20,3,'','TR',0,'C');
+		$this->Cell(24,3,'','TR',0,'C');
+		$this->Cell(31,3,'PAÍS','TR',0,'L');
+		$this->Cell(30,3,'CENTRO POBLADO','TR',0,'L');
+		$this->Cell(0,3,'','TR',1,'L');
+
+
+		$this->Cell(20,3,'','RL',0,'C');
+		$this->Cell(20,3,'R.I.F','R',0,'C');
+		$this->Cell(48,3,'','R',0,'C');
+		$this->Cell(17,3,'','R',0,'C');
+		$this->Cell(20,3,'','R',0,'C');
+		$this->Cell(20,3,'','R',0,'C');
+		$this->Cell(24,3,'','R',0,'C');
+		$this->Cell(31,3,'ESTADO','R',0,'L');
+		$this->Cell(30,3,'CALLE O AVENIDA','R',0,'L');
+		$this->Cell(0,3,'TELÉFONOS FIJOS','R',1,'L');
+
+
+
+		$this->Cell(20,3,'','RL',0,'C');
+		$this->Cell(20,3,'CÉDULA','R',0,'C');
+		$this->Cell(48,3,'','R',0,'C');
+        $this->Cell(17,3,'FECHA DE','R',0,'C');
+        $this->Cell(20,3,'','R',0,'C');
+		$this->Cell(20,3,'ESTADO','R',0,'C');
+		$this->Cell(24,3,'','R',0,'C');
+		$this->Cell(31,3,'MUNICIPIO','R',0,'L');
+	    $this->Cell(30,3,'VEREDA O EDIFICIO','R',0,'L');
+		$this->Cell(0,3,'TELÉFONOS CELULARES','R',1,'L');
+
+		$this->Cell(20,3,'PERSONALIDAD','RBL',0,'C');
+		$this->Cell(20,3,'IDENTIDAD','BR',0,'C');
+		$this->Cell(48,3,'NOMBRES Y APELLIDOS/RAZÓN SOCIAL','BR',0,'C');
+        $this->Cell(17,3,'INSCRIPCIÓN','BR',0,'C');
+        $this->Cell(20,3,'NACIONALIDAD','BR',0,'C');
+		$this->Cell(20,3,'CIVIL','BR',0,'C');
+		$this->Cell(24,3,'PROFESIÓN','BR',0,'C');
+		$this->Cell(31,3,'PARROQUIA','BR',0,'L');
+	    $this->Cell(30,3,'NÚMERO CASA/LOCAL','BR',0,'L');
+		$this->Cell(0,3,'CORREO ELECTRONICO','BR',1,'L');
+
+
+
+	}//fin funtion
+}//fin clase
+
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+
+$j=0;
+	foreach($paren as $x){
+		$deno[$j] = $x['cnmd06_profesiones']['denominacion'];
+		$codigo[$j] = $x['cnmd06_profesiones']['cod_profesion'];
+		$j++;
+	}
+	for($i=0;$i<count($datos);$i++){
+
+		if($datos[$i][0]['personalidad_juridica']==1){
+			 $personalidad='Natural';
+
+			//////////////////////
+			if($datos[$i][0]['nacionalidad']==2) $nacionalidad='Extranjera'; else $nacionalidad='Venezolana';
+			/////////////////////
+			if($datos[$i][0]['estado_civil']==1){
+				 $estado_civil='Soltero';
+			}else if($datos[$i][0]['estado_civil']==2){
+				 $estado_civil='Casado';
+			}else if($datos[$i][0]['estado_civil']==3){
+				 $estado_civil='Divorciado';
+			}else if($datos[$i][0]['estado_civil']==4){
+				 $estado_civil='Viudo';
+			}else{
+				 $estado_civil='Otro';
+			}
+
+			 $profesion=denominacion($deno, $codigo,$datos[$i][0]['profesion']);
+		}else{
+			$personalidad='Juridica';
+			$nacionalidad='';
+			$estado_civil='';
+			$profesion='';
+		}
+
+		/////////////////////
+		$geografica=$datos[$i][0]['deno_cod_republica']."\n".$datos[$i][0]['deno_cod_estado']."\n".$datos[$i][0]['deno_cod_municipio']."\n".$datos[$i][0]['deno_cod_parroquia'];
+		////////////////////
+		if($datos[$i][0]['deno_cod_centro']!='') $cod_centro=$datos[$i][0]['deno_cod_centro']; else $cod_centro='';
+		if($datos[$i][0]['deno_cod_vialidad']!='') $cod_vialidad="\n".$datos[$i][0]['deno_cod_vialidad']; else $cod_vialidad='';
+		if($datos[$i][0]['deno_cod_vereda']!='') $cod_vereda="\n".$datos[$i][0]['deno_cod_vereda']; else $cod_vereda='';
+
+		$geografica2=$cod_centro.$cod_vialidad.$cod_vereda."\n".$datos[$i][0]['numero_vivienda_local'];
+		////////////////////
+
+		$tel_email="";
+        if($datos[$i][0]['telefonos_fijos']=="0"){
+        	$datos[$i][0]['telefonos_fijos']="";
+        }else{
+        	$tel_email .=$datos[$i][0]['telefonos_fijos']."\n";
+        }
+        if($datos[$i][0]['telefonos_celulares']=="0"){
+        	$datos[$i][0]['telefonos_celulares']="";
+        }else{
+        	$tel_email .=$datos[$i][0]['telefonos_celulares']."\n";
+        }
+         if($datos[$i][0]['correo_electronico']=="0"){
+        	$datos[$i][0]['correo_electronico']="";
+        }else{
+        	$tel_email .=$datos[$i][0]['correo_electronico']."\n";
+        }
+
+		$pdf->Cell(20,11,$personalidad,'RL',0,'C');
+		$pdf->Cell(20,11,$datos[$i][0]['rif_cedula'],'R',0,'C');
+
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(48,1,'','',2,'C');
+	    $pdf->MultiCell(48,2,$datos[$i][0]['razon_social_nombres'],'','L');
+	    $varX = $varX+48;
+	    $pdf->SetXY($varX,$varY);
+//		$pdf->Cell(49,6,' ','RB',0,'C');
+
+        $pdf->Cell(17,11,$sisap->cambia_fecha($datos[$i][0]['fecha_inscripcion']),'RL',0,'C');
+        $pdf->Cell(20,11,$nacionalidad,'R',0,'C');
+		$pdf->Cell(20,11,$estado_civil,'R',0,'C');
+
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(24,1,'','',2,'C');
+	    $pdf->MultiCell(24,2,$profesion,'','L');
+	    $varX = $varX+24;
+	    $pdf->SetXY($varX,$varY);
+//		$pdf->Cell(24,11,denominacion($deno, $codigo,$datos[$i][0]['profesion']),'RB',0,'C');
+
+		$pdf->Cell(1,11,'','L',0,'C');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(30,1,'','',2,'C');
+	    $pdf->MultiCell(30,2,$geografica,'','L');
+	    $varX = $varX+30;
+	    $pdf->SetXY($varX,$varY);
+//		$pdf->Cell(30,6,'','RB',0,'C');
+
+		$pdf->Cell(1,11,'','L',0,'C');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(29,1,'','',2,'C');
+	    $pdf->MultiCell(29,2,$geografica2,'','L');
+	    $varX = $varX+29;
+	    $pdf->SetXY($varX,$varY);
+//	    $pdf->Cell(30,11,'','RBL',0,'C');
+
+		$pdf->Cell(1,11,'','L',0,'C');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(28,1,'','',2,'C');
+	    $pdf->MultiCell(28,2,$tel_email,'','L');
+	    $varX = $varX+28;
+	    $pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,11,'','R',1,'C');
+
+		$pdf->Cell(0,0,'','T',1,'C');
+
+	}
+
+
+}else{
+	$pdf->Cell(20,6,'','RBL',0,'C');
+	$pdf->Cell(20,6,'','RBL',0,'C');
+	$pdf->Cell(48,6,' ','RB',0,'C');
+    $pdf->Cell(17,6,'','RB',0,'C');
+    $pdf->Cell(20,6,'','RB',0,'C');
+	$pdf->Cell(20,6,'','RB',0,'C');
+	$pdf->Cell(24,6,'','RB',0,'C');
+	$pdf->Cell(31,6,'','RB',0,'C');
+    $pdf->Cell(30,6,'','RB',0,'C');
+	$pdf->Cell(0,6,'','RB',1,'C');
+}
+
+
+$pdf->Output('Relación_contribuyentes_(Detallado)_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

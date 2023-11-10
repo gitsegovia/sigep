@@ -1,0 +1,454 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+	set_time_limit(0);
+
+	if(isset($datos_firmantes) && !empty($datos_firmantes)){
+		$_SESSION['contenido_pie_pag'] = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+	}else{
+		$_SESSION['contenido_pie_pag'] = "";
+	}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+	  //$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,3,"DIRECCIÓN DE RECURSOS HUMANOS",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,1,"",'RL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+	}
+
+	function Footer(){
+		$this->SetLeftMArgin(10);
+		$this->SetRightMargin(10);
+		$this->SetY(-11);
+		$this->SetFont('vera','I',6);
+		$this->MultiCell(0,3,$_SESSION['contenido_pie_pag'],'','C');
+	}
+
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,10,"ANTECEDENTES DE SERVICIO",'',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(0,3,"FP-023",'',1,'R');
+
+	$i_cont = 0;
+
+	if(isset($datos_antecedente_perso) && $datos_antecedente_perso!=null){
+
+		$cedula_id = $datos_antecedente_perso[0]['datos_antec_serv']['cedula_identidad'];
+		$nombs_apellidos = $datos_antecedente_perso[0]['datos_antec_serv']['nombres_apellidos'];
+		$fecha_primer_ca = split('-', $datos_antecedente_perso[0]['datos_antec_serv']['fecha_primer_cargo']);
+		$fecha_primer_cb = split('-', $datos_antecedente_perso[0]['datos_antec_serv']['fecha_ultimo_cargo']);
+		$motivo_ret = $datos_antecedente_perso[0]['datos_antec_serv']['motivo_retiro'];
+
+$motivo=$sisap->vtipo_motivo_retiro();
+
+	inicio_ventana_barra_proceso("".$nombs_apellidos.". C.I:".$cedula_id."");
+
+	// $pdf->Cell(10,5,"",'TL',0,'C');
+	$pdf->Cell(160,5,"APELLIDOS Y NOMBRES",'TRBL',0,'L');
+	$pdf->Cell(0,5,"CÉDULA IDENTIDAD",'TRB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	// $pdf->Cell(10,6,"",'BL',0,'C');
+	$pdf->Cell(160,6,$nombs_apellidos,'RBL',0,'C');
+	$pdf->Cell(0,6,$cedula_id,'RB',1,'C');
+
+	// PRIMER CARGO:
+
+	$pdf->SetFont('vera','',7);
+	// $pdf->Cell(10,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RBL',1,'C');
+
+	// $pdf->Cell(10,6,"",'L',0,'C');
+	$pdf->Cell(30,4,"FECHA",'BL',0,'C');
+	$pdf->Cell(130,4,"",'RL',0,'C');
+	$pdf->Cell(0,4,"REMUNERACIÓN",'R',1,'C');
+
+	// $pdf->Cell(10,4,"",'L',0,'C');
+	$pdf->Cell(10,4,"DÍA",'BL',0,'C');
+	$pdf->Cell(10,4,"MES",'BL',0,'C');
+	$pdf->Cell(10,4,"AÑO",'BL',0,'C');
+	$pdf->Cell(130,4,"TITULO DEL CARGO INICIAL",'RBL',0,'C');
+	$pdf->Cell(0,4,"MENSUAL",'RB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	// $pdf->Cell(10,7,"",'L',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_ca[2],'BL',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_ca[1],'BL',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_ca[0],'BL',0,'C');
+	$pdf->Cell(130,7,$datos_antecedente_perso[0]['datos_antec_serv']['denominacion_cargo_inicio'],'RBL',0,'C');
+	$pdf->Cell(0,7,$sisap->Formato2($datos_antecedente_perso[0]['datos_antec_serv']['remuneracion_primer_cargo']),'RB',1,'C');
+
+	// ULTIMO CARGO:
+
+	$pdf->SetFont('vera','',7);
+	// $pdf->Cell(10,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RBL',1,'C');
+
+	// $pdf->Cell(10,6,"",'L',0,'C');
+	$pdf->Cell(30,4,"FECHA",'BL',0,'C');
+	$pdf->Cell(130,4,"",'RL',0,'C');
+	$pdf->Cell(0,4,"REMUNERACIÓN",'R',1,'C');
+
+	// $pdf->Cell(10,4,"",'L',0,'C');
+	$pdf->Cell(10,4,"DÍA",'BL',0,'C');
+	$pdf->Cell(10,4,"MES",'BL',0,'C');
+	$pdf->Cell(10,4,"AÑO",'BL',0,'C');
+	$pdf->Cell(130,4,"TITULO DEL CARGO FINAL",'RBL',0,'C');
+	$pdf->Cell(0,4,"MENSUAL",'RB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	// $pdf->Cell(10,7,"",'L',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_cb[2],'L',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_cb[1],'L',0,'C');
+	$pdf->Cell(10,7,$fecha_primer_cb[0],'L',0,'C');
+	$pdf->Cell(130,7,$datos_antecedente_perso[0]['datos_antec_serv']['denominacion_cargo'],'RL',0,'C');
+	$pdf->Cell(0,7,$sisap->Formato2($datos_antecedente_perso[0]['datos_antec_serv']['remuneracion_ultimo_cargo']),'R',1,'C');
+
+	// MOTIVO DE RETIRO:
+
+/**
+
+1.- DESPIDO JUSTIFICADO  ----> DESPIDO
+2.- DESPIDO INJUSTIFICADO ---> DESPIDO
+3.- RETIRO JUSTIFICADO ---> DESPIDO
+
+4.- RENUNCIA       -----> RENUNCIA
+
+5.- JUBILACION   ---> OTROS
+6.- PENSIONADO  --> OTROS
+7.- CULMINACION DE CONTRATO --> OTROS
+8.- BAJA POR PROPIA SOLICITUD ---> OTROS
+
+9.- FALLECIMIENTO   ------> FALLECIMIENTO
+
+10.- BAJA POR EXPULSION  ---> OTROS
+11.- REMOCION DEL CARGO  ----> OTROS
+12.- REDUCCION DE PERSONAL  ---> OTROS
+
+
+13.- Causa Ajena de la Voluntad de las Partes   ---> Renuncia
+14.- Culminación de Comisión de Servicio        ---> Renuncia
+15.- Rescisión del Contrato                     ---> Culminación de Contrato
+16.- Destitución                                ---> Remoción del Cargo
+
+*/
+
+	if($motivo_ret==1 || $motivo_ret==2 || $motivo_ret==3){
+		$despido = "X";
+		$renuncia = "";
+		$fallecimiento = "";
+		$otro = "";
+	}else if($motivo_ret==4){
+		$despido = "";
+		$renuncia = "X";
+		$fallecimiento = "";
+		$otro = "";
+	}else if($motivo_ret==5 || $motivo_ret==6 || $motivo_ret==7 || $motivo_ret==8 || $motivo_ret==10 || $motivo_ret==11 || $motivo_ret==12){
+		$despido = "";
+		$renuncia = "";
+		$fallecimiento = "";
+		$otro = "X";
+	}else if($motivo_ret==9){
+		$despido = "";
+		$renuncia = "";
+		$fallecimiento = "X";
+		$otro = "";
+	}else{
+		$despido = "";
+		$renuncia = "";
+		$fallecimiento = "";
+		$otro = "X";
+	}
+
+	$pdf->SetFont('vera','',6);
+	// $pdf->Cell(10,5,"",'TL',0,'C');
+	$pdf->Cell(70,5,"MOVIMIENTO QUE LO ORIGINA",'TRBL',0,'C');
+	$pdf->Cell(0,5,"",'TR',1,'C');
+
+	// $pdf->Cell(10,5,"",'L',0,'C');
+		$pdf->Cell(55,5,"RENUNCIA",'L',0,'L');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(15,5,$renuncia,'',0,'C');
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,$motivo[$motivo_ret],'RL',1,'C');
+		$pdf->SetFont('vera','',6);
+	// $pdf->Cell(10,5,"",'L',0,'C');
+		$pdf->Cell(55,5,"DESPIDO",'L',0,'L');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(15,5,$despido,'',0,'C');
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(0,5,"",'RL',1,'C');
+	// $pdf->Cell(10,5,"",'L',0,'C');
+		$pdf->Cell(55,5,"FALLECIMIENTO",'L',0,'L');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(15,5,$fallecimiento,'',0,'C');
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(0,5,"",'RL',1,'C');
+	// $pdf->Cell(10,5,"",'L',0,'C');
+		$pdf->Cell(55,5,"OTROS",'L',0,'L');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(15,5,$otro,'',0,'C');
+		$pdf->Cell(0,5,"",'RL',1,'C');
+
+	// COMO EJERCIO:
+
+	$pdf->SetFont('vera','B',8);
+	// $pdf->Cell(10,1,"",'L',0,'C');
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(0,1,"",'T',2,'C');
+	$pdf->MultiCell(0,3,"Desempeño:\n\n      ".$datos_antecedente_perso[0]['datos_antec_serv']['informacion_desempeno'],'','J', 0, 1, '', '', true, 0, false);
+	$varX = $varX+0;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,1,"",'RL',1,'C');
+	$pdf->Cell(10,15,"",'L',0,'C');
+	$pdf->Cell(0,15,"",'R',1,'C');
+
+	// OBSERVACIONES:
+
+	// $pdf->Cell(10,1,"",'L',0,'C');
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(0,1,"",'T',2,'C');
+	$pdf->MultiCell(0,3,"Observaciones:\n\n      ".$datos_antecedente_perso[0]['datos_antec_serv']['observaciones'],'','J', 0, 1, '', '', true, 0, false);
+	$varX = $varX+0;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,1,"",'RL',1,'C');
+	$pdf->Cell(10,20,"",'L',0,'C');
+	$pdf->Cell(0,20,"",'R',1,'C');
+
+	for($ipv=0;$ipv<10;$ipv++){
+		$i_cont++;
+		proceso_ventana_barra_proceso($i_cont, 500, 10000);
+	}
+
+	// AUTORIDAD COMPETENTE:
+
+	$dia_c = date('d');
+	$mes_c = date('m');
+	$ano_c = date('Y');
+
+
+				     /** *** PARA IMPRESION *** */
+	// ---------------- **** DATOS FIRMANTES **** -------------------
+
+if(isset($datos_firmantes) && !empty($datos_firmantes)){
+
+		$nombre_primera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_primera_firma']; $cargo_primera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_primera_firma'];
+		$nombre_segunda_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_segunda_firma']; $cargo_segunda_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_segunda_firma'];
+		$nombre_tercera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_tercera_firma']; $cargo_tercera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_tercera_firma'];
+		$nombre_cuarta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_cuarta_firma'];  $cargo_cuarta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_cuarta_firma'];
+		$nombre_quinta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_quinta_firma'];  $cargo_quinta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_quinta_firma'];
+		$nombre_sexta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_sexta_firma'];   $cargo_sexta_firma    = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_sexta_firma'];
+		$nombre_septima_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_septima_firma']; $cargo_septima_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_septima_firma'];
+		$nombre_octava_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_octava_firma'];  $cargo_octava_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_octava_firma'];
+		$primera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['primera_copia'];  	   $segunda_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['segunda_copia'];
+		$tercera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['tercera_copia']; 	   $cuarta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['cuarta_copia'];
+		$quinta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['quinta_copia'];		   $sexta_copia          = $datos_firmantes[0]['cnmd15_firmas_informes']['sexta_copia'];
+		$septima_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['septima_copia'];		   $octava_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['octava_copia'];
+		$pie_pagina           = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+
+	}else{
+
+		$nombre_primera_firma = '';		$cargo_primera_firma  = '';
+		$nombre_segunda_firma = '';		$cargo_segunda_firma  = '';
+		$nombre_tercera_firma = '';		$cargo_tercera_firma  = '';
+		$nombre_cuarta_firma  = '';		$cargo_cuarta_firma   = '';
+		$nombre_quinta_firma  = '';		$cargo_quinta_firma   = '';
+		$nombre_sexta_firma   = '';		$cargo_sexta_firma    = '';
+		$nombre_septima_firma = '';		$cargo_septima_firma  = '';
+		$nombre_octava_firma  = '';		$cargo_octava_firma   = '';
+		$primera_copia        = '';		$segunda_copia        = '';
+		$tercera_copia        = '';		$cuarta_copia         = '';
+		$quinta_copia         = '';		$sexta_copia          = '';
+		$septima_copia        = '';		$octava_copia         = '';
+		$pie_pagina           = '';
+
+	}
+
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(168,5,"AUTORIDAD COMPETENTE",'TRL',0,'C');
+	$pdf->Cell(0,5,"FECHA",'TRB',1,'C');
+	$pdf->Cell(70,6,"NOMBRE",'BTL',0,'C');
+	$pdf->Cell(44,6,"CARGO",'TBL',0,'C');
+	$pdf->Cell(54,6,"FIRMA",'TBL',0,'C');
+	$pdf->Cell(9,6,"DÍA",'BL',0,'C');
+	$pdf->Cell(9,6,"MES",'BL',0,'C');
+	$pdf->Cell(0,6,"AÑO",'RBL',1,'C');
+
+	// 1ERA AUTORIDAD:
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(70,4,"ELABORADO POR:",'L',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,2,"",'L',2,'L');
+	$pdf->MultiCell(44,2.5,$cargo_primera_firma,'L','L');
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(54,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,14,$nombre_primera_firma,'L',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(44,14,"",'L',0,'L');
+	$pdf->Cell(54,14,"",'L',0,'C');
+	$pdf->Cell(9,14,$dia_c,'BL',0,'C');
+	$pdf->Cell(9,14,$mes_c,'BL',0,'C');
+	$pdf->Cell(0,14,$ano_c,'RBL',1,'C');
+
+	// 2DA AUTORIDAD:
+
+	$pdf->Cell(70,4,"REVISADO POR:",'TL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,2,"",'TL',2,'L');
+	$pdf->MultiCell(44,2.5,$cargo_segunda_firma,'L','L');
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(54,4,"",'TL',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,14,$nombre_segunda_firma,'L',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(44,14,"",'L',0,'L');
+	$pdf->Cell(54,14,"",'L',0,'C');
+	$pdf->Cell(9,14,$dia_c,'BL',0,'C');
+	$pdf->Cell(9,14,$mes_c,'BL',0,'C');
+	$pdf->Cell(0,14,$ano_c,'RBL',1,'C');
+
+	// 3RA AUTORIDAD:
+
+	// $pdf->Cell(10,4,"",'L',0,'C');
+	$pdf->Cell(70,4,"CONFORMADO POR:",'TL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,2,"",'TL',2,'L');
+	$pdf->MultiCell(44,2.5,$cargo_tercera_firma,'L','L');
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(54,4,"",'TL',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,14,$nombre_tercera_firma,'L',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(44,14,"",'L',0,'L');
+	$pdf->Cell(54,14,"",'L',0,'C');
+	$pdf->Cell(9,14,$dia_c,'BL',0,'C');
+	$pdf->Cell(9,14,$mes_c,'BL',0,'C');
+	$pdf->Cell(0,14,$ano_c,'RBL',1,'C');
+
+	// 4TA AUTORIDAD:
+
+	$pdf->Cell(70,4,"APROBADO POR:",'TL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,2,"",'TL',2,'L');
+	$pdf->MultiCell(44,2.5,$cargo_cuarta_firma,'L','L');
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(54,4,"",'TL',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,14,$nombre_cuarta_firma,'BL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(44,14,"",'BL',0,'L');
+	$pdf->Cell(54,14,"",'BL',0,'C');
+	$pdf->Cell(9,14,$dia_c,'BL',0,'C');
+	$pdf->Cell(9,14,$mes_c,'BL',0,'C');
+	$pdf->Cell(0,14,$ano_c,'RBL',1,'C');
+
+		// 5TA AUTORIDAD:
+
+	$pdf->Cell(70,4,"APROBADO POR:",'TL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,2,"",'TL',2,'L');
+	$pdf->MultiCell(44,2.5,$cargo_quinta_firma,'L','L');
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(54,4,"",'TL',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(9,4,"",'L',0,'C');
+	$pdf->Cell(0,4,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,14,$nombre_quinta_firma,'BL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(44,14,"",'BL',0,'L');
+	$pdf->Cell(54,14,"",'BL',0,'C');
+	$pdf->Cell(9,14,$dia_c,'BL',0,'C');
+	$pdf->Cell(9,14,$mes_c,'BL',0,'C');
+	$pdf->Cell(0,14,$ano_c,'RBL',1,'C');
+
+	fin_ventana_barra_proceso();
+
+	}else{
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+	}
+
+	$pdf->Output('Antecedente_Servicio_'.date("d-m-Y")."",'SISAP_AJAX');
+
+
+?>

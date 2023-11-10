@@ -1,0 +1,142 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+  echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<script language="JavaScript" type="text/javascript">
+  $('monto').value='';
+</script>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2" id="grid">
+    <tr class="tr_negro">
+      <td colspan="6" align="right">Total Costo de la Meta</td>
+      <td><?= $sisap->Formato2($monto_meta[0]['costo_total_meta']) ?>Bs.</td>
+    </tr>
+    <tr class="tr_negro">
+      <td width="5%" align="center">Part</td>
+      <td width="5%" align="center">Gen</td>
+      <td width="5%" align="center">Esp</td>
+      <td width="5%" align="center">Sub<br>Esp</td>
+      <td width="5%" align="center">Aux</td>
+      <td width="19%" align="center">Monto</td>
+      <td width="9%" align="center">Acci&oacute;n</td>
+    </tr>
+    <?php
+      if(isset($data_presupuesto) && $data_presupuesto!=null){
+          $i=0;
+          $total=0;
+          $total_propios=0;
+          $total_gob=0;
+          foreach($data_presupuesto as $ve){
+            $tip_pro=$ve['cpod06_vinculacion_presupuesto']['tipo_proyecto'];
+            $num_pro=$ve['cpod06_vinculacion_presupuesto']['numero_proyecto'];
+            $grupo=$ve['cpod06_vinculacion_presupuesto']['grupo'];
+            $par=$ve['cpod06_vinculacion_presupuesto']['cod_partida'];
+            $gen=$ve['cpod06_vinculacion_presupuesto']['cod_generica'];
+            $esp=$ve['cpod06_vinculacion_presupuesto']['cod_especifica'];
+            $subesp=$ve['cpod06_vinculacion_presupuesto']['cod_sub_espec'];
+            $au=$ve['cpod06_vinculacion_presupuesto']['cod_auxiliar'];
+
+            $id_fila = (int) rand()."_".$i;
+            $fila = "fila_".$id_fila;
+            if($i%2==0)$class="tr_grid_c1";
+            else$class="tr_grid_c2";
+           ?>
+
+            <tr class="<?=$class?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);">
+              <td class="td2center"><?= $par?></td>
+              <td class="td2center"><?= $sisap->AddCero2($gen)?></td>
+              <td class="td2center"><?= $sisap->AddCero2($esp)?></td>
+              <td class="td2center"><?= $sisap->AddCero2($subesp)?></td>
+              <td class="td2center"><?= $sisap->AddCero2($au)?></td>
+              <td class="td2" style="padding-right:5px; text-align:right" id="<?= "editar_monto_".$i ?>"><?= $sisap->Formato2($ve['cpod06_vinculacion_presupuesto']['monto'])?></td>
+              <td class="td3center">
+              <?php if($activar_formulacion=='t'){
+                      echo $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop06_vinculacion_presupuesto/eliminar/'.$tip_pro.'/'.$num_pro.'/'.$grupo.'/'.$par.'/'.$gen.'/'.$esp.'/'.$subesp.'/'.$au.'/'.$ano, array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar el presupuesto de ingreso?',false,true);
+                    }
+              ?>
+              </td>
+            </tr>
+            <?
+            if($grupo==4){
+              $total_gob = $total_gob + (double)$ve['cpod06_vinculacion_presupuesto']['monto'];
+            }else{
+              $total_propios = $total_propios + (double)$ve['cpod06_vinculacion_presupuesto']['monto'];
+            }
+            $i++;
+          }//fin foreach
+
+            if($grupo==4){
+              $total_propios = $monto_otro_presupuesto[0]['monto_otro_presupuesto'];
+            }else{
+              $total_gob = $monto_otro_presupuesto[0]['monto_otro_presupuesto'];
+            }
+            $diferencia_meta = (double)$monto_meta[0]['costo_total_meta'] - (double)$total_gob - (double)$total_propios;
+          ?>
+
+          <tr class="<?=$class?>">
+            <td class="td2center" height="22">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">TOTAL INGRESOS (GOBERNACIÓN) <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS1"><?= $sisap->Formato2($total_gob)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">TOTAL INGRESOS (PROPIOS) <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total_propios)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">Diferencia Costo Total de la Meta <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALDIFERENCIA"><?= $sisap->Formato2($diferencia_meta)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <?
+        }else{//fin if presupuesto
+
+            if($valor_grupo==4){
+              $total_gob = 0;
+              $total_propios = $monto_otro_presupuesto[0]['monto_otro_presupuesto'];
+            }else{
+              $total_gob = $monto_otro_presupuesto[0]['monto_otro_presupuesto'];
+              $total_propios = 0;
+            }
+            $diferencia_meta = (double)$monto_meta[0]['costo_total_meta'] - (double)$total_gob - (double)$total_propios;
+          ?>
+          <tr class="tr_grid_c1">
+            <td class="td2center" height="22">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">--</td>
+            <td class="td2center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">TOTAL INGRESOS (GOBERNACIÓN) <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS1"><?= $sisap->Formato2($total_gob)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">TOTAL INGRESOS (PROPIOS) <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total_propios)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <tr bgcolor="#DAEBFF" class="textNegro2">
+            <td colspan="5" style="padding-right:5px; text-align:right" class="td2" height="22">Diferencia Costo Total de la Meta <?=MONEDA2?>: </td>
+            <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALDIFERENCIA"><?= $sisap->Formato2($diferencia_meta)?></td>
+            <td class="td3center">&nbsp;</td>
+          </tr>
+          <?
+        }//fin else presupuesto
+    ?>
+  </table>
+<div id="del"></div><br>

@@ -1,0 +1,418 @@
+<?php
+
+
+
+
+
+if($opcion==1){
+
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,'PAGOS REALIZADOS POR SUBPARTIDAS','','950');
+ echo $sisap->OpenTable('950');
+
+if($_SESSION['SScoddep']==1 && $_SESSION["SScoddeporig"]==1){
+	$_SESSION["consolidado_reporte_opcion"] = 1;
+}else{
+	$_SESSION["consolidado_reporte_opcion"] = 2;
+}
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_juan/pagos_realizados_por_subpartida/2'); ?>" onSubmit="return validar_reporte_pagos_subpartidas();">
+
+			<?= $sisap->radio_consolidado('cfpp05/consolidacion', array('url1'=>'/reporte_juan/pagos_realizados_por_subpartida_opcion/', 'update1'=>'funcion'  ), '', true)  ?>
+
+			<table border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+			 <tr>
+			   <td width='800px' align="center" id="ano_recurso"><b>Año:</b> <?= $sisap->inputTagRemote('reporte3/year', array('url1'=>'/reporte5/session_year/4/1', 'update1'=>'funcion', 'url2'=>'/reporte_juan/pagos_realizados_por_subpartida/5/1', 'update2'=>'div_tipo_reporte', 'url3'=>'/reporte_juan/pagos_realizados_por_subpartida/10', 'update3'=>'select_partidas', 'style'=>'text-align:center;',  'id'=>'ano', 'size'=>'6', 'maxlength'=>'4', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?></td>
+			 </tr>
+					 <tr>
+			            <td  align="center">
+					         <?= $sisap->radioTagRemote("reporte3/tipo_pago_consolidado", array('1'=>'TODOS', '2'=>'ACTIVOS', '3'=>'ANULADOS'), array( 'id'=>'tipo_reporte_2'), null, $opc=1); ?>
+					    </td>
+			         </tr>
+		     <tr>
+			    <td width='800px'   align="center"><!-- Mes: <?php  /*$html->selectTag('reporte3/mes', $mes !='' ? $mes : array(''=>''), null,   array('style'=>'width:150px'), array(null), null, true);*/ ?>--></td>
+			 </tr>
+             <tr>
+	            <td id="div_tipo_reporte"  align="center">
+			         <?= $sisap->radioTagRemote("reporte3/tipo_reporte", array('1'=>'Todas las Subpartidas', '2'=>'Una especifica'), array('url1'=>'/reporte_juan/pagos_realizados_por_subpartida/3/1/'.$year, 'update1'=>'select_partidas', 'id'=>'tipo_reporte'), null, $opc=1); ?>
+			    </td>
+	          </tr>
+             <tr>
+			    <td width='800px' id="select_partidas"  align="center"><br></td>
+			 </tr>
+
+			 <tr>
+			    <td width='800px'   align="center">Reporte por: <?= $sisap->radioTagRemote("reporte3/opcion_reporte", array('1'=>'Por mes', '2'=>'Por fecha', '3'=>'Cuenta bancaria y fecha'), array('url1'=>'/reporte_juan/radio_reporte_pagos_por_subpartida', 'update1'=>'radio_reporte', 'id'=>'opcion_reporte'), null, $opc=1); ?></td>
+			 </tr>
+
+			<tr>
+			    <td align="center" id="radio_reporte"><br /><?php echo $html->selectTag('reporte3/mes', $mes !='' ? $mes : array(''=>''), null,   array('style'=>'width:150px'), array(null), null, true); ?></td>
+			 </tr>
+
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+
+		<div id="funcion"></div>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+<?php
+
+
+}else if($opcion==2){
+
+
+			vendor('utf8_tcpdf/tcpdf');
+
+			class fpdfview extends TCPDF{
+
+			    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+			        $this->TCPDF($orientation, $unit, $format);
+			    }
+
+			    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+			        return $this->Output($name, $destination);
+			    }
+
+			    function Header(){
+
+			    	//$this->top_reporte("PAGOS REALIZADOS POR SUBPARTIDAS", "AÑO: ".$_SESSION["YEAR"], "MES: ".$_SESSION["MES"], array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"254"), false, true);
+			    	$this->top_reporte("PAGOS REALIZADOS POR SUBPARTIDAS", "AÑO: ".$_SESSION["YEAR"], $_SESSION["subtitulo"], array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"254"), true);
+
+					/*
+			    	$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',6,16,13);
+					$this->SetFont('vera','B',8);
+					$this->Cell(14,4,"",'TL',0);
+					$this->Cell(0,4,"GOBERNACIÓN DEL ESTADO FALCÓN",'TR',1);
+					$this->Cell(14,3,"",'L',0);
+					$this->SetFont('vera','',7);
+					$this->Cell(0,3,"DIRECCION GENERAL DE PRESUPUESTO",'R',1);
+					$this->SetFont('vera','B',8);
+					$this->Cell(0,2,"",'RL',1,'C');
+					$this->Cell(0,3,"PAGOS REALIZADOS POR SUBPARTIDAS",'RL',1,'C');
+					$this->SetFont('vera','B',6);
+					$this->Cell(0,4,"AÑO: ".$_SESSION["YEAR"],'RL',1,'C');
+					$this->Cell(0,2,"MES: ".$_SESSION["MES"],'RL',1,'C');
+					$this->Cell(0,1,"",'RBL',1,'C');
+
+
+					$varX_aux = $this->GetX() + 239;
+					$varY_aux = $this->GetY() - 17;
+				    	$this->SetFont('vera','B',5);
+				    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+				    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+				    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+					$this->Ln(3);
+					*/
+
+					$this->SetFont('vera','B',6);
+					$this->Cell(15,3,'','TRL',0,'C');
+					$this->Cell(15,3,'','TR',0,'C');
+					$this->Cell(16,3,'','TR',0,'C');
+					$this->Cell(16,3,'SUB','TR',0,'C');
+					$this->Cell(0,3,'','TR',1,'C');
+
+					$this->Cell(15,2,'PARTIDA','RBL',0,'C');
+					$this->Cell(15,2,'GENÉRICA','RB',0,'C');
+					$this->Cell(16,2,'ESPECÍFICA','RB',0,'C');
+					$this->Cell(16,2,'ESPECÍFICA','RB',0,'C');
+					$this->Cell(0,2,'DENOMINACIÓN DE LA SUBPARTIDA','RB',1,'C');
+
+					$this->Cell(15,5,$_SESSION["PARTIDA"],'RBL',0,'C');
+					$this->Cell(15,5,$_SESSION["GENERICA"],'RB',0,'C');
+					$this->Cell(16,5,$_SESSION["ESPECIFICA"],'RB',0,'C');
+					$this->Cell(16,5,$_SESSION["SUB_ESPECIFICA"],'RB',0,'C');
+					$this->Cell(0,5,$_SESSION["DENOMINACION"],'RB',1,'L');
+					$this->Ln(3);
+
+
+					$this->Cell(30,3,'TIPO DE','TRL',0,'C');
+					$this->Cell(20,3,'','TR',0,'C');
+					$this->Cell(15,3,'','TR',0,'C');
+					$this->Cell(17,3,'NÚMERO','TR',0,'C');
+					$this->Cell(15,3,'','TR',0,'C');
+					$this->Cell(50,3,'','TR',0,'C');
+					$this->Cell(25,3,'','TR',0,'C');
+					$this->Cell(30,3,'','TR',0,'C');
+					$this->Cell(30,3,'CUENTA','TR',0,'C');
+					$this->Cell(20,3,'NÚMERO','TR',0,'C');
+					$this->Cell(0,3,'FECHA','TR',1,'C');
+
+
+					$this->Cell(30,3,'COMPROMISO','RBL',0,'C');
+					$this->Cell(20,3,'NÚMERO','RB',0,'C');
+					$this->Cell(15,3,'FECHA','RB',0,'C');
+					$this->Cell(17,3,'ORDEN PAGO','RB',0,'C');
+					$this->Cell(15,3,'FECHA','RB',0,'C');
+					$this->Cell(50,3,'CONCEPTO','RB',0,'C');
+					$this->Cell(25,3,'MONTO','RB',0,'C');
+					$this->Cell(30,3,'BANCO','RB',0,'C');
+					$this->Cell(30,3,'CORRIENTE','RB',0,'C');
+					$this->Cell(20,3,'DE CHEQUE','RB',0,'C');
+					$this->Cell(0,3,'CHEQUE','RB',1,'C');
+			    }//fin funtion
+			}//fin clase
+
+
+
+
+
+
+			$pdf = new fpdfview('L','mm','Letter');
+			$pdf->AliasNbPages('TPAG');
+			$pdf->SetTopMargin(15);
+			$pdf->SetLeftMArgin(5);
+			$pdf->SetRightMargin(5);
+			$pdf->SetAutoPageBreak(true, 5);
+			        $_SESSION["PARTIDA"] = "";
+					$_SESSION["GENERICA"] = "";
+					$_SESSION["ESPECIFICA"] = "";
+					$_SESSION["SUB_ESPECIFICA"] = "";
+					$_SESSION["AUXILIAR"] = "";
+					$_SESSION["DENOMINACION"] = "";
+					$_SESSION["NUMERO_CHEQUE"] =  "";
+					$_SESSION["YEAR"] = "";
+					$_SESSION["MES"] = "";
+
+					$_SESSION["YEAR"] = $year;
+				    //$_SESSION["MES"] =  $meses[$mes];
+				    if($opcion_reporte==1){
+						$_SESSION["subtitulo"] = "Mes: ".$meses[$mes];
+				    }elseif($opcion_reporte==2){
+				    	$_SESSION["subtitulo"] = "Fecha desde: ".$fecha_inicial."   Fecha hasta: ".$fecha_final;
+				    }elseif($opcion_reporte==3){
+				    	if($opcion_reporte_cuenta==1){
+				    		$_SESSION["subtitulo"] = "Cuenta bancaria: ".$cuenta_bancaria."   Mes: ".$meses[$mes];
+				    	}else{
+				    		$_SESSION["subtitulo"] = "Cuenta bancaria: ".$cuenta_bancaria."   Desde: ".$fecha_inicial."   Hasta: ".$fecha_final;;
+				    	}
+				    }
+
+
+
+
+			$pdf->SetFont('vera','',6);
+
+			$j=0;
+			$total=0;
+			$total_a = 0;
+			$total_b = 0;
+
+
+	if(count($datos)==0){
+		$pdf->AddPage();
+		$pdf->Ln(3);
+		$pdf->SetFont('vera','B',10);
+		$pdf->Cell(0,40,'NO SE ENCONTRARÓN DATOS','TRBL',1,'C');
+
+	}else{
+
+			foreach($datos as $ve){
+			$j++;
+
+
+             if($_SESSION["PARTIDA"]!=$ve[0]['cod_partida']  ||  $_SESSION["GENERICA"]!=$ve[0]['cod_generica']  ||  $_SESSION["ESPECIFICA"]!=$ve[0]['cod_especifica']  || $_SESSION["SUB_ESPECIFICA"]!=$ve[0]['cod_sub_espec']){
+
+             	if($j!=1){
+
+
+                    if($_SESSION["PARTIDA"]!=$ve[0]['cod_partida']){
+	                    $pdf->SetFont('vera','B',7);
+						$pdf->Cell(147,5,'TOTAL PARTIDA','RBL',0,'R');
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(25,5,$sisap->Formato2($total_b),'RB',1,'R');
+						$total_b=0;
+                    }
+
+
+
+
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(147,5,'TOTAL  SUB-PARTIDA','RBL',0,'R');
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(25,5,$sisap->Formato2($total_a),'RB',1,'R');
+					$total_a=0;
+             	}
+
+             	 $_SESSION["PARTIDA"]          =  $sisap->AddCero2($ve[0]['cod_partida']);
+             	 $_SESSION["GENERICA"]         =  $sisap->AddCero2($ve[0]['cod_generica']);
+             	 $_SESSION["ESPECIFICA"]       =  $sisap->AddCero2($ve[0]['cod_especifica']);
+             	 $_SESSION["SUB_ESPECIFICA"]   =  $sisap->AddCero2($ve[0]['cod_sub_espec']);
+             	 $_SESSION["DENOMINACION"]     =  $ve[0]['denominacion_partida'];
+             	 $pdf->AddPage();
+
+             }
+
+
+                        $_SESSION["AUXILIAR"]=$ve[0]['cod_auxiliar'];
+						$pdf->Cell(1,10,'','L',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(29,3,"",'',2,'C');
+						$pdf->MultiCell(28,2, $ve[0]['cod_tipo_documento_denominacion'], '', 'L');//--[tipo de compromiso]
+						$varX = $varX+29;
+						$pdf->SetXY($varX,$varY);
+
+		                $pdf->Cell(1,10,'','L',0,'C');
+		                $varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(19,3,"",'',2,'C');
+						$pdf->MultiCell(18,2,$ve[0]['numero_documento_origen'],'','L');//--[numero de compromiso]
+						$varX = $varX+19;
+						$pdf->SetXY($varX,$varY);
+
+
+						//$pdf->Cell(20,10,$ve[0]['numero_documento_origen'],'RL',0,'C');//---[numero compromiso]
+
+
+						$pdf->Cell(15,10,$sisap->cambia_fecha($ve[0]['fecha_compromiso']),'LR',0,'C');//--[fecha compromiso]
+						$pdf->Cell(17,10,$sisap->mascara_ocho($ve[0]['numero_orden_pago']),'R',0,'C');//----[numero orden pago]
+						$pdf->Cell(15,10,$sisap->cambia_fecha($ve[0]['fecha_orden_pago']),'R',0,'C');//--[fecha orden pago]
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->SetFont('vera','',5);
+						$pdf->Cell(50,1,"",'',2,'C');
+						$cont = strlen($ve[0]['concepto']);
+						if($cont>125){$ve[0]['concepto'] = substr($ve[0]['concepto'], 0, 125).'......';}
+
+						$pdf->MultiCell(49,2,$ve[0]['concepto'],'','L');//---[concepto]
+						$varX = $varX+50;
+						$pdf->SetXY($varX,$varY);
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(25,10,$sisap->Formato2($ve[0]['monto_partida']),'RL',0,'R');//[monto]
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(30,3,"",'',2,'C');
+						$pdf->MultiCell(29,2,$ve[0]['denominacion_banco'],'',0,'L');//---[banco]
+						$varX = $varX+30;
+						$pdf->SetXY($varX,$varY);
+						$pdf->Cell(30,10,$ve[0]['cuenta_bancaria'],'RL',0,'C');//---[cuenta corriente]
+						$pdf->Cell(20,10,$sisap->mascara_ocho($ve[0]['numero_documento']),'R',0,'C');//---[numero cheque]
+						$pdf->Cell(0,10,$sisap->cambia_fecha($ve[0]['fecha_documento']),'R',1,'C');//--[fecha cheque]
+						$pdf->Cell(0,0,'','T',1);
+
+						$total   += $ve[0]['monto_partida'];
+						$total_a += $ve[0]['monto_partida'];
+						$total_b += $ve[0]['monto_partida'];
+
+
+			}
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(147,5,'TOTAL PARTIDA','RBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(25,5,$sisap->Formato2($total_b),'RB',1,'R');
+			$total_b=0;
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(147,5,'TOTAL  SUB-PARTIDA','RBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(25,5,$sisap->Formato2($total_a),'RB',1,'R');
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(147,5,'TOTAL  GENERAL','RBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(25,5,$sisap->Formato2($total),'RB',1,'R');
+	}
+$pdf->Output('pagos_realizados_por_subpartidas_'.date("d-m-Y_h"),'D');
+
+
+
+}else if($opcion==3 && $opcion_var==2){    ?>
+
+<br>
+
+ <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <th colspan="3" align="center">CLASIFICADOR DE PARTIDAS</th>
+  </tr>
+  <tr>
+    <td width="10%" align="center">&nbsp;</td>
+    <td width="10%" align="center">Selecci&oacute;n</td>
+    <td align="center">Denominaci&oacute;n</td>
+  </tr>
+  <tr>
+    <td>Partida</td>
+    <td id="st_seleccion_6"><?=  $sisap->selectTagRemote('reporte/cod_partida', $partida !='' ? $partida : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/reporte_juan/select3_partidas/generica', 'update1'=>'st_seleccion_7','onchange2'=>'/reporte2/mostrar3/partida', 'update2'=>'deno_seleccion_6','id'=>'seleccion_6','class'=>'select100', true), null, true); ?></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_6" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Generica</td>
+    <td id="st_seleccion_7"><select id="seleccion_7" ></select></td>
+    <td style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_7" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Especifica</td>
+    <td id="st_seleccion_8"><select id="seleccion_8" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_8" class="textnegro">&nbsp;</div></td>
+  </tr>
+  <tr>
+    <td>Sub-Especifica</td>
+    <td id="st_seleccion_9"><select id="seleccion_9" ></select></td>
+    <td  style="text-transform:uppercase;font-size:12px;"><div id="deno_seleccion_9" class="textnegro">&nbsp;</div></td>
+  </tr>
+
+</table>
+
+
+<br>
+
+<?php
+
+
+
+      }else if($opcion==4){ echo '<b>Año:</b> '; ?>  <?= $sisap->inputTagRemote('reporte3/year', array('url1'=>'/reporte5/session_year/4/'.$consolidado, 'update1'=>'funcion',  'url2'=>'/reporte_juan/pagos_realizados_por_subpartida/5/'.$consolidado, 'update2'=>'div_tipo_reporte', 'url3'=>'/reporte_juan/pagos_realizados_por_subpartida/10', 'update3'=>'select_partidas', 'style'=>'text-align:center;', 'id'=>'ano', 'size'=>'6', 'maxlength'=>'4', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?>
+
+
+<?php }else if($opcion==5){ echo  $sisap->radioTagRemote("reporte3/tipo_reporte", array('1'=>'Todas las Subpartidas', '2'=>'Una especifica'), array('url1'=>'/reporte_juan/pagos_realizados_por_subpartida/3/'.$consolidado.'/'.$year, 'update1'=>'select_partidas', 'id'=>'tipo_reporte'), null, $opc=1);    ?>
+
+
+<?php }else if($opcion==19){
+
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}//fin else
+
+?>
+
+
+
+<?php }else{echo'<br>';}//fin if
+
+
+
+
+
+
+
+
+
+
+
+
+?>

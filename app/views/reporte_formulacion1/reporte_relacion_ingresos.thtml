@@ -1,0 +1,183 @@
+<?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RELACI&Oacute;N DE INGRESOS Y GASTOS",null,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion1/reporte_relacion_ingresos/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO:<input name="data[datos][ano]"  value="<?= $year ?>" id="ano_formular" style="text-align:center"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+
+	function Header(){
+	$titulo_A = "RELACIÓN DE INGRESOS Y GASTOS";
+    $this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['ejercicio'],'TRBL',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(38,4,'C Ó D I G O','RL',0,'C');
+	$this->Cell(80,4,'','R',0,'C');
+	$this->Cell(25,4,'ESTIMACIÓN','R',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(25,4,'TOTAL','R',0,'C');
+	$this->Cell(25,4,'','R',0,'C');
+	$this->Cell(0,4,'','R',1,'C');
+
+	$this->Cell(38,4,'I N G R E S O','RBL',0,'C');
+	$this->Cell(80,4,'DENOMINACIÓN','RB',0,'C');
+	$this->Cell(25,4,'INICIAL','RB',0,'C');
+	$this->Cell(25,4,'AUMENTO','RB',0,'C');
+	$this->Cell(25,4,'DISMINUCIÓN','RB',0,'C');
+	$this->Cell(25,4,'ASIGNACIÓN','RB',0,'C');
+	$this->Cell(25,4,'COMPROMISOS','RB',0,'C');
+	$this->Cell(0,4,'DISPONIBILIDAD','RB',1,'C');
+    }
+
+    function Footer(){
+
+    }
+
+
+}//fin clases
+
+function Formato($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-3,1)=='.') {
+        $sents = '.'.substr($price,-2);
+        $price = substr($price,0,strlen($price)-3);
+    } elseif (substr($price,-2,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-2);
+    } else {
+        $sents = '.00';
+    }
+    $price = preg_replace("/[^0-9]/", "", $price);
+    return number_format($price.$sents,2,'.','');
+}
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true,10);
+
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ano_fiscal;
+$_SESSION['titulo'] = "";
+$pdf->AddPage();
+
+if(isset($datos) && !empty($datos)){
+
+$t_asignacion_anual = 0;
+$t_aumento = 0;
+$t_disminucion = 0;
+$t_total_asignacion = 0;
+$t_compromiso_anual = 0;
+$t_disponibilidad = 0;
+
+foreach($datos as $row){
+
+	$marca_n = '';
+	if($row[$modelo_relacion]['cod_ramo']!=0 && $row[$modelo_relacion]['cod_subramo']==0){
+		$codigo_ingreso = $sisap->AddCero2($row[$modelo_relacion]['cod_ramo']);
+		$marca_n = 'B';
+			$t_asignacion_anual += $row[$modelo_relacion]['asignacion_anual'];
+			$t_aumento += $row[$modelo_relacion]['aumento'];
+			$t_disminucion += $row[$modelo_relacion]['disminucion'];
+			$t_total_asignacion += $row[$modelo_relacion]['total_asignacion'];
+			$t_compromiso_anual += $row[$modelo_relacion]['compromiso_anual'];
+			$t_disponibilidad += $row[$modelo_relacion]['disponibilidad'];
+	}else if($row[$modelo_relacion]['cod_ramo']!=0 && $row[$modelo_relacion]['cod_subramo']!=0 && $row[$modelo_relacion]['cod_esp']==0 && $row[$modelo_relacion]['cod_subesp']==0 && $row[$modelo_relacion]['cod_aux']==0){
+		$codigo_ingreso = $sisap->AddCero2($row[$modelo_relacion]['cod_ramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subramo']);
+	}else if($row[$modelo_relacion]['cod_ramo']!=0 && $row[$modelo_relacion]['cod_subramo']!=0 && $row[$modelo_relacion]['cod_esp']!=0 && $row[$modelo_relacion]['cod_subesp']==0 && $row[$modelo_relacion]['cod_aux']==0){
+		$codigo_ingreso = $sisap->AddCero2($row[$modelo_relacion]['cod_ramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_esp']);
+	}else if($row[$modelo_relacion]['cod_ramo']!=0 && $row[$modelo_relacion]['cod_subramo']!=0 && $row[$modelo_relacion]['cod_esp']!=0 && $row[$modelo_relacion]['cod_subesp']!=0 && $row[$modelo_relacion]['cod_aux']==0){
+		$codigo_ingreso = $sisap->AddCero2($row[$modelo_relacion]['cod_ramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_esp'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subesp']);
+	}else{
+		$codigo_ingreso = $sisap->AddCero2($row[$modelo_relacion]['cod_ramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subramo'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_esp'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_subesp'])." - ".$sisap->AddCero2($row[$modelo_relacion]['cod_aux']);
+	}
+
+			$pdf->SetFont('vera',$marca_n,6);
+			$pdf->Cell(38,7,$codigo_ingreso,'RL',0,'L'); // valor del Codigo de Ingreso
+			$varX = $pdf->GetX(); //asigno X
+   			$varY = $pdf->GetY(); //asigno Y
+    		$pdf->Cell(80,1,"",'',2,'C');
+    		$pdf->MultiCell(79,3,$row[$modelo_relacion]['denominacion'],'','J');
+    		$varX = $varX+80; //le sumo a X 80 del Cell debido a que lo capture antes.
+    		$pdf->SetXY($varX,$varY); // cargo XY
+    		$pdf->Cell(25,7,$sisap->Formato2($row[$modelo_relacion]['asignacion_anual']),'L',0,'R'); // valor asignacion anual
+    		$pdf->Cell(25,7,$sisap->Formato2($row[$modelo_relacion]['aumento']),'L',0,'R'); // valor aumento
+    		$pdf->Cell(25,7,$sisap->Formato2($row[$modelo_relacion]['disminucion']),'L',0,'R'); // valor disminucion
+    		$pdf->Cell(25,7,$sisap->Formato2($row[$modelo_relacion]['total_asignacion']),'L',0,'R'); // valor total asignacion
+    		$pdf->Cell(25,7,$sisap->Formato2($row[$modelo_relacion]['compromiso_anual']),'L',0,'R'); // valor compromisos
+			$pdf->Cell(0,7,$sisap->Formato2($row[$modelo_relacion]['disponibilidad']),'RL',1,'R'); // valor disponibilidad
+			$pdf->Cell(0,0,"",'T',1);
+
+} //fin foreach
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(118,6,"T O T A L: ",'TLB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,6,$sisap->Formato2($t_asignacion_anual),'TLB',0,'R');
+$pdf->Cell(25,6,$sisap->Formato2($t_aumento),'TLB',0,'R');
+$pdf->Cell(25,6,$sisap->Formato2($t_disminucion),'TLB',0,'R');
+$pdf->Cell(25,6,$sisap->Formato2($t_total_asignacion),'TLB',0,'R');
+$pdf->Cell(25,6,$sisap->Formato2($t_compromiso_anual),'TLB',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($t_disponibilidad),'TLRB',1,'R');
+
+}else{
+	$pdf->SetFont('vera','B',14);
+	$pdf->Ln(12);
+	$pdf->Cell(0,7,"NO SE ENCONTRARON DATOS EN ESTE EJERCICIO FISCAL",'',1,'C');
+}
+
+	$pdf->OutPut('reporte_relacion_ingresos_gastos'.date("d-m-Y").'.pdf','D');
+
+}?>

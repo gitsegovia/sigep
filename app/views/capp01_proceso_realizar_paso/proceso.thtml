@@ -1,0 +1,80 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+$pasos_reales=$pasos_actuales-1;
+?>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr class="tr_negro" align="center">
+		<? if($pasitos!=null){ ?>
+			<td width="10%">Paso<br><?= $pasos_actuales." de ".$cantidad_pasos?></td>
+		<? }else{ ?>
+			<td width="10%">Paso</td>
+		<? } ?>
+			<td width="28%">Procesos a Realizar (Entrada)</td>
+			<td width="28%">Procesos a Realizar (Salida)</td>
+			<td width="8%">Dias</td>
+			<td width="7%">Horas</td>
+			<td width="10%">Minutos</td>
+			<td width="9%">Acción</td>
+		</tr>
+	<? if($disabled!='disabled'){ ?>
+	<tr bgcolor="#CDF2FF">
+		<? if($pasos_actuales!=$cantidad_pasos){ ?>
+			<td align="center"><?= $html->input('capp01/pasos', $htmlAttributes = array('value'=>$paso,'style'=>'width:98%;text-align:center','id'=>'pasos','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		<? }else{ ?>
+			<td align="center"><?= $html->input('capp01/pasos', $htmlAttributes = array('value'=>$paso,'style'=>'width:98%;text-align:center','id'=>'pasos','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		<? } ?>
+		<td align="center"><?= $html->textarea('capp01/entrada', array('value'=>'','id'=>'entrada', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+		<td align="center"><?= $html->textarea('capp01/salida', array('value'=>'','id'=>'salida', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+		<td align="center"><?= $html->input('capp01/dias', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'dias','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+		<td align="center" ><?= $html->input('capp01/horas', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'horas','class'=>'inputtext','onKeyPress'=>'return solo_menores_siete(event);','maxlength'=>'1'), false); ?></td>
+		<td align="center"><?= $html->input('capp01/minutos', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'minutos','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);','maxlength'=>'2','onBlur'=>'valida_menor_igual_59();'), false); ?></td>
+		<td align="center"><?= $sisap->submitTagRemote('+', array('id'=>'save','disabled'=>$disabled,'url1' => '/capp01_proceso_realizar_paso/guardar', 'update1'=>'carga_grilla')); ?></td>
+	</tr>
+
+<?php
+	}
+if($datos!=null){
+$numero=count($datos)-1;
+	for($i=0;$i<count($datos);$i++){
+		if($i%2==0){
+			$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+	?>
+		<tr bgcolor=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" >
+			<td align="center"><?= $html->input('capp01/pasosssss'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['paso'],'style'=>'width:98%;text-align:center','id'=>'pasos','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->textarea('casp01/entradasss'.$i, array('value'=>$datos[$i][0]['proceso_realizar_entrada'],'id'=>'entrada', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+			<td align="center"><?= $html->textarea('casp01/salidasss'.$i, array('value'=>$datos[$i][0]['proceso_realizar_salida'],'id'=>'salida', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+			<td align="center"><?= $html->input('capp01/diassss'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['estimacion_dias'],'style'=>'width:98%;text-align:center','id'=>'dias','class'=>'inputtext','readonly'=>'readonly','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+			<td align="center" ><?= $html->input('capp01/horassss'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['estimacion_horas'],'style'=>'width:98%;text-align:center','id'=>'horas','class'=>'inputtext','readonly'=>'readonly','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/minutossss'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['estimacion_minutos'],'style'=>'width:98%;text-align:center','id'=>'minutos','class'=>'inputtext','readonly'=>'readonly','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+			<td align="center" id="<?= "li_".$i ?>">
+				<a href="javascript:ver_documento('/capp01_proceso_realizar_paso/modificar/<?=$datos[$i][0]['cod_tipo_documento']?>/<?=$datos[$i][0]['paso']?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos del familiar'))?></a>
+				<? if($i==$numero){ ?>
+					<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/capp01_proceso_realizar_paso/eliminar/'.$datos[$i][0]['cod_tipo_documento'].'/'.$datos[$i][0]['paso'],array('update'=>'carga_grilla', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('fila_$i');"), "Realmente desea Eliminar a este registro?", false, true); ?>
+				<? } ?>
+			</td>
+		</tr>
+	<? }
+
+}else{ ?>
+		<tr align="center" bgcolor="#CDF2FF" >
+			<td>&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+		</tr>
+
+<? } ?>
+<input type="hidden" id="TI" value="<?=$i?>"/>
+	</table>
+

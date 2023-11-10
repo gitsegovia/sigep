@@ -1,0 +1,250 @@
+<form id='form'>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"ANTICIPO",null,"950");?>
+
+
+
+<?php
+
+if(isset($datos_orden_compra)){
+ if($datos_orden_compra!=null){
+ foreach($datos_orden_compra as $aux_datos_orden_compra){
+
+
+$fecha          = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'];
+$fecha222       = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'];
+$fecha_comparar = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'];
+
+$year_comparar  = $fecha_comparar[0].$fecha_comparar[1].$fecha_comparar[2].$fecha_comparar[3];
+
+
+
+
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'] = $dia.'/'.$mes.'/'.$year;
+}
+
+
+
+$fecha_compara_anticipo = $fecha222;
+
+if($year_comparar==$ano_orden_compra_anticipo){
+
+   $fecha_compara_anticipo  = $fecha_comparar;
+
+}//fi if
+
+
+
+?>
+
+<?= $sisap->OpenTable("950")?>
+
+
+<input value="<?= date("d/m/Y")  ?>"                            id="dia_actual"                         type="hidden" />
+<input value="<?= cambia_fecha($fecha_compara_anticipo)  ?>"    id="fecha_documento_registro_contrato"  type="hidden" />
+<input value="1"                                                id="tipo_anticipo_2"                    type="hidden" />
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center" width="200"><span id="partida_producto" class="mensaje_resaltado">Saldo del ejercicio anterior?</span>
+		   <?= $sisap->radioTagRemote('cscp04_registro_anticipo_ordencompra/pregunta_ejercicio', array('2'=>'Si','1'=>'No'), array('id'=>'pregunta_ejercicio'), NULL, 1)?>
+        </td>
+	</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3">
+<tr class="tr_negro"><td colspan="4" align="center"><b>DETALLES DE LA ORDEN DE COMPRA</b></td></tr>
+	<tr>
+		<td align="center">A&ntilde;o</td>
+		<td align="center">N&uacute;mero</td>
+		<td align="center">Fecha</td>
+		<td align="center">Tipo de orden</td>
+	</tr>
+	<tr>
+		<td align="center" id="year_cotizacion">
+			<?= $html ->input('cscp04_registro_anticipo_ordencompra/ano_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['ano_orden_compra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4','style'=>'text-align:center;'), false); ?>
+		</td>
+		<td align="center">
+			<?= $sisap->selectTagRemote('cscp04_registro_anticipo_ordencompra/numero_orden_compra', $optionElements=$lista_numero,  $extra_opciones = array(), $selected = $numero_orden_compra, $selectAttr = array('onchange1'=>'/cscp04_registro_anticipo_ordencompra/selecion', 'update1'=>'principal' ,'id'=>'num_1','style'=>'width:80px', true),  $optionAttr = null,  $showEmpty = true) ?>
+		</td>
+		<td align="center" id="fecha_cotizacion">
+			<?= $html ->input('cscp04_registro_anticipo_ordencompra/fecha_cotizacion', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'].'', 'readonly'=>'readonly','style'=>'text-align:center;'), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->radio('cscp04_registro_anticipo_ordencompra/tipo_ordencompra', $options = array('1'=>'Bienes', '2'=>'Servicios'), $inbetween = null, $htmlAttributes = array('value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['tipo_orden'].'', 'disabled'=>'disabled'), $return = false); ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Rif del Proveedor</td>
+		<td colspan="2" align="center">Nombre de Proveedor o Raz&oacute;n Social</td>
+		<td align="center">Direcci&oacute;n</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/rif', $htmlAttributes = array('style'=>'width:98%;text-align:center;', 'readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'].''), false); ?>
+		</td>
+		<td colspan="2" align="center">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/nom_prov', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->textarea('cscp04_registro_anticipo_ordencompra/dir_prov', $htmlAttributes = array('rows'=>'2', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$direccion_comercial_rif.''), false); ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="center" width="25%">Monto Original</td>
+		<td align="center" width="25%">Modificaciones</td>
+		<td align="center" width="25%">Monto Actual</td>
+		<td align="center" width="25%">Monto Anticipo</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<?= $html->input('cscp05_ordencompra/monto_original', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly', 'id'=>'monto_contrato'), false); ?>
+		</td>
+		<td align="center">
+		<?php
+			$disminucion = ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion']);
+		?>
+			<?= $html->input('cscp05_ordencompra/modificaciones', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($disminucion).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center">
+		<?php
+    		$monto_actual = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] + $disminucion;
+    	?>
+			<?= $html->input('cscp05_ordencompra/monto_actual', $htmlAttributes = array('id'=>'monto_actual', 'size'=>'16', 'value'=>''.$sisap->Formato2($monto_actual).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->input('cscp05_ordencompra/monto_anticipo', $htmlAttributes = array('id'=>'monto_anticipo_input', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Amortizaci&oacute;n</td>
+		<td align="center">Saldo Anticipo</td>
+		<td align="center">Monto Cancelado</td>
+		<td align="center">Saldo de la Orden</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/monto_amortizacion', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/saldo_anticipo', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/monto_cancelado', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center">
+		<?php
+			// $saldo_orden = (($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_original_contrato'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['aumento']) - ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['disminucion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_laboral'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_fielcumplimiento']));
+			$saldo_orden = $monto_actual - ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']);
+		    $saldo_orden = $sisap->Formato2($saldo_orden);
+		    $saldo_orden = $sisap->Formato1($saldo_orden);
+		?>
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/saldo_orden', $htmlAttributes = array('id'=>'saldo_orden', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_orden).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+</table>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro"><td colspan="7" align="center"><b>DETALLES DEL ANTICIPO</b></td></tr>
+	<tr>
+		<td align="center">Año</td>
+		<td align="center">Número</td>
+		<td align="center">Fecha</td>
+		<td align="center" >Anticipo incluye <br> I.V.A ?</td>
+		<td align="center">% I.V.A</td>
+		<td align="center">% Anticipo</td>
+		<td align="center"> Monto del anticipo</td>
+	</tr>
+	<tr>
+		<td align="center" width="120">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/ano_orden_compra_anticipo', $htmlAttributes = array('id'=>'ano_orden_compra_anticipo', 'size'=>'11', 'value'=>$ano_orden_compra_anticipo, 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center" width="135">
+			<?= $html->input('cscp04_registro_anticipo_ordencompra/numero_orden_compra_anticipo', $htmlAttributes = array('id'=>'numero_orden_compra_anticipo','size'=>'11', 'value'=>$sisap->AddCero2($numero_orden_compra_anticipo), 'style'=>'text-align:center; font-size:25;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center" width="135">
+          <?=$sisap->input_fecha('cscp04_registro_anticipo_ordencompra','fecha_anticipo','fecha_anticipo',date('d/m/Y'))?>
+		</td>
+		<td align="center">
+        <?= $sisap->radioTagRemote('cscp04_registro_anticipo_ordencompra/incluye_iva', array('1'=>'Si','2'=>'No'), array('url1'=>'/cscp04_registro_anticipo_ordencompra/incluye_iva/1',   'update1'=>'funcion', 'id'=>'incluye_iva','disabled'=>'disabled'), NULL, $anticipo_incluye_iva)?>
+		</td>
+		<td align="center" width="75">
+                    <input name="data[cscp04_registro_anticipo_ordencompra][iva]" style="text-align:center" type="text" readonly="readonly"  size="8"  id="iva" value="<?= $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['porcentaje_iva'] ?>"  onfocus="javascript:if(this.value=='0'){this.value='';}"   onblur="javascript:if(this.value==''){this.value='0';} recalcular_monto_anticipo();" />
+		</td>
+		<td align="center" width="75">
+		 <input name="data[cscp04_registro_anticipo_ordencompra][iva_anticipo]" style="text-align:center" type="text"  size="8"  id="iva_anticipo" value="<?=$por_anticipo?>"  onfocus="javascript:if(this.value=='0'){this.value='';}"  disabled  onblur="javascript:if(this.value==''){this.value='0';} recalcular_monto_anticipo();" onKeyPress='return solonumeros_con_punto(event);' />
+		</td>
+		<td align="center" width="130">
+         <input name="data[cscp04_registro_anticipo_ordencompra][monto_anticipo]" style="text-align:right" type="text"  size="14"  id="monto_anticipo" value="0,00"  onfocus="javascript:if(this.value=='0,00'){this.value='';}"  disabled onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';} moneda('monto_anticipo'); " readonly />
+		</td>
+
+	</tr>
+</table>
+<br>
+<div id="cotizacion"><?php include("datos.thtml");?></div>
+<div id="funcion"></div>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr><td colspan="2" align="center">CONCEPTO</td></tr>
+<tr>
+  <td colspan="2" align="center">
+			<?= $html->textarea('cscp04_registro_anticipo_ordencompra/observaciones', $htmlAttributes = array('rows'=>'2', 'style'=>'width:99%', 'value'=>'', 'id'=>'observaciones'), false); ?>
+  </td>
+</tr>
+</table>
+<br>
+<div style="display:none;">
+<?
+ $caja['fecha_registro'] = '1900-01-01';
+ $caja['dia_asiento_registro'] = 0;
+ $caja['mes_asiento_registro'] = 0;
+ $caja['ano_asiento_registro'] = 0;
+ $caja['numero_asiento_registro'] = 0;
+ $caja['username_registro'] = 0;
+ $caja['ano_anulacion'] = 0;
+ $caja['numero_acta_anulacion'] = 0;
+ $caja['fecha_proceso_anulacion'] = '1900-01-01';
+ $caja['dia_asiento_anulacion'] = 0;
+ $caja['mes_asiento_anulacion'] = 0;
+ $caja['ano_asiento_anulacion'] = 0;
+ $caja['numero_asiento_anulacion'] = 0;
+ $caja['username_anulacion'] = 0;
+ $caja['radio'] = 'cscp05_ordencompra/condicion_orden';
+ $caja['condicion_actividad'] = 1;
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+</div>
+<br>
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'cscp04_registro_anticipo_ordencompra_valida', 'url1' => '/cscp04_registro_anticipo_ordencompra/guardar', 'update1'=>'principal')); ?>
+
+<?= $sisap->buttonTagRemote('cscp04_registro_anticipo_ordencompra/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/cscp04_registro_anticipo_ordencompra/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_registro_anticipo_ordencompra/anular', array ('value'=>'Eliminar', 'disabled'=>'disabled'), array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cscp04_registro_anticipo_ordencompra/anular/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_registro_anticipo_ordencompra/consultar', array ('value'=>'Buscar'), array('url1' => '/cscp04_registro_anticipo_ordencompra/consulta_index/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+     }//fin
+  }//fin
+}//fin
+?>
+
+<br>
+
+</form>

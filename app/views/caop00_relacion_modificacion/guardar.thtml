@@ -1,0 +1,323 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+?>
+
+
+<form>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"REGISTRO DE MODIFICACIÓN ORDEN DE COMPRA",null,"950");?>
+
+<?php
+
+if(isset($datos_orden_compra_encabezado)){
+ if($datos_orden_compra_encabezado!=null){
+ foreach($datos_orden_compra_encabezado as $aux_datos_orden_compra){
+
+
+$fecha = $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'] = $dia.'/'.$mes.'/'.$year;
+}
+
+
+
+
+ 	?>
+
+<?= $sisap->OpenTable("950")?>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<th colspan="4">DETALLES DE LA ORDEN DE COMPRA</th>
+
+	<tr>
+		<td align="center">A&Ntilde;O</td>
+		<td align="center">N&Uacute;MERO</td>
+		<td align="center">FECHA</td>
+		<td align="center">TIPO DE ORDEN</td>
+
+	</tr>
+	<tr>
+		<td align="center" id="year_cotizacion">
+			<?= $html ->input('caop00_relacion_modificacion/ano_orden_compra', $htmlAttributes = array('size'=>'3', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['ano_orden_compra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?>
+		</td>
+		<td align="center">
+			<?= $sisap->selectTagRemote('caop00_relacion_modificacion/numero_orden_compra', $optionElements=$lista_numero,  $extra_opciones = array(), $selected = $numero_orden_compra, $selectAttr = array('onchange1'=>'/caop00_relacion_modificacion/selecion', 'update1'=>'principal' ,'id'=>'num_1','style'=>'width:80px', true),  $optionAttr = null,  $showEmpty = true) ?>
+		</td>
+		<td align="center" id="fecha_cotizacion">
+			<?= $html ->input('caop00_relacion_modificacion/fecha_cotizacion', $htmlAttributes = array('size'=>'10', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_proceso_registro'].'', 'readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+			<?= $html->radio('caop00_relacion_modificacion/tipo_ordencompra', $options = array('1'=>'Bienes', '2'=>'Servicios'), $inbetween = null, $htmlAttributes = array('value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['tipo_orden'].''), $return = false); ?>
+		</td>
+
+	</tr>
+	<tr>
+	<td colspan="7">
+<table id="proveedor" width="100%" border="0" class="tablacompromiso tablacompromiso3">
+	<tr>
+		<td colspan="2" align="center">RIF Proveedor</td>
+		<td colspan="3" align="center">Nombre de Proveedor o Raz&oacute;n Social</td>
+		<td colspan="2" align="center">Direcci&oacute;n</td>
+	</tr>
+	<tr>
+		<td colspan="2" align="center">
+			<?= $html->input('caop00_relacion_modificacion/rif', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'].''), false); ?>
+		</td>
+		<td colspan="3" align="center">
+			<?= $html->input('caop00_relacion_modificacion/nom_prov', $htmlAttributes = array('style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?>
+		</td>
+		<td colspan="2" align="center">
+			<?= $html->textarea('caop00_relacion_modificacion/dir_prov', $htmlAttributes = array('rows'=>'2', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$direccion_comercial_rif.'', 'readonly'=>'readonly'), false); ?>
+		</td>
+	</tr>
+</table>
+</td>
+</tr>
+
+
+</table>
+
+<br>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center">Monto Original</td>
+		<td align="center">Modificaciones</td>
+		<td align="center" >Monto Actual</td>
+		<td align="center">Monto Anticipo</td>
+	</tr>
+
+	<tr>
+		<td align="center" width="130">
+			<?= $html->input('cscp05_ordencompra/monto_original', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('cscp05_ordencompra/modificaciones', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2(($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion'])).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('cscp05_ordencompra/monto_actual', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2(($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento']) - ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado'])).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('cscp05_ordencompra/monto_anticipo', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+
+	</tr>
+
+
+
+<tr>
+		<td align="center" >Amortizaci&oacute;n</td>
+		<td align="center">Saldo Anticipo</td>
+		<td align="center">Monto Cancelado</td>
+		<td align="center">Saldo de la Orden</td>
+</tr>
+	<tr>
+		<td align="center" width="130">
+			<?= $html->input('caop00_relacion_modificacion/monto_amortizacion', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('caop00_relacion_modificacion/saldo_anticipo', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="148">
+			<?= $html->input('caop00_relacion_modificacion/monto_cancelado', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado']).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" width="148">
+			<?= $html->input('caop00_relacion_modificacion/saldo_orden', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2(($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento']) - ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado'])).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+</table>
+
+<br>
+
+
+
+
+
+
+
+
+<?php
+
+if(isset($datos_orden_compra_modificacion_cuerpo)){
+ if($datos_orden_compra_modificacion_cuerpo!=null){
+ foreach($datos_orden_compra_modificacion_cuerpo as $aux_datos_orden_compra_modificacion){
+
+
+
+$fecha = $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['fecha_modificacion'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['fecha_modificacion'] = $dia.'/'.$mes.'/'.$year;
+}
+
+
+?>
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<th colspan="5">DETALLES DE LA MODIFICACIÓN</th>
+	<tr>
+		<td align="center">Año</td>
+		<td align="center">Número</td>
+		<td align="center" >Fecha</td>
+		<td align="center" >Tipo de modificación</td>
+		<td align="center" id="modificacion_texto"><?php
+
+          if($aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['tipo_modificacion']=="1"){ echo "Monto del Aumento";
+
+          }else if($aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['tipo_modificacion']=="2"){ echo "Monto de la Disminución";
+
+          }//fin else
+
+          ?></td>
+	</tr>
+
+	<tr>
+		<td align="center" width="130">
+			<?= $html->input('caop00_relacion_modificacion/ano_orden_compra_modificacion', $htmlAttributes = array('id'=>'ano_orden_compra_modificacion', 'readonly'=> 'readonly', 'size'=>'16', 'value'=>$aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['ano_orden_compra'], 'style'=>'text-align:right;'), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('caop00_relacion_modificacion/numero_orden_compra_modificacion', $htmlAttributes = array('id'=>'numero_orden_compra_modificacion', 'readonly'=> 'readonly','size'=>'16', 'value'=>$sisap->AddCero2($aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['numero_modificacion']), 'style'=>'text-align:center; font-size:25;'), false); ?>
+		</td>
+		<td align="center" width="130">
+		  <input type="text" value='<?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['fecha_modificacion'] ?>' style="text-align:right;" name="data[caop00_relacion_modificacion][fecha_modificacion]" id="fecha_modificacion" size="16" readonly>
+		</td>
+		<td align="center" width="160">
+          <?= $html->radio('caop00_relacion_modificacion/tipo_modificacion', $options = array('1'=>'Aumento','2'=>'Disminución'), $inbetween = null, $htmlAttributes = array('value'=>$aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['tipo_modificacion'], 'id'=>'tipo_modificacion'), $return = false); ?>
+		</td>
+		<td align="center" width="200" id="modificacion_input">
+          <?= $html->input('caop00_relacion_modificacion/monto_modificacion', $htmlAttributes = array('size'=>'16', 'value'=>''.$sisap->Formato2($monto_modificacion).'', 'style'=>'text-align:right;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+
+	</tr>
+</table>
+<br>
+<div id="cotizacion"><?php include("datos_guardar.thtml");?></div>
+<div id="funcion"></div>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr><td colspan="2" align="left">OBSERVACI&Oacute;NES:</td></tr>
+<tr>
+  <td colspan="2" align="center">
+			<?= $html->textarea('caop00_relacion_modificacion/observaciones', $htmlAttributes = array('rows'=>'2', 'style'=>'width:99%', 'value'=>$aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['observaciones'], 'id'=>'observaciones', 'readonly'=>'readonly'), false); ?>
+  </td>
+</tr>
+</table>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center"  width="250">Condici&oacute;n de la Modificación</td>
+		<td align="center"  width="80">Dia</td>
+		<td align="center"  width="80">Mes</td>
+		<td align="center"  width="80">Año</td>
+		<td align="center"  width="150">Número de Asiento</td>
+		<td align="center">Operador</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<?= $html->radio('caop00_relacion_modificacion/condicion_actividad', $options = array('1'=>'Activa', '2'=>'Anulada'), $inbetween = null, $htmlAttributes = array('value'=>$aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['condicion_actividad']), $return = false); ?>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['dia_asiento_registro'] ?></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['mes_asiento_registro'] ?></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['ano_asiento_registro'] ?></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['numero_asiento_registro'] ?></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><?= $aux_datos_orden_compra_modificacion['cscd04_ordcom_modificacion_cuerpo']['username_registro'] ?></div>
+		</td>
+	</tr>
+</table>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center" width="120">A&ntilde;o de la Anulaci&oacute;n</td>
+		<td align="center" width="120">N&uacute;mero Anulaci&oacute;n</td>
+		<td align="center" width="85">Fecha Anulaci&oacute;n</td>
+		<td align="center" width="80">A&ntilde;o contable</td>
+		<td align="center" width="80">Mes contable</td>
+		<td align="center" width="150">Número de Asiento</td>
+		<td align="center">Operador</td>
+	</tr>
+
+	<tr>
+	    <td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+		<td align="center">
+			<div style="background-color:#FFF;color:#000;font-size:14;"><br></div>
+		</td>
+	</tr>
+
+</table>
+
+<br>
+
+<?php
+    }//fin
+  }//fin
+}//fin
+?>
+
+
+
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'caop00_relacion_modificacion_valida', 'url1' => '/caop00_relacion_modificacion/guardar', 'update1'=>'principal', 'disabled'=>'disabled')); ?>
+
+<?= $sisap->buttonTagRemote('caop00_relacion_modificacion/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/caop00_relacion_modificacion/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('caop00_relacion_modificacion/anular', array ('value'=>'Anular', 'disabled'=>'disabled'), array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/caop00_relacion_modificacion/anular/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('caop00_relacion_modificacion/consultar', array ('value'=>'Consultar'), array('url1' => '/caop00_relacion_modificacion/consulta_index/1', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+
+<?=$sisap->CloseTable()?>
+
+<br>
+
+
+<?php
+    }//fin
+  }//fin
+}//fin
+?>
+
+
+
+</form>

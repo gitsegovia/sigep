@@ -1,0 +1,316 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+$_SESSION['estado'] = $estado;
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Header()
+	{
+		//$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',14,11,13);
+		//$this->SetFont('vera','B',9);
+		//$this->Cell(0,6,"",'TRL',1);
+		//$this->Cell(100,6,"             GOBERNACIÓN DEL ESTADO FALCÓN",'L',0);
+		//$this->Cell(0,6,"",'R',1,'L');
+		//$this->SetFont('vera','',8);
+		//$this->Cell(100,6,"                DIRECCION GENERAL DE PRESUPUESTO",'LB',0);
+		//$this->Cell(0,6,"",'RB',1);
+	}//fin funtion
+}//fin de la clase PDF
+
+
+if(isset($opcion) && $opcion==1){
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(15);
+$pdf->SetRightMargin(40);
+$pdf->SetAutoPageBreak(true,5);
+
+
+for($i=0; $i<count($datos); $i++){///inicio del for que va a imprimr cada orden de pago
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera','B',12);
+$pdf->Cell(0,5,"",'',1,'R');
+$pdf->Cell(0,5,"        ".$sisap->mascara_ocho($datos[$i][0]['numero_comprobante_egreso']),'',1,'R');//NUMERO DE COMPROBANTE //$sisap->mascara_ocho($datos22[$i][0]['numero_comprobante_egreso']).
+$pdf->Cell(0,7,"",'',1,'R');
+
+
+
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(14,36,"",'',0,'C');//$ano_orden_pago[$aux_aux]
+$pdf->Cell(21,36,"",'',0,'C');//$sisap->mascara_ocho($numero_orden_pago[$aux_aux][$i])
+$pdf->Cell(28,36,"",'',0,'C');//$sisap->cambia_fecha($fecha_orden_pago[$aux_aux][$i])
+$pdf->Cell(39,36,"",'',0,'R');//$sisap->Formato2($monto_neto_cobrar[$aux_aux][$i])
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,36,"",'',1,'L');//"  ".$tipo_documento[$aux_aux][$i]
+
+
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,11,"",'',1,'C');
+$pdf->Cell(1,40,"",'',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(145,4,$datos[$i][0]['concepto'],'','L');//Concepto----------------------$datos22[$i][0]['concepto']
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,40,"",'',1);//margen derecho
+$pdf->Cell(0,0,"",'',1);//LINEA
+
+$pdf->Cell(0,1,"",'',1);//ESPACIO
+
+$pdf->SetFont('vera','B',11);
+$pdf->Cell(17,10,"",'',0,'L');
+$pdf->Cell(0,10,$datos[$i][0]['entidad_bancaria'],'',1,'L');//----------$denoent
+
+$pdf->Cell(30,6,"",'',0,'L');
+$pdf->Cell(82,6,$datos[$i][0]['cuenta_bancaria'],'',0,'L');//--------------------------$datos22[$i][0]['a_cuenta_bancaria']
+$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['fecha_documento']),'',1,'L');//----------$sisap->cambia_fecha($datos22[$i][0]['fecha_documento'])
+
+$pdf->Cell(30,5,"",'',0,'L');
+$pdf->Cell(82,5,$sisap->mascara_ocho($datos[$i][0]['numero_documento']),'',0,'L');//------$sisap->mascara_ocho($datos22[$i][0]['a_numero_cheque'])
+$pdf->Cell(0,5,$sisap->Formato2($datos[$i][0]['monto']),'',1,'L');//-------$sisap->Formato2($datos22[$i][0]['monto'])
+
+
+
+$pdf->Cell(0,37,"",'',1);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,4,"     ".$datos[$i][0]['beneficiario'],'',1,'L');//--.$datos22[$i][0]['beneficiario']
+$pdf->SetFont('vera','B',11);
+$pdf->Cell(0,4,"",'',1,'L');
+$pdf->Cell(0,5,"",'',1,'L');//---------------------------"                     ".$rif_cedula[$aux_aux]
+
+
+
+//---------------Impresion del Cheque-------------------//
+
+
+
+$pdf->SetFont('vera','',12);
+$pdf->Cell(0,17,"",'',1);//ESPACIO
+$pdf->Cell(115,5,"",'',0,'R');
+
+///////////AQUI MOSTRAMOS LA MASCARA DEL CHEQUE/////////////
+//*********************************************************
+$contar = count($sisap->Formato2($datos[$i][0]['monto']));
+$contar_aux = 16 - $contar;
+$aux = "";
+for($is=1; $is<=$contar_aux; $is++){$aux .= "*";}
+$monto_mascara = $sisap->Formato2($datos[$i][0]['monto']).$aux;
+$pdf->Cell(0,5,"    ".$monto_mascara,'',1,'L');//-------------------------------------------------"    ".$monto_mascara
+//**********************************************************/
+///////////AQUI MOSTRAMOS LA MASCARA DEL CHEQUE/////////////
+
+
+
+//$pdf->Cell(0,4,"       ".$sisap->Formato2($monto[$aux_aux]),'',1,'L');
+
+$pdf->Ln(4);
+$pdf->Cell(0,7,"",'',1,'C');//ESPACIO
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(14,4,"",'',0);
+$pdf->Cell(0,4,$datos[$i][0]['beneficiario'],'',1,'L');//------------$datos22[$i][0]['beneficiario']
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+$pdf->Ln(1);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(14,10,"",'',0);
+$pdf->MultiCell(0,5,$sisap->convertir($datos[$i][0]['monto']),'','L');//MONTO DEL CHEQUE--$sisap->convertir($datos22[$i][0]['monto'])
+
+$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(0,12,"",'',1,'R');//ESPACIO
+$pdf->Cell(10,5,"",'',0,'R');
+$pdf->Cell(70,5,$sisap->fecha_alfabetico($datos[$i][0]['fecha_documento'], $datos[$i][0]['entidad_bancaria']),'',0,'L');
+$pdf->Cell(0,15,"",'',1,'L');
+$pdf->SetFont('vera','B',11);
+$pdf->Cell(0,8,"                    NO ENDOSABLE",'',1,'C');
+}//fin for
+
+
+}elseif(isset($opcion) && $opcion==2){
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(8);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(12);
+
+
+for($i=0; $i<count($datos); $i++){  ///inicio del for que va a imprimr cada orden de pago
+
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$t1=15;
+        	$t2=15;
+        }else{
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$t1=14;
+        	$t2=14;
+        }
+
+		$pdf->AddPage();
+        $pdf->Image($escudo,7,9,$t1);
+		$pdf->SetFont('vera','B',9);
+		$pdf->Cell(0,5,"               ".$_SESSION["entidad_federal"],'TRL',1);//*****.$titulo_inst
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(0,3,"                   ".$_SESSION["dependencia"],'LR',1);//****.$titulo_a
+		$pdf->Cell(0,9,"",'RLB',1);
+
+
+//---------------Impresion del Cheque-------------------//
+
+    $pdf->Ln(6);
+	$pdf->Cell(70,4,mascara($datos[$i][0]['numero_documento'], 8),'',0,'R');
+	$pdf->Cell(35,4,"       ".$sisap->Formato2($datos[$i][0]['monto']),'',1,'R');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(5,4,"",'',0);
+	$pdf->Cell(0,4,$datos[$i][0]['beneficiario'],'',1,'L');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(5,4,"",'',0);
+	$pdf->Cell(0,4,$sisap->convertir($datos[$i][0]['monto']).'----------------','',1,'L');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(5,4,"",'',0);
+	$pdf->Cell(0,4,$sisap->fecha_alfabetico($datos[$i][0]['fecha_documento'], $datos[$i][0]['entidad_bancaria']),'',0,'L');
+	$pdf->Ln(16);
+
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(0,10,"COMPROBANTE DE EGRESO NÚMERO: ".$sisap->mascara_ocho($datos[$i][0]['numero_comprobante_egreso']),'B',1,'C');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(20,8,"AÑO",'RL',0,'C');
+$pdf->Cell(20,8,"ORDEN",'R',0,'C');
+$pdf->Cell(28,8,"FECHA",'R',0,'C');
+$pdf->Cell(51,8,"MONTO",'R',0,'C');
+$pdf->Cell(0,8,"MOTIVO DE LA ORDEN",'R',1,'C');
+
+
+
+
+
+$pdf->Cell(20,43,"",'TRL',0,'C');//--------------$ano_orden_pago[$aux_aux]
+$pdf->Cell(20,43,"",'TR',0,'C');//---------------$numero_orden_pago[$aux_aux][$i]
+$pdf->Cell(28,43,"",'TR',0,'C');//---------------$sisap->cambia_fecha($fecha_orden_pago[$aux_aux][$i])
+$pdf->Cell(51,43,"",'TRL',0,'R');//--------------$sisap->Formato2($monto_neto_cobrar[$aux_aux][$i])
+$pdf->Cell(0,43,"",'TR',1,'L');//----------------$tipo_documento[$aux_aux][$i]
+
+
+
+
+
+$pdf->Cell(0,4,"",'T',1);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,8,"CONCEPTO",'TRBL',1,'C');
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(1,42,"",'LB',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+
+	$pdf->MultiCell(195,4,$datos[$i][0]['concepto'],'','L');//Concepto Orden de Pago
+
+	$varX = $varX+195;//le sumo a X ---> 148.
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,42,"",'RB',1,'L');
+$pdf->Cell(0,1,"",'TRL',1);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(25,4,"BANCO:",'L',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,$datos[$i][0]['entidad_bancaria'],'R',1,'L');
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(25,5,"CUENTA No.",'L',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(115,5,$datos[$i][0]['cuenta_bancaria'],'',0,'L');
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(17,5,"FECHA:",'',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$sisap->cambia_fecha($datos[$i][0]['fecha_documento']),'R',1,'L');
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(25,5,"CHEQUE No.",'L',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(115,5,$sisap->mascara_ocho($datos[$i][0]['numero_documento']),'',0,'L');
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(17,5,"MONTO:",'',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$sisap->Formato2($datos[$i][0]['monto']),'R',1,'L');
+$pdf->Cell(0,2,"",'T',1,'L');
+//$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"A P R O B A C I Ó N",'TRBL',1,'C');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(48,10,"",'L',0,'C');
+$pdf->Cell(50,10,"",'',0,'C');
+$pdf->Cell(51,10,"",'',0,'C');
+$pdf->Cell(0,10,"",'R',1,'C');
+
+$pdf->Cell(65,3,"_______________________",'L',0,'C');
+$pdf->Cell(65,3,"_______________________",'',0,'C');
+$pdf->Cell(0,3, "_______________________",'R',1,'C');
+
+$pdf->Cell(65,6,"REVISADO POR:",'L',0,'C');
+$pdf->Cell(65,6,"AUTORIZADO POR:",'',0,'C');
+$pdf->Cell(0,6,"PAGADO POR:",'R',1,'C');
+
+$pdf->Cell(0,2,"",'TB',1,'L');
+
+$pdf->Cell(30,9,"",'LR',0,'L');
+$pdf->Cell(100,9,"",'R',0,'L');
+$pdf->Cell(45,9,"",'R',0,'L');
+$pdf->Cell(0,9,"",'R',1,'L');
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(30,5,"BENEFICIARIO:",'LR',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(100,5,$datos[$i][0]['beneficiario'],'R',0,'L');
+$pdf->Cell(45,5,"_____________________________",'R',0,'C');
+$pdf->Cell(0,5,"________________",'R',1,'C');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(30,5,"C.I. / R.I.F:",'RLB',0,'L');
+//$pdf->SetFont('vera','B',7);
+$pdf->Cell(100,5,"",'RB',0,'L');//-------------------------$rif_cedula[$aux_aux]
+$pdf->Cell(45,5,"FIRMA",'RB',0,'C');
+$pdf->Cell(0,5,"FECHA",'RB',1,'C');
+$pdf->Cell(0,5,"",'',1);
+
+
+}//fin for
+
+
+
+
+}//fin if principal
+
+
+$pdf->OutPut('Comprobante_egreso_'.date('Y_m_d').'.pdf','D');
+
+?>

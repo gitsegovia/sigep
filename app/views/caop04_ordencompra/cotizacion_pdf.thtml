@@ -1,0 +1,169 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: cotizacion_pdf.php
+ * Fecha de creacion: 05/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+
+        $this->top_reporte("RELACIÓN DE COTIZACIONES", null, null, array("Y"=>"5", "X"=>"15", "Z"=>"13"), null, false);
+
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(180,6,"COTIZACIÓN",'TRBL',0,'C');
+		$this->Cell(80,6,"ORDEN DE COMPRA",'TBRL',0,'C');
+		$this->Cell(0,6,"NOTA DE ENTREGA",'TRBL',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,5,"AÑO",'TRBL',0,'C');
+		$this->Cell(20,5,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,5,"FECHA",'TBRL',0,'C');
+		$this->Cell(30,5,"MONTO",'TBRL',0,'C');
+		$this->Cell(100,5,"PROVEEDOR",'TRBL',0,'C');
+
+		$this->Cell(15,5,"AÑO",'TRBL',0,'C');
+		$this->Cell(20,5,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,5,"FECHA",'TBRL',0,'C');
+		$this->Cell(30,5,"MONTO",'TRBL',0,'C');
+
+		$this->Cell(15,5,"AÑO",'TRBL',0,'C');
+		$this->Cell(20,5,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,5,"FECHA",'TBRL',0,'C');
+		$this->Cell(0,5,"MONTO",'TRBL',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(3);
+$pdf->SetRightMargin(3);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+/*
+* Luis Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$cod_obra_aux = "";
+
+if($datos!=null){
+foreach($datos as $row){
+$ano_solicitud = $row['v_cscd02_relacion']['ano_solicitud'];
+$cod_obra      = $row['v_cscd02_relacion']['cod_obra'];
+$numero_solicitud = $row['v_cscd02_relacion']['numero_solicitud'];
+$fecha_solicitud = $row['v_cscd02_relacion']['fecha_solicitud'];
+$ano_cotizacion = $row['v_cscd02_relacion']['ano_cotizacion'];
+if($ano_cotizacion==0){
+	$ano_cotizacion = "";
+}
+$numero_cotizacion = $row['v_cscd02_relacion']['numero_cotizacion'];
+if($numero_cotizacion=='0'){
+	$numero_cotizacion = "";
+}
+$fecha_cotizacion = $sisap->Cfecha($row['v_cscd02_relacion']['fecha_cotizacion'], 'D/M/A');
+if($fecha_cotizacion=="01/01/1900"){
+	$fecha_cotizacion="";
+}
+$proveedor = $row['v_cscd02_relacion']['proveedor'];
+$ano_orden_compra = $row['v_cscd02_relacion']['ano_orden_compra'];
+if($ano_orden_compra==0){
+	$ano_orden_compra = "";
+}
+$monto_cotizacion = $sisap->Formato2($row['v_cscd02_relacion']['monto_cotizacion']);
+if($monto_cotizacion=='0,00'){
+	$monto_cotizacion = "";
+}
+$numero_orden_compra = $row['v_cscd02_relacion']['numero_orden_compra'];
+if($numero_orden_compra==0){
+	$numero_orden_compra = "";
+}
+$fecha_orden_compra = $sisap->Cfecha($row['v_cscd02_relacion']['fecha_orden_compra'], 'D/M/A');
+if($fecha_orden_compra=="01/01/1900"){
+	$fecha_orden_compra="";
+}
+$monto_orden = $sisap->Formato2($row['v_cscd02_relacion']['monto_orden']);
+if($monto_orden=='0,00'){
+	$monto_orden = "";
+}
+$ano_nota_entrega = $row['v_cscd02_relacion']['ano_nota_entrega'];
+if($ano_nota_entrega==0){
+	$ano_nota_entrega = "";
+}
+$numero_nota_entrega = $row['v_cscd02_relacion']['numero_nota_entrega'];
+if($numero_nota_entrega=='0'){
+	$numero_nota_entrega = "";
+}
+$fecha_nota_entrega = $sisap->Cfecha($row['v_cscd02_relacion']['fecha_nota_entrega'], 'D/M/A');
+if($fecha_nota_entrega=="01/01/1900"){
+	$fecha_nota_entrega="";
+}
+$monto_nota_entrega = $sisap->Formato2($row['v_cscd02_relacion']['monto_nota_entrega']);
+if($monto_nota_entrega=='0,00'){
+	$monto_nota_entrega = "";
+}
+
+
+            if($cod_obra!=$cod_obra_aux){
+				$cod_obra_aux = $cod_obra;
+				$pdf->SetFont('vera','B',8);
+					$pdf->Cell(0,9,"CÓDIGO DE LA OBRA: ".$cod_obra_aux,'TRBL',1,'L');
+				$pdf->SetFont('vera','',6);
+			}
+
+
+
+
+$pdf->Cell(15,6,$ano_cotizacion,'RL',0,'C');//----[AÑO COTIZACIÓN]
+$pdf->Cell(20,6,$numero_cotizacion,'R',0,'C');//--[NÚMERO COTIZACIÓN]
+$pdf->Cell(15,6,$fecha_cotizacion,'R',0,'C');//---[FECHA COTIZACIÓN]
+$pdf->Cell(30,6,$monto_cotizacion,'R',0,'R');//---[MONTO COTIZACIÓN]
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(100,1,"",'',2,'C');
+    $pdf->MultiCell(99,2,$proveedor,'','L');//----[PROVEEDOR COTIZACIÓN]
+    $varX = $varX+100;
+    $pdf->SetXY($varX,$varY);
+
+$pdf->Cell(15,6,$ano_orden_compra,'RL',0,'C');//--[AÑO ORDEN DE COMPRA]
+$pdf->Cell(20,6,$numero_orden_compra,'R',0,'C');//[NÚMERO ORDEN DE COMPRA]
+$pdf->Cell(15,6,$fecha_orden_compra,'R',0,'C');//-[FECHA ORDEN DE COMPRA]
+$pdf->Cell(30,6,$monto_orden,'R',0,'R');//--------[MONTO ORDEN DE COMPRA]
+
+$pdf->Cell(15,6,$ano_nota_entrega,'R',0,'C');//---[AÑO NOTA DE ENTREGA]
+$pdf->Cell(20,6,$numero_nota_entrega,'R',0,'C');//[NÚMERO NOTA DE ENTREGA]
+$pdf->Cell(15,6,$fecha_nota_entrega,'R',0,'C');//-[FECHA NOTA DE ENTREGA]
+$pdf->Cell(0,6,$monto_nota_entrega,'R',1,'R');//--[MONTO NOTA DE ENTREGA]
+$pdf->Cell(0,0,"",'T',1,'C');
+}
+
+}
+
+$pdf->Output("RELACION COTIZACIONES_".date('d/m/Y').".pdf", "D");
+?>

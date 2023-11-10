@@ -1,0 +1,344 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<? if($cod_transaccion!=null){ ?>
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="10%">Selecci&oacute;n</td>
+			<td width="20%">Código de Transacci&oacute;n</td>
+			<td width="70%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td>
+					<?=  $sisap->selectTagRemote('cnmp10/cod_transaccion',$transaccion,null,$cod_transaccion, array('onchange1'=>'/cnmp10_escala_sueldo_deduccion/seleccion_trans/'.$cod_nomina, 'update1'=>'transaccion','id'=>'select_2', true), null, true); ?>
+			</td>
+			<td ><input name="data[cnmp10][cod_transaccion]"  value="<?=mascara($cod_transaccion,3)?>" id="transaccion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+			<td ><input name="data[cnmp10][deno_transaccion]"  value="<?=$deno_transaccion?>" id="denominacion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+		</tr>
+	</table>
+	<?php if($verifica!=null){
+
+		$frecuencia = $verifica[0][0]['cod_frecuencia'];
+		if($frecuencia==1){
+			$disabled='disabled';
+		}else{
+			$disabled='false';
+		}
+		$condicion = $verifica[0][0]['cod_condicion'];
+		if($condicion==2){
+			$cod=$verifica[0][0]['codi_transaccion'];
+			$codigo=mascara($verifica[0][0]['codi_transaccion'],3);
+			$denominacion=$verifica[0][0]['deno_transaccion'];
+			$disabled1='enabled';
+		}else{
+			$cod='';
+			$codigo='';
+			$denominacion='';
+			$disabled1='disabled';
+
+		}
+		$escenario = $verifica[0][0]['activar_frecuencia_eventual'];
+		$tipo_trans= $verifica[0][0]['codi_tipo_transaccion'];
+		$codi_trans= $verifica[0][0]['codi_transaccion'];
+		if($tipo_trans==0){
+			$select_transaccion=array();
+		}
+		?>
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr align="center">
+				<td  width="25%">Frecuencia</td>
+				<td  width="25%">Condici&oacute;n</td>
+				<td  width="50%">Activa escenario con frecuencia eventual?</td>
+			</tr>
+			<td align="center">
+			<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'value'=>$frecuencia, 'disabled'=>'disabled'), $return = false); ?>
+			</td>
+			<td align="lefth">
+					<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>$condicion, 'onChange'=>'condicion_show1();'), $return = false); ?>
+			</td>
+			<td align="center">
+					<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>$escenario, 'disabled'=>$disabled, 'id'=>'escenario'), $return = false); ?>
+			</td>
+		</table>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td  width="40%">Tipo de transacci&oacute;n</td>
+			<td  width="10%">---</td>
+			<td  width="10%">Código</td>
+			<td  width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td >
+				<?= $sisap->radioTagRemote('cnmp10/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_sueldo_deduccion/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>$disabled1,'id'=>'tipo_trans'),null,$tipo_trans);?>
+			</td>
+
+			<td  id="carga_radio">
+				<?= $sisap->selectTagRemote('cnmp10/select4', $select_transaccion,$select_transaccion, $selected =$codi_trans, $selectAttr = array('onchange1'=>'/cnmp10_escala_sueldo_deduccion/codi_deno_trans/'.$tipo_trans, 'update1'=>'vacio','id'=>'select_4'),  $optionAttr = null,  $showEmpty = true, $return = false) ?>
+			</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="<?=$codigo?>" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="<?=$denominacion?>" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+		</table>
+
+	<? }else{?>
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td align="center" width="25%">Frecuencia</td>
+				<td align="center" width="25%">Condici&oacute;n</td>
+				<td align="center" width="50%">Activa escenario con frecuencia eventual?</td>
+			</tr>
+			<tr>
+				<td align="center">
+					<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'disabled'=>'disabled'), $return = false); ?>
+				</td>
+				<td align="lefth">
+					<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>1, 'onChange'=>'condicion_show1();'), $return = false); ?>
+				</td>
+				<td align="center">
+					<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>2, 'disabled'=>'disabled', 'id'=>'escenario'), $return = false); ?>
+				</td>
+			</tr>
+		</table>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+			<tr>
+				<td align="center" width="40%">Tipo de transacci&oacute;n</td>
+				<td align="center" width="10%">---</td>
+				<td align="center" width="10%">Código</td>
+				<td align="center" width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+			</tr>
+
+			<tr>
+				<td align="center">
+					<?= $sisap->radioTagRemote('cnmp10/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_sueldo_deduccion/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>'disabled','id'=>'tipo_trans'),null,null);?>
+				</td>
+
+				<td align="center" id="carga_radio">
+					<select id="select_4"></select>
+				</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+		</table>
+	<? } ?>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+		  <tr class="tr_negro" style:"position:fixed">
+		    <td class="td4" width="15%">Escala</td>
+		    <td class="td4" width="30%">Desde este sueldo</td>
+		    <td class="td4" width="30%">Hasta este sueldo</td>
+		    <td class="td4" width="15%">Deducir este monto</td>
+		    <td class="td4" width="10%">---</td>
+		  </tr>
+
+		  <tr class="tr_grid_c2">
+		    <td class="td4" width="15%"><?= $html->input('cnmp10/escala', $htmlAttributes = array('value'=>$escala,'style'=>'width:98%;text-align:center','size'=>'3', 'readonly'=>'readonly','id'=>'escala'), false); ?></td>
+		    <td class="td4" width="30%"><?= $html->input('cnmp10/desde_sueldo', $htmlAttributes = array('value'=>$desde,'style'=>'width:98%;text-align:center',"onChange"=>"moneda('desde_sueldo');", 'readonly'=>$readonly,'id'=>'desde_sueldo','onKeyPress'=>'return solonumeros_con_punto(event);'), false); ?></td>
+		    <td class="td4" width="30%"><?= $html->input('cnmp10/hasta_sueldo', $htmlAttributes = array('onBlur'=>'valida_menor_igual_sueldo1();','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('hasta_sueldo');",'value'=>'','style'=>'width:98%;text-align:center','id'=>'hasta_sueldo'), false); ?></td>
+		    <td class="td4" width="15%"><?= $html->input('cnmp10/monto', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center', 'readonly'=>'','id'=>'monto','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('monto');"), false); ?></td>
+		    <td class="td4">
+		    	<? if(($ubicacion==null) || ($ubicacion!=null && $verifica!=null)){ ?>
+						<?= $sisap->submitTagRemote('+', array('disabled'=>'','funcion'=>'valida_escenario_escala_sueldo','id'=>'agregar','url1' => '/cnmp10_escala_sueldo_deduccion/guardar', 'update1'=>'vacio')); ?>
+		    	<? }else{ ?>
+		    			<?= $sisap->submitTagRemote('+', array('disabled'=>'disabled','funcion'=>'valida_escenario_escala_sueldo','id'=>'agregar','url1' => '/cnmp10_escala_sueldo_deduccion/guardar', 'update1'=>'carga_guardar')); ?>
+		    	<? } ?>
+		    </td>
+		  </tr>
+	</table>
+
+	<div id="carga_guardar" style="height:150px;overflow:auto;">
+			<? if($datos!=null){ ?>
+				<br>
+				<table width="100%" border="1" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+				  <tr class="tr_negro" >
+				    <td class="td4" width="15%">Escala</td>
+				    <td class="td4" width="30%">Desde este sueldo</td>
+				    <td class="td4" width="30%">Hasta este sueldo</td>
+				    <td class="td4" width="25%" align='right'>Monto a deducir</td>
+				  </tr>
+
+				<? for($i=0;$i<count($datos);$i++){
+					if($i%2 == 0){
+						$color = "tr_grid_c1";
+					}else{
+						$color = "tr_grid_c2";
+					}
+				?>
+					<tr id="<?=$i?>"  class="<?=$color?>">
+						<td class="td2center"><?=$datos[$i][0]['escala']?></td>
+						<td class="td2center"><?=$sisap->Formato2($datos[$i][0]['desde_sueldo'])?></td>
+						<td class="td2center"><?=$sisap->Formato2($datos[$i][0]['hasta_sueldo'])?></td>
+						<td class="td2center" align='right'><?=$sisap->Formato2($datos[$i][0]['monto'])?></td>
+					</tr>
+				<?} ?>
+				</table>
+		<? }  ?>
+	</div>
+
+
+	<? if(isset($transferir)){ ?>
+		<br><br><br>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+			<tr class="tr_negro" align="center">
+				<td colspan="4">TRANSFERENCIA DE ESTE ESCENARIO A OTRAS NÓMINAS</td>
+			</tr>
+			<tr align="center">
+				<td width="10%" >Selección</td>
+				<td width="10%" >Cod nómina</td>
+				<td width="65%" >Denominación de la nómina</td>
+				<td width="15%" >&nbsp;</td>
+			</tr>
+
+			<tr>
+				<td><?echo $sisap->selectTagRemote('cnmp10/select_transferir', $optionElements=$transferir,  $extra_opciones = array(), $selected = null, $selectAttr = array('onchange1'=>'/cnmp10_escala_sueldo_deduccion/cod_deno_transferir', 'update1'=>'vacio','id'=>'select_transferir'),  $optionAttr = null,  $showEmpty = true, $return = false);?></td>
+				<td  width="15%"><input name="data[cnmp10][cod_transferir]"  value="" id="cod_transferencia"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td  width="60%"><input name="data[cnmp10][deno_transferir]"  value="" id="deno_transferencia"  class="inputtext" readonly></td>
+				<td><?= $sisap->submitTagRemote('Transferir', array('disabled'=>'disabled','id'=>'save_transferir','url1' => '/cnmp10_escala_sueldo_deduccion/guardar_transferir/'.$cod_nomina.'/'.$cod_transaccion, 'update1'=>'vacio')); ?></td>
+			</tr>
+
+		</table>
+
+	<? } ?>
+
+	<br>
+	<div id="carga_nominas" style="height:150px;overflow:auto;">
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+			<tr class="tr_negro">
+				<td colspan="2" align="center">TIPO DE NÓMINA DONDE APARECE TAMBIÉN ESTE ESCENARIO</td>
+			</tr>
+			<tr align="center">
+				<td width="10%" >Cod nómina</td>
+				<td width="90%" >Denominación de la nómina</td>
+			</tr>
+			<? if($opciones!=null){
+				for($i=0;$i<count($opciones);$i++){
+					if($i%2 == 0){
+						$color = "tr_grid_c1";
+					}else{
+						$color = "tr_grid_c2";
+					}
+					?>
+				<tr id="<?=$i?>"  class="<?=$color?>" >
+					<td width="10%" align="center"><?=mascara($opciones[$i][0]['cod_tipo_nomina'],3)?></td>
+					<td width="90%" align="lefth"><?=$opciones[$i][0]['deno_nomina']?></td>
+			    </tr>
+		 <?	} }else{ ?>
+				<tr class= "tr_grid_c2">
+					<td width="10%" >&nbsp;</td>
+					<td width="90%" >&nbsp;</td>
+			    </tr>
+
+			<? } ?>
+		</table>
+	</div>
+
+	<br>
+<script language="JavaScript" type="text/javascript">
+  function bloquea(){
+  	alert("hola");
+  }
+</script>
+
+<? if($verifica!=null){ ?>
+	<?= $sisap->submitTagRemote('Eliminar', array('disabled'=>'','id'=>'eliminar','url1' => '/cnmp10_escala_sueldo_deduccion/eliminar/'.$cod_nomina.'/'.$cod_transaccion, 'update1'=>'vacio')); ?>&nbsp;
+	<?= $sisap->submitTagRemote('Modificar', array('disabled'=>'','id'=>'modificar','url1' => '/cnmp10_escala_sueldo_deduccion/modificar/1', 'update1'=>'vacio',)); ?>&nbsp;
+	<?= $sisap->submitTagRemote('Guardar', array('id'=>'save','disabled'=>'disabled','url1' => '/cnmp10_escala_sueldo_deduccion/modificar/2/'.$cod_nomina.'/'.$cod_transaccion, 'update1'=>'vacio')); ?>&nbsp;
+	<?= $sisap->submitTagRemote('regresar', array('id'=>'regresa','disabled'=>'disabled','url1' => '/cnmp10_escala_sueldo_deduccion/modificar/3', 'update1'=>'vacio')); ?>&nbsp;
+<? } ?>
+
+
+
+<?= $sisap->buttonTagRemote('cnmp09_asignacion/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+
+
+<? }else{///////////////////////////////////VACIO//////////////
+	?>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="10%">Selecci&oacute;n</td>
+			<td width="20%">Código de Transacci&oacute;n</td>
+			<td width="70%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td>
+					<?=  $sisap->selectTagRemote('cnmp10_escala_sueldo_deduccion/cod_transaccion',$transaccion,null,  '', array('onchange1'=>'/cnmp10_escala_sueldo_deduccion/seleccion_trans/'.$cod_nomina, 'update1'=>'transaccion','id'=>'select_2', true), null, true); ?>
+			</td>
+			<td ><input name="data[cnmp10][cod_transaccion]"  value="" id="transaccion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+			<td ><input name="data[cnmp10][deno_transaccion]"  value="" id="denominacion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+		</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td  width="25%">Frecuencia</td>
+			<td  width="25%">Condici&oacute;n</td>
+			<td  width="50%">Activa escenario con frecuencia eventual?</td>
+		</tr>
+		<tr >
+			<td align="center">
+				<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'disabled'=>'disabled'), $return = false); ?>
+			</td>
+			<td align="lefth">
+				<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>1, 'onChange'=>'condicion_show1();'), $return = false); ?>
+			</td>
+			<td align="center">
+				<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>2, 'disabled'=>'disabled', 'id'=>'escenario'), $return = false); ?>
+			</td>
+		</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td  width="40%">Tipo de transacci&oacute;n</td>
+			<td  width="10%">---</td>
+			<td  width="10%">Código</td>
+			<td  width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td >
+				<?= $sisap->radioTagRemote('cnmp10_escala_sueldo_deduccion/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_sueldo_deduccion/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>'disabled','id'=>'tipo_trans'),null,null);?>
+			</td>
+
+			<td  id="carga_radio">
+				<select id="select_4"></select>
+
+			</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+		  <tr class="tr_negro" style:"position:fixed">
+		    <td class="td4" width="15%">Escala</td>
+		    <td class="td4" width="30%">Desde este sueldo</td>
+		    <td class="td4" width="30%">Hasta este sueldo</td>
+		    <td class="td4" width="15%">Deducir este monto</td>
+		    <td class="td4" width="10%">---</td>
+		  </tr>
+
+		  <tr class="tr_grid_c2">
+		    <td class="td4" ><?= $html->input('cnmp10/escala', $htmlAttributes = array('value'=>'','style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'escala'), false); ?></td>
+		    <td class="td4" ><?= $html->input('cnmp10/desde_sueldo', $htmlAttributes = array('value'=>'','style'=>'width:98%','size'=>'3', 'readonly'=>$readonly,'id'=>'desde_sueldo'), false); ?></td>
+		    <td class="td4" ><?= $html->input('cnmp10/hasta_sueldo', $htmlAttributes = array('value'=>'','style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'hasta_sueldo'), false); ?></td>
+		    <td class="td4" ><?= $html->input('cnmp10/monto', $htmlAttributes = array('value'=>'','style'=>'width:98%','size'=>'3', 'readonly'=>'','id'=>'monto', 'readonly'=>'readonly'), false); ?></td>
+		    <td class="td4"><?= $sisap->submitTagRemote('+', array('disabled'=>'disabled','funcion'=>'valida_monto1_escala_sueldo','id'=>'agregar','url1' => '/cnmp10_escala_sueldo_deduccion/guardar', 'update1'=>'grilla')); ?></td>
+		  </tr>
+	</table>
+
+<? } ?>
+<div id="vacio"></div>

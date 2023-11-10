@@ -1,0 +1,4 @@
+ALTER TABLE cnmd09_asignacion_calcula_asignacion DROP COLUMN incluye_sueldo_basico;
+
+
+ALTER TABLE cnmd09_asignacion_calcula_deduccion DROP COLUMN incluye_sueldo_basico;

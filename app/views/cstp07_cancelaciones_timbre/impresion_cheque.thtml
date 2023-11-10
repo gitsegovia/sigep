@@ -1,0 +1,782 @@
+<?php
+// vendor('utf8_tcpdf/tcpdf');
+vendor('tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		//$this->image_escudo_sin_consolidado(14,11,13);
+		//$this->SetFont('vera','B',9);
+		//$this->Cell(0,6,"",'TRL',1);
+		//$this->Cell(100,6,"             ".$_SESSION["entidad_federal"],'L',0);
+		//$this->Cell(0,6,"",'R',1,'L');
+		//$this->SetFont('vera','',8);
+		//$this->Cell(100,6,"                DIRECCION GENERAL DE PRESUPUESTO",'LB',0);
+		//$this->Cell(0,6,"",'RB',1);
+	}//fin funtion
+}//fin de la clase PDF
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(3.8);
+$pdf->SetLeftMargin(18);
+$pdf->SetRightMargin(40);
+$pdf->SetAutoPageBreak(true,5);
+
+$pdf->AddPage();
+
+
+// FORMA VERTICAL ROTACION 90 grados:
+
+if(isset($forma_orientacion) && $forma_orientacion == '1'){
+
+$angle=-90;
+$px=80;
+$py=84;
+
+// $pdf->SetDrawColor(200);
+// $pdf->Line($px-1,$py-1,$px+1,$py+1);
+// $pdf->Line($px-1,$py+1,$px+1,$py-1);
+$pdf->StartTransform();
+$pdf->Rotate($angle, $px, $py);
+$pdf->SetTopMargin(19);
+// $pdf->Rotate(-90);
+// $pdf->StopTransform(); // Para finalizar la Rotacion en dicho punto
+
+}
+
+
+
+$pdf->SetFont('vera','',10);
+
+$cod_entidad_bancaria = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['cod_entidad_bancaria'];
+$beneficiario  = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['beneficiario'];
+$fecha_cheque  = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['fecha_cheque'];
+$monto 		   = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['monto'];
+$numero_cheque = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['numero_cheque'];
+$rif_cedula    = $cheque_cuerpo[0]['cstd03_cheque_cuerpo']['rif_cedula'];
+
+
+
+///////////AQUI MOSTRAMOS LA MASCARA DEL CHEQUE/////////////
+$contar = count($sisap->Formato2($monto));
+$contar_aux = 16 - $contar;
+$aux = "";
+for($is=1; $is<=$contar_aux; $is++){$aux .= "*";}
+$monto_mascara = "*".$sisap->Formato2($monto).'*';
+
+if($cod_entidad_bancaria=='0134' || $cod_entidad_bancaria==134 ){
+	//BANESCO
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"     ".$monto_mascara,'',1,'L');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3,"",'',0);
+	$pdf->Cell(0,3,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3,"",'',0);
+	$pdf->SetFont('vera','B',8);
+	$pdf->MultiCell(0,5,"".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(27);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(27);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(27);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+
+}else if($cod_entidad_bancaria=='0006' || $cod_entidad_bancaria==6){
+	//BANCO DE CORO
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(0,4,$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(14,4,"",'',0);
+	$pdf->Cell(0,4,$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(14,4,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4,"".$sisap->convertir($monto),'','L');
+	$pdf->Ln(7);
+	$pdf->SetY($varY+13);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',0,'L');
+	}else{
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,'','',0,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0102' || $cod_entidad_bancaria==102){
+	// BANCO VENEZUELA
+	$pdf->Ln(1);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(4.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(6.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(72,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0191' || $cod_entidad_bancaria==191){
+	// BANCO NACIONAL DE CREDITO
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(145,6,"NO ENDOSABLE",'',1,'R');
+        $pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4,"".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(80,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0163' || $cod_entidad_bancaria==163){
+	// BANCO DEL TESORO
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"      ".$monto_mascara,'',1,'L');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9,4,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4,"".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(3);
+	$pdf->Cell(62,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'R');
+	}else{
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'','',1,'R');
+	}
+
+} else if($cod_entidad_bancaria=='0007' || $cod_entidad_bancaria==7){
+	// BANFOANDES
+	$pdf->Ln(1);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0105' || $cod_entidad_bancaria==105){
+	// BANCO MERCANTIL
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"         ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(13,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(6,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(81,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0108' || $cod_entidad_bancaria==108){
+	// BANCO PROVINCIAL
+	$pdf->Ln(7);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(8);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(9,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(11,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(82,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+
+}else if($cod_entidad_bancaria=='0114' || $cod_entidad_bancaria==114){
+	// BANCARIBE
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"     ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(56,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+} else if($cod_entidad_bancaria=='0116' || $cod_entidad_bancaria==116){
+	// BANCO OCCIDENTAL DE DESCUENTO (BOD)
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0125' || $cod_entidad_bancaria==125 || $cod_entidad_bancaria=='0003' || $cod_entidad_bancaria==3){
+	// BANCO INDUSTRIAL
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(1);
+	$pdf->Cell(78,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0128' || $cod_entidad_bancaria==128){
+	// BANCO CARONI
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"           ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(11,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(78,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0147' || $cod_entidad_bancaria==147){
+	// BANORTE
+	$pdf->Ln(1);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0149' || $cod_entidad_bancaria==149){
+	// BANCO DEL PUEBLO SOBERANO
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"         ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(13,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(76,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0151' || $cod_entidad_bancaria==151){
+	// FONDO COMUN
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(76,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0156' || $cod_entidad_bancaria==156){
+	// 100% BANCO
+	$pdf->Ln(6);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(76,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else if($cod_entidad_bancaria=='0166' || $cod_entidad_bancaria==166){
+	// BANCO AGRICOLA VENEZUELA
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(13,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(76,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+}else if($cod_entidad_bancaria=='0175' || $cod_entidad_bancaria==175){
+	// BANCO BICENTENARIO
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"         ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(145,6,"NO ENDOSABLE",'',1,'R');
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4," ".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(62,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(23);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'L');
+	}else{
+		$pdf->Ln(23);
+		$pdf->Cell(0,5,'','',1,'L');
+	}
+
+} else{
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',9);
+	$pdf->Cell(110,4,"",'',0,'R');
+	$pdf->Cell(0,4,"       ".$monto_mascara,'',1,'L');
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','',10);
+	$pdf->Cell(0,6,"NO ENDOSABLE",'',1,'C');
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(7.2,3.5,"",'',0);
+	$pdf->Cell(0,4,"".$beneficiario.' ('.$rif_cedula.')','',1,'L');
+	$varY = $pdf->GetY();
+	$pdf->Ln(2);
+	$pdf->Cell(9.2,3.5,"",'',0);
+	$pdf->SetFont('vera','B',9);
+	$pdf->MultiCell(135,4,"".$sisap->convertir($monto),'','L');
+	$pdf->SetY($varY+13);
+	$pdf->Ln(2);
+	$pdf->Cell(74,5,$sisap->fecha_alfabetico($fecha_cheque, $cod_entidad_bancaria),'',0,'R');
+	$pdf->Cell(0,5,"",'',0,'L');
+
+	//PARA LA GOB DE APURE
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+		$pdf->Ln(25);
+		$pdf->Cell(70,"",'',0,'R');
+		$pdf->Cell(0,5,$coletilla,'',1,'L');
+	}else if ($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==12){
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'CADUCA A LOS 90 DIAS','',1,'R');
+	}else{
+		$pdf->Ln(25);
+		$pdf->Cell(0,5,'','',1,'R');
+	}
+
+}
+
+	    $pdf->Ln(40);
+		$pdf->SetFont('vera','',11);
+		$pdf->Cell(0,6,"CHEQUE NRO: ".$sisap->mascara_ocho($numero_cheque),'',1,'C');
+
+
+
+
+
+	if(isset($forma_orientacion) && $forma_orientacion == '1'){
+		$pdf->StopTransform();
+	}
+
+$pdf->Output('cheque_'.date("d-m-Y").'.pdf','D');
+?>

@@ -1,0 +1,402 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?= $sisap->Tabla("",true,"RESUMEN MENSUAL DE LA SITUACIÓN FINANCIERA","","750")?>
+
+<?= $sisap->OpenTable("750");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_contabilidad/resumen_mensual_situacion_financiera/si'); ?>" >
+
+<center>Año:<?= $sisap->selectTagRemote('cfpp00/ano', $lista_ano,  null,  $year, array('id'=>'ano', 'onChange'=>'vacio','style'=>'width:10%'  , true), null, true);?></center>
+<br>
+
+
+<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+	<tr>
+		<td width="10%" align="center">Indique Mes:</td>
+		<td width="15%">
+			<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,  $m, array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+		</td>
+	</tr>
+</table>
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    	$titulo_A = "RESUMEN MENSUAL DE LA SITUACIÓN FINANCIERA";
+    	$titulo_B = "MES: ".$_SESSION['mes_diario_c']." AÑO: ".$_SESSION['ano_diario_c'];
+		$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"255"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(14,4,'','LRT',0,'C');
+		$this->Cell(95,4,'','RT',0,'C');
+		$this->Cell(30,4,'','RT',0,'C');
+		$this->Cell(30,4,'','RT',0,'C');
+		$this->Cell(30,4,'','RT',0,'C');
+		$this->Cell(0,4,'CUENTAS MAYORES','RBT',1,'C');
+
+		$this->Cell(14,3,'','LR',0,'C');
+		$this->Cell(95,3,'','R',0,'C');
+		$this->Cell(30,3,'DIVISIÓN','R',0,'C');
+		$this->Cell(30,3,'SUBDIVISIÓN','R',0,'C');
+		$this->Cell(30,3,'','R',0,'C');
+		$this->Cell(36,3,'ACTIVO CORRIENTE','R',0,'C');
+		$this->Cell(0,3,'PASIVO CORRIENTE','R',1,'C');
+
+		$this->Cell(14,3,'CUENTA','LRB',0,'C');
+		$this->Cell(95,3,'DENOMINACIÓN DE LA CUENTA','RB',0,'C');
+		$this->Cell(30,3,'ESTADISTICA','RB',0,'C');
+		$this->Cell(30,3,'ESTADISTICA','RB',0,'C');
+		$this->Cell(30,3,'SUBCUENTA','RB',0,'C');
+		$this->Cell(36,3,'SALDO','RB',0,'C');
+		$this->Cell(0,3,'SALDO','RB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+//$datos=null;
+if($datos1!=null){
+	$total_debe=0;
+	$total_haber=0;
+	$concatena=rand().rand().rand();
+	$sum_dive=0;
+	$sum_div=0;
+	$sum_sub=0;
+	$sum_cuenta_deb=0;
+	$sum_cuenta_cre=0;
+	$debe=0;
+	$haber=0;
+///////////////////////////////////////////////////CUENTA//////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+for($i=0; $i<count($datos1); $i++){
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(14,8,$datos1[$i][0]['cod_cuenta'],'LR',0,'C');
+		$varX = $pdf->GetX();//asigno X
+		$varY = $pdf->GetY();//asigno Y
+		$pdf->Cell(95,1,'','',2,'C');
+		$pdf->MultiCell(95,3,$datos1[$i][0]['deno_cuenta'],'','J');
+		$varX = $varX+95;//le sumo a X 50 del Cell debido a que lo capture antes.
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+//		$pdf->Cell(60,8,$datos1[$i][0]['deno_cuenta'],'RB',0,'L');
+		$pdf->Cell(30,8,'','RL',0,'C');
+		$pdf->Cell(30,8,'','R',0,'C');
+		$pdf->Cell(30,8,'','R',0,'C');
+		$debe=$datos1[$i][0][$debito_total];
+		$haber=$datos1[$i][0][$credito_total];
+		$h1=0;
+		$d1=0;
+		if($debe>=$haber){
+			$d1=$debe-$haber;
+			$h1=0;
+		}
+
+		if($haber>=$debe){
+			$h1=$haber-$debe;
+			$d1=0;
+		}
+
+		$pdf->Cell(36,8,$sisap->Formato2($d1),'R',0,'R');
+		$pdf->Cell(0,8,$sisap->Formato2($h1),'R',1,'C');
+		$sum_cuenta_deb+=$d1;
+		$sum_cuenta_cre+=$h1;
+		/*
+		if($datos1[$i][0]['cod_cuenta']%2==0){
+			$pdf->Cell(36,8,$sisap->Formato2($d1),'R',0,'R');
+			$pdf->Cell(0,8,$sisap->Formato2($h1),'R',1,'C');
+			$sum_cuenta_deb+=$d1;
+		}else{
+			$pdf->Cell(36,8,$sisap->Formato2($d1),'R',0,'C');
+			$pdf->Cell(0,8,$sisap->Formato2($h1),'R',1,'R');
+			$sum_cuenta_cre+=$h1;
+		}
+		*/
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(0,0,'','T',1,'C');
+
+///////////////////////////////////////////////////SUBCUENTA//////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+				for($j=0; $j<count($datos2); $j++){
+					if($datos2[$j][0]['cod_cuenta']==$datos1[$i][0]['cod_cuenta'] && $datos2[$j][0]['cod_subcuenta']!=0){
+						$pdf->Cell(14,8,'','LR',0,'C');
+
+						$varX = $pdf->GetX();//asigno X
+						$varY = $pdf->GetY();//asigno Y
+						$pdf->Cell(95,1,'','',2,'C');
+						$pdf->MultiCell(95,3,$datos2[$j][0]['deno_subcuenta'],'','J');
+						$varX = $varX+95;//le sumo a X 50 del Cell debido a que lo capture antes.
+						$pdf->SetXY($varX,$varY);// cargo XY
+
+		//				$pdf->Cell(60,8,$datos2[$j][0]['deno_subcuenta'],'RB',0,'L');
+						$pdf->Cell(30,8,'','RL',0,'C');
+						$pdf->Cell(30,8,'','R',0,'C');
+
+						$debe=$datos2[$j][0][$debito_total];
+						$haber=$datos2[$j][0][$credito_total];
+						if($debe>=$haber){
+							$d1=$debe-$haber;
+							$h1=0;
+						}
+
+						if($haber>=$debe){
+							$h1=$haber-$debe;
+							$d1=0;
+						}
+						$saldo=$d1+$h1;
+
+						if($datos2[$j][0]['cod_cuenta']%2==0){
+							$pdf->Cell(30,8,$sisap->Formato2($saldo),'R',0,'R');
+							$sum_sub+=$saldo;
+						}else{
+							$pdf->Cell(30,8,$sisap->Formato2($saldo),'R',0,'R');
+							$sum_sub+=$saldo;
+						}
+
+
+
+						$pdf->Cell(36,8,'','R',0,'C');
+						$pdf->Cell(0,8,'','R',1,'C');
+
+						$pdf->Cell(0,0,'','T',1,'C');
+
+///////////////////////////////////////////////////DIVISION///////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+							for($k=0; $k<count($datos3); $k++){
+									if($datos3[$k][0]['cod_cuenta']==$datos2[$j][0]['cod_cuenta'] && $datos3[$k][0]['cod_subcuenta']==$datos2[$j][0]['cod_subcuenta'] && $datos3[$k][0]['cod_division']!=0){
+										$pdf->Cell(14,8,'','LR',0,'C');
+
+										$varX = $pdf->GetX();//asigno X
+										$varY = $pdf->GetY();//asigno Y
+										$pdf->Cell(95,1,'','',2,'C');
+										$pdf->MultiCell(95,3,$datos3[$k][0]['deno_division'],'','J');
+										$varX = $varX+95;//le sumo a X 50 del Cell debido a que lo capture antes.
+										$pdf->SetXY($varX,$varY);// cargo XY
+
+						//				$pdf->Cell(60,8,$datos2[$j][0]['deno_subcuenta'],'RB',0,'L');
+										$pdf->Cell(30,8,'','RL',0,'C');
+
+										$debe=$datos3[$k][0][$debito_total];
+										$haber=$datos3[$k][0][$credito_total];
+										if($debe>=$haber){
+											$d1=$debe-$haber;
+											$h1=0;
+										}
+
+										if($haber>=$debe){
+											$h1=$haber-$debe;
+											$d1=0;
+										}
+										$saldo=$d1+$h1;
+
+										if($datos3[$k][0]['cod_cuenta']%2==0){
+											$pdf->Cell(30,8,$sisap->Formato2($saldo),'R',0,'R');
+											$sum_div+=$saldo;
+										}else{
+											$pdf->Cell(30,8,$sisap->Formato2($saldo),'R',0,'R');
+											$sum_div+=$saldo;
+										}
+
+
+
+										$pdf->Cell(30,8,'','R',0,'C');
+										$pdf->Cell(36,8,'','R',0,'C');
+										$pdf->Cell(0,8,'','R',1,'C');
+
+										$pdf->Cell(0,0,'','T',1,'C');
+
+///////////////////////////////////////////////////SUBDIVISION////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+											for($m=0; $m<count($datos4); $m++){
+												if($datos4[$m][0]['cod_cuenta']==$datos3[$k][0]['cod_cuenta'] && $datos4[$m][0]['cod_subcuenta']==$datos3[$k][0]['cod_subcuenta'] && $datos4[$m][0]['cod_division']==$datos3[$k][0]['cod_division'] && $datos4[$m][0]['cod_subdivision']!=0){
+													$pdf->Cell(14,8,'','LR',0,'C');
+
+													$varX = $pdf->GetX();//asigno X
+													$varY = $pdf->GetY();//asigno Y
+													$pdf->Cell(95,1,'','',2,'C');
+													$pdf->MultiCell(95,3,$datos4[$m][0]['deno_subdivision'],'','J');
+													$varX = $varX+95;//le sumo a X 50 del Cell debido a que lo capture antes.
+													$pdf->SetXY($varX,$varY);// cargo XY
+
+													$debe=$datos4[$m][0][$debito_total];
+													$haber=$datos4[$m][0][$credito_total];
+													if($debe>=$haber){
+														$d1=$debe-$haber;
+														$h1=0;
+													}
+
+													if($haber>=$debe){
+														$h1=$haber-$debe;
+														$d1=0;
+													}
+													$saldo=$d1+$h1;
+
+									//				$pdf->Cell(60,8,$datos2[$j][0]['deno_subcuenta'],'RB',0,'L');
+													if($datos4[$m][0]['cod_cuenta']%2==0){
+														$pdf->Cell(30,8,$sisap->Formato2($saldo),'RL',0,'R');
+														$sum_dive+=$saldo;
+													}else{
+														$pdf->Cell(30,8,$sisap->Formato2($saldo),'RL',0,'R');
+														$sum_dive+=$saldo;
+													}
+
+
+
+													$pdf->Cell(30,8,'','R',0,'C');
+													$pdf->Cell(30,8,'','R',0,'C');
+													$pdf->Cell(36,8,'','R',0,'C');
+													$pdf->Cell(0,8,'','R',1,'C');
+
+													$pdf->Cell(0,0,'','T',1,'C');
+												}// fin if
+
+
+											}//fin for
+									}// fin if
+
+
+							}// fin for
+
+
+					}// fin if
+
+				}//fin for
+
+
+}//fin for
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,6,'subtotales:','LR',0,'R');
+//	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,6,$sisap->Formato2($sum_dive),'R',0,'R');
+	$pdf->Cell(30,6,$sisap->Formato2($sum_div),'R',0,'R');
+	$pdf->Cell(30,6,$sisap->Formato2($sum_sub),'R',0,'R');
+	$pdf->Cell(36,6,$sisap->Formato2($sum_cuenta_deb),'R',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($sum_cuenta_cre),'R',1,'R');
+
+
+	$situacion_debe=0;
+	$situacion_haber=0;
+	$total_debe=0;
+	$total_haber=0;
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,6,'situación financiera:','LR',0,'R');
+//	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,6,'','R',0,'C');
+	$pdf->Cell(30,6,'','R',0,'C');
+	$pdf->Cell(30,6,'','R',0,'C');
+	if($sum_cuenta_deb>$sum_cuenta_cre){
+		$situacion_haber = $sum_cuenta_deb - $sum_cuenta_cre;
+		$total_haber = $situacion_haber + $sum_cuenta_cre;
+		$total_debe = $sum_cuenta_deb;
+		$pdf->Cell(36,6,'','R',0,'C');
+		$pdf->Cell(0,6,$sisap->Formato2($situacion_haber),'R',1,'R');
+	}else if($sum_cuenta_cre>$sum_cuenta_deb){
+		$situacion_debe = $sum_cuenta_cre - $sum_cuenta_deb;
+		$total_debe = $situacion_debe + $sum_cuenta_deb;
+		$total_haber = $sum_cuenta_cre;
+		$pdf->Cell(36,6,$sisap->Formato2($situacion_debe),'R',0,'R');
+		$pdf->Cell(0,6,'','R',1,'C');
+	}else{
+		$pdf->Cell(36,6,'','R',0,'C');
+		$pdf->Cell(0,6,'','R',1,'C');
+	}
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,6,'totales:','LRB',0,'R');
+//	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,6,'','RB',0,'C');
+	$pdf->Cell(30,6,'','RB',0,'C');
+	$pdf->Cell(30,6,'','RB',0,'C');
+	$pdf->Cell(36,6,$sisap->Formato2($total_debe),'RB',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($total_haber),'RB',1,'R');
+
+
+}else{
+
+	$pdf->Cell(14,8,'','LRB',0,'C');
+	$pdf->Cell(95,8,' ','RB',0,'C');
+	$pdf->Cell(30,8,'','RB',0,'C');
+	$pdf->Cell(30,8,'','RB',0,'C');
+	$pdf->Cell(30,8,'','RB',0,'C');
+	$pdf->Cell(36,8,'','RB',0,'C');
+	$pdf->Cell(0,8,'','RB',1,'C');
+
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,4,'subtotales:','LR',0,'R');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(36,4,'','R',0,'C');
+	$pdf->Cell(0,4,'','R',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,4,'situación financiera:','LR',0,'R');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(30,4,'','R',0,'C');
+	$pdf->Cell(36,4,'','R',0,'C');
+	$pdf->Cell(0,4,'','R',1,'C');
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(109,4,'totales:','LRB',0,'R');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,4,'','RB',0,'C');
+	$pdf->Cell(30,4,'','RB',0,'C');
+	$pdf->Cell(30,4,'','RB',0,'C');
+	$pdf->Cell(36,4,'','RB',0,'C');
+	$pdf->Cell(0,4,'','RB',1,'C');
+
+}
+
+$pdf->Output('Resumen_Mensual_Situacion_Financiera_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

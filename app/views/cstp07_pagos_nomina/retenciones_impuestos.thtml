@@ -1,0 +1,152 @@
+<?php
+/*
+ * Creado el 14/04/2008 a las 05:18:20 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ * Nota: Las funciones JavaScript que utiliza este programa, se encuentran en las js del programa de cancelacion timbre.
+ * 		 aunque con la ultima modificacion hecha el 07-08-2008 ya las mismas no se utilizan mas, es en caso de necesitarse.
+ */
+ ?>
+
+<?php
+	// CONTEO DE LAS RETENCIONES POR ESTATUS
+
+	// Variables Contadores
+	$cont_general_emitir=0;
+	$cont_general_congelado=0;
+	$cont_emitir=0;
+	$cont_congelado=0;
+
+	switch ($var) {
+		case '1':
+			$nombre_impuesto="cepd03_ordenpago_cuerpo";
+			break;	
+	}
+
+	if($datos_cuerpo_impuesto_todos != null ){
+		foreach ($datos_cuerpo_impuesto_todos as $estatus_impuesto) {	
+			if($estatus_impuesto[$nombre_impuesto]['numero_cheque']==0){
+				$cont_general_emitir++;
+			}else{
+				$cont_general_congelado++;
+			}
+		}
+	}
+
+	
+	if($datos_cuerpo_impuesto != null){
+		foreach ($datos_cuerpo_impuesto as $estatus_impuesto) {	
+			if($estatus_impuesto[$nombre_impuesto]['numero_cheque']==0){
+				$cont_emitir++;
+			}else{
+				$cont_congelado++;
+			}
+		}
+	}
+
+?>
+
+<div id="distribuir" style="height:600px; overflow:auto;">
+	<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	    <tr class="tr_negro">
+	       <td align="center" rowspan="2" colspan="4" style="font-size:10pt; color:ffffff;"><br /><b><?=$titulo?></b></td>
+	       <td align="center" style="font-size:7pt; color:ffffff;">Total General</td>
+	       <td align="center" style="font-size:7pt; color:ffffff;"><?=$cont_general_emitir; ?></td>
+	       <td align="center" style="font-size:7pt; color:ffffff;"><?=$cont_general_congelado; ?></td>
+	       <td></td>
+	    </tr>
+	    <tr class="tr_negro">
+	       <td align="center" style="font-size:7pt; color:ffffff;">Por P&aacute;gina</td>
+	       <td align="center" style="font-size:7pt; color:ffffff;"><?=$cont_emitir; ?></td>
+	       <td align="center" style="font-size:7pt; color:ffffff;"><?=$cont_congelado; ?></td>
+	       <td></td>
+	    </tr>
+	    <tr class="tr_negro">
+	    	<td width="5%" align="center" style="font-size:7pt; color:ffffff;"><b><b>A&ntilde;o<br/>Ejecuci&oacute;n</b></td>
+	    	<td width="7%" align="center" style="font-size:7pt; color:ffffff;"><b></br><b>Fecha</b></td>
+	    	<td width="11%" align="center" style="font-size:7pt; color:ffffff;"><b></br><b>Nº Orden Pago</b></td>
+	    	<td width="35%" align="center" style="font-size:7pt; color:ffffff;"><b></br><b>Autorizado</b></td>
+	    	<td width="10%" align="center" style="font-size:7pt; color:ffffff;"><b></br><b>Monto</b></td>
+
+	    	<td width="14%" align="center" style="font-size:7pt; color:ffffff;"><b>Por</br><b>Emitir</b></td>
+	    	<td width="14%" align="center" style="font-size:7pt; color:ffffff;"><b></br><b>Congelado</b></td>
+	    	<td width="4%"align="center"><b>&nbsp;</b></td>
+   		</tr>
+		<?php
+ 			$k = 1;
+ 			$j = 0;
+
+			foreach($datos_cuerpo_impuesto as $impuesto){
+			 	$j++;
+			 	$ano_orden=$ano_ejecucion;
+			 	$num_orden_pago=$impuesto['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+			 	$numero_orden_pago_secuencia=$impuesto['cepd03_ordenpago_cuerpo']['numero_orden_pago_secuencia'];
+			 	$numero_orden_pago=$impuesto['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+			 	$fecha_reten=$impuesto['cepd03_ordenpago_cuerpo']['fecha_proceso_registro'];
+			 	$beneficiario=$impuesto['cepd03_ordenpago_cuerpo']['autorizado'];
+			 	$monto=$impuesto['cepd03_ordenpago_cuerpo']['monto_total'];
+			 	$cuenta=$impuesto['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+			 	$cheque=$impuesto['cepd03_ordenpago_cuerpo']['numero_cheque'];
+				if($k%2 == 0){
+					$color = "#CDF2FF";
+				}else{
+					$color = "#DAEBFF";
+				}
+				$k++;
+
+				?>
+				<tr id="<?= $j ?>" bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);">
+					<td align="center" style="font-size:7pt; font-family:verdana; color:000000;"><?= strtoupper($ano_orden)?></td>
+					<td align="center" style="font-size:7pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($fecha_reten))?></td>
+					<td align="center" id="actual_<?=$j?>" style="font-size:7pt; font-family:verdana; color:000000;"><?= $sisap->mascara_ocho($numero_orden_pago) ?>&nbsp;
+				<?php
+					if($impuesto['cepd03_ordenpago_cuerpo']['numero_cheque']==0){
+						$beneficiario_aux = str_replace("/", "--", $beneficiario);
+						$beneficiario_aux = str_replace("%", "porciento", $beneficiario_aux);
+		    	?>
+		    			<a href="javascript:ver_documento('/cstp07_pagos_nomina/congelar/<?=$ano_orden.'/'.$num_orden_pago.'/'.'/1/'.$j.'/'.$monto.'/'.$fecha_reten.'/'.$beneficiario_aux.'/'.$numero_orden_pago_secuencia?>', '<?=$j?>');">
+		    				<?=$html->image('tick.png',array('border'=>'0','title'=>'Congelar retencion orden pago'))?>
+		    			</a>
+		    	<?php
+		    		}
+		    	?>	
+	    		</td>
+				<td style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?=$beneficiario?></td>
+				<td align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($monto)?>&nbsp;</td>
+				<?php
+					if($impuesto['cepd03_ordenpago_cuerpo']['numero_cheque']==0){
+		    	?>	
+						<td align="center" id="poremitir_<?=$j?>" style="font-size:7pt; font-family:status; color:000000;"><b>X</b></td>
+						<td align="center" id="congelado_<?=$j?>" style="font-size:7pt; font-family:status; color:000000;">&nbsp;</td>
+						<td align="center" style="font-size:7pt; font-family:status; color:000000;"></td>
+				<?php
+				    }elseif($impuesto['cepd03_ordenpago_cuerpo']['numero_cheque']==-1){
+				    	$beneficiario_aux = str_replace("/", "--", $beneficiario);
+						$beneficiario_aux = str_replace("%", "porciento", $beneficiario_aux);
+				?>
+				    	<td align="center" id="poremitir_<?=$j?>" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;</td>
+				    	<td align="center" id="congelado_<?=$j?>" style="font-size:7pt; font-family:verdana; color:000000;"><b>X</b>
+				    		<a href="javascript:ver_documento('/cstp07_pagos_nomina/descongelar/<?=$ano_orden.'/'.$num_orden_pago.'/'.'/1/'.$j.'/'.$monto.'/'.$fecha_reten.'/'.$beneficiario_aux.'/'.$numero_orden_pago_secuencia?>','<?=$j?>');">
+				    			<?=$html->image('tick.png',array('border'=>'0','title'=>'Descongelar retencion orden pago'))?>
+				    		</a>
+				    	</td>
+				    	<td align="center" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;</td>
+				<?php
+					}
+				?>
+				</tr>
+		<?php
+			}
+		?>
+	</table>
+</div>
+
+ <? $sisap->link_paginacion_ventanas('/cstp07_pagos_nomina/retenciones_impuestos/'.$var.'/', 'td-impuestos', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+  <br><br>
+
+ 	   <?= $sisap->buttonTagRemote('cstp07_pagos_nomina/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cstp07_pagos_nomina/retenciones_impuestos/'.$var.'/1', 'update1'=>'td-impuestos')) ?>&nbsp;
+	   <?= $sisap->buttonTagRemote('cstp07_pagos_nomina/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cstp07_pagos_nomina/retenciones_impuestos/'.$var.'/'.$anterior.'', 'update1'=>'td-impuestos')) ?>&nbsp;
+	   <?= $sisap->buttonTagRemote('cstp07_pagos_nomina/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cstp07_pagos_nomina/retenciones_impuestos/'.$var.'/'.$siguiente.'', 'update1'=>'td-impuestos')) ?>&nbsp;
+	   <?= $sisap->buttonTagRemote('cstp07_pagos_nomina/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cstp07_pagos_nomina/retenciones_impuestos/'.$var.'/'.$ultimo.'', 'update1'=>'td-impuestos')) ?>

@@ -1,0 +1,48 @@
+<?php
+set_time_limit(0);
+
+if(isset($_SESSION["DATAXMLEX"]) && !empty($_SESSION["DATAXMLEX"])){
+$datosXml = $_SESSION["DATAXMLEX"];
+
+    	vendor ('Writer');
+			$workbook = new Spreadsheet_Excel_Writer();
+			$worksheet =& $workbook->addWorksheet('Hoja 1');
+			$worksheet->setInputEncoding('utf-8');
+			// $worksheet->setInputEncoding('iso-8859-1');
+			$worksheet->setColumn(0, 0, 10, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(1, 1, 20, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(2, 11, 20, $format = null, $hidden = 0, $level = 0);
+
+		    $var_filas[0]=array('RIF CONTRIBUYENTE','PERIODO IMPOSICION','TIPO DE OPERACION','RIF/CEDULA CONTRIBUYENTE','NUMERO COMPROBANTE DE RETENCION','MONTO RETENIDO EN BS.');
+
+		   	$fila_celda=0;
+		    $nombre='timbre_fiscal';
+		    $var_date=date('dmY_His').'_'.rand();
+		    $archivo = $nombre.'_'.$var_date.'.xls';
+			for($i=0;$i<$contador;$i++){
+
+					            $fila_celda++;
+				                $cols[0]=(string)$datosXml[$i][0];
+				                $cols[1]=(string)$datosXml[$i][1];
+				                $cols[2]=(string)$datosXml[$i][2];
+	                            $cols[3]=(string)$datosXml[$i][3];
+	                            $cols[4]=(string)$datosXml[$i][4];
+				                $cols[5]=(string)$datosXml[$i][5];
+
+							    $var_filas[$fila_celda]=$cols;
+
+			}
+
+			foreach($var_filas as $key => $value) {
+				$i = 0;
+	    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+	      			$worksheet->writeString($key, $i, ((string)$fieldvalue));
+	      			$i++;
+	  			}
+			}
+
+	$workbook->send($archivo);
+	$workbook->close();
+
+}
+?>

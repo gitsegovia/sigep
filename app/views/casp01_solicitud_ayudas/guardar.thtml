@@ -1,0 +1,95 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+$j=0;
+	foreach($ayu as $x){
+		$deno[$j] = $x['casd01_tipo_ayuda']['denominacion'];
+		$codigo[$j] = $x['casd01_tipo_ayuda']['cod_tipo_ayuda'];
+		$j++;
+	}
+?>
+
+<div id="carga_grilla"  style="height:300px; overflow:auto;" >
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="20%">Tipo de Ayuda</td>
+			<td width="15%">fecha Solicitud</td>
+			<td width="53%">Ayuda Solicitada</td>
+			<td width="12">Acción</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->selectTagRemote('casp01/tipo_ayuda', $tipo_ayuda,  array('value1'=>'otros'),'', array('onchange1'=>'/casp01_solicitud_ayudas/verifica/'.$cedula, 'update1'=>'vacio','onChange'=>'vacio', 'id'=>'tipo_ayuda',''=>'' , true), null, true);?></td>
+			<td width="15%"><?= $sisap->input_fecha('casp01','fecha_solicitud','fecha_solicitud',date("d/m/Y"));?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_ayuda', array('value'=>'','id'=>'concepto', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+			<td align="center"><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'','url1' => '/casp01_solicitud_ayudas/guardar/'.$cedula, 'update1'=>'carga_grilla')); ?></td>
+		</tr>
+
+
+		<?if($dato1!=''){
+
+				for($i=0;$i<count($dato1);$i++){
+						if($i%2==0){
+							$color="#CDF2FF";
+						}else{
+							$color="#DAEBFF";
+						}
+						$id_fila = (int) rand()."_".$i;
+						$fila = "fila_".$id_fila;
+					?>
+						<tr bgcolor=<?=$color?> id="<?= $fila ?>" onclick="new Effect.Highlight(this);" >
+							<td align="center"><?=denominacion($deno, $codigo,$dato1[$i][0]['cod_tipo_ayuda'])?></td>
+							<td align="center"><?=$sisap->cambia_fecha($dato1[$i][0]['fecha_solicitud'])?></td>
+							<td align="center"><?= $html->textarea('casp01/concepto', array('value'=>$dato1[$i][0]['ayuda_solicitada'],'id'=>'concepto', 'size'=>'55','style'=>'width:98%','row'=>'2','readonly'=>'readonly'))?></td>
+							<?if($dato1[$i][0]['numero_documento_evaluacion']=='' && $dato1[$i][0]['numero_documento_ayuda']==''){ ?>
+							<td align="center" id="<?= "li_".$i ?>">
+								<a href="javascript:ver_documento('/casp01_solicitud_ayudas/modificar/<?=$dato1[$i][0]['cedula_identidad']?>/<?=$dato1[$i][0]['cod_tipo_ayuda']?>/<?=$dato1[$i][0]['numero_ocacion']?>/<?=$i?>','<?= $fila ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos de la solicitud'))?></a>
+								<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/casp01_solicitud_ayudas/eliminar/'.$dato1[$i][0]['cedula_identidad'].'/'.$dato1[$i][0]['cod_tipo_ayuda'].'/'.$dato1[$i][0]['numero_ocacion'], array('update'=>'carga_grilla', 'title'=>'Eliminar'), "Realmente desea Eliminar esta solicitud?", false, true); ?>
+							</td>
+							<? }else if($dato1[$i][0]['numero_documento_evaluacion']!='' && $dato1[$i][0]['numero_documento_ayuda']==''){?>
+								<td align="center" id="<?= "li_".$i ?>">
+									<?=$html->image('tick_amarillo.png', array('border'=>'0','title'=>'Evaluado')) ?>
+								</td>
+							<? }else if($dato1[$i][0]['numero_documento_evaluacion']!='' && $dato1[$i][0]['numero_documento_ayuda']!=''){?>
+								<td align="center" id="<?= "li_".$i ?>">
+									<?=$html->image('tick.png', array('border'=>'0','title'=>'Entregado')) ?>
+								</td>
+							<? } ?>
+						</tr>
+
+				<? }
+				}else{ ?>
+
+				<tr bgcolor="#CDF2FF">
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+				</tr>
+
+				<? } ?>
+
+
+	</table>
+
+
+
+</div>
+

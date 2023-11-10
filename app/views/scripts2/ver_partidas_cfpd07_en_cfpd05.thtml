@@ -1,0 +1,147 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+
+	}
+
+	function Header()
+	{
+
+		 $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="img/escudo_base/escudo10.jpg";
+        	$varTOPh1="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh2="";
+        	$varTOPh11="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh22="";
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,10,"RELACION DE OBRAS",'RL',1,'C');
+		$this->Cell(0,6,"PARTIDAS NO PRESUPUESTADAS",'RLB',1,'C');
+		$this->Ln(4);
+
+        $this->Cell(15,3,"",'TL',0,'C');
+        $this->Cell(70,3,"",'TL',0,'C');
+        $this->Cell(20,3,"",'TL',0,'C');
+        $this->Cell(25,3,"",'TL',0,'C');
+        $this->Cell(90,3,"",'TL',0,'C');
+        $this->Cell(40,3,"",'TLR',1,'C');
+
+
+
+        $this->Cell(15,5,"",'L',0,'C');
+        $this->Cell(70,5,"NUMERO DE",'L',0,'C');
+		$this->Cell(20,5,"",'L',0,'C');
+		$this->Cell(25,5,"CFPD05",'L',0,'C');
+		$this->Cell(90,5,"",'L',0,'C');
+		$this->Cell(40,5,"MONTO",'LR',1,'C');
+
+
+
+        $this->Cell(15,3,"DEP",'L',0,'C');
+        $this->Cell(70,3,"OBRA",'L',0,'C');
+		$this->Cell(20,3,"CFPD05",'L',0,'C');
+		$this->Cell(25,3,"AUXILIAR",'L',0,'C');
+		$this->Cell(90,3,"PARTIDA",'L',0,'C');
+		$this->Cell(40,3,"CONTRATDADO",'LR',1,'C');
+
+
+        $this->Cell(15,3,"",'BL',0,'C');
+        $this->Cell(70,3,"",'BL',0,'C');
+        $this->Cell(20,3,"",'BL',0,'C');
+		$this->Cell(25,3,"",'BL',0,'C');
+		$this->Cell(90,3,"",'BL',0,'C');
+		$this->Cell(40,3,"",'BLR',1,'C');
+
+
+
+
+		$this->SetFont('vera','',9);
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+
+ $cont_2 = 0;
+
+      foreach($var as $ve2){
+
+      	      $cod_dep           =  $ve2["cod_de"];
+              $cod_obra          =  $ve2["codigo"];
+              $b                 =  $ve2["cfpd05"];
+              $c                 =  $ve2["cfpd05_auxiliar"];
+              $monto_contratado  =  $ve2["monto_contratado"];
+              $partida           =  $ve2["partida"];
+
+              if($b!=0){$b="SI";}else{$b="NO";}
+              if($c!=0){$c="SI";}else{$c="NO";}
+
+      	            $pdf->Cell(15,6,$sisap->AddCero2($cod_dep),'BL',0,'R');
+			        $pdf->Cell(70,6,$cod_obra,'BL',0,'C');
+			        $pdf->Cell(20,6,$b,'BL',0,'C');
+					$pdf->Cell(25,6,$c,'BL',0,'C');
+					$pdf->Cell(90,6,$partida,'BL',0,'C');
+					$pdf->Cell(40,6,$monto_contratado,'BLR',1,'C');
+
+
+       }//fin foreach
+
+
+
+
+ $pdf->Output('partdias_cfpd07.pdf', 'D');
+
+
+?>

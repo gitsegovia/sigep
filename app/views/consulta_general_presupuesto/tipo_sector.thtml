@@ -1,0 +1,178 @@
+<?
+
+
+
+
+
+
+if(isset($tipo_sector[0][0])){
+
+$tp=$tipo_sector[0][0];
+$total_presupuesto_sector=0;
+  foreach($SECTOR as $k=>$v){
+  	$kk[]=$k;
+  }
+  $_SESSION["vector_sectores"]=$kk;
+for($i=0;$i<count($kk);$i++){
+  $sector[$kk[$i]]         = $tp["sector_".$kk[$i]]==null?0.00:$tp["sector_".$kk[$i]];
+  $total_presupuesto_sector=$total_presupuesto_sector+$sector[$kk[$i]];
+  $sector_aux[]=$sector[$kk[$i]];
+
+}
+$var_monto_sector=implode(',', $sector_aux);
+for($i=0;$i<count($kk);$i++){
+ $por_sector[$kk[$i]]     = ($sector[$kk[$i]]*100) / $total_presupuesto_sector;
+ $por_sector[$kk[$i]]      = sprintf("%01.2f",$por_sector[$kk[$i]]);
+}
+
+
+$asignacion         = $tp["asignacion_total"];
+$por_asignacion     = ($tp["asignacion_total"] * 100) / $asignacion;
+
+}else{
+
+$kk = 0;
+$total_presupuesto_partida = 0;
+$asignacion         = 0;
+$por_asignacion     = 0;
+
+}//fin else
+
+
+?>
+
+
+
+
+
+
+
+
+
+<?php if($ver=="si"){ ?>
+
+<?php
+	 echo $sisap->Tabla($session->read('entidad_federal'),true,'PRESUPUESTO POR  SECTORES','','950');
+	 echo $sisap->OpenTable('950');
+
+?>
+			<form>
+
+
+			   <?= $sisap->radio_consolidado('tipo_presupuestoPDF/opcion',  array('url1'=>'/reporte5/funcion/', 'update1'=>'cuerpo'), '', true)  ?>
+
+
+						<table border="0" cellspacing="0" cellpadding="0">
+
+						<?php $d=$session->read('SScoddep'); if($d==1){ $_SESSION['tipo_consolidado']=1; $var_inst=1; ?>
+						<?php }else{ $var_inst=2;}//fin  ?>
+						 <tr>
+						   <td width='200px' id="ano_recurso"  align="center">Año:<?= $sisap->inputTagRemote('tipo_presupuestoPDF/year', array( 'url3'=>'/reporte5/funcion/', 'update3'=>'cuerpo', 'style'=>'text-align:center;',  'id'=>'ano', 'size'=>'6', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?></td>
+						   <td  align="right">
+						  <?= $sisap->submitTagRemote('Ver', array('funcion'=>'valida_consumo','url1' => '/consulta_general_presupuesto/tipo_sector/', 'update1'=>'cuerpo', 'id'=>'ir')); ?>
+						  <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+						</td></tr>
+
+					</table>
+			</form>
+
+<?php }//fin if ?>
+
+<br>
+
+
+<div id="cuerpo" style="overflow:auto;  height:550px; ">
+
+
+<?php
+
+ $username = $_SESSION['nom_usuario'];
+ $rdm = mt_rand();
+?>
+			<form name='data[tipo_presupuetoPDF]'  method = "post" id='form' action="<?php echo $html->url('/reporte2/tipo_sector_pdf/');?>" >
+			  	<?= $html->submit('Generar reporte') ?>&nbsp; <br> <br>
+
+					<?for($i=0;$i<count($kk);$i++){?>
+					<input type="hidden" name="data[tipo_presupuetoPDF][sector_<?=$kk[$i]?>]" value="<?=$sisap->Formato2($sector[$kk[$i]])?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][por_sector_<?=$kk[$i]?>]" value="<?=$sisap->Formato2(round($por_sector[$kk[$i]],1))?>"/>
+					<?}?>
+
+					<input type="hidden" name="data[tipo_presupuetoPDF][total_presupuesto_sector]" value="<?=$sisap->Formato2($total_presupuesto_sector)?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][rdm]" value="<?=$rdm?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][year]" value="<?= $year?>"/>
+
+					<table width="100%" background="#000" border="0" style="color:black;background:#fff" id="grafica">
+
+
+
+
+					<tr>
+					  <td colspan="4" style="font-size:large;" >
+					      <table border="0" width="100%">
+
+								<td width="50%" align="center" >
+									<img src="/graficasPHP/graphbarras.php?dat=<?=$var_monto_sector.','.$total_presupuesto_sector?>&bkg=FFFFFF&usr=<?= $username ?>&rdm=<?= $rdm ?>">
+								</td>
+							</table>
+						</td>
+					</tr>
+
+
+
+					<tr>
+						<td style="font-size:large;">Leyenda:</td>
+					</tr>
+					<tr>
+						<td>
+					<table style="color:black;background:#fff" border="0" width="100%">
+
+
+					 <?
+					 $r=5;
+					 foreach($SECTOR as $k=>$v){
+					 	   if(isset($nada)){
+					 	   ?>
+					         <tr>
+								<td><img src="/graficasPHP/graphref.php?ref=<?=$r?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=50&rdm=<?= $rdm ?>"></td>
+								<td><b><?=$sisap->AddCero3($k)?></b>-<?=$v?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_sector[$k], 1))." %" ?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($sector[$k])." Bs." ?></td>
+							</tr>
+							<?}else{
+								?>
+								<tr>
+								<td><img src="/graficasPHP/graphref.php?ref=<?=$r?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=<?=$k?>&rdm=<?= $rdm ?>"></td>
+								<td><b><?=$sisap->AddCero3($k)?></b>-<?=$v?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_sector[$k], 1))." %" ?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($sector[$k])." Bs." ?></td>
+							</tr>
+
+							<?}?>
+
+					<?
+					$x=$k;
+					$r=$r+3;
+					$r=$r>32?5:$r;
+					}
+
+					?>
+							<tr>
+								<td><img src="/graficasPHP/graphref.php?ref=<?=$r?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=<?=$x+1?>&rdm=<?= $rdm ?>"></td>
+								<td>TOTAL PRESUPUESTO:</td>
+								<td style="font-size:large;text-align:right;" colspan="2"><?= $sisap->Formato2($total_presupuesto_sector)." Bs." ?></td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table> <br/>
+
+			</form>
+
+</div>
+
+
+
+
+<?php if($ver=="si"){ ?><?= $sisap->CloseTable(); ?> <?php } ?>
+<!-- -->
+

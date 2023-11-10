@@ -1,0 +1,4667 @@
+<?php
+
+
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+
+}elseif(isset($vista)){
+
+echo '<br>';
+	         if($vista=="1"){  ?>
+
+
+Año: <input name="data[cepp01_compromiso][ano]"  value="<?= $year?>" id="ano"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+
+
+<?php }else  if($vista=="2"){ ?>
+Año: <input name="data[cepp01_compromiso][ano]"  value="<?= $year?>" id="ano"  size="3"     maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número Desde:<input name="data[cepp01_compromiso][numero_a]"  value="" id="numero_a"  size="4"   onKeyPress="return solonumeros(event);"  />
+Número Hasta:<input name="data[cepp01_compromiso][numero_b]"  value="" id="numero_b"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php }else if($vista=="3"){ /* ?>
+
+
+Año: <input name="data[cepp01_compromiso][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número:<input name="data[cepp01_compromiso][numero_a]"  value="" id="numero_a"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php */ }//fin else
+
+
+
+}else{
+
+
+
+  vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_a'] = $titulo_a;
+$_SESSION['estado'] = $estado;
+
+
+if(isset($responsa_primera_firma)){
+	// DATOS FIRMA RESPONSABILIDAD:
+	$_SESSION['firmas_reporte'][0][0] = $responsa_primera_firma;
+	$_SESSION['firmas_reporte'][0][1] = $responsa_segunda_firma;
+	$_SESSION['firmas_reporte'][0][2] = $responsa_tercera_firma;
+	$_SESSION['firmas_reporte'][0][3] = $responsa_cuarta_firma;
+	$_SESSION['firmas_reporte'][0][4] = $responsa_quinta_firma;
+
+	// DATOS FIRMA CARGO:
+	$_SESSION['firmas_reporte'][1][0] = $cargo_primera_firma;
+	$_SESSION['firmas_reporte'][1][1] = $cargo_segunda_firma;
+	$_SESSION['firmas_reporte'][1][2] = $cargo_tercera_firma;
+	$_SESSION['firmas_reporte'][1][3] = $cargo_cuarta_firma;
+	$_SESSION['firmas_reporte'][1][4] = $cargo_quinta_firma;
+
+	// DATOS FIRMA FUNCIONARIO:
+	$_SESSION['firmas_reporte'][2][0] = $funcionario_primera_firma;
+	$_SESSION['firmas_reporte'][2][1] = $funcionario_segunda_firma;
+	$_SESSION['firmas_reporte'][2][2] = $funcionario_tercera_firma;
+	$_SESSION['firmas_reporte'][2][3] = $funcionario_cuarta_firma;
+	$_SESSION['firmas_reporte'][2][4] = $funcionario_quinta_firma;
+
+	// DATOS FIRMA CEDULA:
+	$_SESSION['firmas_reporte'][3][0] = $cedula_primera_firma;
+	$_SESSION['firmas_reporte'][3][1] = $cedula_segunda_firma;
+	$_SESSION['firmas_reporte'][3][2] = $cedula_tercera_firma;
+	$_SESSION['firmas_reporte'][3][3] = $cedula_cuarta_firma;
+	$_SESSION['firmas_reporte'][3][4] = $cedula_quinta_firma;
+
+
+
+}else{
+
+	// DATOS FIRMA RESPONSABILIDAD:
+	$_SESSION['firmas_reporte'][0][0] = "";
+	$_SESSION['firmas_reporte'][0][1] = "";
+	$_SESSION['firmas_reporte'][0][2] = "";
+	$_SESSION['firmas_reporte'][0][3] = "";
+	$_SESSION['firmas_reporte'][0][4] = "";
+
+	// DATOS FIRMA CARGO:
+	$_SESSION['firmas_reporte'][1][0] = "";
+	$_SESSION['firmas_reporte'][1][1] = "";
+	$_SESSION['firmas_reporte'][1][2] = "";
+	$_SESSION['firmas_reporte'][1][3] = "";
+	$_SESSION['firmas_reporte'][1][4] = "";
+
+	// DATOS FIRMA FUNCIONARIO:
+	$_SESSION['firmas_reporte'][2][0] = "";
+	$_SESSION['firmas_reporte'][2][1] = "";
+	$_SESSION['firmas_reporte'][2][2] = "";
+	$_SESSION['firmas_reporte'][2][3] = "";
+	$_SESSION['firmas_reporte'][2][4] = "";
+
+	// DATOS FIRMA CEDULA:
+	$_SESSION['firmas_reporte'][3][0] = "";
+	$_SESSION['firmas_reporte'][3][1] = "";
+	$_SESSION['firmas_reporte'][3][2] = "";
+	$_SESSION['firmas_reporte'][3][3] = "";
+	$_SESSION['firmas_reporte'][3][4] = "";
+}
+
+
+
+class fpdfview extends TCPDF{
+
+
+function Footer(){
+	if(isset($_SESSION['FIN'])){
+		$this->Cell(0,0,"",'B',1,'C');
+	}
+}//fin footer
+
+
+function Header(){
+
+
+if(isset($_SESSION['FIN'])){
+
+        $this->image_escudo_sin_consolidado(12,16,14);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,5,"              ".$_SESSION["entidad_federal"],'TRL',1);
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"",'L',0);
+		$this->Cell(0,3,"                  ".$_SESSION['dependencia'],'R',1);//$_SESSION['titulo_a']
+		$this->Cell(172,3,"",'L',0);
+		   //$this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG','R',1);//-------------------------PAGINACION
+		   $this->Cell(0,3,"",'R',1);//-------------------------PAGINACION
+		   $this->Cell(5,3,"",'L',0);
+		   $this->Cell(167,3,'','',0);//$_SESSION['titulo_a']
+		   $this->Cell(0,3,'Fecha: '.date('d/m/Y'),'R',1);//-----------------------------FECHA
+		   $this->Cell(172,3,"",'L',0);
+		   $this->Cell(0,3,'Hora: '.date('h:i a'),'R',1);//-----------------------------HORA
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,8,"RELACIÓN DE REGISTROS DE COMPROMISOS EMITIDOS",'RLB',0,'C');
+		$this->Ln(10);
+		$this->SetFont('vera','B',6);
+		$this->Cell(10,4,"N#",'TRLB',0,'C');
+		$this->Cell(20,4,"FECHA",'TRLB',0,'C');
+		$this->Cell(20,4,"AÑO",'TRLB',0,'C');
+		$this->Cell(30,4,"NÚMERO ORDEN",'TRLB',0,'C');
+		$this->Cell(85,4,"BENEFICIARIO",'TRLB',0,'C');
+		$this->Cell(0,4,"MONTO",'TRLB',1,'C');
+
+}else{
+
+        $long_entid = strlen($_SESSION["entidad_federal"]);
+        $long_depen = strlen($_SESSION["dependencia"]);
+        if ($long_entid>$long_depen){$longitud=$long_entid+82;}
+        if ($long_depen>$long_entid){$longitud=$long_depen+82;}
+        if ($longitud<106){$longitud=106;}
+
+	    $this->image_escudo(12,16,16);
+		$this->SetFont('vera','B',9);
+		$this->Cell(196,6,"",'TL',0);
+
+	    $this->Cell(0,6,"",'RL',1);
+	    $this->SetFont('vera','B',8);
+		$this->Cell($longitud,3,'REPÚBLICA BOLIVARIANA DE VENEZUELA','L',0,'C');
+		$this->Cell(0,3,'','R',1,'L');
+		$this->Cell($longitud,3,$_SESSION['estado'],'L',0,'C');
+		$this->Cell(0,3,'','R',1,'L');
+	    $this->SetFont('vera','B',8);
+		$this->Cell($longitud,4,$_SESSION["entidad_federal"],'L',0,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,4,"REGISTRO COMPROMISO  ",'R',1,'R');
+		$this->SetFont('vera','B',8);
+		$this->Cell($longitud,3,$_SESSION['dependencia'],'LB',0,'C');
+		$varX=$this->getX();
+		$varY=$this->getY();
+	    $varX=169;
+		$varY=$varY-1;
+		$this->Cell(0,3,"",'RB',1);
+		$this->writeBarcode($varX,$varY,35,3,"C39","","","",$_SESSION['CODIGO']);
+
+
+ }//fin if
+}//fin headre
+
+
+function imprimir_firmas(){
+
+	if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==120){
+	        $this->SetFont('vera','B',6);
+			$this->Cell(0,5,"FIRMAS AUTORIZADAS",'RLB',1,'C');
+
+			$this->SetFont('vera','B',5);
+			$this->Cell(50,5,"",'RL',0,'C');
+			$this->Cell(50,5,"REVISADO POR",'R',0,'C');
+			$this->Cell(50,5,"RECIBIDO POR",'R',0,'C');
+			$this->Cell(0,5,"APROBADO POR",'R',1,'C');
+
+			$this->Cell(50,7,"",'RL',0,'C');
+			$this->Cell(50,7,"",'R',0,'C');
+			$this->Cell(50,7,"",'R',0,'C');
+			$this->Cell(0,7," ",'R',1,'C');
+
+			$this->Cell(50,7,"",'RL',0,'C');
+			$this->Cell(50,7,"",'R',0,'C');
+			$this->Cell(50,7,"",'R',0,'C');
+			$this->Cell(0,7," ",'R',1,'C');
+
+			$this->Cell(50,2,"FUNCIONARIO RESPONSABLE",'BRL',0,'C');
+			$this->Cell(50,2,"JEFE DE PRESUPUESTO",'BR',0,'C');
+			$this->Cell(50,2,"",'BR',0,'C');
+			$this->Cell(0,2,"DIRECTOR (A) DE EQUILIBRIO ECONOMICO",'BR',1,'C');
+
+		}else if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+			/**
+			 * COLOCAR AQUI PARTE DE FIRMAS DE GOBERNACION DEL ESTADO APURE
+			 */
+
+			if($_SESSION['SScoddep']==1){
+				$this->SetFont('vera','B',5);
+				$this->Cell(48,4,"",'TRL',0,'C');
+				$this->Cell(48,4,"",'TR',0,'C');
+				$this->Cell(48,4,"",'TR',0,'C');
+				$this->Cell(0,4,"",'TR',1,'C');
+
+				$this->Cell(48,10,"",'TRL',0,'C');
+				$this->Cell(48,10,"",'TR',0,'C');
+				$this->Cell(48,10,"",'TR',0,'C');
+				$this->Cell(0,10,"",'TR',1,'C');
+
+				$this->Cell(48,2,"",'RL',0,'C');
+				$this->Cell(48,2,"",'R',0,'C');
+				$this->Cell(48,2,"",'R',0,'C');
+				$this->Cell(0,2,"",'R',1,'C');
+
+				$this->Cell(48,3,"ELABORADO POR:",'RBL',0,'C');
+				$this->Cell(48,3,"JEFE DE COMPRA:",'RB',0,'C');
+				$this->Cell(48,3,"DIRECTOR DE ADMINISTRACIÓN:",'RB',0,'C');
+				$this->Cell(0,3,"GOBERNADOR:",'RB',1,'C');
+
+			}else{
+
+				$this->SetFont('vera','B',5);
+				$this->Cell(48,4,"",'TRL',0,'C');
+				$this->Cell(48,4,"",'TR',0,'C');
+				$this->Cell(48,4,"",'TR',0,'C');
+				$this->Cell(0,4,"",'TR',1,'C');
+
+				$this->Cell(48,10,"",'TRL',0,'C');
+				$this->Cell(48,10,"",'TR',0,'C');
+				$this->Cell(48,10,"",'TR',0,'C');
+				$this->Cell(0,10,"",'TR',1,'C');
+
+				$this->Cell(48,2,"",'RL',0,'C');
+				$this->Cell(48,2,"",'R',0,'C');
+				$this->Cell(48,2,"",'R',0,'C');
+				$this->Cell(0,2,"",'R',1,'C');
+
+				$this->Cell(48,3,"ELABORADO POR:",'RBL',0,'C');
+				$this->Cell(48,3,"REVISADO POR:",'RB',0,'C');
+				$this->Cell(48,3,"ADMINISTRACIÓN:",'RB',0,'C');
+				$this->Cell(0,3,"PRESIDENTE / DIRECTOR:",'RB',1,'C');
+			}
+
+		}else{
+
+			$this->SetFont('vera','B',6);
+			$this->Cell(0,5,"FIRMAS AUTORIZADAS",'RLB',1,'C');
+
+			$this->Cell(75,4,"PARA EL USO DE LA UNIDAD ADMINISTRATIVA LOCAL",'RLB',0,'L');
+			$this->Cell(0,4,"PARA USO DE LA UNIDAD DE ADMINISTRACION CENTRALIZADA",'RB',1,'C');
+
+			$this->SetFont('vera','B',5);
+			$this->Cell(25,5,"ELABORADO",'RL',0,'C');
+			$this->Cell(25,5,"REVISADO",'R',0,'C');
+			$this->Cell(25,5,"APROBADO",'R',0,'C');
+			$this->Cell(30,5,"ELABORADO",'R',0,'C');
+			$this->Cell(30,5,"REVISADO",'R',0,'C');
+			$this->Cell(30,5,"APROBADO",'R',0,'C');
+			$this->Cell(0,5,"RECIBIDO POR",'R',1,'C');
+
+			$this->Cell(25,7,"",'RL',0,'C');
+			$this->Cell(25,7,"",'R',0,'C');
+			$this->Cell(25,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(0,7," ",'R',1,'C');
+
+			$this->Cell(25,7,"",'RL',0,'C');
+			$this->Cell(25,7,"",'R',0,'C');
+			$this->Cell(25,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(30,7,"",'R',0,'C');
+			$this->Cell(0,7," ",'R',1,'C');
+
+			$this->Cell(25,2,"FUNCIONARIO",'RL',0,'C');
+			$this->Cell(25,2,"",'R',0,'C');
+			$this->Cell(25,2,"ORDENADOR",'R',0,'C');
+			$this->Cell(30,2,"FUNCIONARIO",'R',0,'C');
+			$this->Cell(30,2,"JEFE DE UNIDAD",'R',0,'C');
+			$this->Cell(30,2,"",'R',0,'C');
+			$this->Cell(0,2,"SECRETARIO FINANZAS",'R',1,'C');
+
+			$this->Cell(25,3,"RESPONSABLE",'RBL',0,'C');
+			$this->Cell(25,3,"ADMINISTRADOR",'RB',0,'C');
+			$this->Cell(25,3,"COMPROMISO",'RB',0,'C');
+			$this->Cell(30,3,"RESPONSABLE",'RB',0,'C');
+			$this->Cell(30,3,"ADM. CENTRAL",'RB',0,'C');
+			$this->Cell(30,3,"CUENTADANTE",'RB',0,'C');
+			$this->Cell(0,3,"FUNCIONARIO RECEP.",'RB',1,'C');
+			$this->Cell(0,6,"",'',1,'R');
+		}
+}
+
+
+// FUNCION PARA FIRMAS, CON 5 FIRMANTES CON TIPO DOC.: 7:OTROS COMPROMISOS:
+
+function imprimir_firmas2(){
+
+	//////// ***** [ [ [  I N I C I O  ] ] ] NUEVA FORMA DE FIRMA ***** //////////
+
+	            $this->SetFont('vera','B',6);
+			    $this->Cell(0,5,"FIRMAS AUTORIZADAS",'RLB',1,'C');
+
+	$anchoc = 40;
+
+	// FIRMA REPONSABILIDAD:
+
+                $this->SetFont('vera', 'B', 5);
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'TL', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][0][0], '', 'C'); // ------------[RESPONSABILIDAD 1]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][0][1], '', 'C'); // ------------[RESPONSABILIDAD 2]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][0][2], '', 'C'); // ------------[RESPONSABILIDAD 3]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][0][3], '', 'C'); // ------------[RESPONSABILIDAD 4]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell(0, 1, "", 'T', 2, 'C');
+                $this->MultiCell(0, 2, $_SESSION['firmas_reporte'][0][4], '', 'C'); // ------------[RESPONSABILIDAD 5]
+                $varX = $varX + 0;
+                $this->SetXY($varX, $varY);
+                $this->Cell(0, 5, "", 'R', 1, 'R');
+
+
+	// FIRMA CARGO:
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'TL', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][1][0], '', 'C'); // ------------[CARGO 1]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][1][1], '', 'C'); // ------------[CARGO 2]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][1][2], '', 'C'); // ------------[CARGO 3]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", 'T', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][1][3], '', 'C'); // ------------[CARGO 4]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 6, "", 'L', 0, 'C');
+                $this->Cell(0, 1, "", 'T', 2, 'C');
+                $this->MultiCell(0, 2, $_SESSION['firmas_reporte'][1][4], '', 'C'); // ------------[CARGO 5]
+                $varX = $varX + 0;
+                $this->SetXY($varX, $varY);
+                $this->Cell(0, 6, "", 'R', 1, 'R');
+
+
+		// SEPARACION:
+
+                $this->Cell($anchoc, 17, "", 'RL', 0, 'C');
+                $this->Cell($anchoc, 17, "", 'R', 0, 'C');
+                $this->Cell($anchoc, 17, "", 'R', 0, 'C');
+                $this->Cell($anchoc, 17, "", 'R', 0, 'C');
+                $this->Cell(0, 17, "", 'R', 1, 'C');
+
+
+	// FIRMA FUNCIONARIO:
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 4, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", '', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][2][0], '', 'C'); // ------------[FUNCIONARIO 1]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 4, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", '', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][2][1], '', 'C'); // ------------[FUNCIONARIO 2]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 4, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", '', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][2][2], '', 'C'); // ------------[FUNCIONARIO 3]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 4, "", 'L', 0, 'C');
+                $this->Cell($anchoc, 1, "", '', 2, 'C');
+                $this->MultiCell($anchoc, 2, $_SESSION['firmas_reporte'][2][3], '', 'C'); // ------------[FUNCIONARIO 4]
+                $varX = $varX + $anchoc;
+                $this->SetXY($varX, $varY);
+
+                $varX = $this->GetX();
+                $varY = $this->GetY();
+                $this->Cell(1, 4, "", 'L', 0, 'C');
+                $this->Cell(0, 1, "", '', 2, 'C');
+                $this->MultiCell(0, 2, $_SESSION['firmas_reporte'][2][4], '', 'C'); // ------------[FUNCIONARIO 5]
+                $varX = $varX + 0;
+                $this->SetXY($varX, $varY);
+                $this->Cell(0, 4, "", 'R', 1, 'R');
+
+
+
+	// FIRMA CEDULA
+
+                if ($_SESSION['firmas_reporte'][3][0]==0){
+                 $this->Cell($anchoc, 3, "  ", 'RBL', 0, 'C'); // ------------[CEDULA 1]
+                }else{
+                $this->Cell($anchoc, 3, "  ".$_SESSION['firmas_reporte'][3][0], 'RBL', 0, 'C'); // ------------[CEDULA 1]
+                }
+                if ($_SESSION['firmas_reporte'][3][1]==0){
+                 $this->Cell($anchoc, 3, "  ", 'RBL', 0, 'C'); // ------------[CEDULA 2]
+                }else{
+                $this->Cell($anchoc, 3, "  ".$_SESSION['firmas_reporte'][3][1], 'RBL', 0, 'C'); // ------------[CEDULA 2]
+                }
+                if ($_SESSION['firmas_reporte'][3][2]==0){
+                 $this->Cell($anchoc, 3, "  ", 'RBL', 0, 'C'); // ------------[CEDULA 3]
+                }else{
+                $this->Cell($anchoc, 3, "  ".$_SESSION['firmas_reporte'][3][2], 'RBL', 0, 'C'); // ------------[CEDULA 3]
+                }
+                if ($_SESSION['firmas_reporte'][3][3]==0){
+                 $this->Cell($anchoc, 3, "  ", 'RBL', 0, 'C'); // ------------[CEDULA 4]
+                }else{
+                $this->Cell($anchoc, 3, "  ".$_SESSION['firmas_reporte'][3][3], 'RBL', 0, 'C'); // ------------[CEDULA 4]
+                }
+                if ($_SESSION['firmas_reporte'][3][4]==0){
+                 $this->Cell(0, 3, "  ", 'RB', 1, 'C'); // ------------[CEDULA 5]
+                }else{
+                $this->Cell(0, 3, "  ".$_SESSION['firmas_reporte'][3][4], 'RB', 1, 'C'); // ------------[CEDULA 5]
+                }
+
+                // $this->Cell(0, 3, "  FIRMA", 'RB', 1, 'C'); // ------------[FIRMA PROVEEDOR]
+
+
+
+	//////// ***** [ [ [  F I N  ] ] ] NUEVA FORMA DE FIRMA ***** //////////
+
+
+} // fin funcion imprimir_firmas2
+
+}//fin class
+
+
+
+
+ if(isset($ir)){ ?>
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"EMISIÓN OTROS COMPROMISOS EN FORMATO GENÉRICO <br> <br>Usuario: ".$usuario,null,"950");?>
+
+
+ <form name='data[cfpp07]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_registro_compromiso/si'); ?>" onSubmit="return cscp04_ordencompra_servicio_bienes();">
+
+
+<?= $sisap->OpenTable("950")?>
+
+
+<br /><br />
+<input type="hidden" name="data[reporte][cod_tipo_documento]" value="<?= $tipo_documento ?>" maxlength="5" id="cod_tipo_documento" class="inputtext" />
+<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro">
+		<td width="5%" align="right">Firma</td>
+		<td width="5%" align="center" style="border-right:#000000 0px solid; border-top:#000000 0px solid;border-left:#000000 0px solid;border-bottom:#000000 1px solid;">
+			<?php echo $ajax->link($html->image('broom.png',array('width'=>'18', 'height'=>'18','border'=>0)), '/reporte/borrar_firmas/5', array('update'=>'limpiar99_firmas','title'=>'Limpiar Campos Firmas','style'=>'display:none;','id'=>'link_limpiaf'),"¿Desea limpiar los campos de los datos firmantes.?",false,true); ?>
+		</td>
+		<td width="24%" align="center">Responsabilidad</td>
+		<td width="30%" align="center">Nombre del Funcionario</td>
+		<td width="24%" align="center">Cargo</td>
+		<td width="12%" align="center">C&eacute;dula</td>
+	</tr>
+
+	<tr>
+		<td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Primera</b></td>
+		<td><input type="text" name="data[reporte][responsa_primera_firma]" value="<?= $responsa_primera_firma ?>" maxlength="100" id="responsa_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][funcionario_primera_firma]" value="<?= $funcionario_primera_firma ?>" maxlength="100" id="funcionario_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cargo_primera_firma]" value="<?= $cargo_primera_firma ?>" maxlength="100" id="cargo_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cedula_primera_firma]" value="<?= $cedula_primera_firma ?>" maxlength="10" id="cedula_primera_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+	</tr>
+
+	<tr>
+		<td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Segunda</b></td>
+		<td><input type="text" name="data[reporte][responsa_segunda_firma]" value="<?= $responsa_segunda_firma ?>" maxlength="100" id="responsa_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][funcionario_segunda_firma]" value="<?= $funcionario_segunda_firma ?>" maxlength="100" id="funcionario_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cargo_segunda_firma]" value="<?= $cargo_segunda_firma ?>" maxlength="100" id="cargo_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cedula_segunda_firma]" value="<?= $cedula_segunda_firma ?>" maxlength="10" id="cedula_segunda_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+	</tr>
+
+	<tr>
+		<td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Tercera</b></td>
+		<td><input type="text" name="data[reporte][responsa_tercera_firma]" value="<?= $responsa_tercera_firma ?>" maxlength="100" id="responsa_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][funcionario_tercera_firma]" value="<?= $funcionario_tercera_firma ?>" maxlength="100" id="funcionario_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cargo_tercera_firma]" value="<?= $cargo_tercera_firma ?>" maxlength="100" id="cargo_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cedula_tercera_firma]" value="<?= $cedula_tercera_firma ?>" maxlength="10" id="cedula_tercera_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+	</tr>
+
+	<tr>
+		<td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Cuarta</b></td>
+		<td><input type="text" name="data[reporte][responsa_cuarta_firma]" value="<?= $responsa_cuarta_firma ?>" maxlength="100" id="responsa_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][funcionario_cuarta_firma]" value="<?= $funcionario_cuarta_firma ?>" maxlength="100" id="funcionario_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cargo_cuarta_firma]" value="<?= $cargo_cuarta_firma ?>" maxlength="100" id="cargo_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cedula_cuarta_firma]" value="<?= $cedula_cuarta_firma ?>" maxlength="10" id="cedula_cuarta_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+	</tr>
+
+	<tr>
+		<td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Quinta</b></td>
+		<td><input type="text" name="data[reporte][responsa_quinta_firma]" value="<?= $responsa_quinta_firma ?>" maxlength="100" id="responsa_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][funcionario_quinta_firma]" value="<?= $funcionario_quinta_firma ?>" maxlength="100" id="funcionario_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cargo_quinta_firma]" value="<?= $cargo_quinta_firma ?>" maxlength="100" id="cargo_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+		<td><input type="text" name="data[reporte][cedula_quinta_firma]" value="<?= $cedula_quinta_firma ?>" maxlength="10" id="cedula_quinta_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+	</tr>
+</table>
+<br />
+
+<div id="limpiar99_firmas"></div>
+
+<div id="save99_firmas">
+<?php if(isset($firma_existe) && $firma_existe=='no'){ ?>
+	<?= $sisap->submitTagRemote('Guardar Firmas', array('funcion'=>'valida_firmas99_reportes', 'url1' => '/reporte/guardar_editar_firmas/si/5', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php }else if(isset($firma_existe) && $firma_existe=='si'){ ?>
+	<?= $sisap->submitTagRemote('Modificar Firmas', array('url1' => '/reporte/guardar_editar_firmas/no/5', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php } ?>
+</div>
+<br /><br />
+
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid"  class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro"><td colspan="2" class="td2center" height="22">Cola de Impresión</td></tr>
+<tr>
+    <td class="td4" width="50" height="22">A&ntilde;o de Documento</td>
+    <td class="td4" width="50">Número de Documento</td>
+</tr>
+<?php
+
+$i = 0;
+
+ if(isset($datos_cepd01_compromiso_poremitir)){
+  if($datos_cepd01_compromiso_poremitir!=null){
+    foreach($datos_cepd01_compromiso_poremitir as $ve){
+
+    	if($i%2==0){ ?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $ve['cepd01_compromiso_poremitir']['ano_documento'] ?></td>
+    <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd01_compromiso_poremitir']['numero_documento']) ?></td>
+</tr>
+
+<?php }else{ ?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $ve['cepd01_compromiso_poremitir']['ano_documento'] ?></td>
+   <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd01_compromiso_poremitir']['numero_documento']) ?></td>
+</tr>
+
+<?php }//fine
+
+    	$i++;
+
+}//fin foreach
+
+
+if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+ <?php }else{ ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+<?php
+      }//fin
+   }//fin
+ }//fin
+?>
+</table>
+</div>
+
+<br>
+
+<?= $sisap->radioTagRemote('cepp01_compromiso/radio', array('1'=>'Vaciar cola de impresión','2'=>'Por rango', '3'=>'Una especifica'), array('url1'=>'/reporte/reporte_registro_compromiso/vista', 'update1'=>'opcion', 'id'=>'reporte_registro_compromiso_opcion'), NULL, null)?>
+
+<div id="opcion"></div>
+
+<br>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+
+	<?php }else{
+
+	$pdf = new fpdfview('P','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(10);
+	$pdf->SetRightMargin(10);
+	$pdf->SetAutoPageBreak(true, 10);
+
+	$aux_aux = 0;
+
+	if(isset($datos_cepd01_compromiso_cuerpo)){
+	  foreach($datos_cepd01_compromiso_cuerpo as $datos_cuerpo){ $aux_aux++;
+
+
+	$beneficiario[$aux_aux] = "";
+
+	$_SESSION['CODIGO'] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'].$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']);
+
+
+	$pdf->AddPage();
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+	$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+	$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+	$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+	$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+	$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+	$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+	$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+	//--------------------------------------------
+
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+	$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+	$pdf->SetFont('vera','',7);
+
+
+
+	if($corriente[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+	}
+
+	if($capital[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+	}
+
+
+	//------------------------------------------------------
+
+
+	if($ordinario[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+	}
+
+	if($coordinado[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+	}
+
+	if($laee[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(25,5,"FCI",'RB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(25,5,"FCI",'RB',0,'C');
+	}
+
+	if($fides[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+	}
+
+	if($ingresosextra[$aux_aux]==1){
+		$pdf->SetFont('vera','BI',6);
+		$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+	}else{
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+	}
+
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+	$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+	$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+	$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+	   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+	$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+	   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+	$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+	//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+	$ALTO_UB_AD = 4.5;
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+	$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+	////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+	$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+	//echo '<pre>'.print_r($secretaria).'</pre>';
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+	$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+	$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+	if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+	}
+
+
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+		$varX = $varX+194;//le sumo a X ---> 180.
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+	$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+	$pdf->SetFont('vera','B',5);
+	$pdf->Cell(12,3,"",'RL',0,'C');
+	$pdf->Cell(13,3,"",'R',0,'C');
+	$pdf->Cell(19,3,"",'R',0,'C');
+	$pdf->Cell(19,3,"SUB",'R',0,'C');
+	$pdf->Cell(18,3,"",'R',0,'C');
+	$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+	$pdf->Cell(15,3,"",'R',0,'C');
+	$pdf->Cell(17,3,"",'R',0,'C');
+	$pdf->Cell(10,3,"",'R',0,'C');
+	$pdf->Cell(15,3,"SUB",'R',0,'C');
+	$pdf->Cell(14,3,"",'R',0,'C');
+	$pdf->Cell(0,3,"",'R',1,'C');
+
+	$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+	$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+	$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+	$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+	$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+	$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+	$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+	$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+	$pdf->Cell(10,3,"ESP",'RB',0,'C');
+	$pdf->Cell(15,3,"ESP",'RB',0,'C');
+	$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+	$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+	$monto_relacion[$aux_aux] = 0;
+	$listo="no";
+
+	for($ii=1; $ii<=29; $ii++){
+
+	    $ano_part[$ii]        =  "";
+		$cod_sector[$ii]      =  "";
+		$cod_programa[$ii]    =  "";
+		$cod_sub_prog[$ii]    =  "";
+		$cod_proyecto[$ii]    =  "";
+		$cod_activ_obra[$ii]  =  "";
+		$cod_partida[$ii]     =  "";
+		$cod_generica[$ii]    =  "";
+		$cod_especifica[$ii]  =  "";
+		$cod_sub_espec[$ii]   =  "";
+		$cod_auxiliar[$ii]    =  "";
+		$monto[$ii]           =  "";
+
+	}///fin for
+
+
+
+
+	$i=0;
+	foreach($datos_cepd01_compromiso_partidas as $x){
+	 if($x['cepd01_compromiso_partidas']['numero_documento'] == $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']){
+		$i++;
+		$ano_part[$i]        =  $x['cepd01_compromiso_partidas']['ano'];
+		$cod_sector[$i]      =  $x['cepd01_compromiso_partidas']['cod_sector'];
+		$cod_programa[$i]    =  $x['cepd01_compromiso_partidas']['cod_programa'];
+		$cod_sub_prog[$i]    =  $x['cepd01_compromiso_partidas']['cod_sub_prog'];
+		$cod_proyecto[$i]    =  $x['cepd01_compromiso_partidas']['cod_proyecto'];
+		$cod_activ_obra[$i]  =  $x['cepd01_compromiso_partidas']['cod_activ_obra'];
+		$cod_partida[$i]     =  $x['cepd01_compromiso_partidas']['cod_partida'];
+		$cod_generica[$i]    =  $x['cepd01_compromiso_partidas']['cod_generica'];
+		$cod_especifica[$i]  =  $x['cepd01_compromiso_partidas']['cod_especifica'];
+		$cod_sub_espec[$i]   =  $x['cepd01_compromiso_partidas']['cod_sub_espec'];
+		$cod_auxiliar[$i]    =  $x['cepd01_compromiso_partidas']['cod_auxiliar'];
+		$monto[$i]           =  $x['cepd01_compromiso_partidas']['monto'];
+	  }//fin if
+	}//fin for
+
+
+	//---------------------------------------------------------------------------------------------------
+	$total_bsf=0;
+	$pdf->SetFont('vera','',7);
+	for($ii=1; $ii<=29; $ii++){
+		if($ano_part[$ii]!=""){
+			$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+			$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+			$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+			$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+			$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+			$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+			$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+			$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+			$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+			$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+			$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+			$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+			$total_bsf=$total_bsf+$monto[$ii];
+		}else{
+			$pdf->Cell(12,3,"",'RL',0,'C');
+			$pdf->Cell(13,3,"",'R',0,'C');
+			$pdf->Cell(19,3,"",'R',0,'C');
+			$pdf->Cell(19,3,"",'R',0,'C');
+			$pdf->Cell(18,3,"",'R',0,'C');
+			$pdf->Cell(11,3,"",'R',0,'C');
+			$pdf->Cell(15,3,"",'R',0,'C');
+			$pdf->Cell(17,3,"",'R',0,'C');
+			$pdf->Cell(10,3,"",'R',0,'C');
+			$pdf->Cell(15,3,"",'R',0,'C');
+			$pdf->Cell(14,3,"",'R',0,'C');
+			$pdf->Cell(0,3,"",'R',1,'C');
+		}//fin else
+	}
+
+
+	$monto_relacion[$aux_aux] = $total_bsf;
+
+
+	/*
+     * SEGUNDA PAGINA DE PARTIDAS SI LAS HAY
+	 */
+
+
+
+		if($i <= 29){
+			$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+			$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+			$pdf->imprimir_firmas2();
+
+		}else{
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+			$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+			$pdf->imprimir_firmas2();
+
+			$pdf->AddPage();
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+			$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+			$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+			$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+			$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+			$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+			$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+			$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+			//--------------------------------------------
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+			$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+			$pdf->SetFont('vera','',7);
+
+
+
+			if($corriente[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+			}
+
+			if($capital[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+			}
+
+
+			//------------------------------------------------------
+
+
+			if($ordinario[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+			}
+
+			if($coordinado[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+			}
+
+			if($laee[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(25,5,"FCI",'RB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(25,5,"FCI",'RB',0,'C');
+			}
+
+			if($fides[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+			}
+
+			if($ingresosextra[$aux_aux]==1){
+				$pdf->SetFont('vera','BI',6);
+				$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+			}else{
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+			}
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+			$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+			$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+			$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+			   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+			$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+			   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+			$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+			//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+			$ALTO_UB_AD = 4.5;
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+			$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+			////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+			$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+			//echo '<pre>'.print_r($secretaria).'</pre>';
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+			$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+			$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+			if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+			}
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+				$varX = $pdf->GetX();//capturo X
+				$varY = $pdf->GetY();//capturo Y
+				$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+				$varX = $varX+194;//le sumo a X ---> 180.
+				$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(12,3,"",'RL',0,'C');
+			$pdf->Cell(13,3,"",'R',0,'C');
+			$pdf->Cell(19,3,"",'R',0,'C');
+			$pdf->Cell(19,3,"SUB",'R',0,'C');
+			$pdf->Cell(18,3,"",'R',0,'C');
+			$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+			$pdf->Cell(15,3,"",'R',0,'C');
+			$pdf->Cell(17,3,"",'R',0,'C');
+			$pdf->Cell(10,3,"",'R',0,'C');
+			$pdf->Cell(15,3,"SUB",'R',0,'C');
+			$pdf->Cell(14,3,"",'R',0,'C');
+			$pdf->Cell(0,3,"",'R',1,'C');
+
+			$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+			$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+			$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+			$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+			$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+			$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+			$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+			$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+			$pdf->Cell(10,3,"ESP",'RB',0,'C');
+			$pdf->Cell(15,3,"ESP",'RB',0,'C');
+			$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+			$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+			//---------------------------------------------------------------------------------------------------
+			//$total_bsf=0;
+			$pdf->SetFont('vera','',7);
+			for($ii=30; $ii<=58; $ii++){
+				if($ano_part[$ii]!=""){
+					$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+					$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+					$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+					$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+					$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+					$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+					$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+					$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+					$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+					$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+					$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+					$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+					$total_bsf=$total_bsf+$monto[$ii];
+				}else{
+					$pdf->Cell(12,3,"",'RL',0,'C');
+					$pdf->Cell(13,3,"",'R',0,'C');
+					$pdf->Cell(19,3,"",'R',0,'C');
+					$pdf->Cell(19,3,"",'R',0,'C');
+					$pdf->Cell(18,3,"",'R',0,'C');
+					$pdf->Cell(11,3,"",'R',0,'C');
+					$pdf->Cell(15,3,"",'R',0,'C');
+					$pdf->Cell(17,3,"",'R',0,'C');
+					$pdf->Cell(10,3,"",'R',0,'C');
+					$pdf->Cell(15,3,"",'R',0,'C');
+					$pdf->Cell(14,3,"",'R',0,'C');
+					$pdf->Cell(0,3,"",'R',1,'C');
+					}//fin else
+				}
+
+			$monto_relacion[$aux_aux] = $total_bsf;
+
+		}
+
+
+
+			/*
+			 * TERCERA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 58){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=59; $ii<=87; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+
+							}
+
+					}
+
+
+			/*
+			 * CUARTA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 87){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=88; $ii<=116; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+			/*
+			 * QUINTA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 116){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=117; $ii<=145; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+			/*
+			 * SEXTA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 145){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=146; $ii<=174; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+
+							}
+
+					}
+
+
+
+			/*
+			 * SEPTIMA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 174){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=175; $ii<=203; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+
+			/*
+			 * OCTAVA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 203){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=204; $ii<=232; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+					}
+
+			 /*
+			 * NOVENA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+
+			if($listo!="si"){
+
+							if($i <= 232){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=233; $ii<=261; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+			 /*
+			 * DECIMA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 261){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=262; $ii<=290; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+
+			 /*
+			 * DECIMA-PRIMERA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 290){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=291; $ii<=319; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+
+
+			 /*
+			 * DECIMA-SEGUNDA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 319){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=320; $ii<=348; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+
+			 /*
+			 * DECIMA-TERCERA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 348){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=349; $ii<=377; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+			 /*
+			 * DECIMA-CUARTA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 377){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=378; $ii<=406; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+			 /*
+			 * DECIMA-QUINTA PAGINA DE PARTIDAS SI LAS HAY
+			 */
+
+			if($listo!="si"){
+
+							if($i <= 406){
+								$listo="si";//detenemos el ciclo while para que no continue imprimiendo
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($total_bsf),'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+							}else{
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(163,5,"T O T A L  Bs. ",'TRLB',0,'R');
+								$pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+								$pdf->imprimir_firmas2();
+
+								$pdf->AddPage();
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+								$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+								$pdf->Cell(117,5,"TIPO DE COMPROMISO",'TR',0,'C');
+								$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(16,5,$datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'],'TRL',0,'C');
+								$ano_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['ano_documento'];
+
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento']),'TR',0,'C');
+								$numero_documento[$aux_aux] = $datos_cuerpo['cepd01_compromiso_cuerpo']['numero_documento'];
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(117,5,$tipodocu[$aux_aux][0]['cepd01_tipo_compromiso']['denominacion'],'TR',0,'L');
+								$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']),'TR',1,'C');
+								$fecha_documento2[$aux_aux] = $sisap->cambia_fecha($datos_cuerpo['cepd01_compromiso_cuerpo']['fecha_documento']);
+								//--------------------------------------------
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(55,4.5,"TIPO DE GASTOS",'TRLB',0,'C');
+								$pdf->Cell(0,4.5,"TIPOS DE RECURSOS",'TRB',1,'C');
+
+								$pdf->SetFont('vera','',7);
+
+
+
+								if($corriente[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(28,5,"CORRIENTE",'RLB',0,'C');
+								}
+
+								if($capital[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"CAPITAL",'RB',0,'C');
+								}
+
+
+								//------------------------------------------------------
+
+
+								if($ordinario[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+								}
+
+								if($coordinado[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+								}
+
+								if($laee[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"FCI",'RB',0,'C');
+								}
+
+								if($fides[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(25,5,"MPPS",'RB',0,'C');
+								}
+
+								if($ingresosextra[$aux_aux]==1){
+									$pdf->SetFont('vera','BI',6);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}else{
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(100,4,"BENEFICIARIO: ",'RL',0,'L');
+								$pdf->Cell(50,4,"R.I.F. ",'R',0,'L');
+								$pdf->Cell(0,4,"CÉDULA IDENTIDAD",'RL',1,'L');
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(100,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'],'RLB',0,'L');
+
+								$beneficiario[$aux_aux]=$datos_cuerpo['cepd01_compromiso_cuerpo']['beneficiario'];
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['rif']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['rif']="";}
+								$pdf->Cell(50,4,"    ".$datos_cuerpo['cepd01_compromiso_cuerpo']['rif'],'RB',0,'L');
+
+								   if($datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']=="0"){$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad']="";}
+								$pdf->Cell(0,4,"     ".$datos_cuerpo['cepd01_compromiso_cuerpo']['cedula_identidad'],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"UNIDAD SOLICITANTE",'RLB',1,'C');
+
+								//echo '<pre>'.print_r($direccionsup).'</pre>';
+
+								$ALTO_UB_AD = 4.5;
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN SUPERIOR",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_dir_superior']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccionsup[$aux_aux],'RLB',1,'L');
+
+
+								////echo '<pre>'.print_r($coordinacion).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"COORDINACIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_coordinacion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$coordinacion[$aux_aux],'RLB',1,'L');
+
+								//echo '<pre>'.print_r($secretaria).'</pre>';
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"SECRETARÍA",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_secretaria']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$secretaria[$aux_aux],'RLB',1,'L');
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(40,$ALTO_UB_AD,"DIRECCIÓN",'RLB',0,'L');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(15,$ALTO_UB_AD,$sisap->AddCero2($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_direccion']),'RB',0,'C');
+								$pdf->Cell(0,$ALTO_UB_AD,$direccion[$aux_aux],'RLB',1,'L');
+
+								if($datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra']!=''){
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(40,$ALTO_UB_AD,"CÓDIGO OBRA",'RLB',0,'L');
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(0,$ALTO_UB_AD,$datos_cuerpo['cepd01_compromiso_cuerpo']['cod_obra'],'RLB',1,'L');
+								}
+
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO",'RLB',1,'C');
+
+
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(1,31,"",'LB',0);//margen izquierdo
+
+									$varX = $pdf->GetX();//capturo X
+									$varY = $pdf->GetY();//capturo Y
+									$pdf->MultiCell(194,4,$datos_cuerpo['cepd01_compromiso_cuerpo']['concepto'],'','L');//Concepto Orden de Pago
+									$varX = $varX+194;//le sumo a X ---> 180.
+									$pdf->SetXY($varX,$varY);// cargo XY
+
+								$pdf->Cell(0,31,"",'RB',1);//margen derecho
+
+								$pdf->SetFont('vera','B',7);
+								$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(12,3,"",'RL',0,'C');
+								$pdf->Cell(13,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"",'R',0,'C');
+								$pdf->Cell(19,3,"SUB",'R',0,'C');
+								$pdf->Cell(18,3,"",'R',0,'C');
+								$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+								$pdf->Cell(15,3,"",'R',0,'C');
+								$pdf->Cell(17,3,"",'R',0,'C');
+								$pdf->Cell(10,3,"",'R',0,'C');
+								$pdf->Cell(15,3,"SUB",'R',0,'C');
+								$pdf->Cell(14,3,"",'R',0,'C');
+								$pdf->Cell(0,3,"",'R',1,'C');
+
+								$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+								$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+								$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+								$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+								$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+								$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+								$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+								$pdf->Cell(10,3,"ESP",'RB',0,'C');
+								$pdf->Cell(15,3,"ESP",'RB',0,'C');
+								$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+								$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+
+								//---------------------------------------------------------------------------------------------------
+								//$total_bsf=0;
+								$pdf->SetFont('vera','',7);
+								for($ii=407; $ii<=435; $ii++){
+									if($ano_part[$ii]!=""){
+										$pdf->Cell(12,3,$ano_part[$ii],'RL',0,'C');
+										$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+										$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+										$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+										$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$ii], -2), substr($cod_partida[$ii], 0, 1 )),'R',0,'C');
+										$pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$ii]),'R',0,'C');
+										$pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$ii]),'R',0,'C');
+										$pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$ii]),'R',0,'C');
+										$pdf->Cell(14,3,$sisap->AddCero2($cod_auxiliar[$ii]),'R',0,'C');
+										$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+										$total_bsf=$total_bsf+$monto[$ii];
+									}else{
+										$pdf->Cell(12,3,"",'RL',0,'C');
+										$pdf->Cell(13,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(19,3,"",'R',0,'C');
+										$pdf->Cell(18,3,"",'R',0,'C');
+										$pdf->Cell(11,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(17,3,"",'R',0,'C');
+										$pdf->Cell(10,3,"",'R',0,'C');
+										$pdf->Cell(15,3,"",'R',0,'C');
+										$pdf->Cell(14,3,"",'R',0,'C');
+										$pdf->Cell(0,3,"",'R',1,'C');
+									}//fin else
+								}
+
+								$monto_relacion[$aux_aux] = $total_bsf;
+
+							}
+
+					}
+
+
+
+
+	//-----------------------------------------------------------------------------------------------------------------
+
+
+	}//fin del else que termina para generar
+
+			$orden = $aux_aux;
+
+			$_SESSION['FIN'] = "si";
+			$monto_monto = 0;
+			$cont=0;
+			$pdf->AddPage();
+
+			$pdf->SetFont('vera','',7);
+			for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+				    $pdf->Cell(10,4,                      $sisap->AddCero2($aux_aux),'RL',0,'C');
+				    $pdf->Cell(20,4,                      $fecha_documento2[$aux_aux],'RL',0,'C');
+					$pdf->Cell(20,4,                      $ano_documento[$aux_aux],'RL',0,'C');
+					$pdf->Cell(30,4, $sisap->mascara_ocho($numero_documento[$aux_aux]),'R',0,'C');
+					$pdf->Cell(85,4,                      $beneficiario[$aux_aux],'R',0,'L');
+					$pdf->Cell(0,4,  $sisap->Formato2(    $monto_relacion[$aux_aux]),'R',1,'R');
+					$monto_monto +=                       $monto_relacion[$aux_aux];
+					$cont++;
+			}//fin for
+
+			for($i=$cont; $i<=52; $i++){
+			 $pdf->Cell(10,4, "",'RL',0,'C');
+			 $pdf->Cell(20,4, "",'R',0,'C');
+			 $pdf->Cell(20,4, "",'R',0,'C');
+			 $pdf->Cell(30,4, "",'R',0,'C');
+			 $pdf->Cell(85,4,"",'R',0,'L');
+			 $pdf->Cell(0,4,  "",'R',1,'R');
+			}//fin for
+
+			$pdf->Cell(10,5, $sisap->AddCero2($cont),'TRL',0,'C');
+			$pdf->Cell(155,5,"MONTO ".MONEDA2,'TRL',0,'R');
+			$pdf->Cell(0,5,$sisap->Formato2($monto_monto),'TRL',1,'R');
+			if(isset($_SESSION['firmas_reporte'])){
+				unset($_SESSION['firmas_reporte']);
+			}
+
+			$pdf->OutPut('Registro_de_compromiso','D');
+		}//fin del els que termina para  if que exista la variable del cuaerpo
+
+	}//fin del els que termina para  generar el pdf
+
+}//fin else
+
+
+?>

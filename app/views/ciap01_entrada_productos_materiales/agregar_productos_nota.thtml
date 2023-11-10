@@ -1,0 +1,120 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+foreach($_SESSION ["items3"] as $v){
+	$aux[0][0]=$v[0];
+	$aux[0][10]=$v[10];
+	$aux[0][1]=$v[1];
+	$aux[0][2]=$v[2];
+	$aux[0][8]=$v[8];
+	$aux[0][9]=$v[9];
+	break;
+}
+?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+			<tr class="tr_negro" align="center">
+				<td width="13%">R.I.F</td>
+				<td width="38%">Proveedor</td>
+				<td width="10%">Año Nota<br> de Entrega</td>
+				<td width="11%">Número Nota<br> de Entrega</td>
+				<td width="11%">Año Orden<br> de Compra</td>
+				<td width="12%">Número Orden<br> de Compra</td>
+			</tr>
+			<tr class = "tr_grid_c2"  align="center" >
+				<td  align="center"><?=$aux[0][0]?>&nbsp;</td>
+				<td  align="lefth"><?=$aux[0][10]?>&nbsp;</td>
+				<td  align="center"><?=$aux[0][1]?>&nbsp;</td>
+				<td  align="center"><?=$aux[0][2]?>&nbsp;</td>
+				<td  align="center"><?=$aux[0][8]?>&nbsp;</td>
+				<td align="center"><?=$aux[0][9]?>&nbsp;</td>
+			</tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+				<tr align="center">
+					<td width="12%">Código Producto</td>
+					<td width="45%">Denominación del Producto</td>
+					<td width="10%">Cantidad</td>
+					<td width="12%">Precio Unitario</td>
+					<td width="15%">Total</td>
+					<td width="6%">Acción</td>
+				</tr>
+
+		<?php
+		 	$i=0;
+		 	$j=0;
+		 	$cont=0;
+		    foreach($_SESSION ["items3"] as $codigos){
+
+		    	if($i%2 == 0){
+					$color = "tr_grid_c1";
+				}else{
+					$color = "tr_grid_c2";
+				}
+
+		if($codigos[0]!=null){
+		?>
+		  <tr class="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+		   <?
+		    for($x=0;$x<=7;$x++){
+		    	if($x==3){
+		    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+		    	}else if($x==4){
+		    		echo "<td>".$codigos[$x].' - '.deno_unidad2($cscd01_unidad_medida, $codigos[5])."</td>";
+		    	}else if($x==7){
+		    		echo "<td align=\"right\">".$sisap->Formato2($codigos[$x])."</td>";
+		    	}else if($x==6){
+		    		echo "<td align=\"center\">".$sisap->Formato_6_out($codigos[$x])."</td>";
+		    	}
+		$total=($codigos[6]*$codigos[7]);
+		}
+
+
+		 ?>
+		   <td align="right"><?=$sisap->Formato2($total) ?></td>
+		   <? if($codigos['status']==2){
+		   		$cont++;
+		   		$url=$codigos['id'];
+		   		?>
+				<td align="center"><?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar_datos'),12,"Agregar Ubicación", "/ciap01_entrada_productos_materiales/ventana_notas_ubicacion/1/$url", "750px", "350px" ); ?></td>
+			<? }else{ ?>
+				<td align="center">&nbsp;</td>
+			<? } ?>
+
+		 </tr>
+		  <?
+
+		   	$i++;
+
+		    }//fin foreach
+
+		    } ?>
+</table>
+<input name="data[ciap01][contador]" type="hidden" id="TI" value="<?=$cont?>"/>
+<center>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/ciap01_entrada_productos_materiales/limpiar1/', 'update1'=>'carga_nota')); ?>
+</center>
+
+<? if(isset($otro)){ ?>
+<script language="JavaScript" type="text/javascript">
+   Windows.close(document.getElementById('capa_ventana').value);
+</script>
+<? } ?>

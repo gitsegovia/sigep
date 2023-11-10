@@ -1,0 +1,200 @@
+<?php
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+//set_time_limit(0);
+$_SESSION['cod_snc_consu']=$cod_snc;
+$_SESSION['cod_sis_consu']=$codigo_prod_serv;
+$_SESSION['denoprod_consu']=$denominacion;
+$_SESSION['expresion_consu']=$expresion;
+$_SESSION['opcion_reporte']=$opcion;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		$this->top_reporte($titulo_A = "Consumo de productos o servicios por república",null, null, array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"185"), false);
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,4,'CÓDIGO SNC','TRBL',0,'C');
+		$this->Cell(23,4,'CÓDIGO SISTEMA','TRB',0,'C');
+		$this->Cell(0,4,'  DENOMINACIÓN DEL PRODUCTO O SERVICIO','TRB',1,'L');
+
+		//-------------------------------------------------
+		$this->SetFont('vera','',7);
+		$this->Cell(20,8,$_SESSION['cod_snc_consu'],'RL',0,'C');//--[codigo snc]
+		$this->Cell(23,8,$_SESSION['cod_sis_consu'],'R',0,'C');//---[codigo sistema]
+		$this->SetFont('vera','',6);
+		$varX = $this->GetX();
+		$varY = $this->GetY();
+		$this->Cell(152,1,"",'',2,'C');
+		$this->MultiCell(152,3,$_SESSION['denoprod_consu'].' - '.$_SESSION['expresion_consu'],'','L');//--[denominacion del producto]
+		$varX = $varX+152;
+		$this->SetXY($varX,$varY);
+		$this->Cell(0,8,'','R',1,'C');
+		//-------------------------------------------------
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,'','TRL',0,'C');
+		$this->Cell(100,3,'','TR',0,'L');
+		$this->Cell(20,3,'CANTIDAD','TR',0,'C');
+		$this->Cell(26,3,'PRECIO','TR',0,'C');
+		$this->Cell(0,3,'TOTAL','TR',1,'C');
+
+		$this->Cell(20,3,'CÓDIGO','RBL',0,'C');
+		$this->Cell(100,3,'REPÚBLICA','RB',0,'C');
+		$this->Cell(20,3,'PROMEDIO','RB',0,'C');
+		$this->Cell(26,3,'PROMEDIO','RB',0,'C');
+		$this->Cell(0,3,'CONSUMO','RB',1,'C');
+	}//fin funtion
+}//fin de la clase PDF
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+$cant=0;
+$precio=0;
+$total_consumo=0;
+// variables para la totalizacion de los montos
+$total_cant=0;
+$total_precio=0;
+$total_total_consumo=0;
+$promed_precio_unitario=0;
+
+
+if($cant_registros==0){
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(0,25,"NO SE ENCONTRARÓN DATOS PARA ESA PETICIÓN",'TRBL',0,'C');
+}else{
+
+
+if($_SESSION['opcion_reporte']!=2){
+	$pdf->AddPage();
+	for($i=0; $i<count($datos);$i++){
+		$cantidad_promedio = $datos[$i][0]['cantidad_promedio'];
+		$cantidad = explode('.',$cantidad_promedio);
+		if($cantidad[1]=='000'){
+			$cantidad_promedio2 = $cantidad[0];
+		}else{
+			$cantidad_promedio2 = $sisap->Formato_3_out($cantidad_promedio);
+		}
+
+		//$cant = (int) $datos[$i][0]['cantidad_promedio'];
+		$precio = $datos[$i][0]['precio_promedio'];
+		$total_consumo = $datos[$i][0]['total_consumo'];
+		// totalizacion de los montos
+		$total_cant = $total_cant + $cantidad_promedio;
+		$total_precio = $total_precio + $precio;
+		$total_total_consumo = $total_total_consumo + $total_consumo;
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(20,7,$datos[$i][0]['cod_presi'],'RL',0,'C');//-[codigo dep]
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(100,1,"",'',2,'C');
+
+		/*if(isset($dependencias[$datos[$i][0]['cod_dep']])){
+		 $deno_dep = $dependencias[$datos[$i][0]['denominacion_entidad']];
+		}else{
+		 $deno_dep = "";
+		}//fin else
+		*/
+
+		$pdf->MultiCell(99,3,strtoupper($datos[$i][0]['denominacion_entidad']),'','L');//--[denominacion dep]
+		$varX = $varX+100;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(20,7,$cantidad_promedio2,'RL',0,'C');//-[cantidad promedio]
+		$pdf->Cell(26,7,$sisap->Formato2($precio),'R',0,'R');//--[precio promedio]
+		$pdf->Cell(0,7,$sisap->Formato2($total_consumo),'R',1,'R');//---[total consumo]
+		$pdf->Cell(0,0,'','T',1);
+	}
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(120,6,"TOTALES:",'RLB',0,'R');
+	$pdf->Cell(20,6,$total_cant,'RB',0,'C');
+	$promed_precio_unitario = $total_total_consumo / $total_cant;
+	$pdf->Cell(26,6,$sisap->Formato2($promed_precio_unitario),'RB',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($total_total_consumo),'RB',1,'R');
+
+}else{
+	$cod_snc_2 = "999999X";
+	$codigo_prod_serv_2 = "999999X";
+	for($i=0; $i<count($datos);$i++){
+
+		$cod_snc_1 = $datos[$i][0]['cod_snc'];
+		$codigo_prod_serv_1 = $datos[$i][0]['codigo_prod_serv'];
+		if(($cod_snc_1!=$cod_snc_2) || ($codigo_prod_serv_1!=$codigo_prod_serv_2)){
+
+			if($i!=0){// La primera vez no deberia pasar por aqui, arrojaria un error al dividir por cero.
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(120,6,"TOTALES:",'RLB',0,'R');
+				$pdf->Cell(20,6,sprintf("%01.2f", $total_cant),'RB',0,'C');
+				$promed_precio_unitario = $total_total_consumo / $total_cant;
+				$pdf->Cell(26,6,$sisap->Formato2($promed_precio_unitario),'RB',0,'R');
+				$pdf->Cell(0,6,$sisap->Formato2($total_total_consumo),'RB',1,'R');
+
+				// inicializacion de los montos
+				$total_cant = 0;
+				$total_precio = 0;
+				$total_total_consumo = 0;
+			}
+
+			$_SESSION['cod_snc_consu']=$datos[$i][0]['cod_snc'];
+			$_SESSION['cod_sis_consu']=$datos[$i][0]['codigo_prod_serv'];
+			$_SESSION['denoprod_consu']=$datos[$i][0]['denominacion_producto'];
+			$_SESSION['expresion_consu']=$datos[$i][0]['expresion'];
+			$pdf->AddPage();
+		}
+
+		$cantidad_promedio = $datos[$i][0]['cantidad_promedio'];
+		$cantidad = explode('.',$cantidad_promedio);
+		if($cantidad[1]=='000'){
+			$cantidad_promedio2 = $cantidad[0];
+		}else{
+			$cantidad_promedio2 = $sisap->Formato_3_out($cantidad_promedio);
+		}
+
+		//$cant = (int) $datos[$i][0]['cantidad_promedio'];
+		$precio = $datos[$i][0]['precio_promedio'];
+		$total_consumo = $datos[$i][0]['total_consumo'];
+		// totalizacion de los montos
+		$total_cant = $total_cant + $cantidad_promedio;
+		$total_precio = $total_precio + $precio;
+		$total_total_consumo = $total_total_consumo + $total_consumo;
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(20,7,$datos[$i][0]['cod_presi'],'RL',0,'C');//-[codigo dep]
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(100,1,"",'',2,'C');
+		$pdf->MultiCell(99,3,strtoupper($datos[$i][0]['denominacion_entidad']),'','L');//--[denominacion dep]
+		$varX = $varX+100;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(20,7,$cantidad_promedio2,'RL',0,'C');//-[cantidad promedio]
+		$pdf->Cell(26,7,$sisap->Formato2($precio),'R',0,'R');//--[precio promedio]
+		$pdf->Cell(0,7,$sisap->Formato2($total_consumo),'R',1,'R');//---[total consumo]
+		$pdf->Cell(0,0,'','T',1);
+
+		$cod_snc_2 = $datos[$i][0]['cod_snc'];
+		$codigo_prod_serv_2 = $datos[$i][0]['codigo_prod_serv'];
+	}
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(120,6,"TOTALES:",'RLB',0,'R');
+	$pdf->Cell(20,6,sprintf("%01.2f", $total_cant),'RB',0,'C');
+	$promed_precio_unitario = $total_total_consumo / $total_cant;
+	$pdf->Cell(26,6,$sisap->Formato2($promed_precio_unitario),'RB',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($total_total_consumo),'RB',1,'R');
+}
+
+}// Fin else cantidad de registros
+$pdf->Output('consumo_de_productos_por_republica_'.date('d-m-Y').'.pdf','D');
+?>

@@ -1,0 +1,131 @@
+<?
+if(isset($errorMessage)) {
+  echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$modelo_form="cpop01_proyectos";
+$color="";
+if(count($datos_filosofia)>0){
+	if(strlen($datos_filosofia["cpod01_filosofia_gestion"]['mision'])>1 && strlen($datos_filosofia["cpod01_filosofia_gestion"]['vision'])>1){
+		$requerido=false;
+	}else{
+		echo $sisap->mensajes_error('Debe registrar la misión y visión');
+		$requerido=true;		
+	}
+}else{
+	$requerido=true;
+	echo $sisap->mensajes_error('Debe registrar la misión y visión');
+}
+?>
+
+<?$sisap->Tabla_modulos("",true,"PROYECTOS GESTIÓN","","950","cpop")?>
+<?$sisap->OpenTable("950");?>
+
+
+<?
+if(isset($tipo_proyecto) && ($tipo_proyecto=='ESTRATEGICO' || $tipo_proyecto=='GESTION')){
+?>
+	<form name='data[cpop01_proyectos]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="35%">EJERCICIO A FORMULAR</td>
+				<td><?= $sisap->inputTagRemote($modelo_form.'/ano', array('url'=>'/'.$modelo_form.'/index/'.$tipo_proyecto.'/'.$this->data['cpop01_proyectos']['ano'],'update'=>'principal','size'=>'4' , 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$ano));?></td>
+			</tr>
+			<tr>
+				<td>TIPO DEL PROYECTO</td>
+				<td><?= $html->input($modelo_form.'/tipo_proyecto',array('id'=>'tipo_proyecto', 'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250', 'value'=>$tipo_proyecto, 'readonly'=>'readonly'));?>
+					<?= $html->input($modelo_form.'/numero_proyecto',array('id'=>'numero_proyecto', 'value'=>'0', 'readonly'=>'readonly', 'type'=>'hidden'));?>
+				</td>
+			</tr>
+			<tr>
+				<td>DESCRIPCI&Oacute;N DEL PROYECTO</td>
+				<td><?= $html->textarea($modelo_form.'/proyecto', array('id'=>'proyecto','rows'=>'2',  'cols' => '40', 'class'=>'inputtext'),  false) ?></td>
+			</tr>
+			<tr>
+				<td>PROFESIONAL RESPONSABLE</td>
+				<td><?= $html->input($modelo_form.'/responsable',array('id'=>'responsable', 'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?>
+				</td>
+			</tr>
+			<!-- tr>
+				<td>FECHA DE CREACI&Oacute;N</td>
+				<td> < ? = // $sisap->input_fecha("cpyp01_proy_accion","fecha","fecha", date('d/m/Y'), array()); ?></td>
+			</tr -->
+			<tr>
+        <? if(!$consulta){
+        		if(!$requerido){
+        ?>
+							<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Proyecto', array('funcion'=>'valida_cpop01_proyectos','url1' => '/cpop01_proyectos/guardar/', 'update1'=>'principal')); ?></td>
+				<?
+						}
+					}
+				?>
+			</tr>
+		</table>
+	</form>
+
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="4" align="left">PROYECTOS REGISTRADOS  PARA ESTE  EJERCICIO PRESUPUESTARIO:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="20%" align="center">C&oacute;digo</td>
+				<td width="50%" align="center">Descripción del Proyecto</td>
+				<td width="20%" align="center">Responsable</td>
+				<td width="10%" align="center">Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+			if(isset($transferir) && !$transferir){
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $proyectos){
+        				$param = $tipo_proyecto."/".$proyectos['cpod01_proyectos']['numero_proyecto']."/".$proyectos['cpod01_proyectos']['ano'];
+
+						if($color=="#DAEBFF"){
+		    				$color="#CDF2FF";
+			    		}else{
+				    		$color="#DAEBFF";
+				    	}
+					?>
+
+						<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							<td width="20%" align="center"><?= $id ?></td>
+							<td width="50%" align="left"><?= $proyectos['cpod01_proyectos']['proyectos'] ?></td>
+							<td width="20%" align="left"><?= $proyectos['cpod01_proyectos']['responsable'] ?></td>
+							<td width="10%" align="center">
+						        <?if(!$consulta){?>
+							        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop01_proyectos/eliminar/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpop01_proyectos/editar/'.$param, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+								<?}?>
+							</td>
+						</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				} // fin datos
+			} // fin transferir
+			?>
+		</table>
+	</div>
+<? } // fin condicion de tipo de proyecto ?>
+<?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>
+<script>
+$('proyecto').value='';
+$('responsable').value='';
+</script>

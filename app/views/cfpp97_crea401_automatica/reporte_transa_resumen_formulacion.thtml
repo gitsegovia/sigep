@@ -1,0 +1,190 @@
+<?php
+
+function altura_celda($denominacion) {
+    $denominacion = str_replace("\n", "", $denominacion);
+    $denominacion = str_replace("\r", "", $denominacion);
+    $denominacion = str_replace("  ", " ", $denominacion);
+    $denominacion = trim($denominacion);
+    $c = strlen($denominacion);
+    if ($c <= 93) {
+        $alturad = 6;
+    } else if ($c > 93 && $c <= 186) {
+        $alturad = 12;
+    } else if ($c > 186 && $c <= 279) {
+        $alturad = 18;
+    } else if ($c > 279 && $c <= 372) {
+        $alturad = 24;
+    } else if ($c > 372 && $c <= 465) {
+        $alturad = 30;
+    } else if ($c > 465 && $c <= 558) {
+        $alturad = 36;
+    } else {
+        $alturad = 52;
+    }
+    return $alturad;
+}
+
+//fin funcion altura_deno
+//fin funciones
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Legal') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+
+     //   $this->SetY(-15);
+     //   $this->SetFont('vera', '', 8);
+        //  $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/TPAG', 0, 0, 'C');
+
+    }
+
+    function Header() {
+        $img_dependencia_o = '/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_' . $_SESSION['SScodinst'] . '_' . $_SESSION['SScoddep'] . '.jpg';
+        if (file_exists($img_dependencia_o)) {
+            $escudo = $img_dependencia_o;
+            $varTOPh1 = " ";
+            $varTOPh2 = "  ";
+            $varTOPh11 = " ";
+            $varTOPh22 = " ";
+            $t1 = 14;
+            $t2 = 14;
+        } else {
+            //$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+            $escudo = "/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+            $varTOPh1 = $_SESSION['entidad_federal'];
+            $varTOPh2 = $_SESSION['dependencia'];
+            $varTOPh11 = $_SESSION['entidad_federal'];
+            $varTOPh22 = $_SESSION['dependencia'];
+            $t1 = 13;
+            $t2 = 13;
+        }
+
+        $this->Image($escudo, 15, 12, $t1);
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(20, 6, "", 'TL', 0);
+        $this->Cell(310, 6, $varTOPh1, 'TR', 1);
+
+        $this->Cell(20, 6, "", 'L', 0);
+        $this->SetFont('vera', '', 7);
+        $this->Cell(310, 4, "", 'R', 1);
+
+
+        $this->SetFont('vera', 'B', 12);
+        $this->Cell(330, 6, "CÓDIGOS PRESUPUESTARIOS QUE SE ACTUALIZARAN EN LA FORMULACIÓN", 'RL', 1, 'C');
+
+        $this->SetFont('vera', 'R', 8);
+        $this->Cell(330, 6, $_SESSION['dependencia'], 'RLB', 1, 'L');
+        $this->Ln(5);
+
+        $varX_aux = $this->GetX() + 310;
+        $varY_aux = $this->GetY() - 23;
+        $this->SetFont('vera', 'B', 5);
+        $this->Text($varX_aux, $varY_aux, 'PAGINA: ' . $this->PageNo() . '/TPAG');
+        $this->Text($varX_aux, $varY_aux + 3, 'FECHA: ' . date("d/m/Y"));
+        $this->Text($varX_aux, $varY_aux + 6, 'HORA: ' . date("h:i a"));
+
+        $this->Ln(5);
+
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(12, 4, "", 'RLT', 0, 'C');
+        $this->Cell(16, 4, "", 'RLT', 0, 'C');
+        $this->Cell(12, 4, "", 'RLT', 0, 'C');
+        $this->Cell(12, 4, "SUB", 'RLT', 0, 'C');
+        $this->Cell(12, 4, "", 'RLT', 0, 'C');
+        $this->Cell(12, 4, "ACTIV", 'RLT', 0, 'C');
+        $this->Cell(10, 4, "", 'RLT', 0, 'C');
+        $this->Cell(10, 4, "", 'RLT', 0, 'C');
+        $this->Cell(10, 4, "", 'RLT', 0, 'C');
+        $this->Cell(10, 4, "SUB", 'RLT', 0, 'C');
+        $this->Cell(10, 4, "", 'RLT', 0, 'C');
+        $this->Cell(162, 4, "", 'RLT', 0, 'C');
+        $this->Cell(42, 4, "", 'RLT', 1, 'C');
+
+
+        $this->Cell(12, 4, "AÑO", 'RLB', 0, 'C');
+        $this->Cell(16, 4, "SECTOR", 'RLB', 0, 'C');
+        $this->Cell(12, 4, "PROG", 'RLB', 0, 'C');
+        $this->Cell(12, 4, "PROG", 'RLB', 0, 'C');
+        $this->Cell(12, 4, "PROY", 'RLB', 0, 'C');
+        $this->Cell(12, 4, "OBRA", 'RLB', 0, 'C');
+        $this->Cell(10, 4, "PART", 'RLB', 0, 'C');
+        $this->Cell(10, 4, "GEN", 'RLB', 0, 'C');
+        $this->Cell(10, 4, "ESP", 'RLB', 0, 'C');
+        $this->Cell(10, 4, "ESP", 'RLB', 0, 'C');
+        $this->Cell(10, 4, "AUX", 'RLB', 0, 'C');
+        $this->Cell(162, 4, "DENOMINACIÓN", 'RLB', 0, 'C');
+        $this->Cell(42, 4, "MONTO ANUAL", 'RLB', 1, 'C');
+    }
+
+}
+
+
+
+//fin clase
+$pdf = new fpdfview('L', 'mm', 'Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(13);
+$pdf->SetAutoPageBreak(true, 15);
+
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera', '', 8);
+//$total = 0;
+$total_general = 0;
+//$nomina = $vista_detalles[0][0][cod_tipo_nomina];
+
+
+
+//ciclo
+
+foreach ($vista_formulacion as $datos) {
+
+
+$total=$total+$datos[0][monto_anual];
+
+
+    $altura = altura_celda($datos[0][denominacion_partida]);
+
+    $pdf->Cell(12, $altura, $datos[0][ano], 'RLB', 0, 'C');
+    $pdf->Cell(16, $altura, mascara_dos($datos[0][cod_sector]), 'RLB', 0, 'C');
+    $pdf->Cell(12, $altura, mascara_dos($datos[0][cod_programa]), 'RLB', 0, 'C');
+    $pdf->Cell(12, $altura, mascara_dos($datos[0][cod_sub_prog]), 'RLB', 0, 'C');
+    $pdf->Cell(12, $altura, mascara_dos($datos[0][cod_proyecto]), 'RLB', 0, 'C');
+    $pdf->Cell(12, $altura, mascara_dos($datos[0][cod_activ_obra]), 'RLB', 0, 'C');
+    $pdf->Cell(10, $altura, mascara_tres($datos[0][cod_partida]), 'RLB', 0, 'C');
+    $pdf->Cell(10, $altura, mascara_dos($datos[0][cod_generica]), 'RLB', 0, 'C');
+    $pdf->Cell(10, $altura, mascara_dos($datos[0][cod_especifica]), 'RLB', 0, 'C');
+    $pdf->Cell(10, $altura, mascara_dos($datos[0][cod_sub_espec]), 'RLB', 0, 'C');
+    $pdf->Cell(10, $altura, mascara_cuatro($datos[0][cod_auxiliar]), 'RLB', 0, 'C');
+
+    $y = $pdf->GetY();
+    $pdf->MultiCell(162, 6, $datos[0][denominacion_partida], 1, 'L');
+    $pdf->SetXY(301, $y);
+    $pdf->Cell(42, $altura, $sisap->Formato2($datos[0][monto_anual]), 'RLB', 1, 'R');
+  }
+
+
+
+
+          $pdf->SetFont('vera', 'B', 9);
+          $pdf->Cell(288, 6,"TOTAL", 'TRLB', 0, 'R');
+          $pdf->Cell(42, 6, $sisap->Formato2($total),'TRLB', 1, 'R');
+
+//fin ciclo
+
+fin_ventana_barra_proceso();
+$pdf->Output('reporte_transa_' . date("d-m-Y") . "pdf", 'SISAP_AJAX');
+//fin multiplo
+//$pdf->Output('reporte_arc.pdf', 'D');
+?>

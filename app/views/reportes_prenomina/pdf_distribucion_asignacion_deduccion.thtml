@@ -1,0 +1,155 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$status=$nomina[0]['Cnmd01']['status_nomina'];
+if ($status==0 || $status==1){$status_actual="PRENOMINA";}else{$status_actual="NOMINA DEFINITIVA";}
+$_SESSION['NOMINA']="".mascara_tres($nomina[0]['Cnmd01']['cod_tipo_nomina'])." - ".$nomina[0]['Cnmd01']['denominacion'];
+$_SESSION['CORRE']="".$nomina[0]['Cnmd01']['correspondiente'];
+$_SESSION['LAPSO']="DESDE: ".cambiar_formato_fecha($nomina[0]['Cnmd01']['periodo_desde'])." - HASTA: ".cambiar_formato_fecha($nomina[0]['Cnmd01']['periodo_hasta']);
+$_SESSION['STATUS']="".$status_actual;
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		//$this->top_reporte("DISTRIBUCIÓN DE ASIGNACIÓN Y DEDUCCIÓN",''.$_SESSION['STATUS'], ''.$_SESSION['NOMINA'], ''.$_SESSION['LAPSO'], array("Y"=>"12", "X"=>"15", "Z"=>"13"), array("Y"=>"17", "X"=>"185"));
+    	$this->top_reporte2(array("DISTRIBUCIÓN DE ASIGNACIÓN Y DEDUCCIÓN",''.$_SESSION['STATUS'], ''.$_SESSION['NOMINA'], ''.$_SESSION['CORRE'],$_SESSION['LAPSO']), array("Y"=>"12", "X"=>"15", "Z"=>"13"), array("Y"=>"17", "X"=>"185"));
+    }//fin funtion
+
+}//fin clase
+
+
+$fpdf = new fpdfview('P','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(10);
+$fpdf->SetRightMargin(10);
+$fpdf->SetAutoPageBreak(true, 10);
+
+//,count(*) as cantidad_de_transacciones
+$fpdf->AddPage();
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(0,3,"",'',1,'C');
+$fpdf->Cell(11,4,"NÚMERO",'TRL',0,'C');
+$fpdf->Cell(11,4,"CÓDIGO",'TRL',0,'C');
+$fpdf->Cell(69,4,"",'TR',0,'C');
+$fpdf->Cell(21,4,"MONTO",'TR',0,'C');
+$fpdf->Cell(21,4,"MONTO",'TR',0,'C');
+$fpdf->Cell(21,4,"SUELDO",'TR',0,'C');
+$fpdf->Cell(21,4,"MONTO",'TR',0,'C');
+$fpdf->Cell(0,4,"PARTIDA",'TR',1,'C');
+$fpdf->Cell(0,0,"",'',1,'C');
+
+$fpdf->Cell(11,4,"TRANS.",'RLB',0,'C');
+$fpdf->Cell(11,4,"TRANS.",'RLB',0,'C');
+$fpdf->Cell(69,4,"DESCRIPCIÓN DE LA TRANSACCIÓN",'RB',0,'C');
+$fpdf->Cell(21,4,"ASIGNACCIÓN",'RB',0,'C');
+$fpdf->Cell(21,4,"DEDUCCIÓN",'RB',0,'C');
+$fpdf->Cell(21,4,"BASICO",'RB',0,'C');
+$fpdf->Cell(21,4,"NETO",'RB',0,'C');
+$fpdf->Cell(0,4,"",'RB',1,'C');
+
+
+$fpdf->SetFont('vera','',6);
+$asignaciones=0;
+$sueldo=0;
+$deducciones=0;
+$ap=0;
+$numero_trabajadores=0;
+//6.aporte patronal
+//9.abono a cuenta
+foreach($data as $r){
+	    extract($r['v_distribucion_asignacion_deduccion']);
+        $fpdf->SetFont('vera','B',6);
+        $alto = 4;
+		$fpdf->Cell(11,$alto,$cantidad_de_transacciones,'TRL',0,'R');//--
+		$fpdf->Cell(11,$alto,mascara_tres($cod_transaccion),'TRL',0,'C');//--
+		$fpdf->SetFont('vera','',6);
+		$fpdf->Cell(69,$alto,$denominacion,'TR',0,'L'); //--[Distribucion]
+		if($cod_tipo_transaccion==1){
+			if($cod_transaccion==1){
+				$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+				$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+				$fpdf->Cell(21,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[sueldo]
+				$fpdf->Cell(21,$alto,"",'TR',0,'R');  //--
+				$fpdf->Cell(0,$alto,$partida,'TR',1,'R');  //--
+                $numero_trabajadores=$cantidad_de_transacciones;
+				$sueldo=$monto_asignacion;
+			}else{
+				$fpdf->Cell(21,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[asignacion]
+				$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+				$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+				$fpdf->Cell(21,$alto,"",'TR',0,'R');  //--
+				$fpdf->Cell(0,$alto,$partida,'TR',1,'R');  //--
+				$asignaciones +=$monto_asignacion;
+			}
+		}else{
+			    if($uso_transaccion==6 || $uso_transaccion==9){
+			    	$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+					$fpdf->Cell(21,$alto,$sisap->Formato2($monto_deduccion)."",'TR',0,'R'); //--[deduccion]
+					$fpdf->Cell(21,$alto,"<-- No suma",'TR',0,'L'); //--
+					$fpdf->Cell(21,$alto,"",'TR',0,'R');  //--
+					$fpdf->Cell(0,$alto,$partida,'TR',1,'R');  //--
+					if($uso_transaccion==6){
+						$ap+=$monto_deduccion;
+					}
+			    }else{
+			    	$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+					$fpdf->Cell(21,$alto,$sisap->Formato2($monto_deduccion),'TR',0,'R'); //--[deduccion]
+					$fpdf->Cell(21,$alto,"",'TR',0,'R'); //--
+					$fpdf->Cell(21,$alto,"",'TR',0,'R');  //--
+					$fpdf->Cell(0,$alto,$partida,'TR',1,'R');  //--
+					$deducciones+=$monto_deduccion;
+			    }
+
+		}
+
+
+
+}
+//$fpdf->Cell(0,0,"",'',1,'C');
+
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(91,4,'TOTALES:','TLRB',0,'R');
+$fpdf->Cell(21,4,$sisap->Formato2($asignaciones),'TRB',0,'R');
+$fpdf->Cell(21,4,$sisap->Formato2($deducciones),'TRB',0,'R');
+$fpdf->Cell(21,4,$sisap->Formato2($sueldo),'TRB',0,'R');
+$fpdf->Cell(21,4,$sisap->Formato2(($asignaciones+$sueldo)-$deducciones),'TRB',0,'R');
+$fpdf->Cell(0,$alto,'','TRB',1,'R');  //--
+
+
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,8,"",'',1,'R');
+$fpdf->Cell(95,5,'','R',0,'R');
+$fpdf->Cell(72,5,"NÚMERO DE TRABAJADORES:",'TRB',0,'R');
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,5,$numero_trabajadores,'TRB',1,'R');
+
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,0,"",'',1,'R');
+$fpdf->Cell(95,5,'','R',0,'R');
+$fpdf->Cell(72,5,"TOTAL A PAGAR EN ESTA NÓMINA:",'TR',0,'R');
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(0,5,$sisap->Formato2(($asignaciones+$sueldo+$ap)),'TR',1,'R');
+
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(0,0,"",'',1,'R');
+$fpdf->Cell(95,5,'','R',0,'R');
+$fpdf->Cell(72,5,"(SUELDOS + ASIGNACIONES + APORTES PATRONALES)",'RB',0,'R');
+$fpdf->Cell(0,5,"",'RB',1,'R');
+
+
+$fpdf->Output('distribucion_asignacion_deduccion_'.date("d-m-Y").".pdf",'D');
+?>

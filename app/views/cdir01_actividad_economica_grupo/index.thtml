@@ -1,0 +1,289 @@
+<div id='todox'>
+    <?php
+    if (isset($errorMessage)) {
+        echo $sisap->mensajes_error($errorMessage);
+    } else if (isset($Message_existe)) {
+        echo $sisap->mensajes_correcto($Message_existe);
+    }
+    ?>
+
+    <?= $sisap->Tabla($session->read('entidad_federal'), true, "SECTORES ECONOMICOS – ACTIVIDAD", "", "800"); ?>
+    <?= $sisap->OpenTable("800") ?>
+    <!--<form name='data[Cdir01ActividadEconomicaGrupo]'  method = "post" id='form'>-->
+        <table style="width: 100%" class="tablacompromiso tablacompromiso2">
+            <thead>
+                <tr>
+                    <td style="text-align: center;width: 70px;"><b>CÓDIGO</b></td>
+                    <td style="text-align: center;width: 580px;"><b>ACTIVIDAD</b></td>
+                    <td style="text-align: center;width: 70px;" colspan="2"><b>ACCIÓN</b></td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php echo $html->input('Cdir01ActividadEconomicaGrupo/cod_actividad_grupo', array('class' => 'inputtext', 'style' => 'width:70px;text-align:center;','onkeypress' => "return solonumeros(event);", 'readonly'=>true)); ?>
+                    </td>
+                    <td>
+                        <?php echo $html->input('Cdir01ActividadEconomicaGrupo/denominacion', array('class' => 'inputtext' )); ?>
+                    </td>
+                    <td style="text-align: center; width: 70px;" colspan="2">
+                        <input type="button" class="agregar_imp_input send_data" value="" title="Agregar"> 
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="text-align: center;"><b>CÓDIGO</b></td>
+                    <td style="text-align: center;"><b>ACTIVIDAD</b></td>
+                    <td style="text-align: center; width: 70px;" colspan="2"><b>ACCIÓN</b></td>
+                </tr>
+            </thead>
+            <tbody id="tbody_cuerpo_add">
+                <?php
+                if(!empty($lista)){
+                    foreach ($lista as $key => $value) {
+                       ?>
+                <tr>
+                    <td class="cod_actividad_grupo" data-value="<?php echo $sisap->mascara_cuatro($value['Cdir01ActividadEconomicaGrupo']['cod_actividad_grupo']);?>" style="text-align: center;">
+                        <?php echo $sisap->mascara_cuatro($value['Cdir01ActividadEconomicaGrupo']['cod_actividad_grupo']);?>
+                    </td>
+                    <td class="denominacion" data-value="<?php echo ($value['Cdir01ActividadEconomicaGrupo']['denominacion']);?>">
+                        <?php echo ($value['Cdir01ActividadEconomicaGrupo']['denominacion']);?>
+                    </td>
+                    <td style="text-align: center;width: 30px;">
+                        <a href="#" title="Editar" class="sisap_icon sisap_edit" onclick="jQuery.fn.editItem(this, event);">
+                            <img src="/img/edit.png" border="0">
+                        </a>
+                    </td>
+                    <td style="text-align: center;width: 30px;">
+                        <a href="#" title="Eliminar" class="sisap_icon sisap_delete" onclick="jQuery.fn.deleteItem(this, event);">
+                            <img src="/img/delete.png" border="0">
+                        </a>
+                    </td>
+                </tr>
+                    <?php
+                    }
+                }else{
+                ?>
+                    <tr>
+                        <td style="text-align: center;" colspan="4">
+                            NO EXISTE REGISTROS ACTUALMENTE
+                        </td>
+                    </tr>
+                <?php
+                }
+                ?>
+                
+                
+            </tbody>
+        </table>
+
+    <!--</form>-->
+    <?= $sisap->CloseTable(); ?>
+    <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array('type' => 'button', 'value' => 'Salir'), array('url1' => '/modulos/vacio', 'update1' => 'principal')); ?>
+</div>
+<input type="hidden" value='<tr>
+                    <td class="cod_actividad_grupo" data-value="{cod_actividad_grupo}" style="text-align: center;">
+                        {cod_actividad_grupo}
+                    </td>
+                    <td class="denominacion" data-value="{denominacion}">
+                        {denominacion}
+                    </td>
+                    <td style="text-align: center;width: 30px;">
+                        <a href="#" title="Editar" class="sisap_icon sisap_edit" onclick="jQuery.fn.editItem(this, event);">
+                            <img src="/img/edit.png" border="0">
+                        </a>
+                    </td>
+                    <td style="text-align: center;width: 30px;">
+                        <a href="#" title="Eliminar" class="sisap_icon sisap_delete" onclick="jQuery.fn.deleteItem(this, event);">
+                            <img src="/img/delete.png" border="0">
+                        </a>
+                    </td>
+                    </tr>' 
+                    id="template_tr_tbody"/>
+<style>
+    .sisap_icon {
+        position: relative;
+        margin: auto;
+        width: 16px;
+        height: 16px;
+        display: block;
+    }
+    .sisap_icon img {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<script type="text/javascript">
+jQuery(document).ready(function (){
+    jQuery(".send_data").click(function (e){
+       e.preventDefault();
+       e.stopPropagation();
+       if(jQuery.fn.validar_datos()){
+            var data = {
+                        data:{
+                            Cdir01ActividadEconomicaGrupo:{
+                                cod_actividad_grupo:jQuery('#Cdir01ActividadEconomicaGrupoCodActividadGrupo').val(),
+                                denominacion:jQuery('#Cdir01ActividadEconomicaGrupoDenominacion').val()
+                           }
+                   }
+                };
+           jQuery.fn.save(data); 
+       }
+       
+    });
+    
+    
+    jQuery.fn.save = function(data){
+        Element.show('mini_loading');
+        jQuery.ajax({
+               url:'<?php echo $html->url('/cdir01_actividad_economica_grupo/guardar/',true); ?>',
+               dataType:'json',
+               type:'post',
+               data:data
+           }).done(function (data){
+                //console.log(data);
+                if(data.completed){
+                    fun_msj2(data.message);
+                    jQuery('#Cdir01ActividadEconomicaGrupoCodActividadGrupo').val(data.new_cod);
+                    jQuery('#Cdir01ActividadEconomicaGrupoDenominacion').val('');
+                    
+                    var content = "";
+                    jQuery.each(data.lista, function(k, v) {
+                        var template = jQuery("#template_tr_tbody").val();
+                        template = template.replace('{cod_actividad_grupo}', v.Cdir01ActividadEconomicaGrupo.cod_actividad_grupo);
+                        template = template.replace('{cod_actividad_grupo}', v.Cdir01ActividadEconomicaGrupo.cod_actividad_grupo);
+                        template = template.replace('{denominacion}', v.Cdir01ActividadEconomicaGrupo.denominacion);
+                        template = template.replace('{denominacion}', v.Cdir01ActividadEconomicaGrupo.denominacion);
+                        content += template;
+                        //console.log(k +" "+v+" "+v.Cdir01ActividadEconomicaGrupo.cod_actividad_grupo);
+                    });
+                    jQuery("#tbody_cuerpo_add").html(content);
+                }else{
+                    fun_msj(data.message);
+
+                }
+                Element.hide('mini_loading');
+            });
+    };
+    
+    //Esta funcion se debe modificar para adaptar a otros formularios
+    jQuery.fn.saveItem = function(objDOM, event){
+        event.preventDefault();
+        event.stopPropagation();
+        console.log();
+        if (jQuery(objDOM).parent().parent().children('td.denominacion').children('input').val() == '') {
+            fun_msj('INGRESE DENOMINACION DE LA ACTIVIDAD.');
+            jQuery(objDOM).parent().parent().children('td.denominacion').children('input').focus();
+        }else{
+            var data = {
+                        data:{
+                            Cdir01ActividadEconomicaGrupo:{
+                                update:1,
+                                cod_actividad_grupo:jQuery(objDOM).parent().parent().children('td.cod_actividad_grupo').children('input').val(),
+                                denominacion:jQuery(objDOM).parent().parent().children('td.denominacion').children('input').val()
+                           }
+                   }
+                };
+           jQuery.fn.save(data);
+        }
+    };
+    
+    jQuery.fn.deleteItem = function (objDOM, event){
+            event.preventDefault();
+            event.stopPropagation();
+            //console.log(jQuery(objDOM));
+            if (confirm("Realmente desea eliminar este registro?")) {
+                Element.show('mini_loading');
+                var datos = {
+                    data: {
+                        Cdir01ActividadEconomicaGrupo:{
+                        cod_actividad_grupo: jQuery(objDOM).parent().parent().children("td.cod_actividad_grupo").attr("data-value"),
+                        }
+                    }
+                };
+                jQuery.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    data: datos,
+                    url: '<?php echo $html->url('/cdir01_actividad_economica_grupo/eliminar/',true); ?>'
+                }).done(function(data) {
+                        //console.log(data);
+                        //ya con los datos comenzamos a setear lo que corresponde
+                        if (data.completed) {
+                            jQuery('#Cdir01ActividadEconomicaGrupoCodActividadGrupo').val(data.new_cod);
+                            //Si se elimino el registro no vamos a cargar la tabla otra vez solo removemos el objDOM
+                            jQuery(objDOM).parent().parent().fadeToggle(function() {
+                                jQuery(this).remove();
+                            });
+                            fun_msj2(data.message);
+                        } else {
+                            fun_msj(data.message);
+                        }
+                        Element.hide('mini_loading');
+                });
+            }
+    }; 
+    
+    
+    jQuery.fn.editItem = function(objDOM, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            //Cambio el Boton Editar por Guardar
+            jQuery(objDOM).parent().parent().find('a.sisap_edit').children('img').attr('src','/img/guardar_fila.png');
+            jQuery(objDOM).parent().parent().find('a.sisap_edit').addClass('sisap_save');
+            jQuery(objDOM).parent().parent().find('a.sisap_edit').attr('title','Guardar Cambios');
+            jQuery(objDOM).parent().parent().find('a.sisap_edit').attr('onclick','jQuery.fn.saveItem(this,event);');
+            jQuery(objDOM).parent().parent().find('a.sisap_edit').removeClass('sisap_edit')
+            //Cambio el Boton Eliminar por Cancelar
+            jQuery(objDOM).parent().parent().find('a.sisap_delete').children('img').attr('src','/img/cancela_fila.png');
+            jQuery(objDOM).parent().parent().find('a.sisap_delete').addClass('sisap_cancel');
+            jQuery(objDOM).parent().parent().find('a.sisap_delete').attr('title','Cancelar');
+            jQuery(objDOM).parent().parent().find('a.sisap_delete').attr('onclick','jQuery.fn.cancelItem(this,event);');
+            jQuery(objDOM).parent().parent().find('a.sisap_delete').removeClass('sisap_delete');
+
+            //Cambiar estos .class por los que corresponden para su reutilizacion Aqui se agregan los inpunts
+            var cod_ = jQuery(objDOM).parent().parent().children('td.cod_actividad_grupo').attr('data-value');//Cambiar este valor por el correspondiente td.clas
+            jQuery(objDOM).parent().parent().children('td.cod_actividad_grupo').html('<input class="inputtext" style="width:70px;text-align:center;" readonly="readonly" value="'+cod_+'" type="text"/>')//Cambiar este valor por el correspondiente td.clas
+            var denominacion = jQuery(objDOM).parent().parent().children('td.denominacion').attr('data-value');//Cambiar este valor por el correspondiente td.clas
+            jQuery(objDOM).parent().parent().children('td.denominacion').html('<input class="inputtext" value="'+denominacion+'" type="text" />')//Cambiar este valor por el correspondiente td.clas        
+    };
+    
+    
+    jQuery.fn.cancelItem = function(objDOM, event){
+        event.preventDefault();
+        event.stopPropagation();
+        //Cambio el Boton Editar por Guardar
+        jQuery(objDOM).parent().parent().find('a.sisap_save').children('img').attr('src','/img/edit.png');
+        jQuery(objDOM).parent().parent().find('a.sisap_save').addClass('sisap_edit');
+        jQuery(objDOM).parent().parent().find('a.sisap_save').attr('title','Editar');
+        jQuery(objDOM).parent().parent().find('a.sisap_save').attr('onclick','jQuery.fn.editItem(this,event);');
+        jQuery(objDOM).parent().parent().find('a.sisap_save').removeClass('sisap_save')
+        //Cambio el Boton Eliminar por Cancelar
+        jQuery(objDOM).parent().parent().find('a.sisap_cancel').children('img').attr('src','/img/delete.png');
+        jQuery(objDOM).parent().parent().find('a.sisap_cancel').addClass('sisap_delete');
+        jQuery(objDOM).parent().parent().find('a.sisap_cancel').attr('title','Eliminar');
+        jQuery(objDOM).parent().parent().find('a.sisap_cancel').attr('onclick','jQuery.fn.deleteItem(this,event);');
+        jQuery(objDOM).parent().parent().find('a.sisap_cancel').removeClass('sisap_cancel');
+        
+         //Cambiar estos .class por los que corresponden para su reutilizacion Aqui se agregan los inpunts
+        var cod_ = jQuery(objDOM).parent().parent().children('td.cod_actividad_grupo').attr('data-value');//Cambiar este valor por el correspondiente td.clas
+        jQuery(objDOM).parent().parent().children('td.cod_actividad_grupo').text(cod_)//Cambiar este valor por el correspondiente td.clas
+        var denominacion = jQuery(objDOM).parent().parent().children('td.denominacion').attr('data-value');//Cambiar este valor por el correspondiente td.clas
+        jQuery(objDOM).parent().parent().children('td.denominacion').text(denominacion)//Cambiar este valor por el correspondiente td.clas        
+    };
+    
+    jQuery.fn.validar_datos = function (){
+        if (document.getElementById('Cdir01ActividadEconomicaGrupoCodActividadGrupo').value == '') {
+            fun_msj('INGRESE CODIGO DE ACTIVIDAD.');
+            document.getElementById('Cdir01ActividadEconomicaGrupoCodActividadGrupo').focus();
+            return false;
+        }if (document.getElementById('Cdir01ActividadEconomicaGrupoDenominacion').value == '') {
+            fun_msj('INGRESE DENOMINACION DE LA ACTIVIDAD.');
+            document.getElementById('Cdir01ActividadEconomicaGrupoDenominacion').focus();
+            return false;
+        }else{
+            return true;
+        }
+    };
+});
+</script>

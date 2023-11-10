@@ -1,0 +1,60 @@
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	else if(isset($mensajeError)) $sisap->mensajes_error($mensajeError);
+
+	$color1="#D4E3F4";
+	$color2="#FFFFFF";
+?>
+<div id="distribuir_cuentas_banc" style="height:350px; overflow-y:auto;">
+<table width="100%" border="0"  class="tablacompromiso tablacompromiso2">
+ 	<tr align="center" height="35" class="tr_negro">
+		<td width='7%'>C&oacute;digo<br>Cargo</td>
+		<td width='7%'>C&oacute;digo<br>Ficha</td>
+		<td width='14%'>C&eacute;dula<br>Identidad</td>
+		<td width='40%'>Apellidos y Nombres</td>
+		<td width='22%'>Cuenta Bancaria</td>
+		<td width='10%'>Acci&oacute;n</td>
+	</tr>
+
+	<?php if($t_ope!='4' && isset($cuentas) && !empty($cuentas)){
+		$ij = 0;
+		foreach($cuentas as $datos_gri){
+			$c_cargo = $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['cod_cargo'];
+			$c_ficha = $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['cod_ficha'];
+			$ced = $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['cedula_identidad'];
+			$aa = $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['cuenta_bancaria'];
+			$ab = $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['cuenta_bancaria']!='' ? substr($aa, 0, 4)." ".substr($aa, 4, 4)." ".substr($aa, 8, 2)." ".substr($aa, 10, 10) : '';
+			$cn = $ij%2==0 ? $color1 : $color2;
+		?>
+ 			<tr bgcolor="<?=$cn?>" height="30" id="fila_<?=$ij?>" onclick="new Effect.Highlight(this);">
+				<td align="center"><?= mascara_seis($c_cargo) ?></td>
+				<td align="center"><?= mascara_seis($c_ficha) ?></td>
+				<td align="center" style="font-weight:bold;font-size:17;"><?= $ced ?></td>
+				<td align="left" style="font-weight:bold;font-size:12;"><?= $datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['primer_nombre']." ".$datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['segundo_nombre']." ".$datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['primer_apellido']." ".$datos_gri['v_cnmp17_fideicomiso_cuentas_vision']['segundo_apellido'] ?></td>
+				<td align="center" style="font-weight:bold;font-size:12;" id="cuenta_<?=$ij?>"><?= $aa!='' ? $ab : $ajax->link('Registrar Cuenta', '/cnmp17_fideicomiso_cuentas_bancarias/registrar_cuenta/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced, array('update'=>'cuenta_'.$ij)); ?></td>
+				<td align="center" id="accion_<?=$ij?>"><?php if($aa==''){ ?>
+					<?= $sisap->submitTagRemote('', array('url1' => '/cnmp17_fideicomiso_cuentas_bancarias/guardar_cuenta/'.$ij, 'update1'=>'funcion', 'id'=>"fi_$ij", 'disabled'=>'disabled','class'=>'guardar_input', 'style'=>'display:none;'))." ".$ajax->link($html->image('cancel.png',array('border'=>0)), '/cnmp17_fideicomiso_cuentas_bancarias/cancela_reg_cuenta/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced, array('update'=>'funcion','title'=>'Cancelar', 'style'=>'display:none;', 'id'=>"cance_$ij"),false,false,true)?>
+					<?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/cnmp17_fideicomiso_cuentas_bancarias/modificar/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced.'/'.$aa, array('update'=>'cuenta_'.$ij,'title'=>'Editar', 'style'=>'display:none;', 'id'=>"fiedi_$ij"),false,false,true)." ".$ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp17_fideicomiso_cuentas_bancarias/eliminar/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced.'/'.$aa, array('update'=>'funcion','title'=>'Eliminar', 'style'=>'display:none;', 'id'=>"fieli_$ij"),'Realmente desea eliminar esta cuenta.',false,true); ?>
+				<?php }else{ echo $ajax->link($html->image('edit.png',array('border'=>0)), '/cnmp17_fideicomiso_cuentas_bancarias/modificar/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced.'/'.$aa, array('update'=>'cuenta_'.$ij,'title'=>'Editar', 'id'=>"fiedi_$ij"),false,false,true)." ".$ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp17_fideicomiso_cuentas_bancarias/eliminar/'.$ij.'/'.$c_cargo.'/'.$c_ficha.'/'.$ced.'/'.$aa, array('update'=>'funcion','title'=>'Eliminar', 'id'=>"fieli_$ij"),'Realmente desea eliminar esta cuenta.',false,true); } ?>
+				</td>
+			</tr>
+	<?php $ij++; }
+		}else{ ?>
+ 	<tr align="center" bgcolor="<?=$color1?>">
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+	</tr>
+	<?php } ?>
+</table>
+</div>
+
+<? $sisap->link_paginacion_ventanas('/cnmp17_fideicomiso_cuentas_bancarias/func_tipo_proceso/'.$t_ope, 'distribuir_cuentas_banc', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+<?php if($total_paginas>1){echo $pag_cant;}?>
+<?= $sisap->buttonTagRemote('cnmp17_fideicomiso_cuentas_bancarias/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cnmp17_fideicomiso_cuentas_bancarias/func_tipo_proceso/'.$t_ope.'/1', 'update1'=>'distribuir_cuentas_banc')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cnmp17_fideicomiso_cuentas_bancarias/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cnmp17_fideicomiso_cuentas_bancarias/func_tipo_proceso/'.$t_ope.'/'.$anterior.'', 'update1'=>'distribuir_cuentas_banc')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cnmp17_fideicomiso_cuentas_bancarias/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cnmp17_fideicomiso_cuentas_bancarias/func_tipo_proceso/'.$t_ope.'/'.$siguiente.'', 'update1'=>'distribuir_cuentas_banc')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cnmp17_fideicomiso_cuentas_bancarias/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cnmp17_fideicomiso_cuentas_bancarias/func_tipo_proceso/'.$t_ope.'/'.$ultimo.'', 'update1'=>'distribuir_cuentas_banc')) ?>&nbsp;

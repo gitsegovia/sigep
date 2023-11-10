@@ -1,0 +1,430 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function top_reporte_planilla($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true){
+                   $escudo_array      = top_reporte_escudo($consolidado);
+		           $escudo            = $escudo_array["escudo"];
+		           $entidad_federal   = $escudo_array["entidad_federal"];
+				   $dependencia       = "Secretaria de Finanzas";
+
+                   if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+                   if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+                   if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+					       	$this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"]);
+							$this->SetFont('vera','B',8);
+							$this->Cell(14,4,"",'TL',0);
+							$this->Cell(0,4,$entidad_federal,'TR',1);
+							$this->Cell(14,3,"",'L',0);
+							$this->SetFont('vera','',7);
+							$this->Cell(0,3,$dependencia,'R',1);
+							$this->SetFont('vera','B',8);
+							$this->Cell(0,3,"",'RL',1,'C');
+							$this->Cell(0,5,$titulo_varios[0],'RL',1,'C');
+							$this->SetFont('vera','B',7);
+							if(count($titulo_varios)>1){
+                               for($it=1;$it<count($titulo_varios);$it++){
+                                   $this->Cell(0,5,$titulo_varios[$it],'RL',1,'C');
+                               }
+							}
+
+					        $this->Cell(0,1,"",'RLB',1,'C');
+						    	$this->SetFont('vera','B',5);
+						    	if(isset($posicion_pie_pagina["Y"])){
+						    	   	$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"],'PAGINA: '.$this->PageNo().'/TPAG');
+							    	$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: '.date("d/m/Y"));
+							    	$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+6, 'HORA: '.date("h:i a"));
+						    	}//fin if
+							$this->Ln(3);
+    }//function
+
+    function Header(){
+		$titulo_A = $this->titulo_A;
+		$titulo_B = $this->titulo_B;
+
+
+       	$this->top_reporte_planilla(array($titulo_A,$titulo_B), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,'','',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(135,4,'','',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(30,4,"FECHA ELABORACIÓN: ",'',0,'R');
+		$this->SetFont('vera','',8);
+		$this->Cell(0,4,$this->fecha_elaboracion,'',1,'C');
+		$this->Ln();
+
+    }
+
+	
+    function Footer(){
+		$this->SetY(-65);
+		$this->SetFont('vera','B',9);
+
+		$this->Cell(90,3,"_________________________",'',0,'C');
+		$this->Cell(0,3,"_________________________",'',1,'C');
+		$this->Ln();
+
+		$this->Cell(90,3,$this->p_nombre,'',0,'C');
+		$this->Cell(0,3,$this->s_nombre,'',1,'C');
+		$this->Ln();
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(90,3,$this->p_cedula,'',0,'C');
+		$this->Cell(0,3,$this->s_cedula,'',1,'C');
+		$this->Ln();
+
+		$this->Cell(90,3,$this->p_cargo,'',0,'C');
+		$this->Cell(0,3,$this->s_cargo,'',1,'C');
+		$this->Ln();
+
+		$this->Cell(90,3,$this->p_decreto,'',0,'C');
+		$this->Cell(0,3,$this->s_decreto,'',1,'C');
+		$this->Ln();
+    }
+    
+
+    public $titulo_A = '';
+    public $titulo_B = '';
+    public $fecha_elaboracion = '';
+
+    public $p_nombre = '';
+    public $p_cedula = '';
+    public $p_cargo = '';
+    public $p_decreto = '';
+    public $s_nombre = '';
+    public $s_cedula = '';
+    public $s_cargo = '';
+    public $s_decreto = '';
+
+    function longitud($texto, $alto_linea)
+    {
+    	$cant_l=strlen(trim($texto));
+		$cant_l2 = $cant_l<214?214:$cant_l;
+		$alto = round(($cant_l2/214)*$alto_linea, 2);
+
+    	return $alto;
+    }
+}//fin clase
+
+/*
+convertir monto en letras
+$sisap->convertir($neto_a_cobrar_pie_pagina)
+
+convertir formato moneda
+$sisap->Formato2($monto_neto_cobrar[$aux_aux])
+
+
+
+
+
+
+**
+		 * Prints a cell (rectangular area) with optional borders, background color and html text string. The upper-left corner of the cell corresponds to the current position. After the call, the current position moves to the right or to the next line.<br />
+		 * If automatic page breaking is enabled and the cell goes beyond the limit, a page break is done before outputting.
+		 * @param float $w Cell width. If 0, the cell extends up to the right margin.
+		 * @param float $h Cell minimum height. The cell extends automatically if needed.
+		 * @param float $x upper-left corner X coordinate
+		 * @param float $y upper-left corner Y coordinate
+		 * @param string $html html text to print. Default value: empty string.
+		 * @param mixed $border Indicates if borders must be drawn around the cell. The value can be either a number:<ul><li>0: no border (default)</li><li>1: frame</li></ul>or a string containing some or all of the following characters (in any order):<ul><li>L: left</li><li>T: top</li><li>R: right</li><li>B: bottom</li></ul>
+		 * @param int $ln Indicates where the current position should go after the call. Possible values are:<ul><li>0: to the right</li><li>1: to the beginning of the next line</li><li>2: below</li></ul>
+	Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value: 0.
+		 * @param int $fill Indicates if the cell background must be painted (1) or transparent (0). Default value: 0.
+		 * @see Cell()
+		 
+		function writeHTMLCell($w, $h, $x, $y, $html='', $border=0, $ln=0, $fill=0) {
+
+
+multicelda
+ $pdf->Cell(1,30,"",'LB',0);//margen izquierdo
+
+            $varX = $pdf->GetX();//capturo X
+            $varY = $pdf->GetY();//capturo Y
+            $pdf->Cell(194,0,"",'',2);
+
+            $concepto[$aux_aux]=substr($concepto[$aux_aux],0,805).((strlen($concepto[$aux_aux])>=805 ) ? "..." : " ");
+
+            $pdf->MultiCell(194,4,trim($concepto[$aux_aux]),'','L');//Concepto Orden de Pago
+            $varX = $varX+194;//le sumo a X ---> 180.
+            $pdf->SetXY($varX,$varY-10);// cargo XY
+
+            $pdf->Cell(0,30,"",'RB',1);//margen derecho
+*/
+
+//TODO inicio del documento pdf
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+if($tipo_planilla!=0)
+{
+	//liquidacion
+	if($tipo_planilla!=2)
+	{
+
+		switch ($data["tipo_acto"]) {
+			case '1':
+				$acto_denominacion='RESOLUCIÓN';
+				break;
+			case '2':
+				$acto_denominacion='GACETA OFICIAL';
+				break;
+			case '3':
+				$acto_denominacion='CONVENIOS'; 
+				break;
+			case '4':
+				$acto_denominacion='PUNTO DE CUENTA';
+				break;
+		}
+		
+		//TODO variables que se utilizaran en la cabezera
+		$pdf->titulo_A = 'Planilla de liquidación de rentas';
+		$pdf->titulo_B = 'N° '.$idplanilla;
+		$pdf->fecha_elaboracion = $data["fecha_planilla"];
+		$pdf->p_nombre = $data["primer_funcionario"];
+		$pdf->p_cedula = $data["primer_cedula"];
+		$pdf->p_cargo = $data["primer_cargo"];
+		$pdf->p_decreto = $data["primer_decreto"];
+		$pdf->s_nombre = $data["segundo_funcionario"];
+		$pdf->s_cedula = $data["segundo_cedula"];
+		$pdf->s_cargo = $data["segundo_cargo"];
+		$pdf->s_decreto = $data["segundo_decreto"];
+
+		$pdf->AddPage();
+		$pdf->SetFont('vera','',8);
+		$destino = "<b>El Ciudadano:</b><br/>";
+		if($data["cedula_identidad"]!="" && $data["cedula_identidad"]!=NULL)
+		{
+			$destino .= $data["dependencia_ciudadano"]. " C.I.:".$data["cedula_identidad"];
+		}
+		else
+		{
+			$destino .= $data["dependencia_ciudadano"];
+		}
+		$pdf->Ln(6);
+		$pdf->writeHTMLCell(180, 10, '', '', $destino, 0, 2);
+		$pdf->SetFont('vera','B',8);
+	    $pdf->Cell(0,5,"Ingresará a la caja de la TESORERÍA GENERAL DEL ESTADO, la cantidad de:",'',1,'L');
+	 	
+	 	$pdf->SetFont('vera','',8);
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->Cell(1, 6, "", '', 0, 'C');
+		$pdf->Cell(180,1,"",'',2, 'C');
+		$pdf->MultiCell(180,4,$sisap->convertir($data["monto"]).". Bs. (".$sisap->Formato2($data["monto"]).")",'','L');
+		$varX = $varX + 180;//le sumo a X ---> 180.
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(0,4,"",'',1, 'L');//margen derecho
+
+		$pdf->Ln();
+		$pdf->Ln();
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,"Por Concepto de:",'',1,'L');
+
+		$concepto = "INGRESOS LIQUIDADOS POR CONCEPTO DE: ".preg_replace("/[\r\n|\n|\r]+/", "; ", $data["concepto"]).", MEDIANTE ACTO ADMINISTRATIVO (".$acto_denominacion.") NUMERO ".$data["numero_acto"].".-";
+		
+		$alto = $pdf->longitud($concepto, 4.5);
+		
+		$pdf->SetFont('vera','',8);
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->Cell(1, 6, "", '', 0, 'C');
+		$pdf->Cell(180,1,"",'',2, 'C');
+		$pdf->MultiCell(180,4,$concepto,'','L');
+		$varX = $varX + 180;//le sumo a X ---> 180.
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(0,$alto,"",'',1, 'L');//margen derecho
+	  
+	  	$pdf->Ln();
+	  	$pdf->Ln();
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,"Correspondiente al Ramo de Ingreso:",'',1,'L');
+		
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(0,5,"LIQUIDADOS",'',1,'L');	
+		$pdf->Cell(0,5,$tipo_ramo." (".$data["partida"].")",'',1,'L');
+
+		if($data["motivado"]!="")
+		{
+			$pdf->Ln();
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(0,5,"MOTIVADO:",'',1,'L');	
+			
+			$alto = $pdf->longitud($data["motivado"], 4.5);
+		
+			$pdf->SetFont('vera','',8);
+			$varX = $pdf->GetX();//capturo X
+			$varY = $pdf->GetY();//capturo Y
+			$pdf->Cell(1, 6, "", '', 0, 'C');
+			$pdf->Cell(180,1,"",'',2, 'C');
+			$pdf->MultiCell(180,4,$data["motivado"],'','J');
+			$varX = $varX + 180;//le sumo a X ---> 180.
+			$pdf->SetXY($varX,$varY);// cargo XY
+			$pdf->Cell(0,$alto,"",'',1, 'L');//margen derecho
+		}
+		
+	}
+
+	//recaudacion
+	if($tipo_planilla!=1)
+	{
+		switch ($data_liq["tipo_acto"]) {
+			case '1':
+				$acto_denominacion='RESOLUCIÓN';
+				break;
+			case '2':
+				$acto_denominacion='GACETA OFICIAL';
+				break;
+			case '3':
+				$acto_denominacion='CONVENIOS'; 
+				break;
+			case '4':
+				$acto_denominacion='PUNTO DE CUENTA';
+				break;
+		}
+		//TODO variables que se utilizaran en la cabezera
+		$pdf->titulo_A = 'Planilla de recaudación de rentas';
+		$pdf->titulo_B = 'N° '.$idplanilla;
+		$pdf->fecha_elaboracion = $data["fecha_planilla"];
+		$pdf->p_nombre = $data["primer_funcionario"];
+		$pdf->p_cedula = $data["primer_cedula"];
+		$pdf->p_cargo = $data["primer_cargo"];
+		$pdf->p_decreto = $data["primer_decreto"];
+		$pdf->s_nombre = $data["segundo_funcionario"];
+		$pdf->s_cedula = $data["segundo_cedula"];
+		$pdf->s_cargo = $data["segundo_cargo"];
+		$pdf->s_decreto = $data["segundo_decreto"];
+
+		$pdf->AddPage();
+		$pdf->SetFont('vera','',8);
+
+		$destino = "<b>El Ciudadano:</b><br/>";
+		if($data_liq["cedula_identidad"]!="")
+		{
+			$destino .= $data_liq["dependencia_ciudadano"]. " C.I.:".$data_liq["cedula_identidad"];
+		}
+		else
+		{
+			$destino .= $data_liq["dependencia_ciudadano"];
+		}
+
+		$pdf->writeHTMLCell(180, 10, '', '', $destino, 0, 2);
+
+		$pdf->SetFont('vera','B',8);
+	    $pdf->Cell(0,5,"Ingresará a la caja de la TESORERÍA GENERAL DEL ESTADO, la cantidad de:",'',1,'L');
+
+	    $pdf->SetFont('vera','',8);
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->Cell(1, 6, "", '', 0, 'C');
+		$pdf->Cell(180,1,"",'',2, 'C');
+		$pdf->MultiCell(180,4,$sisap->convertir($data["monto"]).". Bs. (".$sisap->Formato2($data["monto"]).")",'','L');
+		$varX = $varX+180;//le sumo a X ---> 180.
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(0,4,"",'',1, 'L');//margen derecho
+
+		$pdf->Ln();
+		$pdf->Ln();
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,"Por Concepto de:",'',1,'L');
+
+		//$concepto = "INGRESOS RECAUDADOS POR CONCEPTO DE: ".$data["concepto"].", DEPOSITADOS EN LA CUENTA ".$data["cuenta_bancaria"]." DEL ".$banco." SEGUN TRANSACCIÓN(ES) ".$data["numeros_transacciones"]." DE FECHA ".$data["fechas_transacciones"]."; PROVENIENTE DE: ".$data_liq["concepto"].", MEDIANTE ACTO ADMINISTRATIVO (".$acto_denominacion.") NUMERO ".$data_liq["numero_acto"].", SEGUN PLANILLA DE LIQUIDACIÓN ".$idplanilla_liq." DE FECHA ".$data_liq["fecha_planilla"].".-";
+
+		$concepto = "INGRESOS RECAUDADOS POR CONCEPTO DE: ".preg_replace("/[\r\n|\n|\r]+/", "; ", $data["concepto"]).", SEGUN PLANILLA DE LIQUIDACIÓN ".$idplanilla_liq." DE FECHA ".$data_liq["fecha_planilla"].", MEDIANTE ACTO ADMINISTRATIVO (".$acto_denominacion.") NUMERO ".$data_liq["numero_acto"].".-";
+		
+		$alto = $pdf->longitud($concepto, 4.5);
+
+		$pdf->SetFont('vera','',8);
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->Cell(1,6,"",'',0, 'C');
+		$pdf->Cell(180,0,"",'',2, 'C');
+		$pdf->MultiCell(180,4,$concepto,'','J');
+		$varX = $varX+180;//le sumo a X ---> 180.
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(0,$alto,"",'',1, 'L');//margen derecho
+
+		$pdf->Ln();
+		$pdf->Ln();
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,"DEPOSITADOS EN:",'',1,'L');
+
+		$pdf->Cell(50,5,"Cuenta Bancaria",'',0,'L');	
+		$pdf->Cell(50,5,"Trasacción",'',0,'L');	
+		$pdf->Cell(0,5,"fecha",'',1,'L');	
+		
+		$pdf->SetFont('vera','',8);
+		if(count($data_banco)>0)
+		{
+			foreach ($data_banco as $banco) {
+				$pdf->Cell(50,5,$banco[0]["cuenta_bancaria"],'',0,'L');
+				$pdf->Cell(50,5,$banco[0]["numero_transaccion"],'',0,'L');
+				$pdf->Cell(0,5,$banco[0]["fecha_transaccion"],'',1,'L');
+			}
+		}
+		else
+		{
+			$pdf->Cell(50,5,$data["cuenta_bancaria"],'',0,'L');
+			$pdf->Cell(50,5,$data["numeros_transacciones"],'',0,'L');
+			$pdf->Cell(0,5,$data["fechas_transacciones"],'',1,'L');
+		}
+
+
+		$pdf->Ln();
+		$pdf->Ln();
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(0,5,"Correspondiente al Ramo de Ingreso:",'',1,'L');
+
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(0,5,"RECAUDADOS",'',1,'L');	
+		$pdf->Cell(0,5,$tipo_ramo." (".$data_liq["partida"].")",'',1,'L');	
+		//crear condicion segun tipo de documento
+
+		if($data["motivado"]!="")
+		{
+			$pdf->Ln();
+			$pdf->SetFont('vera','',8);
+			$pdf->Cell(0,5,"MOTIVADO:",'',1,'L');	
+			
+			$alto = $pdf->longitud($data["motivado"], 4.5);
+		
+			$pdf->SetFont('vera','',8);
+			$varX = $pdf->GetX();//capturo X
+			$varY = $pdf->GetY();//capturo Y
+			$pdf->Cell(1, 6, "", '', 0, 'C');
+			$pdf->Cell(180,1,"",'',2, 'C');
+			$pdf->MultiCell(180,4,$data["motivado"],'','J');
+			$varX = $varX + 180;//le sumo a X ---> 180.
+			$pdf->SetXY($varX,$varY);// cargo XY
+			$pdf->Cell(0,$alto,"",'',1, 'L');//margen derecho
+		}
+	}
+}
+else
+{
+	$pdf->AddPage();
+	$pdf->Ln(10);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,5,'NO EXISTEN DATOS','TBRL',1,'C');
+	$pdf->SetFont('vera','',6);
+}
+
+$pdf->Output('reporte_planilla_'.date("d-m-Y h:i:sa").'.pdf','D');
+
+?>

@@ -1,0 +1,848 @@
+<?if(isset($tipo) && $tipo==1){
+
+	if($compromiso[0]["cepd01_compromiso_cuerpo"]["rif"]=="0"){
+		$rif_ci=$compromiso[0]["cepd01_compromiso_cuerpo"]["cedula_identidad"];
+	}else{
+	$rif_ci=$compromiso[0]["cepd01_compromiso_cuerpo"]["rif"];
+	}
+	$fecha1=$compromiso[0]["cepd01_compromiso_cuerpo"]["fecha_documento"];
+	$fecha1=$sisap->Cfecha($fecha1,"D/M/A");
+    $beneficiario=$compromiso[0]["cepd01_compromiso_cuerpo"]["beneficiario"];
+    $beneficiario=str_replace("'","\'",$beneficiario);
+
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha1?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO</td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?= $rif_ci;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR</td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA</td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($compromiso_partidas as $c_p){
+  	$partida_aux____           = $sisap->AddCero3($c_p["cepd01_compromiso_partidas"]["cod_partida"]);
+  	$partida_aux_concatena____ = $sisap->AddCero3($c_p["cepd01_compromiso_partidas"]["cod_partida"]).".".$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_generica"]).".".$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_especifica"]).".".$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_sub_espec"]);
+  	if($partida_aux____ ==  "401"){
+      echo "<input type='hidden' value='401' id='401_existe'/>  ";
+  	}
+  	if($partida_aux_concatena____ ==  "403.18.01.00"){
+      echo "<input type='hidden' value='403' id='403_iva_existe'/>  ";
+  	}else if($partida_aux____ ==  "403"){
+      echo "<input type='hidden' value='403' id='403_existe'/>  ";
+  	}
+
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cepd01_compromiso_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cepd01_compromiso_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd01_compromiso_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cepd01_compromiso_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cepd01_compromiso_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cepd01_compromiso_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+</div>
+
+<?}else if(isset($tipo) && $tipo==2){
+
+		$rif=$orden_compra_datos[0]["v_cepd03_ordenpago_anticipo_compra"]["rif"];
+		$beneficiario=$orden_compra_datos[0]["v_cepd03_ordenpago_anticipo_compra"]["denominacion"];
+		$fecha=$orden_compra_datos[0]["v_cepd03_ordenpago_anticipo_compra"]["fecha_anticipo"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25"  class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25"  class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cscd04_ordencompra_anticipo_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cscd04_ordencompra_anticipo_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cscd04_ordencompra_anticipo_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cscd04_ordencompra_anticipo_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==3){
+
+		$rif=$orden_compra_datos[0]["v_cepd03_ordenpago_autorizacion_compra"]["rif"];
+		$beneficiario=$orden_compra_datos[0]["v_cepd03_ordenpago_autorizacion_compra"]["denominacion"];
+		$fecha=$orden_compra_datos[0]["v_cepd03_ordenpago_autorizacion_compra"]["fecha_autorizacion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","&rsquo;",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25"  class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR</td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+($c_p["cscd04_ordencompra_autorizacion_pago_partidas"]["monto"]);
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11"  style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==4){
+
+		$rif=$contrato_obra_datos[0]["v_cobd01_contratoobras_anticipo"]["rif"];
+		$beneficiario=$contrato_obra_datos[0]["v_cobd01_contratoobras_anticipo"]["denominacion"];
+		$fecha=$contrato_obra_datos[0]["v_cobd01_contratoobras_anticipo"]["fecha_anticipo"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25" class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25"  class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <th align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </th>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cobd01_contratoobras_anticipo_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cobd01_contratoobras_anticipo_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cobd01_contratoobras_anticipo_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cobd01_contratoobras_anticipo_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==5){
+
+		$rif=$contrato_obra_datos[0]["v_cobd01_contratoobras_valuacion"]["rif"];
+		$beneficiario=$contrato_obra_datos[0]["v_cobd01_contratoobras_valuacion"]["denominacion"];
+		$fecha=$contrato_obra_datos[0]["v_cobd01_contratoobras_valuacion"]["fecha_valuacion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cobd01_contratoobras_valuacion_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cobd01_contratoobras_valuacion_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cobd01_contratoobras_valuacion_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cobd01_contratoobras_valuacion_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==6){
+
+		$rif=$contrato_obra_datos[0]["v_cobd01_contratoobras_retencion"]["rif"];
+		$beneficiario=$contrato_obra_datos[0]["v_cobd01_contratoobras_retencion"]["denominacion"];
+		$fecha=$contrato_obra_datos[0]["v_cobd01_contratoobras_retencion"]["fecha_retencion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cobd01_contratoobras_retencion_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cobd01_contratoobras_retencion_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cobd01_contratoobras_retencion_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cobd01_contratoobras_retencion_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cobd01_contratoobras_retencion_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cobd01_contratoobras_retencion_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==7){
+
+		$rif=$contrato_servicio_datos[0]["v_cepd02_servicio_anticipo"]["rif"];
+		$beneficiario=$contrato_servicio_datos[0]["v_cepd02_servicio_anticipo"]["denominacion"];
+		$fecha=$contrato_servicio_datos[0]["v_cepd02_servicio_anticipo"]["fecha_anticipo"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center" width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cepd02_contratoservicio_anticipo_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cepd02_contratoservicio_anticipo_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cepd02_contratoservicio_anticipo_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cepd02_contratoservicio_anticipo_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==8){
+
+		$rif=$contrato_servicio_datos[0]["v_cepd02_contratoservi_valuacion"]["rif"];
+		$beneficiario=$contrato_servicio_datos[0]["v_cepd02_contratoservi_valuacion"]["denominacion"];
+		$fecha=$contrato_servicio_datos[0]["v_cepd02_contratoservi_valuacion"]["fecha_valuacion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cepd02_contratoservicio_valuacion_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cepd02_contratoservicio_valuacion_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cepd02_contratoservicio_valuacion_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cepd02_contratoservicio_valuacion_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==9){
+
+		$rif=$contrato_servicio_datos[0]["v_cepd02_contratoservi_retencion"]["rif"];
+		$beneficiario=$contrato_servicio_datos[0]["v_cepd02_contratoservi_retencion"]["denominacion"];
+		$fecha=$contrato_servicio_datos[0]["v_cepd02_contratoservi_retencion"]["fecha_retencion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cepd02_contratoservicio_retencion_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cepd02_contratoservicio_retencion_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cepd02_contratoservicio_retencion_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cepd02_contratoservicio_retencion_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}else if(isset($tipo) && $tipo==10){
+
+		$rif=$contrato_obra_datos[0]["v_cscd04_ordencompras_retencion"]["rif"];
+		$beneficiario=$contrato_obra_datos[0]["v_cscd04_ordencompras_retencion"]["denominacion"];
+		$fecha=$contrato_obra_datos[0]["v_cscd04_ordencompras_retencion"]["fecha_retencion"];
+        $fecha=$sisap->Cfecha($fecha,"D/M/A");
+        $beneficiario=str_replace("'","\'",$beneficiario);
+
+	?>
+<script type="text/javascript">
+  document.getElementById('fecha_documento').value="<?=$fecha?>";
+</script>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td width="50%" align="center">R.I.F. / C.I</td>
+    <td colspan="2" align="center">BENEFICIARIO DE LA ORDEN DE PAGO </td>
+  </tr>
+  <tr>
+    <td align="leftr"><input type="text" name="data[cepp03_ordenpago][rif_ci]" value="<?=$rif;?>" size="25"  class="inputText" readonly="readonly"/></td>
+    <td colspan="2" align="center"><input type="text" name="data[cepp03_ordenpago][beneficiario]" value='<?=$beneficiario;?>' id="pbeneficiario" size="25" class="inputText" readonly="readonly"/></td>
+  </tr>
+  <tr>
+    <td align="center">AUTORIZADO A COBRAR </td>
+    <td width="15%" align="center">C&Eacute;DULA DE IDENTIDAD</td>
+    <td width="35%" align="center">CUENTA BANCARIA</td>
+  </tr>
+  <tr>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cobrar]" value='<?=$beneficiario;?>' id="autorizado_cobrar" size="25" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][autorizado_cedula]" value="" id="autorizado_cedula" size="25" maxlength="12" class="inputText"/></td>
+    <td align="center"><input type="text" name="data[cepp03_ordenpago][cta_banc_beneficiario]" value="" id="cta_banc_beneficiario" size="25" maxlength="20" class="inputText" onKeyPress="return solonumeros_enteros(event);" /></td>
+  </tr>
+    <tr>
+    <td align="center" colspan="3">IMPUTACI&Oacute;N PRESUPUESTARIA </td>
+  </tr>
+</table>
+<div id="lista" class="Lista200">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="18">MONTO</td>
+  </tr>
+ <?
+  $i=0;
+  $total=0;
+  foreach($partidas as $c_p){
+    if($i%2==0)$color="#CDF2FF";
+    else$color="#DAEBFF";
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$c_p["cscd04_ordencompra_retencion_partidas"]["ano"];?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_sector"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_programa"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_sub_prog"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_proyecto"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_activ_obra"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero3($c_p["cscd04_ordencompra_retencion_partidas"]["cod_partida"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_generica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_especifica"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->AddCero2($c_p["cscd04_ordencompra_retencion_partidas"]["cod_sub_espec"]);?></td>
+    <td style="text-align:center;font-weight:bold;font-size:12"><?=$sisap->mascara_cuatro($c_p["cscd04_ordencompra_retencion_partidas"]["cod_auxiliar"]);?></td>
+    <td style="text-align:right;font-weight:bold;font-size:15"><?=$sisap->Formato2($c_p["cscd04_ordencompra_retencion_partidas"]["monto"]);?></td>
+  </tr>
+  <?
+  $total=$total+$c_p["cscd04_ordencompra_retencion_partidas"]["monto"];
+  $i++;
+  }
+  ?>
+  <tr><td colspan="11" style="text-align:right;font-weight:bold;font-size:15">TOTAL MONTO:&nbsp;</td><td style="text-align:right;font-weight:bold;font-size:15"><?=MONEDA2.": ".$sisap->Formato2($total);?><input type="hidden" name="data[cepp03_ordenpago][monto_t_partidas]" value="<?=$sisap->Formato2($sisap->FormatoDEC2($total));?>" id="monto_t_partidas"/></td></tr>
+ </table>
+ </div>
+<?}
+
+
+
+
+if(isset($total)){
+
+	$total = $sisap->Formato2($total);
+	$total = $sisap->Formato1($total);
+
+echo "<input type='hidden' id='tota_grilla_partidas' value='".$total."' />";
+
+
+}
+
+?>
+<script language="JavaScript" type="text/javascript" src="jsfile.js">
+				total_reten= eval(reemplazarPC(document.getElementById('monto_laboral').value)) +  eval(reemplazarPC(document.getElementById('monto_fiel_cumplimiento').value)) +  eval(reemplazarPC(document.getElementById('monto_amortizacion_antipo').value)) +  eval(reemplazarPC(document.getElementById('monto_retencion_iva').value)) +  eval(reemplazarPC(document.getElementById('monto_isrl').value)) + eval(reemplazarPC(document.getElementById('monto_timbre_fiscal').value)) + eval(reemplazarPC(document.getElementById('monto_impuesto_municipal').value))+ eval(reemplazarPC(document.getElementById('monto_retencion_multa').value)) + eval(reemplazarPC(document.getElementById('monto_retencion_responsabilidad_social').value));
+				document.getElementById('total_retenciones').value=redondear(eval(total_reten),2);
+
+moneda('total_retenciones');
+
+</script>

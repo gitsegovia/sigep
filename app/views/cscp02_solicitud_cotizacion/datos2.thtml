@@ -1,0 +1,88 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function unidades($medida, $cod_medida){
+	foreach($medida as $x){
+		if($x['cscd01_unidad_medida']['cod_medida'] == $cod_medida){
+			$expresion = $x['cscd01_unidad_medida']['expresion'];
+			$dMedida = $x['cscd01_unidad_medida']['denominacion'];
+			return strtoupper($expresion);
+		}
+	}
+}
+
+function codSNC($codigo_prod_serv, $catalogo1){
+	foreach($catalogo1 as $xx){
+		if($xx['v_cscd01_catalogo_deno_und']['codigo_prod_serv']==$codigo_prod_serv){
+			return $xx['v_cscd01_catalogo_deno_und']['cod_snc']; break;
+		}
+	}
+}
+
+$pageNum_Recordset1=0;
+?>
+<div id="modificar">
+</div>
+<div>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro">
+    <td class="td4">Código<br>Producto</td>
+    <td class="td4">Unidad<br>Medida</td>
+    <td class="td4">Denominaci&oacute;n de los Bienes o Servicios</td>
+    <td class="td4">Especificaciones T&eacute;cnicas o<br>Caracter&iacute;sticas Especiales</td>
+    <td class="td4">Cantidad</td>
+    <td class="td4">-----</td>
+  </tr>
+<?php
+
+ if(isset($datos2)){
+  if($datos2!=null){
+ 	$i=0;
+ 	$total=0;
+
+    foreach($datos2 as $ve){
+    	if($ve['cscd02_solicitud_cuerpo']['numero_solicitud']==$numero_solicitud){
+  //  print_r($ve);
+
+    	if($i%2==0){ 		// onclick="new Effect.Highlight(this);"
+    	$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+?>
+
+  <tr bgcolor="<?= $color; ?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);">
+    <td class="td2center" height="22">
+    	<?= $ve['cscd02_solicitud_cuerpo']['codigo_prod_serv'] ?>
+    </td>
+    <td class="td2center" ><?= unidades($unidades, $ve['cscd02_solicitud_cuerpo']['cod_medida'])?></td>
+    <td class="td2" ><?= $ve['cscd02_solicitud_cuerpo']['descripcion']?></td>
+    <td class="td2" ><?= $ve['cscd02_solicitud_cuerpo']['especif_caract']?></td>
+    <td class="td2center" style="padding-right:5px; text-align:center"><?= $sisap->Formato_6($ve['cscd02_solicitud_cuerpo']['cantidad'])?></td>
+    <td class="td3center">
+    	<?php
+    		if($enable != 'disabled'){
+    			echo $ajax->link($html->image('delete.png',array('border'=>0)), '/cscp02_solicitud_cotizacion/eliminar/'.$_SESSION["num_s"].'/'.$ve['cscd02_solicitud_cuerpo']['codigo_prod_serv'].'/'.$_SESSION["ano_s"], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar este Item?',false,true);
+        		echo $ajax->link($html->image('edit.png',array('border'=>0)), '/cscp02_solicitud_cotizacion/campo_monto/'.$_SESSION["num_s"].'/'.$ve['cscd02_solicitud_cuerpo']['codigo_prod_serv'].'/'.$_SESSION["ano_s"].'/editar_monto_'.$i.'/'.$cod_sector.'/'.$cod_programa.'/'.$cod_sub_prog.'/'.$cod_proyecto, array('update'=>'modificar_item','title'=>'Modificar Cantidad'),null,false,true);
+    		}else{
+    			echo '---';
+    		}
+
+        ?>
+    </td>
+  </tr>
+<?
+    	$i++;
+     }
+    }//fin foreach
+  }}
+?>
+</table>
+</div>
+<div id="del"></div>
+
+

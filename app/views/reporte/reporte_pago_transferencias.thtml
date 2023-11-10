@@ -1,0 +1,399 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+
+class fpdfview extends TCPDF{
+
+function Footer(){
+    $this->SetY(-9);
+    $this->SetFont('vera','B',5);
+    $this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG',0,0,'C');
+}
+
+function Header(){
+	/*
+        $this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,14);
+		$this->SetFont('vera','B',8);
+		$this->Cell(150,6,"               ".$_SESSION['entidad_federal'],'TL',0);
+		$this->Cell(0,5,"",'TR',1,'R');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"                 ".$_SESSION['titulo_a'],'RL',1);
+		$this->Cell(0,11,"",'RL',1,'C');
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,6,"ORDEN DE TRANSFERENCIA DE RECURSOS",'RLB',1,'C');
+		$this->Ln(3);
+	*/
+    $this->top_reporte2(array("ORDEN DE TRANSFERENCIA DE RECURSOS"), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+}//fin header
+
+}//fin class
+
+
+
+
+ if(isset($ir) && $ir=='no'){ ?>
+
+
+
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"REPORTE DE SOLICITUD DE RECURSOS",null,"950","csrp ");?>
+ <form name='data[csrd01_solicitud_r_partidas]' method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_pago_transferencias/si');?>" onSubmit="return valida_reporte_solicitud_recurso();">
+<?= $sisap->OpenTable("950")?>
+<br />
+<table width="400" cellspacing="0" cellpadding="0">
+<tr>
+    <td class="td4" width="100" height="22" align="center">A&ntilde;o</td>
+    <td class="td1" width="300" align="center">N&uacute;mero Solicitud</td>
+</tr>
+<tr>
+    <td class="td2" width="50" height="22" align="center"><input type="text" name="data[csrd01_solicitud_r_partidas][ano]" value="<?= $year ?>" id="ano" style="text-align:center" size="3" maxlength="4" onKeyPress="return solonumeros(event);" style="text-align:center" /></td>
+    <td class="td3" width="50" align="center"><?=  $html->selectTag('csrd01_solicitud_r_partidas/cod_solicitud', $select_solicitud!='' ? $select_solicitud : array(),  '', array('id'=>'cod_solicitud', 'style'=>'width:300px'  , true), null, true); ?></td>
+</tr>
+<tr>
+    <td height="22" align="center" colspan="2"><br />
+    	<?= $html->submit('Generar'); ?>&nbsp;&nbsp;&nbsp;
+    	<?= $sisap->buttonTagRemote('/csrd01_solicitud_r_partidas/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+    </td>
+</tr>
+</table>
+<?=$sisap->CloseTable()?>
+<?php
+}else{
+
+   if($datos_cuerpo!=''){
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$_SESSION['titulo_a'] = $titulo_a;
+$pdf->AddPage();
+
+$i=0;
+$contador=0;
+foreach($datos_partidas as $x){$i++;
+  //$partidas[$i]   =   $x[0]['csrd01_solicitud_recurso_partidas'][''];
+  $ano[$i]              = $x['csrd01_solicitud_recurso_partidas']['ano'];
+  $cod_sector[$i]       = $x['csrd01_solicitud_recurso_partidas']['cod_sector'];
+  $cod_programa[$i]     = $x['csrd01_solicitud_recurso_partidas']['cod_programa'];
+  $cod_sub_prog[$i]     = $x['csrd01_solicitud_recurso_partidas']['cod_sub_prog'];
+  $cod_proyecto[$i]     = $x['csrd01_solicitud_recurso_partidas']['cod_proyecto'];
+  $cod_activ_obra[$i]   = $x['csrd01_solicitud_recurso_partidas']['cod_activ_obra'];
+  $cod_partida[$i]      = $x['csrd01_solicitud_recurso_partidas']['cod_partida'];
+
+  $cod_generica[$i]     = $x['csrd01_solicitud_recurso_partidas']['cod_generica']   != 0 ? $sisap->AddCero2($x['csrd01_solicitud_recurso_partidas']['cod_generica'])   : '';
+  $cod_especifica[$i]   = $x['csrd01_solicitud_recurso_partidas']['cod_especifica'] != 0 ? $sisap->AddCero2($x['csrd01_solicitud_recurso_partidas']['cod_especifica']) : '';
+  $cod_sub_espec[$i]    = $x['csrd01_solicitud_recurso_partidas']['cod_sub_espec']  != 0 ? $sisap->AddCero2($x['csrd01_solicitud_recurso_partidas']['cod_sub_espec'])  : '';
+  $cod_auxiliar[$i]     = $x['csrd01_solicitud_recurso_partidas']['cod_auxiliar']   != 0 ? $sisap->AddCero2($x['csrd01_solicitud_recurso_partidas']['cod_auxiliar'])   : '';
+  $monto[$i]            = $x['csrd01_solicitud_recurso_partidas']['monto'];
+  $contador=$contador+1;
+}
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,6,"BENEFICIARIO: ".$_SESSION['titulo_a'],'TRLB',1,'L');///-----------------------------AQUI BENEFICIARIO
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+$pdf->Cell(39,5,"NÚMERO DE CONTROL",'TR',0,'C');
+$pdf->Cell(117,5,"TIPO DE ORDEN",'TR',0,'C');
+$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(16,5,$datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['ano_solicitud'],'TRL',0,'C');
+$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['numero_solicitud']),'TR',0,'C');
+$pdf->Cell(117,5,$tipo_solicitud,'TR',0,'L');
+$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['fecha_solicitud']),'TR',1,'C');
+
+//--------------------------------------------
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,6,"DESCRIPCIÓN O CONCEPTO DE LA ORDEN",'TRLB',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(1,37,"",'L',0);//margen izquierdo
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->MultiCell(194,4,$datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['concepto'],'','L');
+	$varX = $varX+194;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,37,"",'R',1);//margen derecho
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,7,"CANTIDAD EN LETRAS:",'TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(1,7,"",'TL',0);//margen izquierdo
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->MultiCell(107,3,$sisap->convertir($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['monto_solicitado']),'T','L');
+	$varX = $varX+107;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,"",'TR',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(33,7,"CANTIDAD EN BOLÍVARES",'TR',0,'R');
+$pdf->Cell(0,7,$sisap->Formato2($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['monto_solicitado']),'TR',1,'R');
+$pdf->Cell(0,0,"",'B',1);
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(12,3,"",'RL',0,'C');
+$pdf->Cell(13,3,"",'R',0,'C');
+$pdf->Cell(19,3,"",'R',0,'C');
+$pdf->Cell(19,3,"SUB",'R',0,'C');
+$pdf->Cell(18,3,"",'R',0,'C');
+$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+$pdf->Cell(15,3,"",'R',0,'C');
+$pdf->Cell(17,3,"",'R',0,'C');
+$pdf->Cell(10,3,"",'R',0,'C');
+$pdf->Cell(15,3,"SUB",'R',0,'C');
+$pdf->Cell(14,3,"",'R',0,'C');
+$pdf->Cell(0,3,"",'R',1,'C');
+
+$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+$pdf->Cell(10,3,"ESP",'RB',0,'C');
+$pdf->Cell(15,3,"ESP",'RB',0,'C');
+$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$total=0;
+for($ii=1; $ii<35; $ii++){
+	if(isset($ano[$ii])){
+	$pdf->Cell(12,3,$ano[$ii],'RL',0,'C');
+	$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$ii]),'R',0,'C');
+	$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$ii]),'R',0,'C');
+	$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$ii]),'R',0,'C');
+	$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$ii]),'R',0,'C');
+	$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$ii]),'R',0,'C');
+	$pdf->Cell(15,3,$sisap->AddCero2($cod_partida[$ii]),'R',0,'C');
+	$pdf->Cell(17,3,$cod_generica[$ii],'R',0,'C');
+	$pdf->Cell(10,3,$cod_especifica[$ii],'R',0,'C');
+	$pdf->Cell(15,3,$cod_sub_espec[$ii],'R',0,'C');
+	$pdf->Cell(14,3,$cod_auxiliar[$ii],'R',0,'C');
+	$pdf->Cell(0,3,$sisap->Formato2($monto[$ii]),'R',1,'R');
+	$total=$total+$monto[$ii];
+	}else{
+		$pdf->Cell(12,3,"",'RL',0,'C');
+		$pdf->Cell(13,3,"",'R',0,'C');
+		$pdf->Cell(19,3,"",'R',0,'C');
+		$pdf->Cell(19,3,"",'R',0,'C');
+		$pdf->Cell(18,3,"",'R',0,'C');
+		$pdf->Cell(11,3,"",'R',0,'C');
+		$pdf->Cell(15,3,"",'R',0,'C');
+		$pdf->Cell(17,3,"",'R',0,'C');
+		$pdf->Cell(10,3,"",'R',0,'C');
+		$pdf->Cell(15,3,"",'R',0,'C');
+		$pdf->Cell(14,3,"",'R',0,'C');
+		$pdf->Cell(0,3,"",'R',1,'C');
+	}
+}
+
+if ($contador>$ii) {
+$listo="no";
+$pdf->Cell(0,0,"",'T',1);
+}else{
+$listo="si";
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total),'TRB',1,'R');
+}
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(35,5,"ELABORADO",'RL',0,'C');
+$pdf->Cell(35,5,"REVISADO",'R',0,'C');
+$pdf->Cell(43,5,"",'R',0,'C');
+$pdf->Cell(35,5,"APROBADO POR",'R',0,'C');
+$pdf->Cell(0,5,"BANCO:",'R',1,'L');
+
+$pdf->Cell(35,15,"",'RL',0,'C');
+$pdf->Cell(35,15,"",'R',0,'C');
+$pdf->Cell(43,15,"",'R',0,'C');
+$pdf->Cell(35,15,"",'R',0,'C');
+$pdf->Cell(0,15,"CUENTA:",'R',1,'L');
+
+$pdf->Cell(35,5,"ADMINISTRADOR(A)",'RBL',0,'C');
+$pdf->Cell(35,5,"JEFE UNIDAD EJECUTORA",'RB',0,'C');
+$pdf->Cell(43,5,"",'RB',0,'C');
+$pdf->Cell(35,5,"SECRETARIO(A) DE FINANZAS",'RB',0,'C');
+$pdf->Cell(0,5,"CHEQUE:",'RB',1,'L');
+
+$xx=35;//para llevar el control del ciclo for interno arriba imprimi desde 1 hasta 34
+while($listo=="no"){
+		$pdf->AddPage();
+		$pdf->SetFont('vera','B',9);
+		$pdf->Cell(0,6,"ORDEN DE PAGO PARA TRANSFERENCIAS",'TRLB',1,'C');
+		$pdf->Ln(5);
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(16,5,"AÑO",'TRL',0,'C');
+		$pdf->Cell(39,5,"NÚMERO",'TR',0,'C');
+		$pdf->Cell(117,5,"TIPO DE ORDEN",'TR',0,'C');
+		$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(16,5,$datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['ano_solicitud'],'TRL',0,'C');
+		$pdf->Cell(39,5,$sisap->mascara_ocho($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['numero_solicitud']),'TR',0,'C');
+		$pdf->Cell(117,5,$tipo_solicitud,'TR',0,'L');
+		$pdf->Cell(0,5,$sisap->cambia_fecha($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['fecha_solicitud']),'TR',1,'C');
+
+		//--------------------------------------------
+
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(0,6,"DESCRIPCIÓN O CONCEPTO DE LA ORDEN",'TRLB',1,'C');
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(1,37,"",'L',0);//margen izquierdo
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->MultiCell(194,4,$datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['concepto'],'','L');
+			$varX = $varX+194;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,37,"",'R',1);//margen derecho
+		$pdf->Cell(0,0,"",'T',1);
+		$pdf->Ln(5);
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(30,7,"CANTIDAD EN LETRAS:",'TRL',0,'L');
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(1,7,"",'TL',0);//margen izquierdo
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->MultiCell(107,3,$sisap->convertir($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['monto_solicitado']),'T','L');
+			$varX = $varX+107;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,"",'TR',0);
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(33,7,"CANTIDAD EN BOLÍVARES",'TR',0,'R');
+		$pdf->Cell(0,7,$sisap->Formato2($datos_cuerpo[0]['csrd01_solicitud_recurso_cuerpo']['monto_solicitado']),'TR',1,'R');
+		$pdf->Cell(0,0,"",'B',1);
+		$pdf->Ln(5);
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(12,3,"",'RL',0,'C');
+		$pdf->Cell(13,3,"",'R',0,'C');
+		$pdf->Cell(19,3,"",'R',0,'C');
+		$pdf->Cell(19,3,"SUB",'R',0,'C');
+		$pdf->Cell(18,3,"",'R',0,'C');
+		$pdf->Cell(11,3,"ACTIV",'R',0,'C');
+		$pdf->Cell(15,3,"",'R',0,'C');
+		$pdf->Cell(17,3,"",'R',0,'C');
+		$pdf->Cell(10,3,"",'R',0,'C');
+		$pdf->Cell(15,3,"SUB",'R',0,'C');
+		$pdf->Cell(14,3,"",'R',0,'C');
+		$pdf->Cell(0,3,"",'R',1,'C');
+
+		$pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+		$pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+		$pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+		$pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+		$pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+		$pdf->Cell(11,3,"OBRA",'RB',0,'C');
+		$pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+		$pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+		$pdf->Cell(10,3,"ESP",'RB',0,'C');
+		$pdf->Cell(15,3,"ESP",'RB',0,'C');
+		$pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+		$pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+		$pdf->SetFont('vera','',7);
+		for($jj=$xx; $jj<$xx+35; $jj++){
+			if(isset($ano[$jj])){
+			$pdf->Cell(12,3,$ano[$jj],'RL',0,'C');
+			$pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$jj]),'R',0,'C');
+			$pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$jj]),'R',0,'C');
+			$pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$jj]),'R',0,'C');
+			$pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$jj]),'R',0,'C');
+			$pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$jj]),'R',0,'C');
+			$pdf->Cell(15,3,$sisap->AddCero2($cod_partida[$jj]),'R',0,'C');
+			$pdf->Cell(17,3,"",'R',0,'C');
+			$pdf->Cell(10,3,"",'R',0,'C');
+			$pdf->Cell(15,3,"",'R',0,'C');
+			$pdf->Cell(14,3,"",'R',0,'C');
+			$pdf->Cell(0,3,$sisap->Formato2($monto[$jj]),'R',1,'R');
+			$total=$total+$monto[$jj];
+			}else{
+				$pdf->Cell(12,3,"",'RL',0,'C');
+				$pdf->Cell(13,3,"",'R',0,'C');
+				$pdf->Cell(19,3,"",'R',0,'C');
+				$pdf->Cell(19,3,"",'R',0,'C');
+				$pdf->Cell(18,3,"",'R',0,'C');
+				$pdf->Cell(11,3,"",'R',0,'C');
+				$pdf->Cell(15,3,"",'R',0,'C');
+				$pdf->Cell(17,3,"",'R',0,'C');
+				$pdf->Cell(10,3,"",'R',0,'C');
+				$pdf->Cell(15,3,"",'R',0,'C');
+				$pdf->Cell(14,3,"",'R',0,'C');
+				$pdf->Cell(0,3,"",'R',1,'C');
+			}
+		}
+		$xx=$jj;
+
+		if ($contador>$jj) {
+		$listo="no";
+		$pdf->Cell(0,0,"",'T',1);
+		}else{
+		$listo="si";
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+		$pdf->Cell(0,5,$sisap->Formato2($total),'TRB',1,'R');
+		}
+
+		//$pdf->SetFont('vera','B',7);
+		//$pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+		//$pdf->Cell(0,5,$sisap->Formato2($total),'TRB',1,'R');
+
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(35,5,"ELABORADO",'RL',0,'C');
+		$pdf->Cell(35,5,"REVISADO",'R',0,'C');
+		$pdf->Cell(43,5,"",'R',0,'C');
+		$pdf->Cell(35,5,"APROBADO POR",'R',0,'C');
+		$pdf->Cell(0,5,"BANCO:",'R',1,'L');
+
+		$pdf->Cell(35,15,"",'RL',0,'C');
+		$pdf->Cell(35,15,"",'R',0,'C');
+		$pdf->Cell(43,15,"",'R',0,'C');
+		$pdf->Cell(35,15,"",'R',0,'C');
+		$pdf->Cell(0,15,"CUENTA:",'R',1,'L');
+
+		$pdf->Cell(35,5,"ADMINISTRADOR(A)",'RBL',0,'C');
+		$pdf->Cell(35,5,"JEFE DE LA UNIDAD EJECUTORA",'RB',0,'C');
+		$pdf->Cell(43,5,"",'RB',0,'C');
+		$pdf->Cell(35,5,"SECRETARIO(A) DE FINANZAS",'RB',0,'C');
+		$pdf->Cell(0,5,"CHEQUE:",'RB',1,'L');
+
+}//fin while
+$pdf->Output('reporte_pago_transferencia_'.date("d-m-Y"),'D');
+   }else{//si vienen los datos vacios o con un error se imprime de aqui para abajo
+   	$pdf = new fpdfview('P','mm','Letter');
+	$pdf->AliasNbPages();
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(10);
+	$pdf->SetRightMargin(10);
+	$pdf->SetAutoPageBreak(true, 10);
+	$_SESSION['titulo_a'] = $titulo_a;
+	$pdf->AddPage();
+	$pdf->Ln(10);
+
+	$pdf->SetFont('vera','U',14);
+	$pdf->Cell(0,10,$mensaje,'',1,'C');
+	$pdf->Ln(5);
+	$pdf->Output('reporte_pago_transferencia_'.date("d-m-Y"),'D');
+   }
+}//fin if
+?>

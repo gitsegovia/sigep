@@ -1,0 +1,100 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+if(isset($errorExcede) && $errorExcede==true){
+	echo $sisap->mensajes_error("Disculpe esta tipolog&iacute;a ya se encuentra agregada a la lista...");
+	$act_m=false;
+?>
+<? }else{$act_m=true;} ?>
+<div id="grabar">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  <?php
+ if(isset($_SESSION ["items_2"])){
+  if($_SESSION ["items_2"]!=null){
+ 	$i=0;
+ 	$ij=0;
+ 	$total_area=0;
+ 	$total_valor=0;
+ 	$tot_valor_const=0;
+ 	$total_valor_actual=0;
+    foreach($_SESSION["items_2"] as $codigos){
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+    		$ij++;
+?>
+
+  <tr bgcolor="<?=$color?>" id="<?= "fila3_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td width="30%"><?=$codigos["deno"];?></td>
+    <td align="center" width="14%"><?=$sisap->Formato2($codigos[1]);?></td>
+    <td align="center" width="14%"><?=$codigos[2];?></td>
+    <td align="center" width="14%"><?=$sisap->Formato2($codigos[5]);?></td>
+    <td align="center"  width="10%"><?=$sisap->Formato2($codigos[3]);?></td>
+    <td align="center" width="13%"><?=$sisap->Formato2($codigos[4]);?></td>
+    <td align="center" width="5%"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/catp02_ficha_datos/elimina_fila_tipo_construccion/'.$codigos['id'].'/'.$codigos[0], array('update'=>'del2','title'=>'Eliminar Fila',"after"=>"new Effect.DropOut('fila3_$i');"),'Realmente desea eliminar esta tipologia de la lista?',false,true) ?></td>
+  </tr>
+
+<?php
+
+$total_area+=$sisap->Formato1($codigos[1]);
+$total_valor+=$sisap->Formato1_cantidad($codigos[2]);
+$tot_valor_const+=$codigos[5];
+$total_valor_actual+=$sisap->Formato1($codigos[4]);
+}else{ $ctrfp=0;
+    foreach($_SESSION["items_2"] as $codigosc){
+    	if($codigosc[0]==null){
+    		$ctrfp++;
+    	}
+    }
+	if($ctrfp==count($_SESSION["items_2"])){
+		echo "<script> ver_documento('/catp02_ficha_datos/limpiar_lista_tipo_construccion/', 'cargar_filas_construccion');</script>";
+		break;
+	}
+}
+    	$i++;
+    }//fin foreach
+
+  echo "<tr height='25px' bgcolor='#87cefa' id='idetotavalorc' onclick='new Effect.Highlight(this);' class='textNegro2'>
+  			<td width='30%' align='right'>TOTAL: </td>
+    		<td align='center' width='14%'>".$sisap->Formato2($total_area)."</td>
+    		<td align='center' width='14%'>&nbsp;</td>
+    		<td align='center' width='14%'>".$sisap->Formato2($tot_valor_const)."</td>
+    		<td align='center' width='10%'>&nbsp;</td>
+    		<td align='center' width='13%'>".$sisap->Formato2($total_valor_actual)."</td>
+    		<td align='center 'width='5%' bgcolor='bfbfbf'>&nbsp;</td>
+  </tr>";
+  }
+ }
+?>
+<tr>
+<td colspan="7" align="center"><?= $sisap->submitTagRemote('Limpiar Lista', array('funcion'=>'valid_limplista_filas', 'url1' => '/catp02_ficha_datos/limpiar_lista_tipo_construccion/', 'update1'=>'cargar_filas_construccion', 'id'=>'limpiar_lc')); ?></td></tr>
+<tr><td colspan="7" id="del2">&nbsp;</td></tr>
+</table>
+
+<?php if($act_m===true){ ?>
+
+<script language="JavaScript" type="text/javascript">
+  setTimeout("fondoCampo('idetotavalorc',2);", 1000);
+  document.getElementById('ctrl_num_ne').value='<?=$ij?>';
+  document.getElementById('area_total').value='<?=$total_area?>';
+  document.getElementById('c_valor_construccion').value='<?=($total_valor/$ij)?>';
+  document.getElementById('monto_tota_variables_c').value = redondear((eval($('c_valor_construccion').value) + eval($('d_valor_construccion').value)),4);
+  document.getElementById('monto_total_de_construccion').value = redondear((eval($('area_total').value) * eval($('monto_tota_variables_c').value)) * eval($('porc_depreciacion').value),2);
+  document.getElementById('calculo_construccion').value = document.getElementById('monto_total_de_construccion').value;
+  document.getElementById('d_valor_montoajust').value = redondear(eval($('area_total').value) * eval($('monto_tota_variables_c').value),2);
+  moneda('d_valor_montoajust',2);
+  $('d_valor_depreciac').value = $('porc_depreciacion').value;
+  calcular_distribucion_imp();
+</script>
+<?php } ?>
+
+</div>
+
+<br><br><br>

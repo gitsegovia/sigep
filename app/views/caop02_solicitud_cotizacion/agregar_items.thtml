@@ -1,0 +1,74 @@
+<?php
+if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }
+?>
+
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro">
+    <td class="td4">Código<br>Prod.</td>
+    <td class="td4">Unidad<br>Medida</td>
+    <td class="td4">Descripción de los Bienes o Servicios</td>
+    <td class="td4">Cantidad</td>
+    <td class="td4">Acción</td>
+  </tr>
+<?php
+
+ if(isset($_SESSION ["items"])){
+  if($_SESSION ["items"]!=null){
+  	echo "<script>show_save();</script>";
+
+  	if(!isset($_SESSION["contador_solicitud_cotizacion_grilla"])){
+  		 $_SESSION["contador_solicitud_cotizacion_grilla"] = 0;
+  	}else{
+          $_SESSION["contador_solicitud_cotizacion_grilla"]++;
+  	}
+ 	$i=0;
+ 	$total=0;
+    foreach($_SESSION ["items"] as $ve){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($ve['cod_prod']!=null){
+?>
+
+  <tr bgcolor="<?= $color ?>" class="textNegro2" id="<?= "fila_".$_SESSION["contador_solicitud_cotizacion_grilla"] ?>">
+    <td class="td2center" height="22"><?= $ve['cod_prod']?></td>
+    <td class="td2center"><?= $ve['unidad_medida']?></td>
+    <td class="td2"><?= $ve['descripcion_bienes']?></td>
+    <td class="td2center"><?= $ve['cantidad_estimada']?></td>
+
+    <td class="td3center">
+       <?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/caop02_solicitud_cotizacion/eliminar_items/'.$ve['id'], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_".$_SESSION["contador_solicitud_cotizacion_grilla"]."');"),'Realmente desea eliminar este Registro',false,true); ?>
+       </td>
+  </tr>
+ <?
+}
+
+    	$i++;
+
+    }//fin foreach
+  }
+ }
+?>
+</table>
+
+<br>
+
+<div id="del"></div>
+
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+
+
+<table align="center">
+ <tr>
+    <td>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/caop02_solicitud_cotizacion/limpiar_lista/', 'update1'=>'grabar')); ?>
+    </td>
+  </tr>
+</table>

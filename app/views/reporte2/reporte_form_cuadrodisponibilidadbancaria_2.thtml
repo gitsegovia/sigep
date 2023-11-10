@@ -1,0 +1,623 @@
+<?php
+/*
+ * Creado el 25/04/2008 a las 02:44:43 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer(){
+    $this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	//$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+	function Header()
+	{
+		$this->top_reporte("CUADRO DE DISPONIBILIDAD BANCARIA", $_SESSION['titulo_reporte'], null, array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"254"));
+		
+		/*
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',7,15,12);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"CUADRO DE DISPONIBILIDAD BANCARIA",'RLB',1,'C');
+		$this->Ln(2);
+
+		$varX_header = $this->GetX();
+    	$varY_header = $this->GetY();
+
+    	$varY_aux = $varY_header - 16;
+    	$varX_aux = $varY_header + 221;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+		*/
+	}//fin funtion
+}//fin de la clase PDF
+
+if(isset($ir) && $ir=='si'){
+
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CUADRO DE DISPONIBILIDAD BANCARIA",null,"950");?>
+<form name='data[cuadro_disponibilidad]' method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_form_cuadrodisponibilidadbancaria_2/no'); ?>" onSubmit="return valida_reporte_cuadro_disponibilidadbanc();">
+<?= $sisap->OpenTable("950")?>
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true)  ?>
+
+<table width="400" cellspacing="0" cellpadding="0">
+<tr><td align="center" colspan="2">&nbsp;</td></tr>
+<tr>
+	<td align="center"><b>A&ntilde;o:</b>&nbsp;<input type="text" name="data[cuadro_disponibilidad][ano]" id="ano" size="7" value="<?=$ano?>" maxlength="4" onKeyPress="return solonumeros(event);" style="text-align:center" /></td>
+	<td align="center"><b>Fecha:</b>&nbsp;<?php echo $sisap->input_fecha('cuadro_disponibilidad','fecha','fecha');?></td>
+</tr>
+<tr><td align="center" colspan="2">&nbsp;</td></tr>
+<tr>
+	<td align="center" colspan="2">
+		<?php 
+		if($_SESSION["SScoddep"]==1){
+			echo "<br />";
+			echo $sisap->radioTagRemote("cuadro_disponibilidad/agrupamiento", array('1'=>'Por banco', '2'=>'Dependencia y Banco', '3'=>'Banco especifico'), array('url1'=>'/reporte2/selectEntidadBancaria/', 'update1'=>'td-entidad_bancaria', 'id'=>'agrupamiento'), null, $opc=1);
+		}
+		?>
+	</td>
+</tr>
+<tr><td align="center" colspan="2" id="td-entidad_bancaria">&nbsp;</td></tr>
+</table>
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+//$_SESSION['subtituloreporte'] = $subtituloreporte;
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+$f_ant = split('/',$fecha_anterior);
+if($f_ant[1]<10){//mes
+	if($f_ant[0]<10){//dia
+		$fech_anterior = "0".$f_ant[0].'/0'.$f_ant[1].'/'.$f_ant[2];
+	}else{
+		$fech_anterior = $f_ant[0].'/0'.$f_ant[1].'/'.$f_ant[2];
+	}
+}else{
+	if($f_ant[0]<10){
+		$fech_anterior = "0".$f_ant[0].'/'.$f_ant[1].'/'.$f_ant[2];
+	}else{
+		$fech_anterior = $f_ant[0].'/'.$f_ant[1].'/'.$f_ant[2];
+	}
+}
+
+
+$total_cuenta_anterior_2 = 0;
+$ingresos_2 = 0;
+$egresos_2  = 0;
+$colocacion_2 = 0;
+$rendimiento_2 = 0;
+$total_dia_actual_3 = 0;
+
+
+$aux_total_cuenta_anterior_2 = 0;
+$aux_ingresos_2 = 0;
+$aux_egresos_2  = 0;
+$aux_colocacion_2 = 0;
+$aux_rendimiento_2 = 0;
+$aux_total_dia_actual_3 = 0;
+
+$pdf->SetFont('vera','',6);
+
+$_SESSION['titulo_reporte']=$titulo_reporte;
+
+if($agrupamiento==1){
+
+		$ent_banc_2 = '';
+		for($i=0;$i<count($distinct);$i++){
+		
+			$ent_banc_1 = $distinct[$i][0]['cod_entidad_bancaria'];
+			if($ent_banc_1 != $ent_banc_2){
+				
+				if($i != 0){
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(35,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+					$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+					
+					$aux_total_cuenta_anterior_2 = 0;
+					$aux_ingresos_2 = 0;
+					$aux_egresos_2  = 0;
+					$aux_colocacion_2 = 0;
+					$aux_rendimiento_2 = 0;
+					$aux_total_dia_actual_3 = 0;
+				}
+			
+				$pdf->AddPage();
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'ENTIDAD BANCARIA: '.$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(80,6,"DENOMINACIÓN ENTIDAD BANCARIA",'TRBL',0,'C');
+				$pdf->Cell(35,6,"CTA.CTE",'TRB',0,'C');
+				$pdf->Cell(22,6,"SALDO BANCO",'TRB',0,'C');
+				$pdf->Cell(22,6,$fech_anterior,'TRB',0,'C');
+				$pdf->Cell(22,6,"INGRESOS",'TRB',0,'C');
+				$pdf->Cell(22,6,"COLOCACIÓN",'TRB',0,'C');
+				$pdf->Cell(22,6,"RENDIMIENTO",'TRB',0,'C');
+				$pdf->Cell(22,6,"EGRESO",'TRB',0,'C');
+				$pdf->Cell(0,6,$fecha_actual,'TRB',1,'C');
+			}
+		
+			$total_anterior=0;
+			$total_suma_anterior=$vector_cuentas_anterior[$i][0][0]['suma_anterior'] + $resta_anterior_anu[$i][0][0]['resta_anterior_anu'];
+			$total_resta_anterior=$vector_resta_anterior[$i][0][0]['resta_anterior'] + $suma_anterior_anu[$i][0][0]['suma_anterior_anu'];
+			$total_cuenta_anterior=$total_suma_anterior-$total_resta_anterior;
+			$ingresos=$suma_actual[$i][0][0]['suma_actual'] + $resta_actual_anu[$i][0][0]['resta_actual_anu'];
+			$egresos=$resta_actual[$i][0][0]['resta_actual'] + $suma_actual_anu[$i][0][0]['suma_actual_anu'] - $resta_actual_anulados[$i][0][0]['resta_actual_anulados'];;
+			$colocacion= $colocacion[$i][0][0]['colocacion'];
+			$rendimiento=$rendimiento[$i][0][0]['rendimiento'];
+			$total_dia_actual = 0;
+			// No se incluyen las colocaciones y los rendimientos porque estos no se filtra en el sql,
+			// es decir, se trae todo, por lo que ya deben venir incluido en la cuenta en los ingreso. Solo se deja para ser mostrado.
+			// $total_dia_actual_2 = $total_cuenta_anterior + $ingresos + $colocacion + $rendimiento - $egresos;
+			$total_dia_actual_2 = $total_cuenta_anterior + $ingresos - $egresos;
+		
+		
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(80,5,$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(35,5,$distinct[$i][0]['cuenta_bancaria'],'TRB',0,'C');
+			$pdf->Cell(22,5,"",'TRB',0,'C');
+			$pdf->Cell(22,5,$sisap->Formato2($total_cuenta_anterior),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($ingresos),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($colocacion),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($rendimiento),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($egresos),'TRB',0,'R');
+			$pdf->Cell(0,5,$total_dia_actual_2>=0 ? $sisap->Formato2($total_dia_actual_2) : $sisap->Formato2($total_dia_actual_2*-1),'TRB',1,'R');
+		
+			$total_cuenta_anterior_2 = $total_cuenta_anterior_2 + $total_cuenta_anterior;
+			$ingresos_2 = $ingresos_2 + $ingresos;
+			$egresos_2  = $egresos_2  + $egresos;
+			$colocacion_2 = $colocacion_2 + $colocacion;
+			$rendimiento_2 = $rendimiento_2 + $rendimiento;
+			$total_dia_actual_3 = $total_dia_actual_3 + $total_dia_actual_2;
+			
+			$aux_total_cuenta_anterior_2 += $total_cuenta_anterior;
+			$aux_ingresos_2 += $ingresos;
+			$aux_egresos_2  += $egresos;
+			$aux_colocacion_2 += $colocacion;
+			$aux_rendimiento_2 += $rendimiento;
+			$aux_total_dia_actual_3 += $total_dia_actual_2;
+			
+			$ent_banc_2 = $distinct[$i][0]['cod_entidad_bancaria'];
+		}
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+			$pdf->Ln(3);
+			
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L  G E N E R A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($total_dia_actual_3),'TRB',1,'R');
+
+
+}elseif($agrupamiento==2){
+
+		$ent_banc_2 = '';
+		$dependencia_2 = '';
+		for($i=0;$i<count($distinct);$i++){
+		
+			$ent_banc_1 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_1 = $distinct[$i][0]['cod_dep'];
+			if(($dependencia_1 != $dependencia_2) || ($ent_banc_1 != $ent_banc_2)){
+			
+				if($i != 0){
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(35,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+					$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+					
+					$aux_total_cuenta_anterior_2 = 0;
+					$aux_ingresos_2 = 0;
+					$aux_egresos_2  = 0;
+					$aux_colocacion_2 = 0;
+					$aux_rendimiento_2 = 0;
+					$aux_total_dia_actual_3 = 0;
+				}
+			
+				$pdf->AddPage();
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'DEPENDENCIA: '.mascara($dependencia_1,2).' - '.$lista_dep[$dependencia_1],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'ENTIDAD BANCARIA: '.$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(80,6,"DENOMINACIÓN ENTIDAD BANCARIA",'TRBL',0,'C');
+				$pdf->Cell(35,6,"CTA.CTE",'TRB',0,'C');
+				$pdf->Cell(22,6,"SALDO BANCO",'TRB',0,'C');
+				$pdf->Cell(22,6,$fech_anterior,'TRB',0,'C');
+				$pdf->Cell(22,6,"INGRESOS",'TRB',0,'C');
+				$pdf->Cell(22,6,"COLOCACIÓN",'TRB',0,'C');
+				$pdf->Cell(22,6,"RENDIMIENTO",'TRB',0,'C');
+				$pdf->Cell(22,6,"EGRESO",'TRB',0,'C');
+				$pdf->Cell(0,6,$fecha_actual,'TRB',1,'C');
+			}
+		
+			$total_anterior=0;
+			$total_suma_anterior=$vector_cuentas_anterior[$i][0][0]['suma_anterior'] + $resta_anterior_anu[$i][0][0]['resta_anterior_anu'];
+			$total_resta_anterior=$vector_resta_anterior[$i][0][0]['resta_anterior'] + $suma_anterior_anu[$i][0][0]['suma_anterior_anu'];
+			$total_cuenta_anterior=$total_suma_anterior-$total_resta_anterior;
+			$ingresos=$suma_actual[$i][0][0]['suma_actual'] + $resta_actual_anu[$i][0][0]['resta_actual_anu'];
+			$egresos=$resta_actual[$i][0][0]['resta_actual'] + $suma_actual_anu[$i][0][0]['suma_actual_anu'] - $resta_actual_anulados[$i][0][0]['resta_actual_anulados'];;
+			$colocacion= $colocacion[$i][0][0]['colocacion'];
+			$rendimiento=$rendimiento[$i][0][0]['rendimiento'];
+			$total_dia_actual = 0;
+			// No se incluyen las colocaciones y los rendimientos porque estos no se filtra en el sql,
+			// es decir, se trae todo, por lo que ya deben venir incluido en la cuenta en los ingreso. Solo se deja para ser mostrado.
+			// $total_dia_actual_2 = $total_cuenta_anterior + $ingresos + $colocacion + $rendimiento - $egresos;
+			$total_dia_actual_2 = $total_cuenta_anterior + $ingresos - $egresos;
+		
+		
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(80,5,$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(35,5,$distinct[$i][0]['cuenta_bancaria'],'TRB',0,'C');
+			$pdf->Cell(22,5,"",'TRB',0,'C');
+			$pdf->Cell(22,5,$sisap->Formato2($total_cuenta_anterior),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($ingresos),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($colocacion),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($rendimiento),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($egresos),'TRB',0,'R');
+			$pdf->Cell(0,5,$total_dia_actual_2>=0 ? $sisap->Formato2($total_dia_actual_2) : $sisap->Formato2($total_dia_actual_2*-1),'TRB',1,'R');
+		
+			$total_cuenta_anterior_2 = $total_cuenta_anterior_2 + $total_cuenta_anterior;
+			$ingresos_2 = $ingresos_2 + $ingresos;
+			$egresos_2  = $egresos_2  + $egresos;
+			$colocacion_2 = $colocacion_2 + $colocacion;
+			$rendimiento_2 = $rendimiento_2 + $rendimiento;
+			$total_dia_actual_3 = $total_dia_actual_3 + $total_dia_actual_2;
+			
+			$aux_total_cuenta_anterior_2 += $total_cuenta_anterior;
+			$aux_ingresos_2 += $ingresos;
+			$aux_egresos_2  += $egresos;
+			$aux_colocacion_2 += $colocacion;
+			$aux_rendimiento_2 += $rendimiento;
+			$aux_total_dia_actual_3 += $total_dia_actual_2;
+			
+			$ent_banc_2 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_2 = $distinct[$i][0]['cod_dep'];
+		}
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+			$pdf->Ln(3);
+			
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L  G E N E R A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($total_dia_actual_3),'TRB',1,'R');
+			
+	}elseif($agrupamiento==3){
+	
+		$ent_banc_2 = '';
+		$dependencia_2 = '';
+		for($i=0;$i<count($distinct);$i++){
+		
+			$ent_banc_1 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_1 = $distinct[$i][0]['cod_dep'];
+			if(($dependencia_1 != $dependencia_2) || ($ent_banc_1 != $ent_banc_2)){
+			
+				if($i != 0){
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(35,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+					$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+					
+					$aux_total_cuenta_anterior_2 = 0;
+					$aux_ingresos_2 = 0;
+					$aux_egresos_2  = 0;
+					$aux_colocacion_2 = 0;
+					$aux_rendimiento_2 = 0;
+					$aux_total_dia_actual_3 = 0;
+				}
+			
+				$pdf->AddPage();
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'DEPENDENCIA: '.mascara($dependencia_1,2).' - '.$lista_dep[$dependencia_1],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'ENTIDAD BANCARIA: '.$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(80,6,"DENOMINACIÓN ENTIDAD BANCARIA",'TRBL',0,'C');
+				$pdf->Cell(35,6,"CTA.CTE",'TRB',0,'C');
+				$pdf->Cell(22,6,"SALDO BANCO",'TRB',0,'C');
+				$pdf->Cell(22,6,$fech_anterior,'TRB',0,'C');
+				$pdf->Cell(22,6,"INGRESOS",'TRB',0,'C');
+				$pdf->Cell(22,6,"COLOCACIÓN",'TRB',0,'C');
+				$pdf->Cell(22,6,"RENDIMIENTO",'TRB',0,'C');
+				$pdf->Cell(22,6,"EGRESO",'TRB',0,'C');
+				$pdf->Cell(0,6,$fecha_actual,'TRB',1,'C');
+			}
+		
+			$total_anterior=0;
+			$total_suma_anterior=$vector_cuentas_anterior[$i][0][0]['suma_anterior'] + $resta_anterior_anu[$i][0][0]['resta_anterior_anu'];
+			$total_resta_anterior=$vector_resta_anterior[$i][0][0]['resta_anterior'] + $suma_anterior_anu[$i][0][0]['suma_anterior_anu'];
+			$total_cuenta_anterior=$total_suma_anterior-$total_resta_anterior;
+			$ingresos=$suma_actual[$i][0][0]['suma_actual'] + $resta_actual_anu[$i][0][0]['resta_actual_anu'];
+			$egresos=$resta_actual[$i][0][0]['resta_actual'] + $suma_actual_anu[$i][0][0]['suma_actual_anu'] - $resta_actual_anulados[$i][0][0]['resta_actual_anulados'];;
+			$colocacion= $colocacion[$i][0][0]['colocacion'];
+			$rendimiento=$rendimiento[$i][0][0]['rendimiento'];
+			$total_dia_actual = 0;
+			// No se incluyen las colocaciones y los rendimientos porque estos no se filtra en el sql,
+			// es decir, se trae todo, por lo que ya deben venir incluido en la cuenta en los ingreso. Solo se deja para ser mostrado.
+			// $total_dia_actual_2 = $total_cuenta_anterior + $ingresos + $colocacion + $rendimiento - $egresos;
+			$total_dia_actual_2 = $total_cuenta_anterior + $ingresos - $egresos;
+		
+		
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(80,5,$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(35,5,$distinct[$i][0]['cuenta_bancaria'],'TRB',0,'C');
+			$pdf->Cell(22,5,"",'TRB',0,'C');
+			$pdf->Cell(22,5,$sisap->Formato2($total_cuenta_anterior),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($ingresos),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($colocacion),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($rendimiento),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($egresos),'TRB',0,'R');
+			$pdf->Cell(0,5,$total_dia_actual_2>=0 ? $sisap->Formato2($total_dia_actual_2) : $sisap->Formato2($total_dia_actual_2*-1),'TRB',1,'R');
+		
+			$total_cuenta_anterior_2 = $total_cuenta_anterior_2 + $total_cuenta_anterior;
+			$ingresos_2 = $ingresos_2 + $ingresos;
+			$egresos_2  = $egresos_2  + $egresos;
+			$colocacion_2 = $colocacion_2 + $colocacion;
+			$rendimiento_2 = $rendimiento_2 + $rendimiento;
+			$total_dia_actual_3 = $total_dia_actual_3 + $total_dia_actual_2;
+			
+			$aux_total_cuenta_anterior_2 += $total_cuenta_anterior;
+			$aux_ingresos_2 += $ingresos;
+			$aux_egresos_2  += $egresos;
+			$aux_colocacion_2 += $colocacion;
+			$aux_rendimiento_2 += $rendimiento;
+			$aux_total_dia_actual_3 += $total_dia_actual_2;
+			
+			$ent_banc_2 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_2 = $distinct[$i][0]['cod_dep'];
+		}
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+			$pdf->Ln(3);
+			
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L  G E N E R A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($total_dia_actual_3),'TRB',1,'R');
+			
+	}elseif($agrupamiento==4){// Viene de otras dependencias distintas a la central 01.
+	
+		$ent_banc_2 = '';
+		$dependencia_2 = '';
+		for($i=0;$i<count($distinct);$i++){
+		
+			$ent_banc_1 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_1 = $distinct[$i][0]['cod_dep'];
+			if(($dependencia_1 != $dependencia_2) || ($ent_banc_1 != $ent_banc_2)){
+			
+				if($i != 0){
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(35,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,"",'TRB',0,'C');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+					$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+					$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+					
+					$aux_total_cuenta_anterior_2 = 0;
+					$aux_ingresos_2 = 0;
+					$aux_egresos_2  = 0;
+					$aux_colocacion_2 = 0;
+					$aux_rendimiento_2 = 0;
+					$aux_total_dia_actual_3 = 0;
+				}
+			
+				$pdf->AddPage();
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'DEPENDENCIA: '.mascara($dependencia_1,2).' - '.$lista_dep[$dependencia_1],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(0,6,'ENTIDAD BANCARIA: '.$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',1,'L');
+				$pdf->Ln(2);
+				
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(80,6,"DENOMINACIÓN ENTIDAD BANCARIA",'TRBL',0,'C');
+				$pdf->Cell(35,6,"CTA.CTE",'TRB',0,'C');
+				$pdf->Cell(22,6,"SALDO BANCO",'TRB',0,'C');
+				$pdf->Cell(22,6,$fech_anterior,'TRB',0,'C');
+				$pdf->Cell(22,6,"INGRESOS",'TRB',0,'C');
+				$pdf->Cell(22,6,"COLOCACIÓN",'TRB',0,'C');
+				$pdf->Cell(22,6,"RENDIMIENTO",'TRB',0,'C');
+				$pdf->Cell(22,6,"EGRESO",'TRB',0,'C');
+				$pdf->Cell(0,6,$fecha_actual,'TRB',1,'C');
+			}
+		
+			$total_anterior=0;
+			$total_suma_anterior=$vector_cuentas_anterior[$i][0][0]['suma_anterior'] + $resta_anterior_anu[$i][0][0]['resta_anterior_anu'];
+			$total_resta_anterior=$vector_resta_anterior[$i][0][0]['resta_anterior'] + $suma_anterior_anu[$i][0][0]['suma_anterior_anu'];
+			$total_cuenta_anterior=$total_suma_anterior-$total_resta_anterior;
+			$ingresos=$suma_actual[$i][0][0]['suma_actual'] + $resta_actual_anu[$i][0][0]['resta_actual_anu'];
+			$egresos=$resta_actual[$i][0][0]['resta_actual'] + $suma_actual_anu[$i][0][0]['suma_actual_anu'] - $resta_actual_anulados[$i][0][0]['resta_actual_anulados'];;
+			$colocacion= $colocacion[$i][0][0]['colocacion'];
+			$rendimiento=$rendimiento[$i][0][0]['rendimiento'];
+			$total_dia_actual = 0;
+			// No se incluyen las colocaciones y los rendimientos porque estos no se filtra en el sql,
+			// es decir, se trae todo, por lo que ya deben venir incluido en la cuenta en los ingreso. Solo se deja para ser mostrado.
+			// $total_dia_actual_2 = $total_cuenta_anterior + $ingresos + $colocacion + $rendimiento - $egresos;
+			$total_dia_actual_2 = $total_cuenta_anterior + $ingresos - $egresos;
+		
+		
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(80,5,$vector_banco[$distinct[$i][0]['cod_entidad_bancaria']],'TRBL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(35,5,$distinct[$i][0]['cuenta_bancaria'],'TRB',0,'C');
+			$pdf->Cell(22,5,"",'TRB',0,'C');
+			$pdf->Cell(22,5,$sisap->Formato2($total_cuenta_anterior),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($ingresos),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($colocacion),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($rendimiento),'TRB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($egresos),'TRB',0,'R');
+			$pdf->Cell(0,5,$total_dia_actual_2>=0 ? $sisap->Formato2($total_dia_actual_2) : $sisap->Formato2($total_dia_actual_2*-1),'TRB',1,'R');
+		
+			$total_cuenta_anterior_2 = $total_cuenta_anterior_2 + $total_cuenta_anterior;
+			$ingresos_2 = $ingresos_2 + $ingresos;
+			$egresos_2  = $egresos_2  + $egresos;
+			$colocacion_2 = $colocacion_2 + $colocacion;
+			$rendimiento_2 = $rendimiento_2 + $rendimiento;
+			$total_dia_actual_3 = $total_dia_actual_3 + $total_dia_actual_2;
+			
+			$aux_total_cuenta_anterior_2 += $total_cuenta_anterior;
+			$aux_ingresos_2 += $ingresos;
+			$aux_egresos_2  += $egresos;
+			$aux_colocacion_2 += $colocacion;
+			$aux_rendimiento_2 += $rendimiento;
+			$aux_total_dia_actual_3 += $total_dia_actual_2;
+			
+			$ent_banc_2 = $distinct[$i][0]['cod_entidad_bancaria'];
+			$dependencia_2 = $distinct[$i][0]['cod_dep'];
+		}
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($aux_egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($aux_total_dia_actual_3),'TRB',1,'R');
+			$pdf->Ln(3);
+			
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(80,6,"T O T A L  G E N E R A L: ",'TRBL',0,'R');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(35,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,"",'TRB',0,'C');
+			$pdf->Cell(22,6,$sisap->Formato2($total_cuenta_anterior_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($ingresos_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($colocacion_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($rendimiento_2),'TRB',0,'R');
+			$pdf->Cell(22,6,$sisap->Formato2($egresos_2),'TRB',0,'R');
+			$pdf->Cell(0,6,$sisap->Formato2($total_dia_actual_3),'TRB',1,'R');
+	}
+	
+$pdf->Output('cuadro_disponibilidad_bancaria_'.date("d-m-Y h:i:sa").".pdf",'D');
+}
+?>

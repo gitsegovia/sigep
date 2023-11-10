@@ -1,0 +1,106 @@
+<?php
+
+	if(isset($mensajeExiste))	$sisap->mensajes_correcto($mensajeExiste);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+	function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+function ficha_status_text($status){
+	switch($status){
+		case 0:
+			$statusText='Libre';
+		break;
+		case 1:
+			$statusText='Bloqueado';
+		break;
+	}
+	return $statusText;
+}
+
+?>
+
+<div style="height:300px;overflow:auto;">
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" style:"position:fixed" align="center">
+		<td width="10%" align="center">Código dep</td>
+		<td width="40%" align="center">Denominación</td>
+		<td width="5%" align="center">Año</td>
+		<td width="10%" align="center">Estatus</td>
+		<td width="10%" align="center">&nbsp;</td>
+	</tr>
+
+<?
+if($datos!=null){
+	$i=0;
+	$j=0;
+	foreach($datos1 as $x){
+		$deno[$j] = $x['arrd05']['denominacion'];
+		$codigo[$j] = $x['arrd05']['cod_dep'];
+		$j++;
+	}
+//	print_r($datos);
+	foreach($datos as $row){
+		$cod=$row['cnmd00_cierre_ficha']['cod_dep'];
+		$ano_cierre=$row['cnmd00_cierre_ficha']['ano'];
+		$ficha_status=$row['cnmd00_cierre_ficha']['ficha_status'];
+
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+
+		?>
+		<tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+
+		<td class="td2center">
+			<?=$sisap->zero($cod); ?>
+		</td>
+		<td align="legth">
+			<?=denominacion($deno, $codigo,$cod);?>
+		</td>
+		<td align="center">
+			<?=$ano_cierre;?>
+		</td>
+		<td align="center">
+			<?=ficha_status_text($ficha_status);?>
+		</td>
+
+		<td align="center"  id="<?= "li_".$i ?>">
+		<a href="javascript:ver_documento('/cnmp00_cierre_ficha/modificar/<?=$cod?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el tipo'))?></a>
+		</td>
+		</tr>
+
+		<?
+		$i++;
+	}//fin foreach
+
+}else{
+?>
+<tr  class="textNegro2" bgcolor="#CDF2FF">
+
+<td class="td2center">&nbsp;</td>
+<td class="td2center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+</tr>
+
+
+<?php
+}
+?>
+</table>
+</div>

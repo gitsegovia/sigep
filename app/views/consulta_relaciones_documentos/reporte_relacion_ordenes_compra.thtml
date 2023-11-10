@@ -1,0 +1,136 @@
+<?php
+/*
+ * Creado el 13/04/2008 a las 06:25:40 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CONSULTA DE ORDENES DE COMPRAS",null,"950");?>
+<form name='data[relacion_ordencompra]' method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+
+			<table width="400" cellspacing="0" cellpadding="0">
+					<tr><td align="center">&nbsp;</td></tr>
+					<tr><td align="center">
+					      <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;
+					      <?= $sisap->inputTagRemote('relacion_ordencompra/ano', array('url'=>'/consulta_relaciones_documentos/buscar_year/', 'update'=>'td-razon-social', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+					    </td>
+					</tr>
+					<tr><td align="center">&nbsp;</td></tr>
+					<tr><td align="center">
+					  <?= $sisap->radioTagRemote("relacion_ordencompra/estilo_reporte", array('1'=>'Todo', '2'=>'Por Razón Social'), array('url1'=>'/reporte2/distinct_razonsocial_ordenescompras', 'update1'=>'td-razon-social', 'disabled'=>'enabled', 'id'=>'estilo_reporte'), null, 1);?>
+					  <?= $sisap->submitTagRemote('buscar', array('url1' => '/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/no', 'update1'=>'datos-consulta', 'id'=>'guardar')); ?>&nbsp;&nbsp;
+					</td></tr>
+					<tr><td align="center">&nbsp;</td></tr>
+					<tr><td align="center" id="td-razon-social">&nbsp;</td></tr>
+					<tr><td align="center">&nbsp;</td></tr>
+			</table>
+			<br />
+			<div id="datos-consulta"></div>
+			<br />
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?= $sisap->CloseTable()?>
+</form>
+
+<div id="datos-consulta2"></div>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){?>
+
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0"CLASS="tablacompromiso tablacompromiso2">
+
+<tr bgcolor="#333" class="tr_negro">
+	<td class="" width="80" align="center">N&uacute;mero</td>
+	<td class="" width="80" align="center">Status</td>
+	<td class="" width="80" align="center">Fecha</td>
+	<td class="" width="545" align="center">Beneficiario</td>
+	<td class="" width="100" align="center">Monto</td>
+	<td class="" width="72" align="center">Ver</td>
+</tr>
+
+
+
+<?php
+	$k = 1;
+	$j = 0;
+
+foreach($datos_orden_encabezado as $datos_orden_encabezado){
+
+	if($k%2 == 0){
+		$color = "#CDF2FF";
+	}else{
+		$color = "#DAEBFF";
+	}
+	$k++;
+
+if($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['condicion_actividad']==1){
+?>
+<tr id="<?= $j ?>" bgcolor="<?=$color?>" style="color:#000">
+	<td  class="td2center" width="80" align="center"><?=$sisap->mascara_ocho($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['numero_orden_compra'])?></td>
+	<td  class="td2center" width="80" align="center">&nbsp;</td>
+	<td  class="td2center" width="80" align="center"><?=$sisap->cambia_fecha($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['fecha_orden_compra'])?></td>
+	<td  class="td2center" width="550" align="left"><?= strtoupper($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['beneficiario'])?></td>
+	<td  class="td2center" width="100" align="right"><?=$sisap->Formato2($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['monto_orden'])?></td>
+	<td  class="td2center" width="60" height="22" align="center">
+
+	 <?/*   <a href="javascript:ver_documento('/consulta_relaciones_documentos/mostrar_orden_compra/<?=$datos_orden_encabezado[0]['numero_orden_compra']?>/<?=$datos_orden_encabezado[0]['ano_orden_compra']?>','datos-consulta2');"  id="numero_rc"><?=$html->image('eye.png',array('border'=>'0','title'=>'Ver la Orden de Compra'))?></a> */  ?>
+
+	   <?= $sisap->imagen_ventana(array("value"=>".."),4,"Buscar", "/consulta_relaciones_documentos/mostrar_orden_compra/".$datos_orden_encabezado["v_relacion_orden_compra_consulta"]['numero_orden_compra']."/".$datos_orden_encabezado["v_relacion_orden_compra_consulta"]['ano_orden_compra'], "950px", "500px" ); ?>
+
+
+    </td>
+</tr>
+
+<?php
+
+}elseif($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['condicion_actividad']==2){
+
+?>
+<tr id="<?= $j ?>" bgcolor="<?=$color?>" style="color:#000">
+	<td  class="td2center"  width="80" align="center"><?=$sisap->mascara_ocho($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['numero_orden_compra'])?></td>
+	<td  class="td2center" width="80" align="center">ANULADO</td>
+	<td  class="td2center" width="80" align="center"><?=$sisap->cambia_fecha($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['fecha_orden_compra'])?></td>
+	<td  class="td2center" width="550" align="left"><?=strtoupper($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['beneficiario'])?></td>
+	<td  class="td2center" width="100" align="right"><?=$sisap->Formato2($datos_orden_encabezado["v_relacion_orden_compra_consulta"]['monto_orden'])?></td>
+	<td  class="td2center" width="60" height="22" align="center">
+
+	 <?/* <a href="javascript:ver_documento('/consulta_relaciones_documentos/mostrar_orden_compra/<?=$datos_orden_encabezado[0]['numero_orden_compra']?>/<?=$datos_orden_encabezado[0]['ano_orden_compra']?>','datos-consulta2');"  id="numero_rc"><?=$html->image('eye.png',array('border'=>'0','title'=>'Ver la Orden de Compra'))?></a> */  ?>
+
+
+	 <?= $sisap->imagen_ventana(array("value"=>".."),4,"Buscar", "/consulta_relaciones_documentos/mostrar_orden_compra/".$datos_orden_encabezado["v_relacion_orden_compra_consulta"]['numero_orden_compra']."/".$datos_orden_encabezado["v_relacion_orden_compra_consulta"]['ano_orden_compra'], "950px", "500px" ); ?>
+
+	 </td>
+</tr>
+
+<?php
+}
+
+}//fin for
+echo "</table>";
+echo "</div>";
+
+
+
+?>
+
+<? $sisap->link_paginacion_ventanas('/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir, 'datos-consulta', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+       <br />
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''),     array('url1' => '/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir.'/1',              'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''),   array('url1' => '/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir.'/'.$anterior.'',  'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir.'/'.$siguiente.'', 'update1'=>'datos-consulta')) ?>&nbsp;
+			<?= $sisap->buttonTagRemote('consulta_relaciones_documentos/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''),       array('url1' => '/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir.'/'.$ultimo.'',    'update1'=>'datos-consulta')) ?>
+			<? //$sisap->link_paginacion('/consulta_relaciones_documentos/reporte_relacion_ordenes_compra/'.$ir,'datos-consulta',$total_paginas,$pagina_actual);?>
+		<br />
+
+<?php
+echo "</table>";
+}//fin else
+?>

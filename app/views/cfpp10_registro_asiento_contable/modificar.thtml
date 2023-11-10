@@ -1,0 +1,211 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+switch($tipo_documento){
+	case 1:
+		$tipo_documento='cheque';
+	break;
+	case 2:
+		$tipo_documento='Deposito';
+	break;
+	case 3:
+		$tipo_documento='Nota de Credito';
+	break;
+	case 4:
+		$tipo_documento='Nota de Debito';
+	break;
+	case 5:
+		$tipo_documento='Orden de Compra';
+	break;
+	case 6:
+		$tipo_documento='Otros Compromisos';
+	break;
+	case 7:
+		$tipo_documento='Contrato de Obras';
+	break;
+	case 8:
+		$tipo_documento='Contrato de Servicios';
+	break;
+	case 9:
+		$tipo_documento='Orden de Pago';
+	break;
+	case 10:
+		$tipo_documento='Retención de i.v.a';
+	break;
+	case 11:
+		$tipo_documento='Retención de i.s.l.r';
+	break;
+	case 12:
+		$tipo_documento='Retención de timbre';
+	break;
+	case 13:
+		$tipo_documento='Retención de impuesto municipal';
+	break;
+	case 14:
+		$tipo_documento='Retención de responsabilidad CIVIL';
+	break;
+	case 15:
+		$tipo_documento='Retención de responsabilidad SOCIAL';
+	break;
+	case 16:
+		$tipo_documento='Bienes muebles';
+	break;
+	case 17:
+		$tipo_documento='Bienes inmueble';
+	break;
+	case 18:
+		$tipo_documento='Reintegros';
+	break;
+	case 19:
+		$tipo_documento='Rendiciones';
+	break;
+}
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"REGISTRO DE ASIENTOS CONTABLE",null,"950");?>
+<form name='data[cnmp09]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950");//$_SESSION["items1"]=array();
+?>
+
+<div id="principal_ccfp01_subdivision">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr aling='center'>
+		<td width='10%' align='center'>Número Asiento</td>
+		<td width='6%' align='center'>Día</td>
+		<td width='6%' align='center'>Mes</td>
+		<td width='8%' align='center'>Año</td>
+		<td width='23%' align='center' >Tipo de Documento</td>
+		<td width='29%' align='center'>Número</td>
+		<td width='12%' align='center'>Fecha</td>
+	</tr>
+
+	<tr aling='center'>
+		<td width='%' align='center'><?= $html->input('cnmp09/num_asiento', $htmlAttributes = array('value'=>$numero_asiento,'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'num_asiento'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/dia', $htmlAttributes = array('value'=>mascara2($dia),'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'dia'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/mes', $htmlAttributes = array('value'=>mascara2($mes),'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'mes'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/ano', $htmlAttributes = array('value'=>$ano,'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'ano'), false); ?></td>
+		<td width='%' align='center' id="document"><?= $html->input('cnmp09/deno', $htmlAttributes = array('class'=>'inputtext', 'value'=>$tipo_documento, 'readonly'=>'readonly','id'=>'deno'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/numero', $htmlAttributes = array('class'=>'inputtext', 'value'=>$numero_documento,'style'=>'text-align:center', 'readonly'=>'readonly','id'=>'numero'), false); ?></td>
+		<td width='%' align='center'>
+		   <?php $sisap->input_fecha("cnmp09","fecha","fecha",$sisap->Cfecha($fecha,'D/M/A')); ?>
+		</td>
+	</tr>
+</table>
+<br>
+
+<div style="height:180px;overflow:auto;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro">
+		<td align="center"  width="5%">Linea</td>
+	    <td align="center" width="8%">Tipo de Movimiento</td>
+	    <td align="center" width="7%">Tipo<br />Cuenta</td>
+	    <td align="center" width="7%">Cuenta</td>
+	    <td align="center" width="7%">Sub <br />Cuenta </td>
+	    <td align="center" width="7%">División<br />Estadística</td>
+	    <td align="center" width="7%">Subdivisión<br />Estadística</td>
+	    <td align="center" width="13%">Debe</td>
+	    <td align="center" width="13%">Haber</td>
+	    <td align="center" width="5%">---</td>
+	</tr>
+
+<?
+$monto_debito=0;
+$monto_credito=0;
+$i=0;
+ //print_r($datos);
+foreach($datos as $row){
+	//print_r($row);
+	$linea=$row['ccfd10_detalles']['numero_linea'];
+	$tipo=$row['ccfd10_detalles']['debito_credito'];
+	$tipo_cuenta=$row['ccfd10_detalles']['cod_tipo_cuenta'];
+	$cod_cuenta=$sisap->zero($row['ccfd10_detalles']['cod_cuenta']);
+	$cod_subcuenta=$sisap->AddCero3($row['ccfd10_detalles']['cod_subcuenta']);
+	$cod_division=$sisap->mascara_cuatro($row['ccfd10_detalles']['cod_division']);
+	$cod_subdivision=$sisap->mascara_cuatro($row['ccfd10_detalles']['cod_subdivision']);
+	$monto=$row['ccfd10_detalles']['monto'];
+	if($tipo==1){
+		$monto_debito+=$monto;
+		$deno='debito';
+	}else{
+		$monto_credito+=$monto;
+		$deno='credito';
+	}
+
+	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+  	<td align='center'><?=$linea?></td>
+  	<td align='center'><?=$deno?></td>
+  	<td align='center'><?=$tipo_cuenta?></td>
+  	<td align='center'><?=$cod_cuenta?></td>
+  	<td align='center'><?=$cod_subcuenta?></td>
+  	<td align='center'><?=$cod_division?></td>
+  	<td align='center'><?=$cod_subdivision?></td>
+  	<?
+  	if($tipo==1){ ?>
+  		<td align='right'><?=$sisap->Formato2($monto);?></td>
+  		<td align='center'>---</td>
+  	<? }else{ ?>
+  		<td align='center'>---</td>
+  		<td align='right'><?=$sisap->Formato2($monto);?></td>
+
+  <? } ?>
+  <td align='center'>---</td>
+  </tr>
+
+<?
+$i++;
+}
+
+?>
+<tr>
+	<td colspan='7' align='right'>TOTALES</td>
+	<td align='right'><?=$sisap->Formato2($monto_debito);?></td>
+	<td align='right'><?=$sisap->Formato2($monto_credito);?></td>
+	<td align='center'>---</td>
+</tr>
+</table>
+</div>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center"><b>CONCEPTO DEL ASIENTO</b></td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->textarea('cnmp09/concepto', array('value'=>$concepto,'id'=>'concepto', 'class'=>'inputtext','rows'=>'5'))?></td>
+	</tr>
+</table>
+<div id="vacio"></div>
+<div id="botons">
+<table width='750' border='0' cellpadding='0' cellspacing='0' aling="center">
+	<tr  height="40px">
+		<td align="center">
+			<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'valida_concepto_registro_asiento_contable123', 'url1' => '/cfpp10_registro_asiento_contable/guardar_modificar/'.$ano."/".$mes."/".$numero_asiento."/".$pagina, 'update1'=>'principal', 'disabled'=>'')); ?>
+			<?= $sisap->buttonTagRemote('/ccfp01_subdivision/cancelar', array ('type'=>'button', 'value'=>'cancelar'), array('url1' => '/cfpp10_registro_asiento_contable/consultar/'.$pagina, 'update1'=>'principal'))?>
+			<?= $sisap->buttonTagRemote('/ccfp01_subdivision/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal'))?>
+	</td>
+	</tr>
+
+	<tr>
+		<td align="center">
+			<br>
+	        <?= $sisap->buttonTagRemote('ccfp01_subdivision/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> 'disabled'), array('url1' => '/cfpp10_registro_asiento_contable/consultar/', 'update1'=>'principal')) ?>
+		    <?= $sisap->buttonTagRemote('ccfp01_subdivision/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> 'disabled'), array('url1' => '/cfpp10_registro_asiento_contable/consultar/', 'update1'=>'principal')) ?>
+		</td>
+	</tr>
+
+</table>
+</div>
+</div>
+<div id="pagina_error"></div>
+<?= $sisap->CloseTable()?>
+</form>

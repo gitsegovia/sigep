@@ -1,0 +1,238 @@
+<?php
+/*
+ * Created on 16/04/2008
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ * el js se encuentra en /js/cepp01/cepp03_ordenpago.js
+ */
+
+ if(isset($msg)){
+ 	echo $sisap->mensajes_correcto($msg);
+ }
+
+ if(isset($msg_error)){
+ 	echo $sisap->mensajes_error($msg_error);
+ }
+
+?>
+<?= $sisap->Tabla('',true,"RENDICIONES GENERALES","","950");?>
+<?= $sisap->OpenTable('950'); ?>
+<form>
+<div id="principal_cfpp30_rendiciones">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<tr>
+	<td colspan="4" align="center">
+		<b>DESEA EL NÚMERO DE RENDICIÓN AUTOMÁTICO? <?= $sisap->radioTagRemote("cfpp30_reintegro/automatico", array('1'=>'Si', '0'=>'No'), array('url1'=>'/cfpp30_rendiciones/automatico', 'update1'=>'numero'), null, $opc=1); ?>
+	</td>
+</tr>
+<tr>
+	<td align="center" width="10%"><b>A&Ntilde;O</b></td>
+	<td align="center" width="20%"><b>N&Uacute;MERO</b></td>
+	<td align="center" width="13%">FECHA</td>
+	<td align="center" width="57%">RESPONSABLE DE LA RENDICI&Oacute;N</td>
+</tr>
+<tr>
+	<td align="center">
+		<?= $html->input('cfpp30_rendiciones/ano_rendicion', $htmlAttributes = array('readonly'=>'readonly', 'class'=>'inputtext', 'style'=>'text-align:center', 'value'=>$ano, 'id'=>'ano_ejecucion', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?>
+	</td>
+	<td align="center">
+	<div id="numero">
+		<?= $html->input('cfpp30_rendiciones/numero_rendicion', $htmlAttributes = array('class'=>'inputtext', 'style'=>'text-align:center', 'value'=>mascara_seis($numero_rendicion), 'id'=>'numero_reintegro', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'10', 'readonly'=>'readonly'), false); ?>
+	</div>
+	</td>
+	<td align="center">
+		<? $sisap->input_fecha("cfpp30_rendiciones","fecha_rendicion","fecharendicion", date('d/m/Y'));?>
+	</td>
+	<td align="center">
+		<?= $html->input('cfpp30_rendiciones/funcionario_responsable', $htmlAttributes = array('class'=>'inputtext', 'value'=>'', 'id'=>'funcionario', 'maxlength'=>'100'), false); ?>
+	</td>
+</tr>
+<tr>
+	<td align="center" width="100%" colspan="4"><b>RENDICI&Oacute;N CAJA CHICA? </b><?= $sisap->radioTagRemote("cfpp30_rendiciones/rendicion_cach", array('1'=>'Si', '2'=>'No'), array('url1'=>'/cfpp30_rendiciones/rendicion_caja_chica', 'update1'=>'cont_caja_chica', 'id'=>'rendicion_cach'), null, '2'); ?></td>
+</tr>
+</table>
+<div id="cont_caja_chica"></div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+<tr>
+	<td colspan="4" align="center">CONCEPTO DE LA RENDICI&Oacute;N</td>
+</tr>
+<tr>
+	<td colspan="4" align="center">
+		<?= $html->textarea('cfpp30_rendiciones/concepto', $htmlAttributes = array('rows'=>'4','class'=>'inputtext', 'id'=>'concepto'), false); ?>
+	</td>
+</tr>
+</table>
+
+
+<br>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+    <tr>
+    	<td width="6%"  align="center">Selección </td>
+    	<td width="8%" align="center">C&oacute;digo </td>
+    	<td width="36%" align="center">Entidad bancaria </td>
+
+    	<td width="6%"  align="center">Selecci&oacute;n</td>
+    	<td width="8%" align="center">C&oacute;digo</td>
+    	<td width="36%" align="center">Sucursal bancaria</td>
+    </tr>
+
+    <tr>
+    	<td><?= $sisap->selectTagRemote('cfpp30_rendiciones/cod_entidad_bancaria', $cod_entidad_lista , null,  '', array('onchange1'=>'/cfpp30_rendiciones/select_para_cuenta_bancaria/1', 'update1'=>'select_cod_sucursal', 'id'=>'select_1'  , true), null, true); ?></td>
+	    <td><?= $html->input('cfpp30_rendiciones/cod_entidad', $htmlAttributes = array('class'=>'inputtext', 'id'=>'cod_entidad','readonly'=>'readonly', 'style'=>'text-align:center'), false); ?></td>
+	    <td><?= $html->input('cfpp30_rendiciones/den_entidad', $htmlAttributes = array('class'=>'inputtext', 'id'=>'den_entidad','readonly'=>'readonly'), false); ?></td>
+	    <td id="select_cod_sucursal"><select id="select_2"></select></td>
+	    <td><?= $html->input('cfpp30_rendiciones/cod_sucu', $htmlAttributes = array('class'=>'inputtext', 'id'=>'cod_sucu','readonly'=>'readonly', 'style'=>'text-align:center'), false); ?></td>
+	    <td><?= $html->input('cfpp30_rendiciones/den_sucu', $htmlAttributes = array('class'=>'inputtext', 'id'=>'den_sucu','readonly'=>'readonly'), false); ?></td>
+    </tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+    <tr>
+    	<td width="30%" align="center">Cuenta bancaria</td>
+    	<td width="20%" align="center">N&uacute;mero Cheque</td>
+    	<td width="25%" align="center">Fecha Cheque</td>
+    	<td width="25%" align="center">Monto Cheque</td>
+    </tr>
+
+    <tr>
+    	<td id="select_cod_cuenta"><select id="select_3"></select></td>
+		<td align="center">
+			<?= $html->input('cfpp30_rendiciones/numero_cheque', $htmlAttributes = array('class'=>'inputtext', 'style'=>'text-align:center', 'value'=>'', 'id'=>'numero_cheque', 'onKeyPress'=>'return solonumeros(event);'), false); ?>
+		</td>
+		<td align="center">
+			<? $sisap->input_fecha("cfpp30_rendiciones","fecha_cheque","fecha_cheque", date('d/m/Y'));?>
+		</td>
+		<td align="center">
+			<?= $html->input('cfpp30_rendiciones/monto_cheque', $htmlAttributes = array('size'=>'15', 'style'=>'text-align:center', 'value'=>'0,00', 'id'=>'monto_cheque', "onChange"=>"moneda('monto_cheque');","style"=>"text-align:right;", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onKeyPress"=>"return solonumeros_con_punto(event);"), false); ?>
+		</td>
+    </tr>
+</table>
+
+
+
+<br>
+
+
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <td colspan="13" align="center">IMPUTACI&Oacute;N PRESUPUESTARIA</td>
+  </tr>
+  <tr>
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="6%">Auxiliar</td>
+    <td align="center" width="18%">MONTO</td>
+    <td align="center" width="16%" id="td_disponibilidad">--</td>
+  </tr>
+  <tr>
+    <td><input type="text" value="<?=$ano?>" id='ano_partidas' name="data[cscp04_ordencompra][ano_partidas]" readonly="readonly" class="inputtext"><?/* $sisap->selectTagRemote('cepp01_compromiso_partidas/ano_partidas', $anos !='' ? $anos : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/cepp01_compromiso/select3/sector', 'update1'=>'st_sector_2','id'=>'ano_partidas','class'=>'select100', true), null, true);*/ ?></td>
+    <td id="st_seleccion_1"><?=  $sisap->selectTagRemote('cscp04_ordencompra/cod_sector', $sector !='' ? $sector : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/cscp04_ordencompra/select3/programa', 'update1'=>'st_seleccion_2','id'=>'seleccion_1','class'=>'select100', true), null, true); ?></td>
+    <td id="st_seleccion_2"><select id="seleccion_2" class="select100"></select></td>
+    <td id="st_seleccion_3"><select id="seleccion_3" class="select100"></select></td>
+    <td id="st_seleccion_4"><select id="seleccion_4" class="select100"></select></td>
+    <td id="st_seleccion_5"><select id="seleccion_5" class="select100"></select></td>
+    <td id="st_seleccion_6"><select id="seleccion_6" class="select100"></select></td>
+    <td id="st_seleccion_7"><select id="seleccion_7" class="select100"></select></td>
+    <td id="st_seleccion_8"><select id="seleccion_8" class="select100"></select></td>
+    <td id="st_seleccion_9"><select id="seleccion_9" class="select100"></select></td>
+    <td id="st_seleccion_10"><select id="seleccion_10" class="select100"></td>
+    <td align="center"><!--<input type="text" name="data[cepp01_compromiso_partidas][monto_partidas]" value=""  maxlength="22" id="monto" onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('monto');" style="text-align:right;width:95%"/>-->
+    <?= $sisap->inputTagRemote('cscp04_ordencompra/monto_partidas', array('url'=>'/cepp01_compromiso/ver_semaforo', "onFocus"=>"document.getElementById('plus').disabled=true", 'update'=>'semaforo', 'id'=>'monto','maxlength'=>'22','class'=>'inputtext',"onChange"=>"moneda('monto');","style"=>"text-align:right;","onKeyPress"=>"return solonumeros_con_punto(event);"));?>
+    </td>
+  <td align="center"><?= $sisap->submitTagRemote('+', array('funcion'=>'validacion_presupuestaria2', 'url1' => '/cfpp30_rendiciones/agregar_partidas/nuevos', 'update1'=>'ListaPresupuestaria2','id'=>'plus','disabled'=>'disabled')); ?>&nbsp;&nbsp;<?= $sisap->submitTagRemote('Otra', array('url1' => '/cepp01_compromiso/codigos_diferentes/', 'update1'=>'ImputacionPresupuestaria','disabled'=>'disabled')); ?></td>
+  </tr>
+     <tr>
+    <td colspan="13" align="center" id="semaforo">&nbsp;</td>
+  </tr>
+</table>
+<div id="funcion" style="height:0px;"></div>
+
+
+<div id="ListaPresupuestaria2" style="height:150px; overflow:auto;">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="16%">MONTO</td>
+    <td align="center" width="8%"><br></td>
+  </tr>
+<tr bgcolor="#CDF2FF" id="<?= "fila2_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="center"><br></td>
+	<td align="right"><br></td>
+	<td align="right"><br></td>
+</tr>
+<input type="hidden" value="0" id="total_manual">
+<tr  bgcolor="#DAEBFF"><td colspan="12">&nbsp;</td><td align="right" class="textnegro"><div id="total2_manual"><br></div></td></tr>
+</table>
+</div>
+
+
+
+<div style="display:none;">
+
+<?
+ $caja['fecha_registro'] = 0;
+ $caja['dia_asiento_registro'] = 0;
+ $caja['mes_asiento_registro'] = 0;
+ $caja['ano_asiento_registro'] = 0;
+ $caja['numero_asiento_registro'] = 0;
+ $caja['username_registro'] = 0;
+ $caja['ano_anulacion'] = 0;
+ $caja['numero_acta_anulacion'] = 0;
+ $caja['fecha_proceso_anulacion'] = 0;
+ $caja['dia_asiento_anulacion'] = 0;
+ $caja['mes_asiento_anulacion'] = 0;
+ $caja['ano_asiento_anulacion'] = 0;
+ $caja['numero_asiento_anulacion'] = 0;
+ $caja['username_anulacion'] = 0;
+ $caja['radio'] = 'cscp04_ordencompra/condicion_orden';
+ $caja['condicion_actividad'] = (int) 1;
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+
+</div>
+
+<br/>
+<center>
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'valida_cfpp30_rendiciones', 'url1' => '/cfpp30_rendiciones/guardar', 'update1'=>'principal', 'id'=>'save'));?> &nbsp;
+<?= $sisap->buttonTagRemote('/cfpp30_rendiciones/editar/', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/cfpp30_rendiciones/editar/', 'update1'=>'principal_cfpp30_rendiciones' ))?>&nbsp;
+<?= $sisap->buttonTagRemote('/cfpp30_rendiciones/editar/', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Anulacion'), array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cfpp30_rendiciones/anular/', 'update1'=>'principal_cfpp30_rendiciones' ))?>&nbsp;
+<?= $sisap->buttonTagRemote('/cfpp30_rendiciones/consulta', array ('type'=>'button', 'value'=>'Consultar'), array('url1' => '/cfpp30_rendiciones/consulta_index/', 'update1'=>'principal_cfpp30_rendiciones'))?>&nbsp;
+<?= $sisap->buttonTagRemote('/cfpp30_rendiciones/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+</center>
+</div>
+</form>
+<?= $sisap->CloseTable(); ?>

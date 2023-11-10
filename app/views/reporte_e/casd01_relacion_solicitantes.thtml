@@ -1,0 +1,331 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla("",true,"RELACIÓN DE SOLICITANTES","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[organismo]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/casd01_relacion_solicitantes/si'); ?>" onsubmit="return casd01_reporte_solicitudes()" >
+
+
+	<?= $sisap->radioTagRemote('casp01/tipo_peticion', array('1'=>'Nacional', '2'=>'Institucion','3'=>'Dependencia'), array('url1'=>'/reporte_e/casd01_relacion_solicitantes/', 'update1'=>'vacio','value'=>'','disabled'=>'','id'=>'peticion'),null,$opc='2');?>
+	<br><br>
+	<center>Ordenado por:</center>
+	<br>
+	<?= $sisap->radioTagRemote('casp01/solicitud', array('1'=>'C&eacute;dula', '2'=>'Apellidos y Nombres','3'=>'Ambito','4'=>'Zonificaci&oacute;n','5'=>'Vivienda','6'=>'Ubicaci&oacute;n geogr&aacute;fica'), array('url1'=>'/reporte_e/casd01_relacion_solicitantes', 'update1'=>'vacio','value'=>'','disabled'=>'','id'=>'tiempo'),null,$opc='1');?>
+
+	<br><br>
+	<center>PERIODO DE LA INFORMACIÓN</center>
+	<br>
+	<?= $sisap->radioTagRemote('casp01/periodo', array('1'=>'Todo', '2'=>'Año especifico','3'=>'Por rango de fechas'), array('url1'=>'/reporte_e/casd01_relacion_solicitantes/periodo', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'periodo'),null,$opc='1');?>
+
+	<br>
+	<div id="cargador"></div>
+
+	<div id="persona"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+<? }else if(isset($muestra)){
+	if($muestra==2){ ?>
+		<br>
+			<center>Año:<input name="data[casp01][ano]"  value="" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  /></center>
+  <?}else if($muestra==3){ ?>
+		<br>
+	<table width="50%">
+		<tr>
+			<td align="right">Desde:</td>
+			<td> <?= $sisap->input_fecha('casp01','fecha_inicial','fecha_inicial');?> </td>
+			<td align="right">Hasta: </td>
+			<td><?= $sisap->input_fecha('casp01','fecha_final','fecha_final');?> </td>
+		</tr>
+	</table>
+  <?}?>
+
+
+
+<? }else if(isset($ir) && $ir=='si'){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+
+	class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$this->top_reporte($titulo_A = "RELACIÓN DE SOLICITANTES", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"390", "Z"=>"12"));
+
+		$this->Cell(0,0,"",'T',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(20,4,"CÉDULA",'RL',0,'C');
+		$this->Cell(28,4,"APELLIDOS Y",'R',0,'C');
+		$this->Cell(15,4,"FECHA",'R',0,'C');
+		$this->Cell(18,4,"",'R',0,'C');
+		$this->Cell(18,4,"",'R',0,'C');
+		$this->Cell(19,4,"TIPO",'R',0,'C');
+		$this->Cell(19,4,"",'R',0,'C');
+		$this->Cell(19,4,"",'R',0,'C');
+		$this->Cell(25,4,"",'R',0,'C');
+		$this->Cell(25,4,"CENTRO",'R',0,'C');
+		$this->Cell(38,4,"",'R',0,'C');
+		$this->Cell(18,4,"TELEFONOS",'R',0,'C');
+		$this->Cell(15,4,"FECHA DE",'R',0,'C');
+		$this->Cell(17,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(17,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(17,4,"MONTO DE",'R',0,'C');
+		$this->Cell(17,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(19,4,"NÚMERO",'R',0,'C');//NUMERO SOLICITUDES FAMILIARES
+		$this->Cell(17,4,"NÚMERO",'R',0,'C');//NUMERO AYUDAS FAMILIARES
+		$this->Cell(0,4,"MONTO",'R',1,'C');//MONTO AYUDAS FAMILIARES
+
+		$this->Cell(20,1,"IDENTIDAD",'RL',0,'C');
+		$this->Cell(28,1,"NOMBRES",'R',0,'C');
+		$this->Cell(15,1,"NACIMIENTO",'R',0,'C');
+		$this->Cell(18,1,"AMBITO",'R',0,'C');
+		$this->Cell(18,1,"ZONIFICACIÓN",'R',0,'C');
+		$this->Cell(19,1,"VIVIENDA",'R',0,'C');
+		$this->Cell(19,1,"ESTADO",'R',0,'C');
+		$this->Cell(19,1,"MÚNICIPIO",'R',0,'C');
+		$this->Cell(25,1,"PARROQUIA",'R',0,'C');
+		$this->Cell(25,1,"POBLADO",'R',0,'C');
+		$this->Cell(38,1,"DIRECCIÓN",'R',0,'C');
+		$this->Cell(18,1,"FIJOS",'R',0,'C');
+		$this->Cell(15,1,"INSCRIPCION",'R',0,'C');
+		$this->Cell(17,1,"SOLICITUDES",'R',0,'C');
+		$this->Cell(17,1,"AYUDAS",'R',0,'C');
+		$this->Cell(17,1,"AYUDAS",'R',0,'C');
+		$this->Cell(17,1,"FAMILIARES",'R',0,'C');
+		$this->Cell(19,1,"SOLICITUDES DE",'R',0,'C');//NUMERO SOLICITUDES FAMILIARES
+		$this->Cell(17,1,"AYUDAS A",'R',0,'C');//NUMERO AYUDAS FAMILIARES
+		$this->Cell(0,1,"AYUDAS A",'R',1,'C');//MONTO AYUDAS FAMILIARES
+
+		$this->Cell(20,4,"",'RBL',0,'C');
+		$this->Cell(28,4,"",'RB',0,'C');
+		$this->Cell(15,4,"",'RB',0,'C');
+		$this->Cell(18,4,"",'RB',0,'C');
+		$this->Cell(18,4,"",'RB',0,'C');
+		$this->Cell(19,4,"",'RB',0,'C');
+		$this->Cell(19,4,"",'RB',0,'C');
+		$this->Cell(19,4,"",'RB',0,'C');
+		$this->Cell(25,4,"",'RB',0,'C');
+		$this->Cell(25,4,"",'RB',0,'C');
+		$this->Cell(38,4,"",'RB',0,'C');
+		$this->Cell(18,4,"CELULARES",'RB',0,'C');
+		$this->Cell(15,4,"",'RB',0,'C');
+		$this->Cell(17,4,"",'RB',0,'C');
+		$this->Cell(17,4,"",'RB',0,'C');
+		$this->Cell(17,4,"",'RB',0,'C');
+		$this->Cell(17,4,"",'RB',0,'C');
+		$this->Cell(19,4,"FAMILIARES",'RB',0,'C');//NUMERO SOLICITUDES FAMILIARES
+		$this->Cell(17,4,"FAMILIARES",'RB',0,'C');//NUMERO AYUDAS FAMILIARES
+		$this->Cell(0,4,"FAMILIARES",'RB',1,'C');//MONTO AYUDAS FAMILIARES
+
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','A3');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+for($i=0;$i<count($datos);$i++){
+
+$denominacion=$datos[$i][0]['direccion_habitacion'];
+$long=strlen($denominacion);
+	if($long<=45){//echo "a";
+		$height=7;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=9;
+	}else if($long>90 && $long<=145){//echo "c";
+		$height=14;
+	}else if($long>145 && $long<=170){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=415) {//echo "h";
+		$height=26;
+	}else{//echo "i";
+		$height=28;
+	}
+		$pdf->SetFont('vera','',5);
+		if($datos[$i][0]['cedula_identidad']==1)$ambito='URBANO'; else $ambito='RURAL';
+		switch($datos[$i][0]['cod_zona']){
+		case 1:
+			$zona='URBANIZACION';
+		break;
+		case 2:
+			$zona='BARRIO';
+		break;
+		case 3:
+			$zona='CASERIO';
+		break;
+		case 4:
+			$zona='COMUNA';
+		break;
+		case 5:
+			$zona='VIALIDAD';
+		break;
+	}
+
+	switch($datos[$i][0]['cod_vivienda']){
+		case 1:
+			$vivienda='QUINTA';
+		break;
+		case 2:
+			$vivienda='CASA-QUINTA';
+		break;
+		case 3:
+			$vivienda='CASA POPULAR';
+		break;
+		case 4:
+			$vivienda='VIVIENDA POPULAR';
+		break;
+		case 5:
+			$vivienda='RANCHO';
+		break;
+		case 6:
+			$vivienda='OTRO';
+		break;
+		case 7:
+			$vivienda='NINGUNO';
+		break;
+	}
+
+
+		$pdf->Cell(20,$height,$datos[$i][0]['cedula_identidad'],'RTL',0,'C');
+//		$pdf->Cell(28,$height,$datos[$i][0]['apellidos_nombres'],'RT',0,'L');
+		$pdf->Cell(27,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(27,2,$datos[$i][0]['apellidos_nombres'],'','L');//DENOMINACION
+		$varX =$varX+27;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos[$i][0]['fecha_nacimiento']),'R',0,'C');
+		$pdf->Cell(18,$height,$ambito,'R',0,'C');
+		$pdf->Cell(18,$height,$zona,'R',0,'C');
+		$pdf->Cell(19,$height,$vivienda,'R',0,'C');
+
+//		$pdf->Cell(19,$height,$datos[$i][0]['denominacion_estado'],'RT',0,'L');
+		$pdf->Cell(18,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(18,2,$datos[$i][0]['denominacion_estado'],'','L');//DENOMINACION
+		$varX =$varX+18;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+//		$pdf->Cell(19,$height,$datos[$i][0]['denominacion_municipio'],'RT',0,'L');
+		$pdf->Cell(18,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(18,2,$datos[$i][0]['denominacion_municipio'],'','L');//DENOMINACION
+		$varX =$varX+18;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+//		$pdf->Cell(25,$height,$datos[$i][0]['denominacion_parroquia'],'RT',0,'L');
+		$pdf->Cell(24,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(24,2,$datos[$i][0]['denominacion_parroquia'],'','L');//DENOMINACION
+		$varX =$varX+24;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+//		$pdf->Cell(25,$height,$datos[$i][0]['denominacion_centro'],'RT',0,'L');
+		$pdf->Cell(24,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(24,2,$datos[$i][0]['denominacion_centro'],'','L');//DENOMINACION
+		$varX =$varX+24;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+//		$pdf->Cell(38,$height,$datos[$i][0]['direccion_habitacion'],'RT',0,'L');
+		$pdf->Cell(37,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(37,2,$datos[$i][0]['direccion_habitacion'],'','L');//DENOMINACION
+		$varX =$varX+37;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(1,$height,"",'RB',0,'L');
+
+		//$pdf->Cell(18,$height,$datos[$i][0]['telefonos_fijos']." ".$datos[$i][0]['telefonos_movil'],'RT',0,'L');
+		$pdf->Cell(18,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(18,2,$datos[$i][0]['telefonos_fijos']." ".$datos[$i][0]['telefonos_movil'],'','L');//DENOMINACION
+		$varX =$varX+18;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+		if($datos[$i][0]['numero_solicitudes']==0)$num_solicitudes=''; else $num_solicitudes=$datos[$i][0]['numero_solicitudes'];
+
+		if($datos[$i][0]['numero_ayudas']==0)$num_ayudas=''; else $num_ayudas=$datos[$i][0]['numero_ayudas'];
+
+		if($datos[$i][0]['monto_ayudas']==0)$monto_ayudas=''; else $monto_ayudas=$sisap->Formato2($datos[$i][0]['monto_ayudas']);
+
+		if($datos[$i][0]['numero_solicitudes_familiares']==0)$num_soli_familia=''; else $num_soli_familia=$datos[$i][0]['numero_solicitudes_familiares'];
+
+		if($datos[$i][0]['numero_ayudas_familiares']==0)$num_ayu_familia=''; else $num_ayu_familia=$datos[$i][0]['numero_ayudas_familiares'];
+
+		if($datos[$i][0]['monto_ayudas_familiares']==0)$monto_ayudas_familia=''; else $monto_ayudas_familia=$sisap->Formato2($datos[$i][0]['monto_ayudas_familiares']);
+
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos[$i][0]['fecha_inscripcion']),'RL',0,'C');
+		$pdf->Cell(17,$height,$num_solicitudes,'R',0,'C');
+		$pdf->Cell(17,$height,$num_ayudas,'R',0,'C');
+		$pdf->Cell(17,$height,$monto_ayudas,'R',0,'R');
+		$pdf->Cell(17,$height,$datos[$i][0]['numero_familiares'],'R',0,'C');
+		$pdf->Cell(19,$height,$num_soli_familia,'R',0,'C');//NUMERO SOLICITUDES FAMILIARES
+		$pdf->Cell(17,$height,$num_ayu_familia,'R',0,'C');//NUMERO AYUDAS FAMILIARESnumero_ayudas_familiares
+		$pdf->Cell(0,$height,$monto_ayudas_familia,'R',1,'R');//MONTO AYUDAS FAMILIARES
+		$pdf->Cell(0,0,"",'T',1,'R');
+
+}//FIN FOR
+		$pdf->Cell(0,0,"",'T',1,'R');
+
+
+
+
+$pdf->Output('Relacion_de_solicitantes'.'.pdf','D');
+
+}

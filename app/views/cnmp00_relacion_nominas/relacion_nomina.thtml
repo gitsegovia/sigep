@@ -1,0 +1,333 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+	$_SESSION['depproximo_re'] = 1;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetTextColor(0, 0, 0);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+		$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,4,"",'RL',1,'C');
+		$this->SetFont('vera','BI',8);
+		$this->SetTextColor(110, 110, 110);
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','BI',8);
+		$this->Cell(0,3,"RELACIÓN DE NÓMINAS POR DEPENDENCIAS",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','B',6);
+        $this->SetTextColor(120, 150, 190);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'L');
+
+		$this->SetTextColor(0, 0, 0);
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 240;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+
+// ---------------- **** CAMPOS **** -------------------
+
+	if($_SESSION['depproximo_re'] != 1){
+		$this->SetFont('vera','B',6);
+		$this->Cell(11,3,"CÓDIGO",'TL',0,'C');
+		$this->Cell(80,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"COMISIÓN",'TL',0,'C');
+		$this->Cell(17,3,"",'TL',0,'C');
+		$this->Cell(18,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(15,3,"",'TL',0,'C');
+		$this->Cell(0,3,"",'TLR',1,'C');
+
+		$this->Cell(11,3,"NÓMINA",'LB',0,'C');
+		$this->Cell(80,3,"DENOMINACIÓN DE LA NÓMINA",'LB',0,'C');
+		$this->Cell(15,3,"TOTAL",'LB',0,'C');
+		$this->Cell(15,3,"VACANTES",'LB',0,'C');
+		$this->Cell(15,3,"ACTIVOS",'LB',0,'C');
+		$this->Cell(15,3,"PERMISO",'LB',0,'C');
+		$this->Cell(15,3,"SERVICIO",'LB',0,'C');
+		$this->Cell(17,3,"VACACIONES",'LB',0,'C');
+		$this->Cell(18,3,"SUSPENDIDOS",'LB',0,'C');
+		$this->Cell(15,3,"RETIRADOS",'LB',0,'C');
+		$this->Cell(15,3,"REPOSO",'LB',0,'C');
+		$this->Cell(15,3,"FEMENINO",'LB',0,'C');
+		$this->Cell(0,3,"MASCULINO",'LBR',1,'C');
+	}
+	}
+
+	function Footer(){
+
+	}
+
+}
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(8);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$_SESSION['depproximo_re'] = 2;
+
+	if(isset($datos_dnomina) && !empty($datos_dnomina)){
+
+		$f_totales = array(1=>0, 2=>0, 3=>0, 4=>0, 5=>0, 6=>0, 7=>0, 8=>0, 9=>0, 10=>0, 11=>0);
+
+		// $f_totales_g = array(1=>0, 2=>0, 3=>0, 4=>0, 5=>0, 6=>0, 7=>0, 8=>0, 9=>0, 10=>0, 11=>0);
+
+		$pasa = $datos_dnomina[0]['v_cnmd06_fichas_vision']['cod_dep'];
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,4,"",'',1,'C');
+				$pdf->MultiCell(0,3,"Dependencia: ".mascara($datos_dnomina[0]['v_cnmd06_fichas_vision']['cod_dep'],4)." - ".$datos_dnomina[0]['v_cnmd06_fichas_vision']['dependencia'],'','J');
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(11,3,"CÓDIGO",'TL',0,'C');
+				$pdf->Cell(80,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"COMISIÓN",'TL',0,'C');
+				$pdf->Cell(17,3,"",'TL',0,'C');
+				$pdf->Cell(18,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(0,3,"",'TLR',1,'C');
+
+				$pdf->Cell(11,3,"NÓMINA",'LB',0,'C');
+				$pdf->Cell(80,3,"DENOMINACIÓN DE LA NÓMINA",'LB',0,'C');
+				$pdf->Cell(15,3,"TOTAL",'LB',0,'C');
+				$pdf->Cell(15,3,"VACANTES",'LB',0,'C');
+				$pdf->Cell(15,3,"ACTIVOS",'LB',0,'C');
+				$pdf->Cell(15,3,"PERMISO",'LB',0,'C');
+				$pdf->Cell(15,3,"SERVICIO",'LB',0,'C');
+				$pdf->Cell(17,3,"VACACIONES",'LB',0,'C');
+				$pdf->Cell(18,3,"SUSPENDIDOS",'LB',0,'C');
+				$pdf->Cell(15,3,"RETIRADOS",'LB',0,'C');
+				$pdf->Cell(15,3,"REPOSO",'LB',0,'C');
+				$pdf->Cell(15,3,"FEMENINO",'LB',0,'C');
+				$pdf->Cell(0,3,"MASCULINO",'LBR',1,'C');
+				$pdf->SetFont('vera','',6);
+
+		foreach($datos_dnomina as $p => $datos_impn){
+			extract($datos_impn["v_cnmd06_fichas_vision"]);
+
+			$prox = isset($datos_dnomina[$p+1]['v_cnmd06_fichas_vision']['cod_dep']) ? $datos_dnomina[$p+1]['v_cnmd06_fichas_vision']['cod_dep'] : $datos_dnomina[$p]['v_cnmd06_fichas_vision']['cod_dep'];
+
+			if($cod_dep==$prox){
+				$_SESSION['depproximo_re'] = 2;
+
+			$pdf->Cell(11,6.5,mascara($cod_tipo_nomina,3),'LR',0,'C');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->Cell(80,1,"",'',2,'C');
+		    $pdf->MultiCell(79,3,$denominacion_nomina,'','J');
+		    $varX = $varX+80;
+		    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(15,6.5,$total,'L',0,'C');
+			$pdf->Cell(15,6.5,$vacantes,'L',0,'C');
+			$pdf->Cell(15,6.5,$activo,'L',0,'C');
+			$pdf->Cell(15,6.5,$permiso_no_remunerado,'L',0,'C');
+			$pdf->Cell(15,6.5,$comision_de_servicio,'L',0,'C');
+			$pdf->Cell(17,6.5,$vacaciones,'L',0,'C');
+			$pdf->Cell(18,6.5,$suspendidos,'L',0,'C');
+			$pdf->Cell(15,6.5,$retirados,'L',0,'C');
+			$pdf->Cell(15,6.5,$reposos,'L',0,'C');
+			$pdf->Cell(15,6.5,$femenino,'L',0,'C');
+			$pdf->Cell(0,6.5,$masculino,'LR',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+
+			$f_totales[1] += $total; $f_totales[2] += $vacantes; $f_totales[3] += $activo; $f_totales[4] += $permiso_no_remunerado; $f_totales[5] += $comision_de_servicio;
+			$f_totales[6] += $vacaciones; $f_totales[7] += $suspendidos; $f_totales[8] += $retirados; $f_totales[9] += $reposos; $f_totales[10] += $femenino; $f_totales[11] += $masculino;
+
+			/* $f_totales_g[1] += $total; $f_totales_g[2] += $vacantes; $f_totales_g[3] += $activo; $f_totales_g[4] += $permiso_no_remunerado; $f_totales_g[5] += $comision_de_servicio;
+			$f_totales_g[6] += $vacaciones; $f_totales_g[7] += $suspendidos; $f_totales_g[8] += $retirados; $f_totales_g[9] += $reposos; $f_totales_g[10] += $femenino; $f_totales_g[11] += $masculino;
+			*/
+
+			}else{
+				$_SESSION['depproximo_re'] = 1;
+
+			$pdf->Cell(11,6.5,mascara($cod_tipo_nomina,3),'LR',0,'C');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->Cell(80,1,"",'',2,'C');
+		    $pdf->MultiCell(79,3,$denominacion_nomina,'','J');
+		    $varX = $varX+80;
+		    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(15,6.5,$total,'L',0,'C');
+			$pdf->Cell(15,6.5,$vacantes,'L',0,'C');
+			$pdf->Cell(15,6.5,$activo,'L',0,'C');
+			$pdf->Cell(15,6.5,$permiso_no_remunerado,'L',0,'C');
+			$pdf->Cell(15,6.5,$comision_de_servicio,'L',0,'C');
+			$pdf->Cell(17,6.5,$vacaciones,'L',0,'C');
+			$pdf->Cell(18,6.5,$suspendidos,'L',0,'C');
+			$pdf->Cell(15,6.5,$retirados,'L',0,'C');
+			$pdf->Cell(15,6.5,$reposos,'L',0,'C');
+			$pdf->Cell(15,6.5,$femenino,'L',0,'C');
+			$pdf->Cell(0,6.5,$masculino,'LR',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+
+			$f_totales[1] += $total; $f_totales[2] += $vacantes; $f_totales[3] += $activo; $f_totales[4] += $permiso_no_remunerado; $f_totales[5] += $comision_de_servicio;
+			$f_totales[6] += $vacaciones; $f_totales[7] += $suspendidos; $f_totales[8] += $retirados; $f_totales[9] += $reposos; $f_totales[10] += $femenino; $f_totales[11] += $masculino;
+
+			/* $f_totales_g[1] += $total; $f_totales_g[2] += $vacantes; $f_totales_g[3] += $activo; $f_totales_g[4] += $permiso_no_remunerado; $f_totales_g[5] += $comision_de_servicio;
+			$f_totales_g[6] += $vacaciones; $f_totales_g[7] += $suspendidos; $f_totales_g[8] += $retirados; $f_totales_g[9] += $reposos; $f_totales_g[10] += $femenino; $f_totales_g[11] += $masculino;
+			*/
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->SetTextColor(120, 0, 0);
+				$pdf->Cell(91,6.5,"TOTALES",'L',0,'R');
+				$pdf->Cell(15,6.5,$f_totales[1],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[2],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[3],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[4],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[5],'L',0,'C');
+				$pdf->Cell(17,6.5,$f_totales[6],'L',0,'C');
+				$pdf->Cell(18,6.5,$f_totales[7],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[8],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[9],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[10],'L',0,'C');
+				$pdf->Cell(0,6.5,$f_totales[11],'LR',1,'C');
+				$pdf->Cell(0,0,"",'T',1,'C');
+				$pdf->SetTextColor(0, 0, 0);
+
+				$f_totales = array(1=>0, 2=>0, 3=>0, 4=>0, 5=>0, 6=>0, 7=>0, 8=>0, 9=>0, 10=>0, 11=>0);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,10,"",'',1,'C');
+				$pdf->MultiCell(0,3,"Dependencia: ".mascara($datos_dnomina[$p+1]['v_cnmd06_fichas_vision']['cod_dep'],4)." - ".$datos_dnomina[$p+1]['v_cnmd06_fichas_vision']['dependencia'],'','J');
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(11,3,"CÓDIGO",'TL',0,'C');
+				$pdf->Cell(80,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"COMISIÓN",'TL',0,'C');
+				$pdf->Cell(17,3,"",'TL',0,'C');
+				$pdf->Cell(18,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(15,3,"",'TL',0,'C');
+				$pdf->Cell(0,3,"",'TLR',1,'C');
+
+				$pdf->Cell(11,3,"NÓMINA",'LB',0,'C');
+				$pdf->Cell(80,3,"DENOMINACIÓN DE LA NÓMINA",'LB',0,'C');
+				$pdf->Cell(15,3,"TOTAL",'LB',0,'C');
+				$pdf->Cell(15,3,"VACANTES",'LB',0,'C');
+				$pdf->Cell(15,3,"ACTIVOS",'LB',0,'C');
+				$pdf->Cell(15,3,"PERMISO",'LB',0,'C');
+				$pdf->Cell(15,3,"SERVICIO",'LB',0,'C');
+				$pdf->Cell(17,3,"VACACIONES",'LB',0,'C');
+				$pdf->Cell(18,3,"SUSPENDIDOS",'LB',0,'C');
+				$pdf->Cell(15,3,"RETIRADOS",'LB',0,'C');
+				$pdf->Cell(15,3,"REPOSO",'LB',0,'C');
+				$pdf->Cell(15,3,"FEMENINO",'LB',0,'C');
+				$pdf->Cell(0,3,"MASCULINO",'LBR',1,'C');
+				$pdf->SetFont('vera','',6);
+
+			}
+		}
+
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->SetTextColor(120, 0, 0);
+				$pdf->Cell(91,6.5,"TOTALES",'L',0,'R');
+				$pdf->Cell(15,6.5,$f_totales[1],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[2],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[3],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[4],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[5],'L',0,'C');
+				$pdf->Cell(17,6.5,$f_totales[6],'L',0,'C');
+				$pdf->Cell(18,6.5,$f_totales[7],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[8],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[9],'L',0,'C');
+				$pdf->Cell(15,6.5,$f_totales[10],'L',0,'C');
+				$pdf->Cell(0,6.5,$f_totales[11],'LR',1,'C');
+				$pdf->Cell(0,0,"",'T',1,'C');
+				$pdf->SetTextColor(0, 0, 0);
+
+/*
+		if(isset($tipe_reporte) && ($tipe_reporte==1 || $tipe_reporte=='1')){
+
+			$pdf->Cell(0,12,"",'',1,'C');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(0,7,"T O T A L    G L O B A L",'TLBR',1,'C');
+			$pdf->SetFont('vera','B',6);
+				$pdf->Cell(30,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"COMISIÓN",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(23,3,"",'TL',0,'C');
+				$pdf->Cell(0,3,"",'TLR',1,'C');
+
+				$pdf->Cell(30,3,"TOTAL",'LB',0,'C');
+				$pdf->Cell(23,3,"VACANTES",'LB',0,'C');
+				$pdf->Cell(23,3,"ACTIVOS",'LB',0,'C');
+				$pdf->Cell(23,3,"PERMISO",'LB',0,'C');
+				$pdf->Cell(23,3,"SERVICIO",'LB',0,'C');
+				$pdf->Cell(23,3,"VACACIONES",'LB',0,'C');
+				$pdf->Cell(23,3,"SUSPENDIDOS",'LB',0,'C');
+				$pdf->Cell(23,3,"RETIRADOS",'LB',0,'C');
+				$pdf->Cell(23,3,"REPOSO",'LB',0,'C');
+				$pdf->Cell(23,3,"FEMENINO",'LB',0,'C');
+				$pdf->Cell(0,3,"MASCULINO",'LBR',1,'C');
+
+			$pdf->Cell(30,6.5,$f_totales_g[1],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[2],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[3],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[4],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[5],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[6],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[7],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[8],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[9],'L',0,'C');
+			$pdf->Cell(23,6.5,$f_totales_g[10],'L',0,'C');
+			$pdf->Cell(0,6.5,$f_totales_g[11],'LR',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+		}
+*/
+
+	}else{
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->SetTextColor(120, 0, 0);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+	}
+
+	$pdf->Output('Relacion_Nomina_'.date("d-m-Y_h_ia").".pdf",'D');
+
+?>

@@ -1,0 +1,243 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}?>
+
+
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" CLASS="TR_NEGRO">
+<tr bgcolor="#333">
+    <td class="td4" width="50">A&ntilde;o</td>
+    <td class="td4" width="50">Sector</td>
+    <td class="td4" width="50">Prog</td>
+    <td class="td4" width="50">Sub<br>Prog</td>
+    <td class="td4" width="50">Proy</td>
+    <td class="td4" width="90">Actividad<br> u Obra</td>
+    <td class="td4" width="50">Partida</td>
+    <td class="td4" width="50">Gener</td>
+    <td class="td4" width="50">Espec</td>
+    <td class="td4" width="50">Sub<br>Espec</td>
+    <td class="td4" width="90">Auxiliar</td>
+    <td class="td4"  width="120">Monto actual</td>
+    <td class="td4"  width="130">Monto pago</td>
+</tr>
+
+<?php
+
+ 	$i=0;
+ 	$total=0;
+
+ if(isset($datos_orden_compra_partidas)){
+  if($datos_orden_compra_partidas!=null){
+    foreach($datos_orden_compra_partidas as $ve){
+    	//print_r($ve);
+
+    	if($i%2==0){ 		// onclick="new Effect.Highlight(this);"
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center"><?= $ve['cscd04_ordencompra_partidas']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cscd04_ordencompra_partidas']['cod_partida'], -2), substr($ve['cscd04_ordencompra_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cscd04_ordencompra_partidas']['cod_auxiliar']) ?></td>
+ <td class="td2" style="padding-right:5px; text-align:right"  >
+ 	<?php
+    	$monto_actual = $ve['cscd04_ordencompra_partidas']['monto'] + ($ve['cscd04_ordencompra_partidas']['aumento'] - $ve['cscd04_ordencompra_partidas']['disminucion']) - ($ve['cscd04_ordencompra_partidas']['anticipo'] + $ve['cscd04_ordencompra_partidas']['cancelado']);
+    	//echo "el monto actual es: ".$monto_actual;
+    ?>
+       <?= $sisap->Formato2($monto_actual) ?></td>
+       <input  id="<?= "monto_actual_".$i ?>" type="hidden" value="<?= $sisap->Formato2($monto_actual) ?>" />
+    </td>
+
+    <td class="td2center" height="22"  width="2">
+
+      <?php
+
+          $concate = $sisap->AddCero2(substr($ve['cscd04_ordencompra_partidas']['cod_partida'], -2), substr($ve['cscd04_ordencompra_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_espec']);
+
+       if($concate=="4.03.18.01.00"){ ?>
+
+        <input name="data[cscd04_ordencompra_autorizacion][<?= "partida_iva_".$i ?>]"  disabled style="text-align:right"  type="hidden" size="15"  id="<?= "partida_iva_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('<?= "partida_iva_".$i ?>'); cscp04_ordencompra_autorizacion_pagos_colocar_iva('<?= "partida_iva_".$i ?>', '<?= $i ?>');"/>
+        <input name="data[cscd04_ordencompra_autorizacion][<?= "pago_".$i ?>]"  class='inputtext' disabled style="text-align:right"  type="text" size="15"  id="<?= "pago_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}   cscp04_ordencompra_autorizacion_pagos_monto_id_editar_2('<?= "pago_".$i ?>', '<?= $i ?>'); cscp04_ordencompra_autorizacion_pagos_colocar_iva('<?= "pago_".$i ?>', '<?= $i ?>'); moneda('<?= "pago_".$i ?>');"/>
+
+       <?php }else{ ?>
+
+          <input name="data[cscd04_ordencompra_autorizacion][<?= "pago_".$i ?>]" class='inputtext'  disabled style="text-align:right"  type="text" size="15"  id="<?= "pago_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  cscp04_ordencompra_autorizacion_pagos_monto_id_editar_2('<?= "pago_".$i ?>', '<?= $i ?>'); moneda('<?= "pago_".$i ?>');"/>
+
+       <?php }//fin else ?>
+
+    </td></tr>
+
+<?php
+
+   }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center"><?= $ve['cscd04_ordencompra_partidas']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cscd04_ordencompra_partidas']['cod_partida'], -2), substr($ve['cscd04_ordencompra_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cscd04_ordencompra_partidas']['cod_auxiliar']) ?></td>
+   <td class="td2" style="padding-right:5px; text-align:right"  >
+   	<?php
+    	$monto_actual = $ve['cscd04_ordencompra_partidas']['monto'] + ($ve['cscd04_ordencompra_partidas']['aumento'] - $ve['cscd04_ordencompra_partidas']['disminucion']) - ($ve['cscd04_ordencompra_partidas']['anticipo'] + $ve['cscd04_ordencompra_partidas']['cancelado']);
+    	//echo "el monto actual es: ".$monto_actual;
+    ?>
+       <?= $sisap->Formato2($monto_actual) ?></td>
+       <input  id="<?= "monto_actual_".$i ?>" type="hidden" value="<?= $sisap->Formato2($monto_actual) ?>" />
+    </td>
+
+    <td class="td2center" height="22"  width="2">
+
+       <?php
+
+          $concate = $sisap->AddCero2(substr($ve['cscd04_ordencompra_partidas']['cod_partida'], -2), substr($ve['cscd04_ordencompra_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cscd04_ordencompra_partidas']['cod_sub_espec']);
+
+       if($concate=="4.03.18.01.00"){ ?>
+
+        <input name="data[cscd04_ordencompra_autorizacion][<?= "partida_iva_".$i ?>]"  disabled style="text-align:right"  type="hidden" size="15"  id="<?= "partida_iva_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('<?= "partida_iva_".$i ?>'); cscp04_ordencompra_autorizacion_pagos_colocar_iva('<?= "partida_iva_".$i ?>', '<?= $i ?>');"/>
+        <input name="data[cscd04_ordencompra_autorizacion][<?= "pago_".$i ?>]"  class='inputtext' disabled style="text-align:right"  type="text" size="15"  id="<?= "pago_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  cscp04_ordencompra_autorizacion_pagos_monto_id_editar_2('<?= "pago_".$i ?>', '<?= $i ?>'); cscp04_ordencompra_autorizacion_pagos_colocar_iva('<?= "pago_".$i ?>', '<?= $i ?>'); moneda('<?= "pago_".$i ?>');"/>
+
+       <?php }else{ ?>
+
+          <input name="data[cscd04_ordencompra_autorizacion][<?= "pago_".$i ?>]"  class='inputtext' disabled style="text-align:right"  type="text" size="15"  id="<?= "pago_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  cscp04_ordencompra_autorizacion_pagos_monto_id_editar_2('<?= "pago_".$i ?>', '<?= $i ?>'); moneda('<?= "pago_".$i ?>');"/>
+
+       <?php }//fin else ?>
+
+    </td>
+</tr>
+
+       <?php
+
+    	}//fine
+
+    	$i++; $total += $ve['cscd04_ordencompra_partidas']['monto'];
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+        <?
+ }
+
+ //$i--;
+
+?>
+
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+
+</table>
+</div>
+
+
+
+
+
+

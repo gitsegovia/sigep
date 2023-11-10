@@ -1,0 +1,131 @@
+<?php
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+if(!empty($datos_op)){
+	$_SESSION['ano_documento'] = $datos_op[0]['v_cnmp99_historica_orden_pago_perma']['ano_documento'];
+	$_SESSION['numero_nomina'] = $datos_op[0]['v_cnmp99_historica_orden_pago_perma']['numero_nomina'];
+	$_SESSION['cod_nomina'] = $datos_op[0]['v_cnmp99_historica_orden_pago_perma']['cod_tipo_nomina'];
+	$_SESSION['deno_nomina'] = $datos_op[0]['v_cnmp99_historica_orden_pago_perma']['denominacion'];
+}else{
+	$_SESSION['ano_documento'] = "";
+	$_SESSION['numero_nomina'] = "";
+	$_SESSION['cod_nomina'] = "";
+	$_SESSION['deno_nomina'] = "";
+}
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'P', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("ORDENES DE PAGO REALIZADAS EN EL PROCESO DE NÓMINA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"190"));
+
+			$this->SetFont('vera', 'B', 7);
+    		$this->Cell(15, 5, 'AÑO', 'TRBL', 0, 'C');
+    		$this->Cell(40, 5, 'NÚMERO NÓMINA', 'TRB', 0, 'C');
+    		$this->Cell(15, 5, 'CÓDIGO', 'TRB', 0, 'C');
+    		$this->Cell(0, 5, 'DENOMINACIÓN NÓMINA', 'TRB', 1, 'C');
+
+		    $this->Cell(15, 7, "".$_SESSION['ano_documento'], 'RBL', 0, 'C');
+    		$this->Cell(40, 7, "".$_SESSION['numero_nomina'], 'RB', 0, 'C');
+    		$this->Cell(15, 7, "".mascara($_SESSION['cod_nomina'], 3), 'RB', 0, 'C');
+    		$this->Cell(0, 7, "".$_SESSION['deno_nomina'], 'RB', 1, 'L');
+
+			$this->Ln(5);
+
+			$this->Cell(15, 6, "AÑO", 'TLRB', 0, 'C');
+			$this->Cell(25, 6, "ORDEN PAGO", 'TRB', 0, 'C');
+			$this->Cell(135, 6, "BENEFICIARIO", 'TRB', 0, 'C');
+			$this->Cell(0, 6, "MONTO", 'TRB', 1, 'C');
+        }
+
+        function Footer() {
+        }
+
+    function tam_celda($total_char){
+		if($total_char<100){
+			$heigth = 6;
+		}elseif($total_char>=100 && $total_char<200){
+			$heigth = 12;
+		}elseif($total_char>=200 && $total_char<300){
+			$heigth = 18;
+		}elseif($total_char>=300 && $total_char<400){
+			$heigth = 24;
+		}elseif($total_char>=400 && $total_char<500){
+			$heigth = 30;
+		}elseif($total_char>=500 && $total_char<600){
+			$heigth = 36;
+		}elseif($total_char>=600 && $total_char<700){
+			$heigth = 42;
+		}elseif($total_char>=700 && $total_char<800){
+			$heigth = 48;
+		}elseif($total_char>=800 && $total_char<900){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+   	}
+  } // End Of fpdfview ext. TCPDF Class
+
+    $pdf = new fpdfview('P', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+if(!empty($datos_op)){
+	$total_monto = 0;
+    $pdf->SetFont('vera', '', 7);
+	foreach($datos_op as $rdatos_op){
+		$total_monto += $rdatos_op['v_cnmp99_historica_orden_pago_perma']['monto'];
+		$beneficiario = str_replace("\n", "", $rdatos_op['v_cnmp99_historica_orden_pago_perma']['beneficiario']);
+		$total_char = strlen($beneficiario);
+		$theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(15, $theigth, $rdatos_op['v_cnmp99_historica_orden_pago_perma']['ano_orden_pago'], 'LR', 0, 'C');
+				$pdf->Cell(25, $theigth, mascara($rdatos_op['v_cnmp99_historica_orden_pago_perma']['numero_orden_pago'], 6), 'R', 0, 'C');
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $pdf->Cell(135, 1, "", '', 2, 'L');
+                $pdf->MultiCell(135, 3, $beneficiario, '', 'L'); // --------[NOMINA]
+                $varX = $varX + 135;
+                $pdf->SetXY($varX, $varY);
+
+                $pdf->Cell(0, $theigth, $sisap->Formato2($rdatos_op['v_cnmp99_historica_orden_pago_perma']['monto']), 'LR', 1, 'R');
+				$pdf->Cell(0, 0, "", 'T', 1, 'L');
+	} // END FOREACH
+
+	$pdf->SetFont('vera', 'B', 8);
+	$pdf->Cell(160, 8, "TOTAL ORDENES DE PAGO  ", 'TLRB', 0, 'R');
+	$pdf->Cell(15, 8, count($datos_op), 'TRB', 0, 'C');
+	$pdf->Cell(0, 8, $sisap->Formato2($total_monto), 'TRB', 1, 'R');
+
+}else{
+	$pdf->Ln(8);
+	$pdf->SetFont('vera', 'B', 12);
+	$pdf->Cell(0, 30, "NO SE ENCONTRARON DATOS . . .", 'TLRB', 1, 'C');
+}
+
+
+	unset($_SESSION['ano_documento']);
+	unset($_SESSION['numero_nomina']);
+	unset($_SESSION['cod_nomina']);
+	unset($_SESSION['deno_nomina']);
+
+	$pdf->Output('ordenes_pago_emitidas.pdf', 'D');
+
+?>

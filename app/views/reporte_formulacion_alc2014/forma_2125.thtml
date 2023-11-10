@@ -1,0 +1,1101 @@
+<?php
+if(isset($ir)){
+?>
+<?= $sisap->Tabla($entidad_federal,true,"CRÉDITOS PRESUPUESTARIOS DEL PROGRAMA POR ACTIVIDADES A NIVEL DE PARTIDAS Y SUBPARTIDAS",NULL,"950"); ?>
+<div id="actualizar"></div>
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion_alc2014/forma_2125/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cnmp05][ano]"  value="<?= $year ?>" style="text-align:center" id="ano_formular"  style="text-align:center" size="3" readonly  maxlength="4"  onKeyPress="return solonumeros(event);"  /> FORMA: 2125<br><br>
+<?= $sisap->radio_consolidado('cnmp05/consolidacion', array(), '', true)  ?>
+
+<?=$html->radio('reporte/tipo',array('1'=>'Todo','2'=>'Un Sub-programa especifico'),null,array('value'=>'1','id'=>'tipo',"onclick"=>"if(this.value==2){ $('div_sectores').style.display='block';  $('seleccion_1').disabled=''; $('seleccion_2').disabled='';$('seleccion_3').disabled='';$('seleccion_4').disabled='';}else{ $('div_sectores').style.display='none';  $('seleccion_1').disabled='disabled';$('seleccion_2').disabled='disabled';$('seleccion_3').disabled='disabled';$('seleccion_4').disabled='disabled';}"))?>
+<br/><br/>
+<div id="div_sectores"  style="display:none;">
+<table border="0" width="300">
+<tr>
+    <td align="right">Sector:</td>
+    <td id="st_seleccion_1"><?=  $sisap->selectTagRemote('reporte/cod_sector', $vector !='' ? $vector : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/reporte_formulacion/select_reporte_clasificacion/programa', 'update1'=>'st_seleccion_2','id'=>'seleccion_1','class'=>'select100','disabled'=>'disabled','onchange'=>'vacio', true), null, true); ?></td>
+  </tr>
+  <tr>
+    <td align="right">Programa:</td>
+    <td id="st_seleccion_2"><select id="seleccion_2" class="select100" disabled="disabled"></select></td>
+  </tr>
+  <tr>
+    <td align="right">Sub-Programa:</td>
+    <td id="st_seleccion_3"><select id="seleccion_3" disabled="disabled"></select></td>
+  </tr>
+    <tr>
+    <td align="right">Proyecto:</td>
+    <td id="st_seleccion_4"><select id="seleccion_4" disabled="disabled"></select></td>
+  </tr>
+</table></div>
+<br/><br/>
+<?= $html->submit('Generar'); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+<?
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='EXTRAOFICE') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "CRÉDITOS PRESUPUESTARIOS DEL PROGRAMA POR ACTIVIDADES A NIVEL DE PARTIDAS Y SUBPARTIDAS";
+	$titulo_B = "(En Bolívares)";
+    $this->top_reporte22(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'','TRL',0);
+	$this->Cell(17,6,'CÓDIGO','TR',0,'C');
+	$this->Cell(0,6,'D E N O M I N A C I Ó N','TR',1,'C');
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'SECTOR','TRL',0, 'C', true);
+	$this->SetFont('vera','B',8);
+	$this->Cell(17,6,mascara($_SESSION['cod_sector'],2),'TR',0,'C', true);// CÓDIGO DEL SECTOR
+	$this->Cell(0,6,$_SESSION['deno_sector'],'TR',1, 'L', true);// DENOMINACIÓN DEL SECTOR
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'PROGRAMA','TRL',0, 'C', true);
+	$this->SetFont('vera','B',8);
+	$this->Cell(17,6,mascara($_SESSION['cod_programa'],2),'TR',0,'C', true);// CÓDIGO DEL PROGRAMA
+	$this->Cell(0,6,$_SESSION['deno_programa'],'TR',1, 'L', true);// DENOMINACIÓN DEL PROGRAMA
+
+	$this->SetFont('vera','',8);
+	$this->Cell(28,6,'SUBPROGRAMA','TRL',0);
+	$this->SetFont('vera','B',8);
+	$this->Cell(17,6,mascara($_SESSION['cod_sub_prog'],2),'TR',0,'C');// CÓDIGO DEL SUBPROGRAMA
+	$this->Cell(0,6,$_SESSION['deno_sub_prog'],'TR',1);// DENOMINACIÓN DEL SUBPROGRAMA
+
+	if($_SESSION['cod_proyecto']!=0){
+		$this->SetFont('vera','',8);
+		$this->Cell(28,6,'PROYECTO','TRL',0);
+		$this->SetFont('vera','B',8);
+		$this->Cell(17,6,mascara($_SESSION['cod_proyecto'],2),'TR',0,'C');// CÓDIGO DEL proyecto
+		$this->Cell(0,6,$_SESSION['deno_proyecto'],'TR',1);// DENOMINACIÓN DEL proyecto
+	}
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(36+9,5,'CÓDIGOS','TRBL',0,'C');
+
+	$this->Cell(103,5,'','TR',0,'C');
+	$this->Cell(28,5,'','TR',0,'C');
+	$this->Cell(0,5,'A C T I V I D A D E S','TRB',1,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(8,4,'','RL',0,'C');
+	$this->Cell(28+9,4,'SUB PARTIDAS','RB',0,'C');
+
+
+	$this->Cell(103,4,'','R',0,'C');
+	$this->Cell(28,4,'','R',0,'C');
+	$this->SetFont('vera','B',4.5);
+    if($_SESSION['cod_proyecto']!=0){
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 51
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 52
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 53
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 54
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 55
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 56
+	$this->Cell(0,4,' ','R',1,'C');// NOMBRE ACTIV  57
+	}else{
+		$this->multicell_actividad($_SESSION['d_a1'],0,1,0);
+		$this->multicell_actividad($_SESSION['d_a2'],0,0,0);
+		$this->multicell_actividad($_SESSION['d_a3'],0,0,0);
+		$this->multicell_actividad($_SESSION['d_a4'],0,0,0);
+		$this->multicell_actividad($_SESSION['d_a5'],0,0,0);
+		$this->multicell_actividad($_SESSION['d_a6'],0,0,0);
+		$this->multicell_actividad($_SESSION['d_a7'],1,0,1);
+	}
+
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(8,4,'','RL',0,'C');
+	$this->Cell(7,4,'','R',0,'C');
+	$this->Cell(7,4,'','R',0,'C');
+	$this->Cell(7,4,'SUB','R',0,'C');
+	$this->Cell(7,4,'','R',0,'C');
+	$this->Cell(9,4,'','R',0,'C');
+	$this->Cell(103,4,'','R',0,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(28,4,'TOTAL','R',0,'C');
+	$this->SetFont('vera','B',4);
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 51
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 52
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 53
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 54
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 55
+	$this->Cell(28,4,' ','R',0,'C');// NOMBRE ACTIV 56
+	$this->Cell(0,4,' ','R',1,'C');// NOMBRE ACTIV  57
+
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(8,3,'PART','RBL',0,'C');
+	$this->Cell(7,3,'GEN','RB',0,'C');
+	$this->Cell(7,3,'ESP','RB',0,'C');
+	$this->Cell(7,3,'ESP','RB',0,'C');
+	$this->Cell(7,3,'AUX','RB',0,'C');
+	$this->Cell(9,3,'Obra','RB',0,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(103,3,'DENOMINACIÓN','RB',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(28,3,'','RB',0,'C');
+	if($_SESSION['cod_proyecto']!=0){
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(28,3,' ','RB',0,'C');
+		$this->Cell(0,3, ' ','RB',1,'C');
+	}else{
+		$this->Cell(28,3,$_SESSION['a1'],'RB',0,'C');
+		$this->Cell(28,3,$_SESSION['a2'],'RB',0,'C');
+		$this->Cell(28,3,$_SESSION['a3'],'RB',0,'C');
+		$this->Cell(28,3,$_SESSION['a4'],'RB',0,'C');
+		$this->Cell(28,3,$_SESSION['a5'],'RB',0,'C');
+		$this->Cell(28,3,$_SESSION['a6'],'RB',0,'C');
+		$this->Cell(0,3, $_SESSION['a7'],'RB',1,'C');
+	}
+
+
+    }
+
+     function multicell_actividad($deno_var,$saltar,$suma,$resta){
+     	if(strlen($deno_var)>47){
+           $this->SetFont('vera','B',3.8);
+     	}else{
+     		$this->SetFont('vera','B',4.2);
+     	}
+
+     	$varX = $this->GetX();
+		$varY = $this->GetY();
+		$this->Cell(28,1,"",'',2,'C');
+		$this->MultiCell(27,2,$deno_var,'','C');
+		$varX = $varX+27+$suma-$resta;
+		$this->SetXY($varX,$varY);
+	    $this->Cell(1,4,'','L',$saltar,'C');
+     }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2125','',1,'R');
+    }
+
+
+    function celda_partida2($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$denominacion){
+    	//if($cod_proyecto!=0){
+    	    $this->SetFont('vera','B',7);
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',7);
+			}else{
+				$this->SetFont('vera','',7);
+			}
+			$this->Cell(8,$alturad,$cod_partida,'RL',0,'C');// PARTIDA
+			$this->Cell(7,$alturad,$cod_generica1,'R',0,'C');// GEN
+			$this->Cell(7,$alturad,$cod_especifica1,'R',0,'C');// ESPEC
+			$this->Cell(7,$alturad,$cod_sub_espec1,'R',0,'C');// SUB-ESPEC
+			$this->Cell(7,$alturad,$cod_auxiliar1,'R',0,'C');// AUX
+			$this->Cell(9,$alturad,'','R',0,'C');// AUX
+			$this->SetFont('vera','',6);
+			$varX = $this->GetX();
+			$varY = $this->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$this->Cell(103,1,"",'',2,'C');
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',5.5);
+			}else{
+				$this->SetFont('vera','',6);
+			}
+			$this->MultiCell(102,3,$denominacion,'','L');// DENOMINACIÓN
+			$varX = $varX+103;
+			$this->SetXY($varX,$varY);
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',6);
+			}else{
+				$this->SetFont('vera','',6);
+			}
+    	//}//fin if proyecto
+    }
+
+    function celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$denominacion,$monto,$cod_activ){
+    	if($monto!=0){
+    	    $this->SetFont('vera','B',7);
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',7);
+			}else{
+				$this->SetFont('vera','',7);
+			}
+			if($cod_activ!=0 || $cod_activ!=''){
+				$cod_activ_m=mascara($cod_activ,2);
+			}else{
+				$cod_activ_m = $cod_activ;
+			}
+			$this->Cell(8,$alturad,$cod_partida,'RL',0,'C');// PARTIDA
+			$this->Cell(7,$alturad,$cod_generica1,'R',0,'C');// GEN
+			$this->Cell(7,$alturad,$cod_especifica1,'R',0,'C');// ESPEC
+			$this->Cell(7,$alturad,$cod_sub_espec1,'R',0,'C');// SUB-ESPEC
+			$this->Cell(7,$alturad,$cod_auxiliar1,'R',0,'C');// AUX
+			$this->Cell(9,$alturad,$cod_activ_m,'R',0,'C');// AUX
+			$this->SetFont('vera','',6);
+			$varX = $this->GetX();
+			$varY = $this->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$this->Cell(103,1,"",'',2,'C');
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',5.5);
+			}else{
+				$this->SetFont('vera','',6);
+			}
+			$this->MultiCell(102,3,$denominacion,'','L');// DENOMINACIÓN
+			$varX = $varX+103;
+			$this->SetXY($varX,$varY);
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+            	$this->SetFont('vera','B',6);
+			}else{
+				$this->SetFont('vera','',6);
+			}
+    	}//fin if $monto!=0
+    }
+    function celda_actividades($alturad,$sisap,$monto,$activi = null){
+        if($monto!=0){
+            $this->Cell(28,$alturad,$sisap->Formato2($monto),'RL',0,'R');// TOTAL
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 51
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 52
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 53
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 54
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 55
+			$this->Cell(28,$alturad,'','R',0,'R');// ACTIV 56
+			$this->Cell(0,$alturad,'','R',1,'R');// ACTIV 57
+			$this->Cell(0,0,'','T',1);
+        }
+
+    }
+
+    function altura_deno ($denominacion) {
+            $denominacion = str_replace("\n","",$denominacion);
+	        $denominacion = str_replace("\r","",$denominacion);
+	        $denominacion = str_replace("  "," ",$denominacion);
+	        $denominacion = trim($denominacion);
+	        $c = strlen($denominacion);
+            if($c<=55){
+            	$alturad = 4;
+            }else if($c>55 && $c<=100){
+            	$alturad = 7;
+            }else if($c>100 && $c<=155){
+            	$alturad = 10.5;
+            }else if($c>155 && $c<=220){
+            	$alturad = 15.5;
+            }else if($c>220 && $c<=269){
+            	$alturad = 17.5;
+            }else if($c>269 && $c<=330){
+            	$alturad = 19.5;
+            }else if($c>330 && $c<=380){
+            	$alturad = 23;
+            }else if($c>380 && $c<=420){
+            	$alturad = 26;
+            }else{
+                $alturad = 28.5;
+            }
+
+            return $alturad;
+
+	}//fin funcion altura_deno
+
+
+}//fin clase
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+$_SESSION['ano_presupuesto'] = $ano_presupuesto;
+$_SESSION['cod_sector']    = '';
+$_SESSION['cod_programa']  = '';
+$_SESSION['cod_sub_prog']  = '';
+$_SESSION['cod_proyecto']  = '';
+$_SESSION['deno_sector']   = '';
+$_SESSION['deno_programa'] = '';
+$_SESSION['deno_sub_prog'] = '';
+$_SESSION['deno_proyecto'] = '';
+$_SESSION['a1'] = '';
+$_SESSION['a2'] = '';
+$_SESSION['a3'] = '';
+$_SESSION['a4'] = '';
+$_SESSION['a5'] = '';
+$_SESSION['a6'] = '';
+$_SESSION['a7'] = '';
+$_SESSION['d_a1']= '';
+$_SESSION['d_a2']= '';
+$_SESSION['d_a3']= '';
+$_SESSION['d_a4']= '';
+$_SESSION['d_a5']= '';
+$_SESSION['d_a6']= '';
+$_SESSION['d_a7']= '';
+
+
+$pdf = new fpdfview('L','mm','EXTRAOFICE');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+
+if(count($data)>0){
+foreach($data_sectores as $dse){
+            $_SESSION['cod_sector']    = ''.$dse[0]['cod_sector'];
+			$_SESSION['cod_programa']  = ''.$dse[0]['cod_programa'];
+			$_SESSION['cod_sub_prog']  = ''.$dse[0]['cod_sub_prog'];
+			$_SESSION['cod_proyecto']  = ''.$dse[0]['cod_proyecto'];
+			$_SESSION['deno_sector']   = ''.$dse[0]['deno_sector'];
+			$_SESSION['deno_programa'] = ''.$dse[0]['deno_programa'];
+			$_SESSION['deno_sub_prog'] = ''.$dse[0]['deno_sub_prog'];
+			$_SESSION['deno_proyecto'] = ''.$dse[0]['deno_proyecto'];
+			$_SESSION['a1'] = '51';
+			$_SESSION['a2'] = '52';
+			$_SESSION['a3'] = '53';
+			$_SESSION['a4'] = '54';
+			$_SESSION['a5'] = '55';
+			$_SESSION['a6'] = '56';
+			$_SESSION['a7'] = '57';
+			$_SESSION['d_a1'] = ''.$dse[0]['deno_activ51'];
+			$_SESSION['d_a2'] = ''.$dse[0]['deno_activ52'];
+			$_SESSION['d_a3'] = ''.$dse[0]['deno_activ53'];
+			$_SESSION['d_a4'] = ''.$dse[0]['deno_activ54'];
+			$_SESSION['d_a5'] = ''.$dse[0]['deno_activ55'];
+			$_SESSION['d_a6'] = ''.$dse[0]['deno_activ56'];
+			$_SESSION['d_a7'] = ''.$dse[0]['deno_activ57'];
+			$pdf->AddPage();
+
+	$pdf->SetFont('vera','',7);
+	$ttotal1  = 0;
+	$tactiv51 = 0;
+	$tactiv52 = 0;
+	$tactiv53 = 0;
+	$tactiv54 = 0;
+	$tactiv55 = 0;
+	$tactiv56 = 0;
+	$tactiv57 = 0;
+	$vaux1 = array();
+	$vaux2 = array();
+	foreach($data as $r){
+        //extract($r[0]);
+        extract($r[$modelo]);
+        if($cod_sector==$dse[0]['cod_sector'] && $cod_programa==$dse[0]['cod_programa'] && $cod_sub_prog==$dse[0]['cod_sub_prog'] && $cod_proyecto==$dse[0]['cod_proyecto']){
+	        /*$denominacion = str_replace("\n","",$denominacion);
+	        $denominacion = str_replace("\r","",$denominacion);
+	        $denominacion = str_replace("  "," ",$denominacion);
+	        $denominacion = trim($denominacion);
+	        $c = strlen($denominacion);
+            if($c<=55){
+            	$alturad = 4;
+            }else if($c>55 && $c<=100){
+            	$alturad = 7;
+            }else if($c>100 && $c<=155){
+            	$alturad = 10.5;
+            }else if($c>155 && $c<=220){
+            	$alturad = 15.5;
+            }else if($c>220 && $c<=269){
+            	$alturad = 17.5;
+            }else if($c>269 && $c<=330){
+            	$alturad = 19.5;
+            }else if($c>330 && $c<=380){
+            	$alturad = 23;
+            }else if($c>380 && $c<=420){
+            	$alturad = 26;
+            }else{
+                $alturad = 28.5;
+            }*/
+	        //$alturad = 7;
+	        /***original
+			$pdf->SetFont('vera','B',7);
+			$cod_generica1 = $cod_generica==0 ? '' : mascara($cod_generica,2);
+			$cod_especifica1 = $cod_especifica==0 ? '' : mascara($cod_especifica,2);
+			$cod_sub_espec1 = ($cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) ? '' : mascara($cod_sub_espec,2);
+			$cod_auxiliar1 = $cod_auxiliar==0 ? '' : mascara($cod_auxiliar,4);
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+               $pdf->SetFont('vera','B',7);
+			}else{
+				$pdf->SetFont('vera','',7);
+			}
+			$pdf->Cell(9,$alturad,$cod_partida,'RL',0,'C');// PARTIDA
+			$pdf->Cell(9,$alturad,$cod_generica1,'R',0,'C');// GEN
+			$pdf->Cell(9,$alturad,$cod_especifica1,'R',0,'C');// ESPEC
+			$pdf->Cell(9,$alturad,$cod_sub_espec1,'R',0,'C');// SUB-ESPEC
+			$pdf->Cell(9,$alturad,$cod_auxiliar1,'R',0,'C');// AUX
+			$pdf->SetFont('vera','',6);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(77,1,"",'',2,'C');
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+               $pdf->SetFont('vera','B',5.5);
+			}else{
+				$pdf->SetFont('vera','',6);
+			}
+			//$denominacion = $denominacion." ".$c;
+			$pdf->MultiCell(76,3,$denominacion,'','L');// DENOMINACIÓN
+			$varX = $varX+77;
+			$pdf->SetXY($varX,$varY);
+			$activ51 = $activ51=='' || $activ51==null ? 0 : $activ51;
+			$activ52 = $activ52=='' || $activ52==null ? 0 : $activ52;
+			$activ53 = $activ53=='' || $activ53==null ? 0 : $activ53;
+			$activ54 = $activ54=='' || $activ54==null ? 0 : $activ54;
+			$activ55 = $activ55=='' || $activ55==null ? 0 : $activ55;
+			$activ56 = $activ56=='' || $activ56==null ? 0 : $activ56;
+			$activ57 = $activ57=='' || $activ57==null ? 0 : $activ57;
+			$total = $activ51+$activ52+$activ53+$activ54+$activ55+$activ56+$activ57;
+			if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+               $pdf->SetFont('vera','B',6);
+			}else{
+				$pdf->SetFont('vera','',6);
+			}
+			**/
+			$cod_generica1 = $cod_generica==0 ? '' : mascara($cod_generica,2);
+			$cod_especifica1 = $cod_especifica==0 ? '' : mascara($cod_especifica,2);
+			$cod_sub_espec1 = ($cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) ? '' : mascara($cod_sub_espec,2);
+			$cod_auxiliar1 = $cod_auxiliar==0 ? '' : mascara($cod_auxiliar,4);
+			$activ51 = $activ51=='' || $activ51==null ? 0 : $activ51;
+			$activ52 = $activ52=='' || $activ52==null ? 0 : $activ52;
+			$activ53 = $activ53=='' || $activ53==null ? 0 : $activ53;
+			$activ54 = $activ54=='' || $activ54==null ? 0 : $activ54;
+			$activ55 = $activ55=='' || $activ55==null ? 0 : $activ55;
+			$activ56 = $activ56=='' || $activ56==null ? 0 : $activ56;
+			$activ57 = $activ57=='' || $activ57==null ? 0 : $activ57;
+
+			/**/
+			$activ1 = $activ1=='' || $activ1==null ? 0 : $activ1;
+			$activ2 = $activ2=='' || $activ2==null ? 0 : $activ2;
+			$activ3 = $activ3=='' || $activ3==null ? 0 : $activ3;
+			$activ4 = $activ4=='' || $activ4==null ? 0 : $activ4;
+			$activ5 = $activ5=='' || $activ5==null ? 0 : $activ5;
+			$activ6 = $activ6=='' || $activ6==null ? 0 : $activ6;
+			$activ7 = $activ7=='' || $activ7==null ? 0 : $activ7;
+			$activ8 = $activ8=='' || $activ8==null ? 0 : $activ8;
+			$activ9 = $activ9=='' || $activ9==null ? 0 : $activ9;
+			$activ10 = $activ10=='' || $activ10==null ? 0 : $activ10;
+			$activ11 = $activ11=='' || $activ11==null ? 0 : $activ11;
+			$activ12 = $activ12=='' || $activ12==null ? 0 : $activ12;
+			$activ13 = $activ13=='' || $activ13==null ? 0 : $activ13;
+			$activ14 = $activ14=='' || $activ14==null ? 0 : $activ14;
+			$activ15 = $activ15=='' || $activ15==null ? 0 : $activ15;
+			$activ16 = $activ16=='' || $activ16==null ? 0 : $activ16;
+			$activ17 = $activ17=='' || $activ17==null ? 0 : $activ17;
+			$activ18 = $activ18=='' || $activ18==null ? 0 : $activ18;
+			$activ19 = $activ19=='' || $activ19==null ? 0 : $activ19;
+			$activ20 = $activ20=='' || $activ20==null ? 0 : $activ20;
+			$activ21 = $activ21=='' || $activ21==null ? 0 : $activ21;
+			$activ22 = $activ22=='' || $activ22==null ? 0 : $activ22;
+			$activ23 = $activ23=='' || $activ23==null ? 0 : $activ23;
+			$activ24 = $activ24=='' || $activ24==null ? 0 : $activ24;
+			$activ25 = $activ25=='' || $activ25==null ? 0 : $activ25;
+			$activ26 = $activ26=='' || $activ26==null ? 0 : $activ26;
+			$activ27 = $activ27=='' || $activ27==null ? 0 : $activ27;
+			$activ28 = $activ28=='' || $activ28==null ? 0 : $activ28;
+			$activ29 = $activ29=='' || $activ29==null ? 0 : $activ29;
+			$activ30 = $activ30=='' || $activ30==null ? 0 : $activ30;
+			$activ31 = $activ31=='' || $activ31==null ? 0 : $activ31;
+			$activ32 = $activ32=='' || $activ32==null ? 0 : $activ32;
+			$activ33 = $activ33=='' || $activ33==null ? 0 : $activ33;
+			$activ34 = $activ34=='' || $activ34==null ? 0 : $activ34;
+			$activ35 = $activ35=='' || $activ35==null ? 0 : $activ35;
+			$activ36 = $activ36=='' || $activ36==null ? 0 : $activ36;
+			$activ37 = $activ37=='' || $activ37==null ? 0 : $activ37;
+			$activ38 = $activ38=='' || $activ38==null ? 0 : $activ38;
+			$activ39 = $activ39=='' || $activ39==null ? 0 : $activ39;
+			$activ40 = $activ40=='' || $activ40==null ? 0 : $activ40;
+			$activ41 = $activ41=='' || $activ41==null ? 0 : $activ41;
+			$activ42 = $activ42=='' || $activ42==null ? 0 : $activ42;
+			$activ43 = $activ43=='' || $activ43==null ? 0 : $activ43;
+			$activ44 = $activ44=='' || $activ44==null ? 0 : $activ44;
+			$activ45 = $activ45=='' || $activ45==null ? 0 : $activ45;
+			$activ46 = $activ46=='' || $activ46==null ? 0 : $activ46;
+			$activ47 = $activ47=='' || $activ47==null ? 0 : $activ47;
+			$activ48 = $activ48=='' || $activ48==null ? 0 : $activ48;
+			$activ49 = $activ49=='' || $activ49==null ? 0 : $activ49;
+			$activ50 = $activ50=='' || $activ50==null ? 0 : $activ50;
+
+
+			$total = $activ51+$activ52+$activ53+$activ54+$activ55+$activ56+$activ57+$activ1+$activ2+$activ3+$activ4+$activ5+$activ6+$activ7+$activ8+$activ9+$activ10+$activ11+$activ12+$activ13+$activ14+$activ15+$activ16+$activ17+$activ18+$activ19+$activ20+$activ21+$activ22+$activ23+$activ24+$activ25+$activ26+$activ27+$activ28+$activ29+$activ30+$activ31+$activ32+$activ33+$activ34+$activ35+$activ36+$activ37+$activ38+$activ39+$activ40+$activ41+$activ42+$activ43+$activ44+$activ45+$activ46+$activ47+$activ48+$activ49+$activ50;
+
+			/**/
+			if($cod_proyecto!=0){
+				 $alturad=$pdf->altura_deno ($denominacion);
+				 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$denominacion,$total,'');
+				 $pdf->celda_actividades($alturad,$sisap,$total);
+				 if($cod_partida!=0 && $cod_generica!=0 && $cod_especifica!=0){
+				 	 $alturad=$pdf->altura_deno ($deno_activ51);
+					 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ51,$activ51,51);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ51,51);
+	                 $alturad=$pdf->altura_deno ($deno_activ52);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ52,$activ52,52);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ52,52);
+	                 $alturad=$pdf->altura_deno ($deno_activ53);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ53,$activ53,53);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ53,53);
+	                 $alturad=$pdf->altura_deno ($deno_activ54);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ54,$activ54,54);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ54,54);
+	                 $alturad=$pdf->altura_deno ($deno_activ55);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ55,$activ55,55);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ55,55);
+	                 $alturad=$pdf->altura_deno ($deno_activ56);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ56,$activ56,56);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ56,56);
+	                 $alturad=$pdf->altura_deno ($deno_activ57);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ57,$activ57,57);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ57,57);
+	                 $alturad=$pdf->altura_deno ($deno_activ58);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ58,$activ58,58);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ58,58);
+	                 $alturad=$pdf->altura_deno ($deno_activ59);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ59,$activ59,59);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ59,59);
+	                 $alturad=$pdf->altura_deno ($deno_activ60);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ60,$activ60,60);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ60,60);
+	                 $alturad=$pdf->altura_deno ($deno_activ61);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ61,$activ61,61);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ61,61);
+	                 $alturad=$pdf->altura_deno ($deno_activ62);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ62,$activ62,62);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ62,62);
+	                 $alturad=$pdf->altura_deno ($deno_activ63);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ63,$activ63,63);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ63,63);
+	                 $alturad=$pdf->altura_deno ($deno_activ64);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ64,$activ64,64);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ64,64);
+	                 $alturad=$pdf->altura_deno ($deno_activ65);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ65,$activ65,65);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ65,65);
+	                 $alturad=$pdf->altura_deno ($deno_activ66);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ66,$activ66,66);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ66,66);
+	                 $alturad=$pdf->altura_deno ($deno_activ67);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ67,$activ67,67);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ67,67);
+	                 $alturad=$pdf->altura_deno ($deno_activ68);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ68,$activ68,68);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ68,68);
+	                 $alturad=$pdf->altura_deno ($deno_activ69);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ69,$activ69,69);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ69,69);
+	                 $alturad=$pdf->altura_deno ($deno_activ70);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ70,$activ70,70);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ70,70);
+
+
+
+/**/
+
+                     $alturad=$pdf->altura_deno ($deno_activ1);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ1,$activ1,1);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ1,1);
+	                 $alturad=$pdf->altura_deno ($deno_activ2);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ2,$activ2,2);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ2,2);
+	                 $alturad=$pdf->altura_deno ($deno_activ3);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ3,$activ3,3);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ3,3);
+	                 $alturad=$pdf->altura_deno ($deno_activ4);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ4,$activ4,4);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ4,4);
+	                 $alturad=$pdf->altura_deno ($deno_activ5);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ5,$activ5,5);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ5,5);
+	                 $alturad=$pdf->altura_deno ($deno_activ6);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ6,$activ6,6);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ6,6);
+	                 $alturad=$pdf->altura_deno ($deno_activ7);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ7,$activ7,7);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ7,7);
+	                 $alturad=$pdf->altura_deno ($deno_activ8);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ8,$activ8,8);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ8,8);
+	                 $alturad=$pdf->altura_deno ($deno_activ9);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ9,$activ9,9);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ9,9);
+	                 $alturad=$pdf->altura_deno ($deno_activ10);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ10,$activ10,10);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ10,10);
+	                 $alturad=$pdf->altura_deno ($deno_activ11);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ11,$activ11,11);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ11,11);
+	                 $alturad=$pdf->altura_deno ($deno_activ12);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ12,$activ12,12);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ12,12);
+	                 $alturad=$pdf->altura_deno ($deno_activ13);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ13,$activ13,13);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ13,13);
+	                 $alturad=$pdf->altura_deno ($deno_activ14);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ14,$activ14,14);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ14,14);
+	                 $alturad=$pdf->altura_deno ($deno_activ15);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ15,$activ15,15);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ15,15);
+	                 $alturad=$pdf->altura_deno ($deno_activ16);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ16,$activ16,16);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ16,16);
+	                 $alturad=$pdf->altura_deno ($deno_activ17);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ17,$activ17,17);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ17,17);
+	                 $alturad=$pdf->altura_deno ($deno_activ18);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ18,$activ18,18);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ18,18);
+	                 $alturad=$pdf->altura_deno ($deno_activ19);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ19,$activ19,19);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ19,19);
+	                 $alturad=$pdf->altura_deno ($deno_activ20);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ20,$activ20,20);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ20,20);
+
+	                 $alturad=$pdf->altura_deno ($deno_activ21);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ21,$activ21,21);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ21,21);
+	                 $alturad=$pdf->altura_deno ($deno_activ22);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ22,$activ22,22);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ22,22);
+	                 $alturad=$pdf->altura_deno ($deno_activ23);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ23,$activ23,23);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ23,23);
+	                 $alturad=$pdf->altura_deno ($deno_activ24);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ24,$activ24,24);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ24,24);
+	                 $alturad=$pdf->altura_deno ($deno_activ25);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ25,$activ25,25);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ25,25);
+	                 $alturad=$pdf->altura_deno ($deno_activ26);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ26,$activ26,26);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ26,26);
+	                 $alturad=$pdf->altura_deno ($deno_activ27);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ27,$activ27,27);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ27,27);
+	                 $alturad=$pdf->altura_deno ($deno_activ28);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ28,$activ28,28);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ28,28);
+	                 $alturad=$pdf->altura_deno ($deno_activ29);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ29,$activ29,29);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ29,29);
+	                 $alturad=$pdf->altura_deno ($deno_activ30);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ30,$activ30,30);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ30,30);
+
+	                 $alturad=$pdf->altura_deno ($deno_activ31);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ31,$activ31,31);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ31,31);
+	                 $alturad=$pdf->altura_deno ($deno_activ32);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ32,$activ32,32);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ32,32);
+	                 $alturad=$pdf->altura_deno ($deno_activ33);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ33,$activ33,33);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ33,33);
+	                 $alturad=$pdf->altura_deno ($deno_activ34);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ34,$activ34,34);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ34,34);
+	                 $alturad=$pdf->altura_deno ($deno_activ35);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ35,$activ35,35);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ35,35);
+	                 $alturad=$pdf->altura_deno ($deno_activ36);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ36,$activ36,36);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ36,36);
+	                 $alturad=$pdf->altura_deno ($deno_activ37);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ37,$activ37,37);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ37,37);
+	                 $alturad=$pdf->altura_deno ($deno_activ38);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ38,$activ38,38);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ38,38);
+	                 $alturad=$pdf->altura_deno ($deno_activ39);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ39,$activ39,39);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ39,39);
+	                 $alturad=$pdf->altura_deno ($deno_activ40);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_acti40,$activ40,40);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ40,40);
+	                 $alturad=$pdf->altura_deno ($deno_activ41);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ41,$activ41,41);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ41,41);
+	                 $alturad=$pdf->altura_deno ($deno_activ42);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ42,$activ42,42);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ42,42);
+	                 $alturad=$pdf->altura_deno ($deno_activ43);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ43,$activ43,43);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ43,43);
+	                 $alturad=$pdf->altura_deno ($deno_activ44);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ44,$activ44,44);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ44,44);
+	                 $alturad=$pdf->altura_deno ($deno_activ45);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ45,$activ45,45);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ45,45);
+	                 $alturad=$pdf->altura_deno ($deno_activ46);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ46,$activ46,46);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ46,46);
+	                 $alturad=$pdf->altura_deno ($deno_activ47);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ47,$activ47,47);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ47,47);
+	                 $alturad=$pdf->altura_deno ($deno_activ48);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ48,$activ48,48);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ48,48);
+	                 $alturad=$pdf->altura_deno ($deno_activ49);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ49,$activ49,49);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ49,49);
+	                 $alturad=$pdf->altura_deno ($deno_activ50);
+	                 $pdf->celda_partida($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$deno_activ50,$activ50,50);
+	                 $pdf->celda_actividades($alturad,$sisap,$activ50,50);
+
+	                /* */
+
+				 }
+			}else{
+				$alturad=$pdf->altura_deno ($denominacion);
+				$pdf->celda_partida2($alturad,$cod_proyecto,$cod_partida,$cod_generica,$cod_especifica,$cod_sub_espec,$cod_auxiliar,$cod_generica1,$cod_especifica1,$cod_sub_espec1,$cod_auxiliar1,$denominacion);
+				$pdf->Cell(28,$alturad,$sisap->Formato2($total),'RL',0,'R');// TOTAL
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ51)),'R',0,'R');// ACTIV 51
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ52)),'R',0,'R');// ACTIV 52
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ53)),'R',0,'R');// ACTIV 53
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ54)),'R',0,'R');// ACTIV 54
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ55)),'R',0,'R');// ACTIV 55
+				$pdf->Cell(28,$alturad,cerocero($sisap->Formato2($activ56)),'R',0,'R');// ACTIV 56
+				$pdf->Cell(0,$alturad,cerocero($sisap->Formato2($activ57)),'R',1,'R');// ACTIV 57
+				$pdf->Cell(0,0,'','T',1);
+			}
+
+			if($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0){
+				$ttotal1  += $total;
+				$tactiv51 += $activ51;
+				$tactiv52 += $activ52;
+				$tactiv53 += $activ53;
+				$tactiv54 += $activ54;
+				$tactiv55 += $activ55;
+				$tactiv56 += $activ56;
+				$tactiv57 += $activ57;
+			}
+			$activ58 = $activ58=='' || $activ58==null ? 0 : $activ58;
+			$activ59 = $activ59=='' || $activ59==null ? 0 : $activ59;
+			$activ60 = $activ60=='' || $activ60==null ? 0 : $activ60;
+			$activ61 = $activ61=='' || $activ61==null ? 0 : $activ61;
+			$activ62 = $activ62=='' || $activ62==null ? 0 : $activ62;
+			$activ63 = $activ63=='' || $activ63==null ? 0 : $activ63;
+			$activ64 = $activ64=='' || $activ64==null ? 0 : $activ64;
+			$total_aux2 = $activ58+$activ59+$activ60+$activ61+$activ62+$activ63+$activ64;
+			if($cod_proyecto==0){
+				if($activ58!=0 || $activ59!=0 || $activ60!=0 || $activ61!=0 || $activ62!=0 || $activ63!=0 || $activ64!=0){
+	                 $cx['cod_partida']=$cod_partida;
+	                 $cx['cod_generica']=$cod_generica1;
+	                 $cx['cod_especifica']=$cod_especifica1;
+	                 $cx['cod_sub_espec']=$cod_sub_espec1;
+	                 $cx['cod_auxiliar']=$cod_auxiliar1;
+	                 $cx['denominacion']=$denominacion;
+	                 $cx['total']=$total_aux2;
+	                 $cx['activ1']=$activ58;
+	                 $cx['activ2']=$activ59;
+	                 $cx['activ3']=$activ60;
+	                 $cx['activ4']=$activ61;
+	                 $cx['activ5']=$activ62;
+	                 $cx['activ6']=$activ63;
+	                 $cx['activ7']=$activ64;
+	                 $cx['deno1']=$deno_activ58;
+	                 $cx['deno2']=$deno_activ59;
+	                 $cx['deno3']=$deno_activ60;
+	                 $cx['deno4']=$deno_activ61;
+	                 $cx['deno5']=$deno_activ62;
+	                 $cx['deno6']=$deno_activ63;
+	                 $cx['deno7']=$deno_activ64;
+	                 $cx['altura']=$alturad;
+	                 if($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0){
+					     $cx['suma']='si';
+				     }else{
+				     	 $cx['suma']='no';
+				     }
+				     if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+	               		$cx['negrita']='si';
+					 }else{
+						$cx['negrita']='no';
+					 }
+				     $vaux1[]=$cx;
+				}
+				$activ65 = $activ65=='' || $activ65==null ? 0 : $activ65;
+				$activ66 = $activ66=='' || $activ66==null ? 0 : $activ66;
+				$activ67 = $activ67=='' || $activ67==null ? 0 : $activ67;
+				$activ68 = $activ68=='' || $activ68==null ? 0 : $activ68;
+				$activ69 = $activ69=='' || $activ69==null ? 0 : $activ69;
+				$activ70 = $activ70=='' || $activ70==null ? 0 : $activ70;
+				$activ71 = 0;
+				$total_aux3 = $activ65+$activ66+$activ67+$activ68+$activ69+$activ70+$activ71;
+	            if($activ65!=0 || $activ66!=0 || $activ67!=0 || $activ68!=0 || $activ69!=0 || $activ70!=0){
+	                 $cx['cod_partida']=$cod_partida;
+	                 $cx['cod_generica']=$cod_generica1;
+	                 $cx['cod_especifica']=$cod_especifica1;
+	                 $cx['cod_sub_espec']=$cod_sub_espec1;
+	                 $cx['cod_auxiliar']=$cod_auxiliar1;
+	                 $cx['denominacion']=$denominacion;
+	                 $cx['total']=$total_aux3;
+	                 $cx['activ1']=$activ65;
+	                 $cx['activ2']=$activ66;
+	                 $cx['activ3']=$activ67;
+	                 $cx['activ4']=$activ68;
+	                 $cx['activ5']=$activ69;
+	                 $cx['activ6']=$activ70;
+	                 $cx['activ7']=$activ71;
+	                 $cx['deno1']=$deno_activ65;
+	                 $cx['deno2']=$deno_activ66;
+	                 $cx['deno3']=$deno_activ67;
+	                 $cx['deno4']=$deno_activ68;
+	                 $cx['deno5']=$deno_activ69;
+	                 $cx['deno6']=$deno_activ70;
+	                 $cx['deno7']='';
+	                 $cx['altura']=$alturad;
+	                 if($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0){
+					     $cx['suma']='si';
+				     }else{
+				     	 $cx['suma']='no';
+				     }
+				     if(($cod_generica==0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0) || ($cod_generica!=0 && $cod_especifica==0 && $cod_sub_espec==0 && $cod_auxiliar==0)){
+	               		$cx['negrita']='si';
+					 }else{
+						$cx['negrita']='no';
+					 }
+				     $vaux2[]=$cx;
+				}
+        	}//fin if cod_proyecto==0
+
+
+        }//fin condicion codigos iguales
+	}
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(148,5,'T O T A L E S: ','RL',0,'R');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(28,5,$sisap->Formato2($ttotal1),'R',0,'R');// TOTAL TOTAL
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv51),'R',0,'R');// TOTAL 51
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv52),'R',0,'R');// TOTAL 52
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv53),'R',0,'R');// TOTAL 53
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv54),'R',0,'R');// TOTAL 54
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv55),'R',0,'R');// TOTAL 55
+	$pdf->Cell(28,5,$sisap->Formato2($tactiv56),'R',0,'R');// TOTAL 56
+	$pdf->Cell(0,5,$sisap->Formato2($tactiv57),'R',1,'R');// TOTAL 57
+	$pdf->Cell(0,0,'','T',1);
+
+	if(count($vaux1)>0){
+        $_SESSION['a1'] = '58';
+		$_SESSION['a2'] = '59';
+		$_SESSION['a3'] = '60';
+		$_SESSION['a4'] = '61';
+		$_SESSION['a5'] = '62';
+		$_SESSION['a6'] = '63';
+		$_SESSION['a7'] = '64';
+		$_SESSION['d_a1'] = ''.$dse[0]['deno_activ58'];
+		$_SESSION['d_a2'] = ''.$dse[0]['deno_activ59'];
+		$_SESSION['d_a3'] = ''.$dse[0]['deno_activ60'];
+		$_SESSION['d_a4'] = ''.$dse[0]['deno_activ61'];
+		$_SESSION['d_a5'] = ''.$dse[0]['deno_activ62'];
+		$_SESSION['d_a6'] = ''.$dse[0]['deno_activ63'];
+		$_SESSION['d_a7'] = ''.$dse[0]['deno_activ64'];
+	    $pdf->AddPage();
+		$pdf->SetFont('vera','',7);
+		$ttotal2  = 0;
+		$tactiv58 = 0;
+		$tactiv59 = 0;
+		$tactiv60 = 0;
+		$tactiv61 = 0;
+		$tactiv62 = 0;
+		$tactiv63 = 0;
+		$tactiv64 = 0;
+		foreach($vaux1 as $r){
+	        extract($r);
+	        $_SESSION['d_a1'] = $deno1;
+			$_SESSION['d_a2'] = $deno2;
+			$_SESSION['d_a3'] = $deno3;
+			$_SESSION['d_a4'] = $deno4;
+			$_SESSION['d_a5'] = $deno5;
+			$_SESSION['d_a6'] = $deno6;
+			$_SESSION['d_a7'] = $deno7;
+	            if($negrita=='si'){
+               		$pdf->SetFont('vera','B',7);
+				}else{
+					$pdf->SetFont('vera','',7);
+				}
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(8,$altura,$cod_partida,'RL',0,'C');// PARTIDA
+				$pdf->Cell(7,$altura,$cod_generica,'R',0,'C');// GEN
+				$pdf->Cell(7,$altura,$cod_especifica,'R',0,'C');// ESPEC
+				$pdf->Cell(7,$altura,$cod_sub_espec,'R',0,'C');// SUB-ESPEC
+				$pdf->Cell(7,$altura,$cod_auxiliar,'R',0,'C');// AUX
+				$pdf->Cell(9,$altura,'','R',0,'C');// AUX
+				$pdf->SetFont('vera','',6);
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(103,1,"",'',2,'C');
+				if($negrita=='si'){
+               		$pdf->SetFont('vera','B',5.5);
+				}else{
+					$pdf->SetFont('vera','',6);
+				}
+				$pdf->MultiCell(102,3,$denominacion,'','L');// DENOMINACIÓN
+				$varX = $varX+103;
+				$pdf->SetXY($varX,$varY);
+				if($negrita=='si'){
+               		$pdf->SetFont('vera','B',6);
+				}else{
+					$pdf->SetFont('vera','',6);
+				}
+				$pdf->Cell(28,$altura,$sisap->Formato2($total),'RL',0,'R');// TOTAL
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ1)),'R',0,'R');// ACTIV 58
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ2)),'R',0,'R');// ACTIV 52
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ3)),'R',0,'R');// ACTIV 53
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ4)),'R',0,'R');// ACTIV 54
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ5)),'R',0,'R');// ACTIV 55
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ6)),'R',0,'R');// ACTIV 56
+				$pdf->Cell(0,$altura,cerocero($sisap->Formato2($activ7)),'R',1,'R');// ACTIV 57
+				$pdf->Cell(0,0,'','T',1);
+				if($suma=='si'){
+					$ttotal2  += $total;
+					$tactiv58 += $activ1;
+					$tactiv59 += $activ2;
+					$tactiv60 += $activ3;
+					$tactiv61 += $activ4;
+					$tactiv62 += $activ5;
+					$tactiv63 += $activ6;
+					$tactiv64 += $activ7;
+				}
+		}
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(148,5,'T O T A L E S: ','RL',0,'R');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(28,5,$sisap->Formato2($ttotal2),'R',0,'R');// TOTAL TOTAL
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv58),'R',0,'R');// TOTAL 58
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv59),'R',0,'R');// TOTAL 59
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv60),'R',0,'R');// TOTAL 60
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv61),'R',0,'R');// TOTAL 61
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv62),'R',0,'R');// TOTAL 62
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv63),'R',0,'R');// TOTAL 63
+		$pdf->Cell(0,5,$sisap->Formato2($tactiv64),'R',1,'R');// TOTAL 64
+		$pdf->Cell(0,0,'','T',1);
+	}//fin $vaux1
+
+	if(count($vaux2)>0){
+        $_SESSION['a1'] = '65';
+		$_SESSION['a2'] = '66';
+		$_SESSION['a3'] = '67';
+		$_SESSION['a4'] = '68';
+		$_SESSION['a5'] = '69';
+		$_SESSION['a6'] = '70';
+		$_SESSION['a7'] = '71';
+		$_SESSION['d_a1'] = ''.$dse[0]['deno_activ65'];
+		$_SESSION['d_a2'] = ''.$dse[0]['deno_activ66'];
+		$_SESSION['d_a3'] = ''.$dse[0]['deno_activ67'];
+		$_SESSION['d_a4'] = ''.$dse[0]['deno_activ68'];
+		$_SESSION['d_a5'] = ''.$dse[0]['deno_activ69'];
+		$_SESSION['d_a6'] = ''.$dse[0]['deno_activ70'];
+		$_SESSION['d_a7'] = '';
+	    $pdf->AddPage();
+		$pdf->SetFont('vera','',7);
+		$ttotal3  = 0;
+		$tactiv65 = 0;
+		$tactiv66 = 0;
+		$tactiv67 = 0;
+		$tactiv68 = 0;
+		$tactiv69 = 0;
+		$tactiv70 = 0;
+		$tactiv71 = 0;
+		foreach($vaux1 as $r){
+	        extract($r);
+	        $_SESSION['d_a1'] = $deno1;
+			$_SESSION['d_a2'] = $deno2;
+			$_SESSION['d_a3'] = $deno3;
+			$_SESSION['d_a4'] = $deno4;
+			$_SESSION['d_a5'] = $deno5;
+			$_SESSION['d_a6'] = $deno6;
+			$_SESSION['d_a7'] = $deno7;
+				if($negrita=='si'){
+               		$pdf->SetFont('vera','B',7);
+				}else{
+					$pdf->SetFont('vera','',7);
+				}
+				$pdf->Cell(8,$altura,$cod_partida,'RL',0,'C');// PARTIDA
+				$pdf->Cell(7,$altura,$cod_generica,'R',0,'C');// GEN
+				$pdf->Cell(7,$altura,$cod_especifica,'R',0,'C');// ESPEC
+				$pdf->Cell(7,$altura,$cod_sub_espec,'R',0,'C');// SUB-ESPEC
+				$pdf->Cell(7,$altura,$cod_auxiliar,'R',0,'C');// AUX
+				$pdf->Cell(9,$altura,'','R',0,'C');// AUX
+				$pdf->SetFont('vera','',6);
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(103,1,"",'',2,'C');
+				if($negrita=='si'){
+               		$pdf->SetFont('vera','B',5.5);
+				}else{
+					$pdf->SetFont('vera','',6);
+				}
+				$pdf->MultiCell(102,3,$denominacion,'','L');// DENOMINACIÓN
+				$varX = $varX+103;
+				$pdf->SetXY($varX,$varY);
+				if($negrita=='si'){
+               		$pdf->SetFont('vera','B',6);
+				}else{
+					$pdf->SetFont('vera','',6);
+				}
+				$pdf->Cell(28,$altura,$sisap->Formato2($total),'RL',0,'R');// TOTAL
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ1)),'R',0,'R');// ACTIV 58
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ2)),'R',0,'R');// ACTIV 52
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ3)),'R',0,'R');// ACTIV 53
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ4)),'R',0,'R');// ACTIV 54
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ5)),'R',0,'R');// ACTIV 55
+				$pdf->Cell(28,$altura,cerocero($sisap->Formato2($activ6)),'R',0,'R');// ACTIV 56
+				$pdf->Cell(0,$altura,cerocero($sisap->Formato2($activ7)),'R',1,'R');// ACTIV 57
+				$pdf->Cell(0,0,'','T',1);
+				if($suma=='si'){
+					$ttotal3  += $total;
+					$tactiv65 += $activ1;
+					$tactiv66 += $activ2;
+					$tactiv67 += $activ3;
+					$tactiv68 += $activ4;
+					$tactiv69 += $activ5;
+					$tactiv70 += $activ6;
+					$tactiv71 += $activ7;
+				}
+		}
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(148,5,'T O T A L E S: ','RL',0,'R');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(28,5,$sisap->Formato2($ttotal3),'R',0,'R');// TOTAL TOTAL
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv65),'R',0,'R');// TOTAL 65
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv66),'R',0,'R');// TOTAL 66
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv67),'R',0,'R');// TOTAL 67
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv68),'R',0,'R');// TOTAL 68
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv69),'R',0,'R');// TOTAL 69
+		$pdf->Cell(28,5,$sisap->Formato2($tactiv70),'R',0,'R');// TOTAL 70
+		$pdf->Cell(0,5,$sisap->Formato2($tactiv71),'R',1,'R');// TOTAL 71
+		$pdf->Cell(0,0,'','T',1);
+	}//fin $vaux2
+
+
+
+
+}//fin sectores
+}//fin count
+$pdf->Output('forma_2125_'.date("d-m-Y").".pdf",'D');
+}
+?>

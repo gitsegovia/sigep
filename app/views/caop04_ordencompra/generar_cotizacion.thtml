@@ -1,0 +1,452 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: generar_cotizacion.thtml
+ * Fecha de creacion: 30/07/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+ if(isset($rif) && isset($numero_cotizacion)){
+?>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+	<tr>
+		<td width="250" align="right">Dirección del solicitante:</td>
+		<td id="direc_solicitante">
+			<?= $html->input('caop04_ordencompra/direc_solicitante', $htmlAttributes = array('style'=>'width:98%;', 'value'=>$dDireccion, 'readonly'=>'readonly', 'id'=>'direccionSolic'), false);?>
+		</td>
+	</tr>
+</table>
+
+
+
+<br>
+	<table border="0" width="100%" class="tablacompromiso tablacompromiso2">
+	<tr>
+	   <td  width="10%"  align="center">Año de la obra</td>
+	   <td  width="80%" align="left">Código de la obra</td>
+	</tr>
+		<tr class="textNegro2">
+	      <td style="padding-left:5px;"><input class='inputtext' value="<?= $ano_ejecucion ?>" readonly onKeyPress="return solonumeros(event);"  style="text-align:center;"  size="4" id="ano_obra" name="data[cobp01_contratoobras][ano_obra]"/></td>
+	      <td style="padding-left:5px;"><input class='inputtext' readonly value="<?= $cod_obra ?>" style="text-align:left" id="input_cod_obra"  name="data[cobp01_contratoobras][input_cod_obra]"/></td>
+	  </tr>
+	  <tr><td colspan="5" align="center">DENOMINACIÓN DE LA OBRA</td></tr>
+	<tr>
+	   <td colspan="5" align="center">
+	<?= $html->textarea('caop02_solicitud_cotizacion/denominacion_obra', array('','rows'=>'3', 'value'=>$denominacion_obra, 'id' =>'denominacion_obra','class'=>'inputtext' ),  false) ?>
+	  </td>
+	</tr>
+	</table>
+<br>
+
+
+
+
+
+<div id="cotizacion" style="height:150px; overflow:auto;"><!-- PRODUCTOS DE LA COTIZACION !-->
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro" align="center">
+    <td>Código<br>Prod.</td>
+    <td>Unidad<br>Medida</td>
+    <td width="8%">Cantidad</td>
+    <td>Descripción de los Bienes o Servicios</td>
+    <td width="10%">Precio Unitario</td>
+    <td width="15%">Total</td>
+  </tr>
+<?php
+ if(isset($lista_cscd02_solicitud_cuerpo)){
+  if($lista_cscd02_solicitud_cuerpo!=null){
+ 	$i=0;
+ 	$total=0;
+    foreach($lista_cscd02_solicitud_cuerpo as $ve){
+    	$total_parcial=0;
+    	$total_parcial= $ve['v_cscd03_cotizacion']['cantidad'] * $ve['v_cscd03_cotizacion']['precio_unitario'];
+    	//$total_parcial= $ve[$index_cotizacion]['cantidad'] * $ve[$index_cotizacion]['precio_unitario'];
+    	$total_parcial = $sisap->formato2($total_parcial);
+    	$total_parcial = $sisap->formato1($total_parcial);
+
+    	$total+= $total_parcial;
+    	//print_r($ve);
+
+    	if($i%2==0){ 		// onclick="new Effect.Highlight(this);"
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" align="center">
+    <td height="22">
+        <?= $ve['v_cscd03_cotizacion']['codigo_prod_serv']?>
+        <input name="data[cscp03_registro_cotizacion][<?= "codigo_prod_serv_".$i ?>]" type="hidden" id="<?= "codigo_prod_serv_".$i ?>" value="<?= $ve['v_cscd03_cotizacion']['codigo_prod_serv']?>"/>
+    </td>
+    <td>
+        <?= $ve['v_cscd03_cotizacion']['expresion']?>
+        <input name="data[cscp03_registro_cotizacion][<?= "cod_medida_".$i ?>]" type="hidden" id="<?= "cod_medida_".$i ?>" value="<?= $ve['v_cscd03_cotizacion']['cod_medida']?>"/>
+    </td>
+    <td>
+
+    	<?= $sisap->Formato_6($ve['v_cscd03_cotizacion']['cantidad'])?>
+        <input name="data[cscp03_registro_cotizacion][<?= "cantidad_".$i ?>]"  READONLY type="hidden" size="8"  id="<?= "cantidad_".$i ?>" value="<?= $sisap->Formato_6($ve['v_cscd03_cotizacion']['cantidad'])?>" />
+    </td>
+    <td>
+        <textarea name="data[cscp03_registro_cotizacion][<?= "descripcion_".$i ?>]" style="width:98%"  READONLY rows="1" cols="35" wrap="off" id="<?= "descripcion_".$i ?>"><?= $ve['v_cscd03_cotizacion']['descripcion']?></textarea>
+    </td>
+    <td style="padding-right:5px; text-align:right">
+    	<?= $sisap->Formato_3_out($ve['v_cscd03_cotizacion']['precio_unitario'])?>
+    	<input type="hidden" size="13" value="<?= $ve['v_cscd03_cotizacion']['precio_unitario']?>" name="data[cscp03_registro_cotizacion][<?= "precio_".$i ?>]" id="<?= "precio_".$i ?>" READONLY />
+    </td>
+    <td style="padding-right:5px; text-align:right">
+    	<?= $sisap->formato2($total_parcial) ?>
+    	<?= $html->input('cscp03_registro_cotizacion/monto_'.$i, $htmlAttributes = array('style'=>'width=98%', 'value'=>$sisap->formato2($total_parcial), 'readonly'=>'readonly', 'type'=>'hidden'), false); ?>
+    </td>
+</tr>
+<?
+   }else{
+?>
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" align="center">
+    <td height="22">
+        <?= $ve['v_cscd03_cotizacion']['codigo_prod_serv']?>
+        <input name="data[cscp03_registro_cotizacion][<?= "codigo_prod_serv_".$i ?>]" type="hidden" id="<?= "codigo_prod_serv_".$i ?>" value="<?= $ve['v_cscd03_cotizacion']['codigo_prod_serv']?>"/>
+    </td>
+    <td>
+        <?= $ve['v_cscd03_cotizacion']['expresion']?>
+        <input name="data[cscp03_registro_cotizacion][<?= "cod_medida_".$i ?>]" type="hidden" id="<?= "cod_medida_".$i ?>" value="<?= $ve['v_cscd03_cotizacion']['cod_medida']?>"/>
+    </td>
+    <td>
+    	<?= $sisap->Formato_6($ve['v_cscd03_cotizacion']['cantidad'])?>
+        <input name="data[cscp03_registro_cotizacion][<?= "cantidad_".$i ?>]" type="hidden" size="8"  id="<?= "cantidad_".$i ?>" READONLY value="<?= $sisap->Formato_6($ve['v_cscd03_cotizacion']['cantidad'])?>" />
+    </td>
+    <td>
+        <textarea name="data[cscp03_registro_cotizacion][<?= "descripcion_".$i ?>]" style="width:98%" READONLY rows="1" cols="35" wrap="off" id="<?= "descripcion_".$i ?>"><?= $ve['v_cscd03_cotizacion']['descripcion']?></textarea>
+    </td>
+    <td style="padding-right:5px; text-align:right">
+    	<?= $sisap->Formato_3_out($ve['v_cscd03_cotizacion']['precio_unitario'])?>
+    	<input type="hidden" size="13" value="<?= $ve['v_cscd03_cotizacion']['precio_unitario']?>" name="data[cscp03_registro_cotizacion][<?= "precio_".$i ?>]" id="<?= "precio_".$i ?>"  READONLY/>
+    </td>
+    <td  style="padding-right:5px; text-align:right">
+    	<?= $sisap->formato2($total_parcial) ?>
+    	<?= $html->input('cscp03_registro_cotizacion/monto_'.$i, $htmlAttributes = array('style'=>'width=98%', 'value'=>$sisap->formato2($total_parcial), 'readonly'=>'readonly', 'type'=>'hidden'), false); ?>
+    </td>
+</tr>
+    		<?
+
+    	}//
+    	$i++;
+
+    }//fin foreach
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#DAEBFF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right" height="22"><b>TOTAL <?=MONEDA2?>: </b></td>
+    <td  style="padding-right:5px; text-align:right"  id="TOTALINGRESOS"><b><?= $sisap->Formato2($total)?></b></td>
+    <input type="hidden" name="data[caop04_ordencompra][total_cotizacion]" id="total_cotizacion" value="<?=$total?>" />
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#CDF2FF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right;" height="22"><b>TOTAL <?=MONEDA2?>: </b></td>
+    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><b><?= $sisap->Formato2($total)?></b></td>
+    <input type="hidden" name="data[caop04_ordencompra][total_cotizacion]" id="total_cotizacion" value="<?=$total?>" />
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#CDF2FF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right;" height="22"><b>TOTAL <?=MONEDA2?>: </b></td>
+    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><b><?= $sisap->Formato2($total)?></b></td>
+        <input type="hidden" name="data[caop04_ordencompra][total_cotizacion]" id="total_cotizacion" value="<?=$total?>" />
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="5" style="padding-right:5px; text-align:right;" class="td2" height="22"><b>TOTAL <?=MONEDA2?>: </b></td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><b><?= $sisap->Formato2($total)?></b></td>
+    <input type="hidden" name="data[caop04_ordencompra][total_cotizacion]" id="total_cotizacion" value="<?=$total?>" />
+</tr>
+        <?
+ }
+$_SESSION['total_cotizacion']=$total;
+?>
+</table>
+<input type="hidden" name="data[cscp03_registro_cotizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+</div>
+<!-- AQUI TERMINAN LOS PRODUCTOS DE LA COTIZACION
+	<center><span class="mensaje_resaltado"><b>Nota: </b><?= $html->image('check_rojo.png') ?> Este simbolo indica no disponibilidad en la partida.</span></center>
+!-->
+
+
+
+
+
+
+
+
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<?php include('distribuir.thtml') ?>
+</div>
+
+
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2" id="tabla_imputacion" style="display:none">
+  <tr>
+    <td colspan="13" align="center"><b>IMPUTACI&Oacute;N PRESUPUESTARIA</b></td>
+  </tr>
+  <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="6%">Auxiliar</td>
+    <td align="center" width="18%">MONTO</td>
+    <td align="right" width="14%" id="td_disponibilidad">--</td>
+  </tr>
+  <tr>
+    <td><input type="text" value="<?=$ano_arranque?>" id='ano_partidas' name="data[caop04_ordencompra][ano_partidas]" readonly="readonly" class="inputtext"><?/* $sisap->selectTagRemote('cepp01_compromiso_partidas/ano_partidas', $anos !='' ? $anos : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/cepp01_compromiso/select3/sector', 'update1'=>'st_sector_2','id'=>'ano_partidas','class'=>'select100', true), null, true);*/ ?></td>
+    <td id="st_seleccion_1"><?=  $sisap->selectTagRemote('caop04_ordencompra/cod_sector', $sector !='' ? $sector : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/caop04_ordencompra/select3/programa', 'update1'=>'st_seleccion_2','id'=>'seleccion_1','class'=>'select100', true), null, true); ?></td>
+    <td id="st_seleccion_2"><select id="seleccion_2" class="select100"></select></td>
+    <td id="st_seleccion_3"><select id="seleccion_3" class="select100"></select></td>
+    <td id="st_seleccion_4"><select id="seleccion_4" class="select100"></select></td>
+    <td id="st_seleccion_5"><select id="seleccion_5" class="select100"></select></td>
+    <td id="st_seleccion_6"><select id="seleccion_6" class="select100"></select></td>
+    <td id="st_seleccion_7"><select id="seleccion_7" class="select100"></select></td>
+    <td id="st_seleccion_8"><select id="seleccion_8" class="select100"></select></td>
+    <td id="st_seleccion_9"><select id="seleccion_9" class="select100"></select></td>
+    <td id="st_seleccion_10"><select id="seleccion_10" class="select100"></td>
+    <td><!--<input type="text" name="data[cepp01_compromiso_partidas][monto_partidas]" value=""  maxlength="22" id="monto" onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('monto');" style="text-align:right;width:95%"/>-->
+    <?= $sisap->inputTagRemote('caop04_ordencompra/monto_partidas', array('url'=>'/caop04_ordencompra/ver_semaforo', 'update'=>'semaforo', 'id'=>'monto','maxlength'=>'22','class'=>'inputtext',"onFocus"=>"document.getElementById('plus').disabled=true","onChange"=>"moneda('monto');","style"=>"text-align:right;","onKeyPress"=>"return solonumeros_con_punto(event);"));?>
+    <!--<?= $sisap->inputTagRemote('caop04_ordencompra/monto_partidas', array('url'=>'/caop04_ordencompra/ver_semaforo', 'update'=>'semaforo', 'id'=>'monto','maxlength'=>'22','class'=>'inputtext',"onChange"=>"moneda('monto');","style"=>"text-align:right;","onKeyPress"=>"return solonumeros_con_punto(event);"));?>-->
+    </td>
+  <td align="center"><?= $sisap->submitTagRemote('+', array('funcion'=>'validacion_presupuestaria2','url1' => '/caop04_ordencompra/agregar_partidas/nuevos', 'update1'=>'ListaPresupuestaria2','id'=>'plus','disabled'=>'disabled')); ?>&nbsp;&nbsp;<?= $sisap->submitTagRemote('Otra', array('url1' => '/cepp01_compromiso/codigos_diferentes/', 'update1'=>'ImputacionPresupuestaria','disabled'=>'disabled')); ?></td>
+  </tr>
+     <tr>
+    <td colspan="13" align="center" id="semaforo">&nbsp;</td>
+  </tr>
+</table>
+
+
+
+
+
+
+<div id="funcion" style="height:0px;"></div>
+<div id="ListaPresupuestaria2" style="height:150px; overflow:auto;">
+<?php include('agregar_partidas.thtml') ?>
+</div>
+
+<?php
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ }else{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+?>
+<table width="100%" border="1">
+	<tr>
+		<td width="200"><b>DIRECCI&Oacute;N SOLICITANTE:<b></td>
+		<td id="direc_solicitante">
+			<?= $html->input('caop04_ordencompra/direc_solicitante', $htmlAttributes = array('style'=>'width:98%', 'value'=>'', 'readonly'=>'readonly', 'id'=>'direccionSolic'), false);?>
+		</td>
+	</tr>
+</table>
+
+
+
+
+
+
+
+<br>
+	<table border="0" width="100%" class="tablacompromiso tablacompromiso2">
+	<tr>
+	   <td  width="10%"  align="center">Año de la obra</td>
+	   <td  width="80%" align="left">Código de la obra</td>
+	</tr>
+		<tr class="textNegro2">
+	      <td style="padding-left:5px;"><input class='inputtext' value="<?= $ano_ejecucion ?>" readonly onKeyPress="return solonumeros(event);"  style="text-align:center;"  size="4" id="ano_obra" name="data[cobp01_contratoobras][ano_obra]"/></td>
+	      <td style="padding-left:5px;"><input class='inputtext' readonly value="<?= $cod_obra ?>" style="text-align:left" id="input_cod_obra"  name="data[cobp01_contratoobras][input_cod_obra]"/></td>
+	  </tr>
+	  <tr><td colspan="5" align="center">DENOMINACIÓN DE LA OBRA</td></tr>
+	<tr>
+	   <td colspan="5" align="center">
+	<?= $html->textarea('caop02_solicitud_cotizacion/denominacion_obra', array('','rows'=>'3', 'value'=>$denominacion_obra, 'id' =>'denominacion_obra','class'=>'inputtext' ),  false) ?>
+	  </td>
+	</tr>
+	</table>
+<br>
+
+
+
+
+
+
+
+
+
+<div id="cotizacion" style="height:150px; overflow:auto;"><?php include("datos.thtml");?></div>
+<center><b><span class="mensaje_resaltado">Nota:<?= $html->image('check_rojo.png') ?> Este simbolo indica no disponibilidad en la partida.</span></b></center>
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="6%">Auxiliar</td>
+    <td align="center" width="18%">MONTO</td>
+    <td align="right" width="14%">--</td>
+  </tr>
+  <tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>---------</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#CDF2FF">
+    <td colspan="11" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td style="padding-right:5px; text-align:right;" id="TOTALINGRESOS"><?= $sisap->Formato2($total)?></td>
+    <td>--</td>
+</tr>
+</table>
+</div>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2"  id="tabla_imputacion" style="display:none">
+  <tr>
+    <td colspan="13" align="center">IMPUTACI&Oacute;N PRESUPUESTARIA</td>
+  </tr>
+  <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="6%">Sector</td>
+    <td align="center" width="6%">Prog</td>
+    <td align="center" width="6%">Sub <br />Prog </td>
+    <td align="center" width="6%">Proy</td>
+    <td align="center" width="6%">Activ <br />Obra </td>
+    <td align="center" width="8%">Part</td>
+    <td align="center" width="6%">Gen</td>
+    <td align="center" width="6%">Esp</td>
+    <td align="center" width="6%">Sub <br />Esp </td>
+    <td align="center" width="6%">Auxiliar</td>
+    <td align="center" width="18%">MONTO</td>
+    <td align="right" width="14%" id="td_disponibilidad">--</td>
+  </tr>
+  <tr>
+    <td><input type="text" value="" id='ano_partidas' name="data[caop04_ordencompra][ano_partidas]" readonly="readonly" class="inputtext"><?/* $sisap->selectTagRemote('cepp01_compromiso_partidas/ano_partidas', $anos !='' ? $anos : array(''=>''),  array('value1'=>'otros'),  '', array('onchange1'=>'/cepp01_compromiso/select3/sector', 'update1'=>'st_sector_2','id'=>'ano_partidas','class'=>'select100', true), null, true);*/ ?></td>
+    <td id="st_seleccion_1"><select id="seleccion_1" class="select100"></select></td>
+    <td id="st_seleccion_2"><select id="seleccion_2" class="select100"></select></td>
+    <td id="st_seleccion_3"><select id="seleccion_3" class="select100"></select></td>
+    <td id="st_seleccion_4"><select id="seleccion_4" class="select100"></select></td>
+    <td id="st_seleccion_5"><select id="seleccion_5" class="select100"></select></td>
+    <td id="st_seleccion_6" width="40"><select id="seleccion_6" class="select100"></select></td>
+    <td id="st_seleccion_7"><select id="seleccion_7" class="select100"></select></td>
+    <td id="st_seleccion_8"><select id="seleccion_8" class="select100"></select></td>
+    <td id="st_seleccion_9"><select id="seleccion_9" class="select100"></select></td>
+    <td id="st_seleccion_10"><select id="seleccion_10" class="select100"></td>
+    <td><!--<input type="text" name="data[cepp01_compromiso_partidas][monto_partidas]" value=""  maxlength="22" id="monto" onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('monto');" style="text-align:right;width:95%"/>-->
+    <?= $sisap->inputTagRemote('caop04_ordencompra/monto_partidas', array('url'=>'/caop04_ordencompra/ver_semaforo', 'update'=>'semaforo', 'id'=>'monto','maxlength'=>'22','class'=>'inputtext',"onFocus"=>"document.getElementById('plus').disabled=true","onChange"=>"moneda('monto');","style"=>"text-align:right;","onKeyPress"=>"return solonumeros_con_punto(event);"));?>
+    <!--<?= $sisap->inputTagRemote('caop04_ordencompra/monto_partidas', array('url'=>'/caop04_ordencompra/ver_semaforo', 'update'=>'semaforo', 'id'=>'monto','maxlength'=>'22','class'=>'inputtext',"onChange"=>"moneda('monto');","style"=>"text-align:right;","onKeyPress"=>"return solonumeros_con_punto(event);"));?>-->
+    </td>
+  <td><?= $sisap->submitTagRemote('+', array('funcion'=>'validacion_presupuestaria2','url1' => '/caop04_ordencompra/agregar_partidas/nuevos', 'update1'=>'ListaPresupuestaria2','id'=>'plus','disabled'=>'disabled')); ?>&nbsp;&nbsp;<?= $sisap->submitTagRemote('Otra', array('url1' => '/cepp01_compromiso/codigos_diferentes/', 'update1'=>'ImputacionPresupuestaria','disabled'=>'disabled')); ?></td>
+  </tr>
+     <tr>
+    <td colspan="13" align="center" id="semaforo">
+    	&nbsp;
+    </td>
+  </tr>
+</table>
+<div id="funcion" style="height:0px;"></div>
+<div id="ListaPresupuestaria2" style="height:150px; overflow:auto;">
+<?php include('agregar_partidas.thtml') ?>
+</div>
+<?php
+ }
+?>
+<br/>

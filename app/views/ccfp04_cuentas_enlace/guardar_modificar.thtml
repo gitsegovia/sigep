@@ -1,0 +1,116 @@
+<?
+$sisap->CssSelect();
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($var){
+
+switch($var){
+	case 1:
+		$name='SEGURO SOCIAL OBLIGATORIO';
+	break;
+	case 2:
+		$name='PARO FORZOSO';
+	break;
+	case 3:
+		$name='LEY DE POLÍTICA HABITACIONAL';
+	break;
+	case 4:
+		$name='FONDO DE PENSIÓN Y JUBILACIÓN';
+	break;
+	case 5:
+		$name='CAJA DE AHORROS';
+	break;
+	case 6:
+		$name='SINDICATOS Y GREMIOS';
+	break;
+	case 7:
+		$name='JUZGADOS Y TRIBUNALES';
+	break;
+	case 8:
+		$name='CASAS COMERCIALES';
+	break;
+	case 50:
+		$name='RETENCIÓN DEL IVA';
+	break;
+	case 51:
+		$name='RETENCIÓN DE ISLR';
+	break;
+	case 52:
+		$name='RETENCIÓN TIMBRE FISCAL';
+	break;
+	case 53:
+		$name='RETENCIÓN DE IMPUESTO MUNICIPAL';
+	break;
+	case 54:
+		$name='RETENCIÓN POR RESPONSABILIDAD CIVIL';
+	break;
+	case 55:
+		$name='RETENCIÓN POR RESPONSABILIDAD SOCIAL';
+	break;
+	case 99:
+		$name='OTRAS RETENCIONES';
+	break;
+
+
+}
+return $name;
+
+}
+
+?>
+
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+		<tr aling="center" class="tr_negro">
+			<td align="center" width="45%">Tipo enlace</td>
+			<td align="center" width="8%">Tipo <br/>Cuenta</td>
+			<td align="center" width="8%">Cuenta</td>
+			<td align="center" width="8%">Sub <br/>Cuenta</td>
+			<td align="center" width="9%">División</td>
+			<td align="center" width="8%">Sub <br/>División</td>
+			<td align="center" width="12%">Acción</td>
+		</tr>
+	<? if($datos!=null){
+		for($i=0;$i<count($datos);$i++){
+			if($i%2==0){
+    			$color="#CDF2FF";
+	    	}else{
+	    		$color="#DAEBFF";
+	    	}
+	    	if($datos[$i][0]["cod_tipo_enlace"]==1){
+	    		$enlace="FONDOS DE TERCEROS";
+	    	}
+	    	?>
+			<tr bgcolor=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" >
+				<td><?= $html->input('cnmp09/denomin', $htmlAttributes = array('value'=>denominacion($datos[$i][0]["cod_tipo_enlace"]),'style'=>'width:100%', 'readonly'=>'readonly','id'=>'','onKeyPress'=>'return solonumeros_con_punto(event);'), false); ?></td>
+				<td align="center"><?=$datos[$i][0]["cod_tipo_cuenta"]?></td>
+				<td align="center"><?= mascara_tres($datos[$i][0]["cod_cuenta"])?></td>
+				<td align="center"><?= mascara_tres($datos[$i][0]["cod_subcuenta"])?></td>
+				<td align="center"><?=$sisap->mascara_cuatro($datos[$i][0]["cod_division"])?></td>
+				<td align="center"><?= mascara_tres($datos[$i][0]["cod_subdivision"])?></td>
+				<td align="center">
+					<a href="javascript:ver_documento('/ccfp04_cuentas_enlace/modificar/<?=$datos[$i][0]['cod_tipo_enlace']?>/<?=$datos[$i][0]['cod_tipo_cuenta']?>/<?=$datos[$i][0]['cod_cuenta']?>/<?=$datos[$i][0]['cod_subcuenta']?>/<?=$datos[$i][0]['cod_division']?>/<?=$datos[$i][0]['cod_subdivision']?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos de la solicitud'))?></a>
+					<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/ccfp04_cuentas_enlace/eliminar/'.$datos[$i][0]['cod_tipo_enlace'].'/'.$datos[$i][0]['cod_tipo_cuenta'].'/'.$datos[$i][0]['cod_cuenta'].'/'.$datos[$i][0]['cod_subcuenta'].'/'.$datos[$i][0]['cod_division'].'/'.$datos[$i][0]['cod_subdivision'].'/'.$i, array('update'=>'carga_grilla', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('fila_$i');"), "Realmente desea Eliminar esta solicitud?", false, true); ?>
+				</td>
+			</tr>
+
+
+   <? } ?>
+
+		<input type="hidden" id="TI" value="<?=$i?>"/>
+		<? }else{ ?>
+   		<tr aling="center" bgcolor="#DAEBFF" >
+			<td><?= $html->input('cnmp09/denominacion', $htmlAttributes = array('value'=>'','style'=>'width:100%', 'readonly'=>'readonly','id'=>'','onKeyPress'=>'return solonumeros_con_punto(event);'), false); ?></td>
+			<td align="center" width="8%">&nbsp;</td>
+			<td align="center" width="8%">&nbsp;</td>
+			<td align="center" width="8%">&nbsp;</td>
+			<td align="center" width="8%">&nbsp;</td>
+			<td align="center" width="8%">&nbsp;</td>
+			<td align="center" width="10%">&nbsp;</td>
+		</tr>
+   <? } ?>
+</table>

@@ -1,0 +1,378 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		if(isset($_SESSION["opcion_busqueda"]) && $_SESSION["opcion_busqueda"]==3){
+        	$this->top_reporte("RELACIÓN DE CONCEPTOS", null, null, array("Y"=>"6", "X"=>"6", "Z"=>"13"), array("Y"=>"7", "X"=>"190"), false, false);
+		}else{
+			$this->top_reporte("RELACIÓN DE CONCEPTOS", null, null, array("Y"=>"6", "X"=>"6", "Z"=>"13"), array("Y"=>"7", "X"=>"190"), false, true);
+		}
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Tipo de nómina: ",'TL',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["cod_tipo_nomina_deno"],'RT',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Correspondiente a: ",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["correspondiente"],'R',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Número de nómina: ",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["numero_nomina"],'R',1);
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,6,$_SESSION["concepto"],'RBL',1, 'C');
+
+
+        $this->SetFont('vera','B',6);
+		$this->Cell(10,3,'CÓDIGO','RL',0,'C');
+		$this->Cell(10,3,'CÓDIGO','R',0,'C');
+		$this->Cell(16,3,'CÉDULA','R',0,'C');
+		$this->Cell(40,3,'','R',0,'C');
+		$this->Cell(18,3,'FECHA','R',0,'C');
+		$this->Cell(19,3,'MONTO','R',0,'C');
+		$this->Cell(17,3,'','R',0,'C');
+		$this->Cell(19,3,'MONTO','R',0,'C');
+		$this->Cell(20,3,'','R',0,'C');
+		$this->Cell(15,3,'N° CUOTAS','R',0,'C');
+		$this->Cell(0,3,'','R',1,'C');
+
+		$this->Cell(10,2,'CARGO','BRL',0,'C');
+		$this->Cell(10,2,'FICHA','BR',0,'C');
+		$this->Cell(16,2,'IDENTIDAD','BR',0,'C');
+		$this->Cell(40,2,'APELLIDOS Y NOMBRES','BR',0,'C');
+		$this->Cell(18,2,'TRANSACCIÓN','BR',0,'C');
+		$this->Cell(19,2,'ORIGINAL','BR',0,'C');
+		$this->Cell(17,2,'DIAS/HORAS','BR',0,'C');
+		$this->Cell(19,2,'CUOTA','BR',0,'C');
+		$this->Cell(20,2,'SALDO','BR',0,'C');
+		$this->Cell(15,2,'A CANCELAR','BR',0,'C');
+		$this->Cell(0,2,'OPERADOR','BR',1,'C');
+
+	}//fin funtion
+
+
+	function Footer() {
+
+		if(isset($_SESSION["print_firmas"]) && $_SESSION["print_firmas"]==1){
+			$this->SetY(-28);
+
+			$this->SetFont('vera','',6);
+
+	        $this->Cell(20,5,'','',0,'C');
+	        $this->Cell(40,5,'ELABORADO POR:','T',0,'C');
+	        $this->Cell(20,5,'','',0,'C');
+			$this->Cell(40,5,'REVISADO POR:','T',0,'C');
+			$this->Cell(20,5,'','',0,'C');
+			$this->Cell(40,5,'CONFORMADO POR:','T',0,'C');
+			$this->Cell(0,5, '','',1,'C');
+
+			$this->Cell(20,15,'','',0,'C');
+	        $this->Cell(40,15,'','',0,'C');
+	        $this->Cell(20,15,'','',0,'C');
+			$this->Cell(40,15,'','',0,'C');
+			$this->Cell(20,15,'','',0,'C');
+			$this->Cell(40,15,'','',0,'C');
+			$this->Cell(0,15, '','',1,'C');
+
+			$_SESSION["print_firmas"] = 0;
+		}
+
+	}
+
+
+}//fin de la clase PDF
+
+
+       if($opcion==1){
+
+?>
+
+
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE CONCEPTOS","","950");?>
+
+
+<?= $sisap->OpenTable("950")?>
+
+
+ <form name='data[reporte_juan2]'  method = "post" id='form' action="<?php echo $html->url('/reporte_juan_nomina/resumen_general_por_concepto_historico/2');?>" >
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+					<tr>
+					    <td width="10%" align="center" align='center'>Seleccione</td>
+					    <td width="10%" align="center" align='center'>C&oacute;digo</td>
+					    <td width="80%" align="center" align='center'>Denominaci&oacute;n tipo n&oacute;mina</td>
+					</tr>
+					<tr>
+					    <td width="10%" align="center"><?= $sisap->selectTagRemote('cnmp06_diskett_historico/cod_nomina', $lista_nomina , null , null, array('onchange1'=>'/cnmp06_diskett_historico/show_cod_nomina', 'update1'=>'sdenonomina',  'onchange2'=>'/cnmp06_diskett_historico/show_ano_nomina', 'update2'=>'ano_nomina2'   , 'id'=>'sel_cod_nomina', true), null, true); ?></td>
+						<td width="10%" align="center">
+				         <div id="scodnomina">
+						  <?= $html->input('cnmp06_diskett_historico/cod_nomina', $htmlAttributes = array('id'=>'cod_nomina', 'style'=>"text-align:center", 'size'=>'6', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+						 </div>
+				        </td>
+						<td width="80%" align="center">
+				          <div id="sdenonomina">
+					        <?= $html->input('cnmp06_diskett_historico/denominacion_nomina', $htmlAttributes = array('id'=>'denominacion_nomina', 'style'=>'width:98%', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+					      </div>
+				        </td>
+					</tr>
+</table>
+
+<br><br>
+
+<table width="30%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	  <tr>
+	    <td align="center" width="15%">Año Nómina</td>
+	    <td align="center" width="15%">Número Nómina</td>
+	  </tr>
+	  <tr>
+	    <td align="center" width="15%" id="ano_nomina2">     <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/ano_nomina',    null,  null,  null, array('id'=>'ano_nomina'  ,  true), null, true); ?></td>
+	    <td align="center" width="15%" id="numero_nomina2"> <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/numero_nomina', null,  null,  null, array('id'=>'numero_nomina', true), null, true); ?></td>
+     </tr>
+</table>
+<br><br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+			    <td align="center">
+			       <br>
+			          <?= $sisap->radioTagRemote('/reporte_juan_nomina/opcion_busqueda', array('3'=>'Todos los conceptos', '4'=>'Uno especifico'), array('url1'=>'/reporte_juan_nomina/resumen_general_por_concepto_historico/', 'update1'=>'funcion', "id"=>"opcion_busqueda"),"", 3);?>
+                   <br>
+                </td>
+           </tr>
+</table>
+
+
+
+ <br><br>
+
+                  <div id="capa_1" style="display:none;">
+                     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+							  <tr>
+							    <td align="center" width="7%">Tipo <br /> Transacción </td>
+							    <td align="center" width="2%">Selección</td>
+							    <td align="center" width="2%">Código</td>
+							    <td align="center" width="20%">Denominación de Transacción</td>
+							  </tr>
+
+							  <tr>
+							    <td align="center" width="7%"  id="tipo_tra_datos"> <?= $sisap->radioTagRemote('/reporte_juan_nomina/tipo_transaccion', array('1'=>'Asignaci&oacute;n', '2'=>'Deducci&oacute;n'), array('url1'=>'/reporte_juan_nomina/select_tran/', 'update1'=>'select_datos','id'=>'tipo_transaccion'),"",1);?> </td>
+							    <td align=""       width="2%"  id="select_datos"  > <?= $sisap->selectTagRemote('/reporte_juan_nomina/select_tra', $lista,  null,  null, array('onchange1'=>'/reporte_juan_nomina/seleccion_tran/1', 'update1'=>'deno_trans', 'id'=>'select_tra'  , true), null, true); ?></td>
+							    <td align="center" width="2%"                     > <input type="text" value="" id="datos_a"  class="inputtext" readonly="readonly" style="text-align:center"></td>
+							    <td align="center" width="20%" id="deno_trans"    > <input type="text" value="" id="datos_b"  class="inputtext" readonly="readonly"></td>
+						     </tr>
+					  </table>
+                  </div>
+
+
+
+
+
+				  <div id="capa_2" ></div>
+				  <div id="funcion"></div>
+
+<br />
+
+<input type="button" onClick="javascript: if($('opcion_busqueda_4').checked==true){if($('tipo_transaccion_1').checked==true){var tipo_t = 'tipo_transaccion_1';}else{var tipo_t = 'tipo_transaccion_2';} window.location.href='/reporte_juan_nomina/txt_resumen_general_por_concepto_historico/2/'+document.getElementById('cod_nomina').value+'/'+document.getElementById('ano_nomina').value+'/'+document.getElementById('numero_nomina').value+'/4/'+document.getElementById(tipo_t).value+'/'+document.getElementById('select_tra').value;}else{ window.location.href='/reporte_juan_nomina/txt_resumen_general_por_concepto_historico/2/'+document.getElementById('cod_nomina').value+'/'+document.getElementById('ano_nomina').value+'/'+document.getElementById('numero_nomina').value;}" value="GENERAR ARCHIVO" title="PRESIONE EL BOTON PARA GENERAR EL ARCHIVO PLANO" />
+
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+</form>
+<?= $sisap->CloseTable(); ?>
+
+
+<?php
+
+       }else if($opcion==2){
+
+       				$_SESSION["opcion_busqueda"] = $opcion_busqueda;
+       				$_SESSION["print_firmas"] = 0;
+
+   				    $pdf = new fpdfview('P','mm','Letter');
+					$pdf->AliasNbPages('TPAG');
+					$pdf->SetTopMargin(5);
+					$pdf->SetLeftMArgin(5);
+					$pdf->SetRightMargin(5);
+					$pdf->SetAutoPageBreak(true, 35);
+
+					$pdf->SetFont('vera','',5);
+
+                    $trans_tipo_aux = 0;
+                    $trans_aux      = 0;
+                    $cont_a         = 0;
+                    $cont_b         = 0;
+
+
+
+                           $cantidad_registros = count($datos);
+						if($cantidad_registros==0){
+
+							                    $_SESSION["cod_tipo_nomina_deno"]     =   "";
+												$_SESSION["correspondiente"]          =   "";
+												$_SESSION["numero_nomina"]            =   "";
+												$_SESSION["concepto"]                 =   "";
+/*
+
+                                           foreach($datos_nomina as $ve){
+                                            	$_SESSION["cod_tipo_nomina_deno"]     =   "Tipo de nómina: ".mascara_tres($ve["Cnmd01"]["cod_tipo_nomina"])." - ".$ve["Cnmd01"]["denominacion"];
+												$_SESSION["correspondiente"]          =   "Correspondiente a: ".$ve["Cnmd01"]["correspondiente"];
+												$_SESSION["numero_nomina"]            =   "Número de nómina: ".$ve["Cnmd01"]["numero_nomina"]." Periodo Desde: ".cambiar_formato_fecha($ve["Cnmd01"]["periodo_desde"])." Hasta: ".cambiar_formato_fecha($ve["Cnmd01"]["periodo_hasta"]);
+												$_SESSION["concepto"]                 =   "Concepto: ";
+                                           }//fin foreach
+
+*/
+
+						$pdf->AddPage();
+
+                        $pdf->Ln(3);
+						$pdf->SetFont('vera','B',10);
+						$pdf->Cell(0,50,'NO SE ENCONTRARÓN REGISTROS PARA LOS DATOS INGRESADOS','TRBL',1,'C');
+
+
+						}else{
+
+
+															foreach($datos as $ve){
+
+
+
+						                                            if($trans_tipo_aux != $ve["v_cnmd08_historia_trans_con"]["cod_tipo_transaccion"] ||
+						                                               $trans_aux      != $ve["v_cnmd08_historia_trans_con"]["cod_transaccion"]){
+
+
+						                                            	if($trans_tipo_aux!="" || $trans_aux!=""){
+
+						                                            		    $pdf->SetFont('vera','B',9);
+																				$pdf->Cell(70,5,'Número de personas','TRBL',0,'C');
+																				$pdf->SetFont('vera','B',10);
+																				$pdf->Cell(33,5,$cont_a,'TRB',0,'C');
+
+																				$pdf->SetFont('vera','B',9);
+																				$pdf->Cell(70,5,'Monto total','TRB',0,'C');
+																				$pdf->SetFont('vera','B',10);
+																				$pdf->Cell(33,5,$sisap->Formato2($cont_b),'TRB',1,'R');
+
+																				$_SESSION["print_firmas"] = 1;
+
+						                                            	}//fin if
+
+						                                            	$_SESSION["cod_tipo_nomina_deno"]     =   "Tipo de nómina: ".mascara_tres($ve["v_cnmd08_historia_trans_con"]["cod_tipo_nomina"])." - ".$ve["v_cnmd08_historia_trans_con"]["denominacion_nomina"];
+																		$_SESSION["correspondiente"]          =   "Correspondiente a: ".$ve["v_cnmd08_historia_trans_con"]["correspondiente"];
+																		$_SESSION["numero_nomina"]            =   "Número de nómina: ".$ve["v_cnmd08_historia_trans_con"]["numero_nomina"]." Periodo Desde: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_desde"])." Hasta: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_hasta"]);
+																		$_SESSION["concepto"]                 =   "Concepto: ".mascara_tres($ve["v_cnmd08_historia_trans_con"]["cod_transaccion"])." - ".$ve["v_cnmd08_historia_trans_con"]["deno_transaccion"];
+
+                                                                        $trans_tipo_aux = $ve["v_cnmd08_historia_trans_con"]["cod_tipo_transaccion"];
+						                                            	$trans_aux      = $ve["v_cnmd08_historia_trans_con"]["cod_transaccion"];
+
+
+
+						                                            	$cont_a = 0;
+						                                            	$cont_b = 0;
+
+						                                            	$pdf->AddPage();
+						                                            }//fin if
+
+						                                            $cont_a++;
+						                                            $cont_b +=$ve["v_cnmd08_historia_trans_con"]["monto_cuota"];
+
+						                                            $ve["v_cnmd08_historia_trans_con"]["username"] = "HISTORICO";
+
+						                                            $pdf->SetFont('vera','',6);
+
+																	$pdf->Cell(10,6,mascara_seis($ve["v_cnmd08_historia_trans_con"]["cod_cargo"]),'RL',0,'C');
+																	$pdf->Cell(10,6,mascara_seis($ve["v_cnmd08_historia_trans_con"]["cod_ficha"]),'R',0,'C');
+
+																	$pdf->SetFont('vera','',8);
+																	$pdf->Cell(16,6,$ve["v_cnmd08_historia_trans_con"]["cedula_identidad"],'R',0,'C');
+
+						                                             $nombres  = $ve["v_cnmd08_historia_trans_con"]["primer_apellido"]." ";
+						                                             $nombres .= $ve["v_cnmd08_historia_trans_con"]["segundo_apellido"]." ";
+						                                             $nombres .= $ve["v_cnmd08_historia_trans_con"]["primer_nombre"]." ";
+						                                             $nombres .= $ve["v_cnmd08_historia_trans_con"]["segundo_nombre"]." ";
+
+
+//																	$pdf->Cell(40,5,$nombres,'R',0,'L');
+																	$pdf->SetFont('vera','',6);
+
+																	$varX = $pdf->GetX();
+																	$varY = $pdf->GetY();
+																	$pdf->Cell(40,1,"",'',2,'C');
+																	$pdf->MultiCell(39,2,$nombres,'','L');//--[SECRETARIA]
+																	$varX = $varX+40;
+																	$pdf->SetXY($varX,$varY);
+
+																	$pdf->SetFont('vera','',8);
+																	$pdf->Cell(18,6,cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["fecha_transaccion"]),'RL',0,'C');
+																	$pdf->SetFont('vera','',9);
+																	$pdf->Cell(19,6,$ve["v_cnmd08_historia_trans_con"]["monto_original"],'R',0,'R');
+																	$pdf->Cell(17,6,mascara2($ve["v_cnmd08_historia_trans_con"]["dias_horas"]),'R',0,'C');
+																	$pdf->Cell(19,6,$sisap->Formato2($ve["v_cnmd08_historia_trans_con"]["monto_cuota"]),'R',0,'R');
+																	$pdf->Cell(20,6,$sisap->Formato2($ve["v_cnmd08_historia_trans_con"]["saldo"]),'R',0,'R');
+																	$pdf->Cell(15,6,$sisap->Formato2($ve["v_cnmd08_historia_trans_con"]["numero_cuotas_canceladas"]),'R',0,'C');
+																	$pdf->SetFont('vera','',8);
+																		//$varX = $pdf->GetX();
+																		//$varY = $pdf->GetY();
+																		$pdf->Cell(23,1,"",'',2,'C');
+																		$pdf->MultiCell(22,2,$ve["v_cnmd08_historia_trans_con"]["username"],'','L');
+																		$varX = $varX+108;
+																		$pdf->SetXY($varX,$varY);
+																		//$pdf->Cell(0,6,$ve["v_cnmd07_transacciones_actuales_con"]["username"],'R',1,'L');
+																		$pdf->Cell(0,6,"",'R',1);
+
+
+																	$pdf->Cell(0,0,"",'T',1,'C');
+
+															}//fin foreach
+
+
+
+											$pdf->Ln(2);
+
+											$pdf->SetFont('vera','B',9);
+											$pdf->Cell(70,5,'Número de personas','TRBL',0,'C');
+											$pdf->SetFont('vera','B',10);
+											$pdf->Cell(33,5,$cont_a,'TRB',0,'C');
+
+											$pdf->SetFont('vera','B',9);
+											$pdf->Cell(70,5,'Monto Total','TRB',0,'C');
+											$pdf->SetFont('vera','B',10);
+											$pdf->Cell(33,5,$sisap->Formato2($cont_b),'TRB',1,'R');
+
+											$_SESSION["print_firmas"] = 1;
+
+						}//fin else
+
+
+
+					$pdf->Output('resumen_general_por_concepto_historico_'.date("d-m-Y"),'D');
+
+
+
+
+       }//fin else
+
+?>

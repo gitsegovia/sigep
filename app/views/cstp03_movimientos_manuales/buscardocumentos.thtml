@@ -1,0 +1,76 @@
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+	function zeros($x=null){
+	if($x != null){
+		if($x<10){
+			$x="000".$x;
+		}else if($x>=10 && $x<=99){
+			$x="00".$x;
+		}else if($x>=100 && $x<=999){
+			$x="0".$x;
+		}
+	}
+	return $x;
+	}
+
+	if(isset($datos)){
+?>
+<table width="100%" border="0" cellspacing="0">
+<tr class="tr_negro">
+	<td width="130" align="center">N&uacute;mero</td>
+	<td width="130" align="center">Documento</td>
+	<td width="110" align="center">Entidad</td>
+	<td width="110" align="center">Sucursal</td>
+	<td width="150" align="center">Cuenta Bancaria</td>
+	<td width="190" align="center">Condici&oacute;n</td>
+	<td align="center">&nbsp;</td>
+</tr>
+
+<?php
+$k=0;
+$j=0;
+$tipodoc="cero";
+foreach($datos as $documento){
+$entidad   =$documento['cstd03_movimientos_manuales']['cod_entidad_bancaria'];
+$sucursal  =$documento['cstd03_movimientos_manuales']['cod_sucursal'];
+$cuenta    =$documento['cstd03_movimientos_manuales']['cuenta_bancaria'];
+$tipo      =$documento['cstd03_movimientos_manuales']['tipo_documento'];
+$nro       =$documento['cstd03_movimientos_manuales']['numero_documento'];
+$ano       =$documento['cstd03_movimientos_manuales']['ano_movimiento'];
+$condicion =$documento['cstd03_movimientos_manuales']['condicion_actividad'];
+
+if ($condicion==1){$actividad="ACTIVO";}else{$actividad="ANULADO";}
+
+	if($k%2 == 0){
+		$color = "#CDF2FF";
+	}else{
+		$color = "#DAEBFF";
+	}
+	$k++;
+
+	switch($tipo){
+		case '1': $tipodoc="DEPOSITO"; break;
+		case '2': $tipodoc="NOTA CREDITO"; break;
+		case '3': $tipodoc="NOTA DEBITO"; break;
+		case '4': $tipodoc="CHEQUE"; break;
+	}
+?>
+
+<tr id="<?= $j ?>" bgcolor="<?=$color?>">
+	<td align="center"><font color="000"><?= $nro?></font></td>
+	<td align="center"><font color="000"><?= $tipodoc ?></font></td>
+	<td align="center"><font color="000"><?= zeros($entidad)?></font></td>
+	<td align="center"><font color="000"><?= zeros($sucursal)?></font></td>
+	<td align="center"><font color="000"><?= $cuenta?></font></td>
+	<td align="center"><font color="000"><?= $actividad?></font></td>
+	<td align="center"><?= $ajax->link($html->image('eye.png', array('border'=>'0')), '/cstp03_movimientos_manuales/consultar2/'.$entidad.'/'.$sucursal.'/'.$cuenta.'/'.$tipo.'/'.$nro.'/'.$ano, array('update'=>'cstp03_movimientos_manuales', 'title'=>'Ver'), null, false, true); ?></td>
+</tr>
+
+<?php
+}
+
+}
+?>
+

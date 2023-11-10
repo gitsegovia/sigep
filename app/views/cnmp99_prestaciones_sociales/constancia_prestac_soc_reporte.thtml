@@ -1,0 +1,336 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+	set_time_limit(0);
+
+	if(isset($datos_firmantes) && !empty($datos_firmantes)){
+		$_SESSION['contenido_pie_pag'] = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+	}else{
+		$_SESSION['contenido_pie_pag'] = "";
+	}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+	  //$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,3,"DIRECCIÓN DE RECURSOS HUMANOS",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,1,"",'RL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+	}
+
+	function Footer(){
+		$this->SetLeftMArgin(10);
+		$this->SetRightMargin(10);
+		$this->SetY(-11);
+		$this->SetFont('vera','I',6);
+		$this->MultiCell(0,3,$_SESSION['contenido_pie_pag'],'','C');
+	}
+
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+	$pdf->SetFont('vera','B',13);
+
+
+function fecha_alfabetico_constancia($var=null){
+
+$fecha = $var;
+$mes = '';
+$year = '';
+$termino_var = '';
+$termino_dia = '';
+if($fecha!=''){
+$year = $fecha[0].'.'.$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+
+if($dia==1 || $dia=="01"){
+	$termino_var = 'AL ';
+	$termino_dia = ' DIA';
+}else{
+	$termino_var = 'A LOS ';
+	$termino_dia = ' DIAS';
+}
+
+}//fin
+
+switch($mes){
+    case"1":{$var="Enero"; }break;
+    case"2":{ $var="Febrero"; }break;
+    case"3":{ $var="Marzo"; }break;
+    case"4":{ $var="Abril"; }break;
+    case"5":{ $var="Mayo"; }break;
+    case"6":{ $var="Junio"; }break;
+    case"7":{ $var="Julio"; }break;
+    case"8":{ $var="Agosto"; }break;
+    case"9":{ $var="Septiembre"; }break;
+    case"10":{$var="Octubre"; }break;
+    case"11":{$var="Noviembre"; }break;
+    case"12":{$var="Diciembre"; }break;
+}//fin
+
+$var_aux = $termino_var.$dia.$termino_dia.' DEL MES DE '.strtoupper($var).' DE '.$year;
+
+return $var_aux;
+
+}//fin function
+
+	$i_cont = 0;
+
+	if(isset($datos_constancia_perso) && $datos_constancia_perso!=null){
+		$cedulai = $datos_constancia_perso[0]['datos_persona_co']['cedula_identidad'];
+		$nombs_apes = $datos_constancia_perso[0]['datos_persona_co']['nombres_apellidos'];
+		$ley = "SEGÚN EL ARTÍCULO 142 DE LA LEY ORGÁNICA DEL TRABAJO DE LOS TRABAJADORES Y TRABAJADORAS (LOTTT), PUBLICADA EN GACETA OFICIAL EXTRAORDINARIA Nº 6.076 DE FECHA 07/05/2012";
+		// $intereses = $datos_constancia_perso[0]['datos_persona_co']['interes'];
+		$total     = $datos_constancia_perso[0]['datos_persona_co']['totales'];
+		$total_alf = $sisap->Formato1($total);
+		$verifica_da = true;
+	}else{
+		$cedulai = '';
+		$nombs_apes = '';
+		$ley = '';
+		// $intereses = 0;
+		$total = 0;
+		$verifica_da = false;
+	}
+
+	inicio_ventana_barra_proceso("".$nombs_apes.". C.I:".$cedulai."");
+
+	if($codigo_dependencia==1 || $codigo_dependencia == '1'){
+		$recibe_por = $_SESSION['institucion'];
+	}else{
+		$recibe_por = $_SESSION['dependencia'];
+	}
+
+	$pdf->Cell(0,8,"",'',1,'C');
+	$pdf->Cell(0,4,"POR BS. (".$sisap->Formato2($total).")",'',1,'C');
+
+	$pdf->SetFont('vera','',12);
+
+	$contenido = "<p align='justify'>HE RECIBIDO DE LA ".$recibe_por.", LA CANTIDAD DE: <b>".$sisap->convertir($total_alf)." (<u>BS ".$sisap->Formato2($total)."</u>),</b> POR CONCEPTO DE LIQUIDACIÓN DE PRESTACIONES SOCIALES, ".$ley.".</p>";
+
+	$fecha_exp = date('Y-m-d');
+
+	$pdf->SetLeftMArgin(25);
+	$pdf->SetRightMargin(25);
+
+	$pdf->SetY(30);
+
+	$pdf->Cell(0,9,"",'',2,'C');
+	// $pdf->MultiCell(0,10,$contenido,'','J');
+	$pdf->MultiCell(0, 10, $pdf->WriteHTML($contenido), 0, 'J', 0, 1, '', '', true, 0, false);
+
+	$pdf->SetFont('vera','B',11);
+	$pdf->Cell(0,2,"",'',1,'C');
+
+	$pdf->MultiCell(0, 4, "EXPEDIDA ".fecha_alfabetico_constancia($fecha_exp)."", 0, 'J', 0, 1, '', '', true, 0, false);
+	$pdf->Cell(0,18,"",'',1,'C');
+
+		$pdf->SetFont('vera','B',10);
+		$pdf->Cell(0,10,"RECIBE CONFORME",'',1,'C');
+		$pdf->Cell(0,6,"",'',1,'C');
+		$pdf->Cell(32,1,"",'',0,'C');
+		$pdf->Cell(100,4,"",'B',1,'C');
+
+		$pdf->Cell(0,7,$nombs_apes,'',1,'C');
+		$pdf->Cell(0,2,"C.I. ".$cedulai,'',1,'C');
+		$pdf->Cell(0,10,"",'',1,'C');
+
+	for($ipv=0;$ipv<10;$ipv++){
+		$i_cont++;
+		proceso_ventana_barra_proceso($i_cont, 500, 10000);
+	}
+
+				     /** *** PARA IMPRESION *** */
+	// ---------------- **** DATOS FIRMANTES **** -------------------
+
+if(isset($datos_firmantes) && !empty($datos_firmantes)){
+
+		$nombre_primera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_primera_firma']; $cargo_primera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_primera_firma'];
+		$nombre_segunda_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_segunda_firma']; $cargo_segunda_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_segunda_firma'];
+		$nombre_tercera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_tercera_firma']; $cargo_tercera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_tercera_firma'];
+		$nombre_cuarta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_cuarta_firma'];  $cargo_cuarta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_cuarta_firma'];
+		$nombre_quinta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_quinta_firma'];  $cargo_quinta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_quinta_firma'];
+		$nombre_sexta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_sexta_firma'];   $cargo_sexta_firma    = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_sexta_firma'];
+		$nombre_septima_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_septima_firma']; $cargo_septima_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_septima_firma'];
+		$nombre_octava_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_octava_firma'];  $cargo_octava_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_octava_firma'];
+		$primera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['primera_copia'];  	   $segunda_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['segunda_copia'];
+		$tercera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['tercera_copia']; 	   $cuarta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['cuarta_copia'];
+		$quinta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['quinta_copia'];		   $sexta_copia          = $datos_firmantes[0]['cnmd15_firmas_informes']['sexta_copia'];
+		$septima_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['septima_copia'];		   $octava_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['octava_copia'];
+		$pie_pagina           = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+
+	}else{
+
+		$nombre_primera_firma = '';		$cargo_primera_firma  = '';
+		$nombre_segunda_firma = '';		$cargo_segunda_firma  = '';
+		$nombre_tercera_firma = '';		$cargo_tercera_firma  = '';
+		$nombre_cuarta_firma  = '';		$cargo_cuarta_firma   = '';
+		$nombre_quinta_firma  = '';		$cargo_quinta_firma   = '';
+		$nombre_sexta_firma   = '';		$cargo_sexta_firma    = '';
+		$nombre_septima_firma = '';		$cargo_septima_firma  = '';
+		$nombre_octava_firma  = '';		$cargo_octava_firma   = '';
+		$primera_copia        = '';		$segunda_copia        = '';
+		$tercera_copia        = '';		$cuarta_copia         = '';
+		$quinta_copia         = '';		$sexta_copia          = '';
+		$septima_copia        = '';		$octava_copia         = '';
+		$pie_pagina           = '';
+
+	}
+
+	$pdf->SetLeftMArgin(8);
+	$pdf->Cell(0,4,"",'',1,'C');
+
+	$pdf->SetFont('vera','B',5);
+
+	// BLOQUE DE FIRMAS: 1, 2, 3 Y 4:
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_primera_firma,'T','C');
+	//$pdf->Ln(11);
+	// $pdf->Cell(50,45,$nombre_primera_firma,'',0,'C');
+	// $pdf->MultiCell(50,3,"",'B','C');
+	// $pdf->MultiCell(50,3,$nombre_primera_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_segunda_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_tercera_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_cuarta_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,1,"",'',1,'C');
+
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(0,20,"",'L',1,'C');
+
+	$pdf->Cell(50,4,$nombre_primera_firma,'RBL',0,'C');
+	$pdf->Cell(50,4,$nombre_segunda_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_tercera_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_cuarta_firma,'RB',1,'C');
+
+	// $pdf->Ln(8);
+
+	// $pdf->Cell(0,10,"",'',1,'C');
+
+	// BLOQUE DE FIRMAS: 5, 6, 7 Y 8:
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_quinta_firma,'T','C');
+	//$pdf->Ln(11);
+	// $pdf->Cell(50,45,$nombre_primera_firma,'',0,'C');
+	// $pdf->MultiCell(50,3,"",'B','C');
+	// $pdf->MultiCell(50,3,$nombre_primera_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_sexta_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_septima_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_octava_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,0,"",'',1,'C');
+
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(0,20,"",'L',1,'C');
+
+	$pdf->Cell(50,4,$nombre_quinta_firma,'RBL',0,'C');
+	$pdf->Cell(50,4,$nombre_sexta_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_septima_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_octava_firma,'RB',1,'C');
+
+/*
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','I',5);
+	$pdf->MultiCell(0,3,$pie_pagina,'','C');
+*/
+
+
+	if(isset($verifica_da) && $verifica_da==false){
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+	}
+
+	fin_ventana_barra_proceso();
+
+	$pdf->Output('Constancia_Prestaciones_Sociales_'.date("d-m-Y")."",'SISAP_AJAX');
+
+?>

@@ -1,0 +1,426 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+  echo $sisap->mensajes_correcto($Message_existe);
+
+}
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+class fpdfview extends TCPDF{
+    public $titulo_A = '';
+    public $titulo_B = '';
+    public $fecha_elaboracion = '';
+
+    public $p_nombre = '';
+    public $p_cargo = '';
+
+    public $s_nombre = '';
+    public $s_cargo = '';
+
+  function Footer(){
+    $this->SetY(-65);
+    $this->SetFont('vera','B',9);
+
+    $this->Cell(90,5,"Elaborado por: ",'LTBR',0,'C');
+    $this->Cell(0,5,"Aprobado por: ",'LTBR',1,'C');
+
+    $this->Cell(90,25,"",'LTR',0,'C');
+    $this->Cell(0,25,"",'LTR',1,'C');
+
+    $this->Cell(90,5,$this->p_nombre,'LR',0,'C');
+    $this->Cell(0,5,$this->s_nombre,'R',1,'C');
+    //$this->Ln();
+    $this->Cell(90,5,$this->p_cargo,'LRB',0,'C');
+    $this->Cell(0,5,$this->s_cargo,'RB',1,'C');
+    //$this->Ln();
+    $this->Ln();
+
+  }
+
+
+  function top_reporte_planilla($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true)
+  {
+    $escudo_array      = top_reporte_escudo($consolidado);
+    $escudo            = $escudo_array["escudo"];
+    $entidad_federal   = $escudo_array["entidad_federal"];
+    $dependencia       = "Secretaria de Finanzas";
+
+    if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+    if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+    if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+    $this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"]);
+    $this->SetFont('vera','B',8);
+    $this->Cell(14,4,"",'TL',0);
+    $this->Cell(0,4,$entidad_federal,'TR',1);
+    $this->Cell(14,3,"",'L',0);
+    $this->SetFont('vera','',7);
+    $this->Cell(0,3,$dependencia,'R',1);
+    $this->SetFont('vera','B',8);
+    $this->Cell(0,3,"",'RL',1,'C');
+    $this->Cell(0,5,$titulo_varios[0],'RL',1,'C');
+    $this->SetFont('vera','B',7);
+    if(count($titulo_varios)>1){
+      for($it=1;$it<count($titulo_varios);$it++){
+        $this->Cell(0,5,$titulo_varios[$it],'RL',1,'C');
+      }
+    }
+
+    $this->Cell(0,1,"",'RLB',1,'C');
+    $this->SetFont('vera','B',5);
+    if(isset($posicion_pie_pagina["Y"])){
+      $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"],'PAGINA: '.$this->PageNo().'/TPAG');
+      $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: '.date("d/m/Y"));
+      $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+6, 'HORA: '.date("h:i a"));
+    }//fin if
+    $this->Ln(3);
+  }//function
+
+  function Header()
+  {
+    $titulo_A = $this->titulo_A;
+    $titulo_B = $this->titulo_B;
+
+    $this->top_reporte_planilla(array($titulo_A,$titulo_B), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+    $this->SetFont('vera','B',8);
+    $this->Cell(15,4,'','',0);
+    $this->SetFont('vera','',8);
+    $this->Cell(135,4,'','',0);
+    $this->SetFont('vera','',8);
+    $this->Cell(30,4,"FECHA ELABORACIÓN: ",'',0,'R');
+    $this->SetFont('vera','',8);
+    $this->Cell(0,4,$this->fecha_elaboracion,'',1,'C');
+    $this->Ln();
+  }
+
+
+  function tam_celda($total_char){
+    if($total_char<40){
+      $heigth = 10;
+    }elseif($total_char>=40 && $total_char<120){
+      $heigth = 20;
+    }elseif($total_char>=120 && $total_char<200){
+      $heigth = 35;
+    }else{
+      $heigth = 50;
+    }
+    return $heigth;
+  }
+
+
+}//fin class
+
+
+if(isset($datos1)){
+
+  $cuenta = 0;
+  $i = 0;
+  foreach ($datos1 as $row) {
+    $var[$i]['ano_requisicion']  = $row['cscd06_requisicion_encabezado']['ano_requisicion'];
+    $var[$i]['numero_requisicion'] = $row['cscd06_requisicion_encabezado']['numero_requisicion'];
+    $var[$i]['fecha_proceso']  =   $row['cscd06_requisicion_encabezado']['fecha_proceso'];
+    $var[$i]['cod_dir_superior']  =   $row['cscd06_requisicion_encabezado']['cod_dir_superior'];
+    $var[$i]['cod_coordinacion']  = $row['cscd06_requisicion_encabezado']['cod_coordinacion'];
+    $var[$i]['cod_secretaria']  =   $row['cscd06_requisicion_encabezado']['cod_secretaria'];
+    $var[$i]['cod_direccion']  =   $row['cscd06_requisicion_encabezado']['cod_direccion'];
+    $var[$i]['cod_division']  =   $row['cscd06_requisicion_encabezado']['cod_division'];
+    $var[$i]['cod_departamento']  =   $row['cscd06_requisicion_encabezado']['cod_departamento'];
+    $var[$i]['cod_oficina']  =   $row['cscd06_requisicion_encabezado']['cod_oficina'];
+    $var[$i]['nota']  =  $row['cscd06_requisicion_encabezado']['nota'];
+
+    if ($row['cscd06_requisicion_encabezado']['ano_solicitud'] != 0) {
+      $var[$i]['ano_solicitud']  =  $row['cscd06_requisicion_encabezado']['ano_solicitud'];
+    } else {
+      $var[$i]['ano_solicitud']  =  '';
+    }
+    if ($row['cscd06_requisicion_encabezado']['numero_solicitud'] != 0) {
+      $var[$i]['numero_solicitud']  =  $row['cscd06_requisicion_encabezado']['numero_solicitud'];
+    } else {
+      $var[$i]['ano_solicitud']  =  '';
+    }
+    $fecha_proceso = $row['cscd06_requisicion_encabezado']['fecha_proceso'];
+
+    //echo "cotizacion es: ".$cotizacion;
+    //echo $fecha_proceso;
+    $dia2 = $fecha_proceso[8] . $fecha_proceso[9];
+    $mes2 = $fecha_proceso[5] . $fecha_proceso[6];
+    $enabled2 = '';
+    if ($mes2 >= 4) {
+      //echo "entre";
+      if ($mes2 == 4 && $dia2 < 8) $enabled2 = '';
+      else if ($cotizacion != 0) $enabled2 = 'disabled';
+    }
+    $era2 = $fecha_proceso[0] . $fecha_proceso[1] . $fecha_proceso[2] . $fecha_proceso[3];
+    $dia1 = 8;
+    $mes1 = 4;
+    $era1 = 2008;
+
+    $timestamp1 = mktime(0, 0, 0, $dia1, $mes1, $era1);
+    $timestamp2 = mktime(0, 0, 0, $dia2, $mes2, $era2);
+    //echo $fecha_proceso." | ".$dia2.$mes2.$era2.' | '.$timestamp1.'-'.$timestamp2." = ";
+    $resta = $timestamp1 - $timestamp2;
+    //echo $resta."<br/>";
+    if ($cotizacion != '0') {
+      $enable = "disabled";
+    } else {
+      $enable = "";
+    }
+    //echo $enable;
+
+    $var[1] = $row['cscd06_requisicion_encabezado']['ano_requisicion'];
+    $var[2] = $row['cscd06_requisicion_encabezado']['numero_requisicion'];
+    $var[3] =   $row['cscd06_requisicion_encabezado']['fecha_proceso'];
+    $var[4] =   $row['cscd06_requisicion_encabezado']['cod_dir_superior']; //direccion superior
+    $var[5] = $row['cscd06_requisicion_encabezado']['cod_coordinacion']; //coordinacion
+    $var[6] =   $row['cscd06_requisicion_encabezado']['cod_secretaria']; //secretaria
+    $var[7] =   $row['cscd06_requisicion_encabezado']['cod_direccion']; //direccion
+    $var[8] =   $row['cscd06_requisicion_encabezado']['cod_division'];
+    $var[9] =   $row['cscd06_requisicion_encabezado']['cod_departamento'];
+    $var[10] =   $row['cscd06_requisicion_encabezado']['cod_oficina'];
+    $var[11] =  $row['cscd06_requisicion_encabezado']['nota'];
+
+    $parametros = $var[1] . '/' . $var[2] . '/' . $cod_sector . '/' . $cod_programa . '/' . $cod_sub_prog . '/' . $cod_proyecto;
+
+    foreach ($cod_dir_superior as $ds) {
+      if ($ds['cugd02_direccionsuperior']['cod_dir_superior'] == $row['cscd06_requisicion_encabezado']['cod_dir_superior']) {
+        if ($ds['cugd02_direccionsuperior']['denominacion'] != '' || $ds['cugd02_direccionsuperior']['denominacion'] != null)
+          $deno[$i]['deno1'] = $ds['cugd02_direccionsuperior']['denominacion'];
+        else
+          $deno[$i]['deno1'] = 'N/A';
+      }
+    }
+    foreach ($cod_coordinacion as $co) {
+      if ($co['cugd02_coordinacion']['cod_coordinacion'] == $row['cscd06_requisicion_encabezado']['cod_coordinacion']) {
+        if ($co['cugd02_coordinacion']['denominacion'] != '' || $co['cugd02_coordinacion']['denominacion'] != null)
+          $deno[$i]['deno2'] = $co['cugd02_coordinacion']['denominacion'];
+        else
+          $deno[$i]['deno2'] = 'N/A';
+      }
+    }
+    foreach ($cod_secretaria as $se) {
+      if ($se['cugd02_secretaria']['cod_secretaria'] == $row['cscd06_requisicion_encabezado']['cod_secretaria']) {
+        if ($se['cugd02_secretaria']['denominacion'] != '' || $se['cugd02_secretaria']['denominacion'] != null)
+          $deno[$i]['deno3'] = $se['cugd02_secretaria']['denominacion'];
+        else
+          $deno[$i]['deno3'] = 'N/A';
+      }
+    }
+    foreach ($cod_direccion as $dir) {
+      if ($dir['cugd02_direccion']['cod_direccion'] == $row['cscd06_requisicion_encabezado']['cod_direccion']) {
+        if ($dir['cugd02_direccion']['denominacion'] != '' || $dir['cugd02_direccion']['denominacion'] != null)
+          $deno[$i]['deno4'] = $dir['cugd02_direccion']['denominacion'];
+        else
+          $deno[$i]['deno4'] = 'N/A';
+      }
+    }
+    foreach ($cod_division as $div) {
+      if ($div['cugd02_division']['cod_division'] == $row['cscd06_requisicion_encabezado']['cod_division']) {
+        if ($div['cugd02_division']['denominacion'] != '' || $div['cugd02_division']['denominacion'] != null)
+          $deno[$i]['deno5'] = $div['cugd02_division']['denominacion'];
+        else
+          $deno[$i]['deno5'] = 'N/A';
+      }
+    }
+    foreach ($cod_departamento as $de) {
+      if ($de['cugd02_departamento']['cod_departamento'] == $row['cscd06_requisicion_encabezado']['cod_departamento']) {
+        if ($de['cugd02_departamento']['denominacion'] != '' || $de['cugd02_departamento']['denominacion'] != null)
+          $deno[$i]['deno6'] = $de['cugd02_departamento']['denominacion'];
+        else
+          $deno[$i]['deno6'] = 'N/A';
+      }
+    }
+    foreach ($cod_oficina as $of) {
+      if ($of['cugd02_oficina']['cod_oficina'] == $row['cscd06_requisicion_encabezado']['cod_oficina']) {
+        if ($of['cugd02_oficina']['denominacion'] != '' || $of['cugd02_oficina']['denominacion'] != null)
+          $deno[$i]['deno7'] = $of['cugd02_oficina']['denominacion'];
+        else
+          $deno[$i]['deno7'] = 'N/A';
+      }
+    }
+  }
+  $orden = 1;
+
+
+  //$fecha_proceso[$orden]         =   $sisap->cambia_fecha($aux_cscd02_solicitud_encabezado['cscd02_solicitud_encabezado']['fecha_proceso']);
+
+
+  /* datos cuerpo
+  foreach($datos_cscd02_solicitud_cuerpo as $aux_cscd02_solicitud_cuerpo){
+    if($aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['ano_solicitud'] == $ano_solicitud[$orden]   &&  $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['numero_solicitud'] == $numero_solicitud[$orden]){
+        $i[$orden]++;
+
+        $codigo_prod_serv[$orden][$i[$orden]]      =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['codigo_prod_serv'];
+        $descripcion[$orden][$i[$orden]]           =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['descripcion'];
+        $especificaciones[$orden][$i[$orden]]      =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['especif_caract'];
+        $cod_medida[$orden][$i[$orden]]            =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['cod_medida'];
+        $cantidad[$orden][$i[$orden]]              =   $aux_cscd02_solicitud_cuerpo['cscd02_solicitud_cuerpo']['cantidad'];
+
+        foreach($unidad_medida as $aux_unidad_medida){
+          if($aux_unidad_medida['cscd01_unidad_medida']['cod_medida'] == $cod_medida[$orden][$i[$orden]]){
+            $cod_medida[$orden][$i[$orden]] = $aux_unidad_medida['cscd01_unidad_medida']['expresion'];
+          }//fin if
+        }//fin foreach
+    }//fin if
+  }//fin foreach
+
+  */
+
+}//fin if
+
+function unidades($medida, $cod_medida)
+{
+  foreach ($medida as $x) {
+    if ($x['cscd01_unidad_medida']['cod_medida'] == $cod_medida) {
+      $expresion = $x['cscd01_unidad_medida']['expresion'];
+      $dMedida = $x['cscd01_unidad_medida']['denominacion'];
+      return strtoupper($expresion);
+    }
+  }
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(8);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->titulo_A = 'REQUISICIÓN DE BIENES O SERVICIOS';
+$pdf->titulo_B = '';
+$pdf->fecha_elaboracion = $var[0]['fecha_proceso'];
+$pdf->p_nombre = $funcionario_primera_firma;
+$pdf->p_cargo = $cargo_primera_firma;
+
+$pdf->s_nombre = $funcionario_tercera_firma;
+$pdf->s_cargo = $cargo_tercera_firma;
+
+
+for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+
+$listo = "no";
+
+$_SESSION['PAGINA_A'] = 0;
+$_SESSION['PAGINA_A_AUX'] = 1;
+
+
+$monto_aux = 0;
+$sub_total = 0;
+$total     = 0;
+$total_2   = 0;
+$total_aux = 0;
+$total_aux2 = 0;
+$pagina     = 1;
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(45,5,"Número de",'TRLB',0,'C');
+$pdf->Cell(30,5,"",'TRLB',0,'C');
+$pdf->Cell(30,5,"Sect.",'TRLB',0,'C');
+$pdf->Cell(30,5,"Prog.",'TRLB',0,'C');
+$pdf->Cell(30,5,"Sub. Prog.",'TRLB',0,'C');
+$pdf->Cell(0,5,"Act/ Proy.",'TRLB',1,'C');
+
+$pdf->Cell(45,5,"Requisición",'TRLB',0,'C');
+$pdf->Cell(30,5,$var[0]['numero_requisicion'],'TRLB',0,'C');
+$pdf->Cell(30,5,$cod_sector,'TRLB',0,'C');
+$pdf->Cell(30,5,$cod_programa,'TRLB',0,'C');
+$pdf->Cell(30,5,$cod_sub_prog,'TRLB',0,'C');
+$pdf->Cell(0,5,$cod_proyecto,'TRLB',1,'C');
+
+
+$pdf->Cell(45,5,"UNIDAD SOLICITANTE:",'TRBL',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,$deno[0]['deno4'],'TRBL',1,'C');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(45,5,"LUGAR DE ENTREGA:",'TRLB',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,$deno[0]['deno4'],'TLRB',1,'C');}
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,8,"ORDEN DE COMPRA: ",'TRLB',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(10,1,"",'TL',0,'C','true');
+$pdf->Cell(75,1,"",'TL',0,'C','true');
+$pdf->Cell(70,1,"",'TL',0,'C','true');
+$pdf->Cell(20,1,"",'TL',0,'C');
+$pdf->Cell(0,1,"",'TRL',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(10,3,"",'RL',0,'C','true');
+$pdf->Cell(75,3,"",'R',0,'C','true');
+$pdf->Cell(70,3,"ESPECIFICACIONES TÉCNICAS O",'R',0,'C','true');
+$pdf->Cell(20,3,"",'R',0,'C');
+$pdf->Cell(0,3,"",'R',1,'C');//----CANTIDAD PROD
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(10,5,"ITEMS",'BRL',0,'C','true');
+$pdf->Cell(75,5,"DENOMINACIÓN DEL BIEN O SERVICIO",'BR',0,'C','true');
+$pdf->Cell(70,5,"CARÁCTERISTICAS ESPECIALES",'BR',0,'C','true');
+$pdf->Cell(20,5,"UNIDAD",'BR',0,'C');
+$pdf->Cell(0,5,"CANTIDAD",'BR',1,'C');//----CANTIDAD PROD
+
+$ii=0;
+foreach ($datos2 as $ve) {
+  $pdf->SetFont('vera','',8);
+  $ii++;
+  if(isset($ve['cscd06_requisicion_cuerpo']['especif_caract'])){
+
+    $desc_r = str_replace("\n", "", $ve['cscd06_requisicion_cuerpo']['descripcion']);
+    $espe_r = str_replace("\n", "", $ve['cscd06_requisicion_cuerpo']['especif_caract']);
+    $can_a = strlen($desc_r);
+    $can_b = strlen($espe_r);
+
+    if($can_a > $can_b){
+      $total_char = $can_a;
+    }else{
+      $total_char = $can_b;
+    }
+
+    $theigth = $pdf->tam_celda($total_char);
+
+    $pdf->Cell(10,$theigth,$ii,'RL',0,'C');
+    $pdf->Cell(1,$theigth,"",'L',0);//margen izquierdo
+    $varX = $pdf->GetX();//capturo X
+    $varY = $pdf->GetY();//capturo Y
+    $pdf->Cell(74,0,"",'',2,'C');
+    $pdf->MultiCell(73,10,$ve['cscd06_requisicion_cuerpo']['descripcion'],'','L');//DESCRIPCION DEL BIEN O SERVICIO
+    $varX = $varX+74;//le sumo a X ---> 148.
+    $pdf->SetXY($varX,$varY);// cargo XY
+
+    $pdf->Cell(1,$theigth,"",'L',0);//margen izquierdo
+    $varX = $pdf->GetX();//capturo X
+    $varY = $pdf->GetY();//capturo Y
+    //$pdf->Cell(70,0,"",'LBTR',2,'C');
+    $pdf->MultiCell(70,10,$ve['cscd06_requisicion_cuerpo']['especif_caract'],'','L');//DESCRIPCION DEL BIEN O SERVICIO
+    $varX = $varX+69;//le sumo a X ---> 148.
+    $pdf->SetXY($varX,$varY);// cargo XY
+    $pdf->Cell(20,$theigth,unidades($unidades, $ve['cscd06_requisicion_cuerpo']['cod_medida']),'RL',0,'C'); //UNIDAD
+    $pdf->Cell(0,$theigth,$sisap->Formato_redondear_input($ve['cscd06_requisicion_cuerpo']['cantidad']),'R',1,'C'); //CANTIDAD NETA
+    $pdf->Cell(0,0,"",'T',1,'C');
+  }
+}///fin for
+
+$pdf->SetFont('vera','R',8);
+$pdf->MultiCell(0,15,"Nota: ".$var[$i]['nota'],'LTRB','L');
+$pdf->Cell(20,3,"",'',1,'C');
+
+/*
+$pdf->SetFont('vera','B',6);
+$pdf->SetX(80);
+$pdf->Cell(60,3,$firmante,'LTBR',1,'C');
+$pdf->SetX(80);
+$pdf->Cell(60,14,"",'LR',1,'C');
+$pdf->SetX(80);
+$pdf->Cell(60,3,"FIRMA Y SELLO",'LTBR',1,'C');
+*/
+
+
+$pdf->Output('requsicion'.date("d-m-Y").'.pdf','D');
+?>
+

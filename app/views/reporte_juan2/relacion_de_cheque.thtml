@@ -1,0 +1,309 @@
+<?php
+/*
+ * Creado el 26/05/2008 a las 12:14:19 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion: Programa de Reporte que se encarga de listar todos los cheques de la dependencia que se encuentran en caja,
+ * 				que estan en condicion 1 o 2.
+ * Nota: Las funciones JavaScript para validar del lado del cliente, se encuentra en el js de movimientos generales.
+ */
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE CHEQUES",null,"950");?>
+<?= $sisap->OpenTable("950")?>
+
+<form name='data[cheques_caja]' method = "post" id='form' action="<?php echo  $html->url('/reporte_juan2/relacion_de_cheque/no'); ?>" onSubmit="return valida_chequecaja();">
+<div id="cheques_caja">
+<table width="850" cellspacing="0" cellpadding="0">
+    <tr><td align="center">
+        <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;
+        <?= $sisap->inputTagRemote('/cheques_caja/ano', array('url'=>'/reporte_juan2/cambiar_year/', 'update'=>'funcion', 'style'=>'text-align:center;', "value"=>$ano, "maxlength"=>"4", "onKeyPress"=>"return solonumeros(event);",  'id'=>'ano', 'size'=>'7'))?>
+        </td>
+    </tr>
+	<tr><td align="center">&nbsp;</td></tr>
+	<tr><td align="center"><?= $html->radio('reporte/status', array('1'=>'TODOS','2'=>'Custodia', '3'=>'Transito','4'=>'Cancelado'), " ", array("value"=>1))?></td></tr>
+	<tr><td align="center">&nbsp;</td></tr>
+	<tr>
+	   <td align="center">
+	      <?= $sisap->radioTagRemote("reporte/tipo_busqueda", array('1'=>'Todos los beneficiarios','2'=>'Uno especifico'), array('url1'=>'/reporte_juan2/ventana_cobradores_1/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+	      <input name="data[reporte][rif_ce]" type="hidden" id="rif_ce" />
+	      <div id="funcion"></div>
+	   </td>
+    </tr>
+
+
+	<tr>
+		<td align="center">
+			<table width="300" cellspacing="0" cellpadding="0">
+				<tr><td align="center">&nbsp;</td></tr>
+				<tr><td align="center">&nbsp;&nbsp;<b>Fecha Desde:</b>&nbsp;&nbsp;
+				        <?$sisap->input_fecha("reporte","fecha_desde","fecha_desde", null);?>
+					</td>
+				    <td align="center">&nbsp;&nbsp;<b>Fecha Hasta:</b>&nbsp;&nbsp;
+						<?$sisap->input_fecha("reporte","fecha_hasta","fecha_hasta", null);?>
+					</td>
+				</tr>
+				<tr><td align="center">&nbsp;</td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr><td align="center" id="td-beneficiarios">&nbsp;</td></tr>
+
+	<tr>
+	    <td align="center"><?= $sisap->radioTagRemote("reporte3/opcion_reporte", array('1'=>'Todas las cuentas', '2'=>'Una cuenta específica', '4'=>'Por rango de cheques', '3'=>'Cheques específicos'), array('url1'=>'/reporte_juan2/radio_cuenta_bancaria', 'update1'=>'radio_reporte', 'id'=>'opcion_reporte'), null, $opc=1); ?></td>
+	 </tr>
+
+	<tr>
+	    <td align="center" id="radio_reporte"><br /></td>
+	 </tr>
+</table>
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+</div>
+</form>
+<?= $sisap->CloseTable()?>
+
+<?php }elseif(isset($ir) && $ir=='no'){
+vendor('utf8_tcpdf/tcpdf');
+
+set_time_limit(0);
+
+$_SESSION['fecha_desde'] = $fecha_desde;
+$_SESSION['fecha_hasta'] = $fecha_hasta;
+$_SESSION['status']      = $status;
+
+if($fecha_desde=="" && $fecha_hasta==""){
+	$_SESSION["cheque_fecha_concepto"]  = "TODOS LOS CHEQUES";
+}else{
+    $_SESSION["cheque_fecha_concepto"]  = "CHEQUES DESDE: ".$_SESSION['fecha_desde']." HASTA: ".$_SESSION['fecha_hasta'];
+}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		$this->image_escudo_sin_consolidado(6,15,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,5,"RELACIÓN DE CHEQUE - ".$_SESSION['status'],'RL',1,'C');
+		$this->SetFont('vera','BI',5);
+		$this->Cell(0,2,$_SESSION["cheque_fecha_concepto"],'RL',1,'C');
+
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 185;
+		$varY_aux = $this->GetY() - 13;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+
+		$this->Ln(2);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,3,"",'TRL',0,'C');
+		$this->Cell(30,3,"",'TR',0,'C');
+		$this->Cell(67,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(18,3,"FECHA",'TR',0,'C');
+		$this->Cell(15.5,3,"",'TR',0,'C');
+		$this->Cell(15,3,"FECHA",'TR',0,'C');
+        $this->Cell(0,3,"TIPO",'TR',1,'C');
+
+        $this->Cell(15,2,"NÚMERO",'RBL',0,'C');
+		$this->Cell(30,2,"CUENTA",'RB',0,'C');
+		$this->Cell(67,2,"BENEFICIARIO",'RB',0,'C');
+		$this->Cell(20,2,"MONTO",'RB',0,'C');
+		$this->Cell(18,2,"EMISIÓN",'RB',0,'C');
+		$this->Cell(15.5,2,"STATUS",'RB',0,'C');
+		$this->Cell(15,2,"STATUS",'RB',0,'C');
+        $this->Cell(0,2,"PAGO",'RB',1,'C');
+
+		/*
+		if($_SESSION['status']=='CANCELADO'){
+			$this->Cell(15,4,"EMITIDO",'TRB',0,'C');
+			$this->Cell(15.5,4,"CANCELADO",'TRB',0,'C');
+            $this->Cell(0,4,"TIPO PAGO",'TRB',1,'C');
+
+		}else if($_SESSION['status']=='TODOS'){
+
+			$this->Cell(20,4,"CANCELADO",'TRB',0,'C');
+			$this->Cell(17,4,"TIPO PAGO",'TRB',0,'C');
+			$this->Cell(0,4,"STATUS",'TRB',1,'C');
+
+		}else{
+			$this->Cell(20,4,"EMISION",'TRB',0,'C');
+			$this->Cell(0,4,"TIPO PAGO",'TRB',1,'C');
+		}
+		*/
+
+	}//fin funtion
+}//fin de la clase PDF
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$vector_tipo=array();
+$total_monto=0;
+$i=0;
+foreach($tipo_pago as $tp){
+	$vector_tipo[$tp['cepd03_ordenpago_tipopago']['cod_tipo_pago']] = $tp['cepd03_ordenpago_tipopago']['denominacion'];
+}
+$vector_tipo[9999] = 'MOVIMIENTOS MANUALES';
+
+foreach($datos_cheque as $x){
+
+	/*
+	if($_SESSION['status']=='TODOS'){
+		$tamaño_cell = 5;
+	}else{
+		$tamaño_cell = 5;
+	}
+	*/
+	$tamaño_cell = 5;
+
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(15,$tamaño_cell,$sisap->mascara_ocho($x['v_relacion_cheques']['numero_cheque']),'RL',0,'C');
+$pdf->Cell(30,$tamaño_cell,$x['v_relacion_cheques']['cuenta_bancaria'],'R',0,'C');
+$pdf->SetFont('vera','',5);
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(67,1,"",'',2,'C');
+    $pdf->MultiCell(67,2,$x['v_relacion_cheques']['beneficiario'],'','L');//--[BENEFICIARIO]
+    $varX = $varX+67;
+    $pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,$tamaño_cell,$sisap->Formato2($x['v_relacion_cheques']['monto']),'RL',0,'R');
+
+$pdf->Cell(18,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cheque']),'R',0,'C');
+
+if($x['v_relacion_cheques']['status_cheque']==1){
+      	$status_aux = "Por emitir";
+      	$pdf->Cell(15.5,$tamaño_cell,$status_aux,'R',0,'C');
+		$pdf->Cell(15,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cheque']),'R',0,'C');
+
+}else if($x['v_relacion_cheques']['status_cheque']==2){
+      	$status_aux = "CUSTODIA";
+      	$pdf->Cell(15.5,$tamaño_cell,$status_aux,'R',0,'C');
+		$pdf->Cell(15,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cheque']),'R',0,'C');
+
+}else if($x['v_relacion_cheques']['status_cheque']==3){
+	    $status_aux = "TRANSITO";
+	    $pdf->Cell(15.5,$tamaño_cell,$status_aux,'R',0,'C');
+		$pdf->Cell(15,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_transito']),'R',0,'C');
+
+}else if($x['v_relacion_cheques']['status_cheque']==4){
+	    $status_aux= "CANCELADO";
+	    $pdf->Cell(15.5,$tamaño_cell,$status_aux,'R',0,'C');
+		$pdf->Cell(15,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cancelado']),'R',0,'C');
+
+}//fin else
+
+$pdf->SetFont('vera','',5);
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+$pdf->Cell(25,1,"",'',2,'C');
+$pdf->MultiCell(25,2,$vector_tipo[$x['v_relacion_cheques']['cod_tipo_pago']],'','L');
+$varX = $varX+25;
+$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,$tamaño_cell,"",'R',1,'C');
+
+
+
+/*
+if($_SESSION['status']=='CANCELADO'){
+    $pdf->Cell(15,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cheque']),'R',0,'C');
+	$pdf->Cell(15.5,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cancelado']),'R',0,'C');
+
+}else if($_SESSION['status']=='TODOS'){
+	$pdf->Cell(20,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cancelado']),'R',0,'C');
+
+}else{
+	$pdf->Cell(20,$tamaño_cell,$sisap->cambia_fecha($x['v_relacion_cheques']['fecha_cheque']),'R',0,'C');
+}
+*/
+
+
+
+/*
+if($_SESSION['status']=='TODOS'){
+
+    $pdf->SetFont('vera','',5);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(17,1,"",'',2,'C');
+    $pdf->MultiCell(16,2,$vector_tipo[$x['v_relacion_cheques']['cod_tipo_pago']],'','L');
+    $varX = $varX+17;
+    $pdf->SetXY($varX,$varY);
+
+    if($x['v_relacion_cheques']['status_cheque']==1){
+	      	$status_aux = "Por emitir";
+	}else if($x['v_relacion_cheques']['status_cheque']==2){
+	      	$status_aux = "CUSTODIA";
+	}else if($x['v_relacion_cheques']['status_cheque']==3){
+		    $status_aux = "TRANSITO";
+    }else if($x['v_relacion_cheques']['status_cheque']==4){
+    	    $status_aux= "Pagado";
+	}//fin else
+
+    $pdf->Cell(0,$tamaño_cell,$status_aux,'RL',1,'C');
+
+} else if($_SESSION['status']=='CANCELADO'){
+
+    $pdf->SetFont('vera','',5);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(20.5,1,"",'',2,'C');
+    $pdf->MultiCell(20.5,2,$vector_tipo[$x['v_relacion_cheques']['cod_tipo_pago']],'','L');
+    $varX = $varX+20.5;
+    $pdf->SetXY($varX,$varY);
+    $pdf->Cell(1,$tamaño_cell,"",'L',1,'C');
+
+} else {
+
+    $pdf->SetFont('vera','',5);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(30,1,"",'',2,'C');
+    $pdf->MultiCell(30,2,$vector_tipo[$x['v_relacion_cheques']['cod_tipo_pago']],'','L');
+    $varX = $varX+30;
+    $pdf->SetXY($varX,$varY);
+    $pdf->Cell(1,$tamaño_cell,"",'R',1,'C');
+
+}
+*/
+
+
+$pdf->Cell(0,0,"",'T',1,'C');
+$total_monto = $total_monto + $x['v_relacion_cheques']['monto'];
+$i++;
+}
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,2,"",'',1,'C');
+$pdf->Cell(45,5,"TOTAL GENERAL",'TRBL',0,'C');
+$pdf->Cell(30,5,"NÚMERO DE CHEQUES",'TRBL',0,'C');
+$pdf->Cell(15,5,$i,'TRBL',0,'C');
+$pdf->Cell(45,5,"TOTAL MONTO",'TRBL',0,'R');
+$pdf->Cell(40,5,$sisap->Formato2($total_monto),'TRBL',0,'R');
+$pdf->Output('Cheques_en_caja_'.date("d-m-Y_g_i_a").".pdf",'D');
+}
+?>

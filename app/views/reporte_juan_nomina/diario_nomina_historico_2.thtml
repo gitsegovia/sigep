@@ -1,0 +1,1186 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Header()
+	{
+        $this->top_reporte("DIARIO DE NÓMINA", null, null, array("Y"=>"6", "X"=>"6", "Z"=>"13"), array("Y"=>"7", "X"=>"190"), false);
+		 $this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Tipo de nómina: ",'TL',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["cod_tipo_nomina_deno"],'TR',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Correspondiente a: ",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["correspondiente"],'R',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(33,4,"Número de nómina: ",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION["numero_nomina"],'R',1);
+		$this->Cell(0,1,"",'RBL',1);
+	}//fin funtion
+
+}//fin de la clase PDF
+
+	if($opcion==1){
+
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"DIARIO DE NÓMINA","","950");?>
+
+<?= $sisap->OpenTable("950")?>
+
+
+<?php /*
+<form name='data[reporte_juan2]'  method = "post" id='form' action="<?php echo $html->url('/reporte_juan_nomina/diario_nomina/2');?>" >
+
+*/
+
+?>
+
+<form  method = "post" id='prueba'>
+
+
+
+
+
+
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+					<tr>
+					    <td width="10%" align="center" align='center'>Seleccione</td>
+					    <td width="10%" align="center" align='center'>C&oacute;digo</td>
+					    <td width="80%" align="center" align='center'>Denominaci&oacute;n tipo n&oacute;mina</td>
+					</tr>
+					<tr>
+					    <td width="10%" align="center"><?= $sisap->selectTagRemote('cnmp06_diskett_historico/cod_nomina', $lista_nomina , null , null, array('onchange1'=>'/cnmp06_diskett_historico/show_cod_nomina', 'update1'=>'sdenonomina',  'onchange2'=>'/cnmp06_diskett_historico/show_ano_nomina', 'update2'=>'ano_nomina2'   , 'id'=>'sel_cod_nomina', true), null, true); ?></td>
+						<td width="10%" align="center">
+				         <div id="scodnomina">
+						  <?= $html->input('cnmp06_diskett_historico/cod_nomina', $htmlAttributes = array('id'=>'cod_nomina', 'style'=>"text-align:center", 'size'=>'6', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+						 </div>
+				        </td>
+						<td width="80%" align="center">
+				          <div id="sdenonomina">
+					        <?= $html->input('cnmp06_diskett_historico/denominacion_nomina', $htmlAttributes = array('id'=>'denominacion_nomina', 'style'=>'width:98%', 'class'=>"inputtext", 'readonly'=>'readonly'), false); ?>
+					      </div>
+				        </td>
+					</tr>
+</table>
+
+<br><br>
+
+<table width="30%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	  <tr>
+	    <td align="center" width="15%">Año Nómina</td>
+	    <td align="center" width="15%">Número Nómina</td>
+	  </tr>
+	  <tr>
+	    <td align="center" width="15%" id="ano_nomina2">     <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/ano_nomina',    null,  null,  null, array('id'=>'ano_nomina'  ,  true), null, true); ?></td>
+	    <td align="center" width="15%" id="numero_nomina2"> <?= $sisap->selectTagRemote('/cnmp06_diskett_historico/numero_nomina', null,  null,  null, array('id'=>'numero_nomina', true), null, true); ?></td>
+     </tr>
+</table>
+
+<br><br>
+<table width="60%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+			    <td valign="top">
+                     <b>Ordenado por:</b>  <br><br>
+			    </td>
+			    <td align="left">
+			         <?= $sisap->radioTagRemote('/reporte_juan_nomina/opcion_ordenar', array('1'=>'Ubicación Administrativa', '2'=>'Ubicación Geográfica', '3'=>'Ubicación Geográfica Y Administrativa', '4'=>'Categoría Programática', '5'=>'Categoría Programática Y Ubicación Administrativa'), array("id"=>"opcion_ordenar"),"<br>", 1); ?>
+			         <?/*
+			         <?= $html->radio('/reporte_juan_nomina/opcion_ordenar_1', array('1'=>'Ubicación Administrativa'), null, array('id'=>'opcion_ordenar_1', 'onClick'=>'radio_reporte_diario_nomina_1();'))?>
+			         <?= $html->radio('/reporte_juan_nomina/opcion_ordenar_2', array('2'=>'Ubicación Geográfica'), null, array('id'=>'opcion_ordenar_2', 'onClick'=>'radio_reporte_diario_nomina_1();'))?>
+			         <?= $html->radio('/reporte_juan_nomina/opcion_ordenar_3', array('3'=>'Categoría Programática'), null, array('id'=>'opcion_ordenar_3', 'onClick'=>'radio_reporte_diario_nomina_2();', 'value'=>'1'))?>
+                     */ ?>
+                   <br>
+                </td>
+           </tr>
+</table>
+
+<div id="funcion"></div>
+
+<? // $html->submit('Generar');?>&nbsp;
+<?= $sisap->submit_ajax_pdf('/reporte_juan_nomina/diario_nomina_historico/2', 1); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>
+
+<?php
+
+	}else if($opcion==2){
+
+	function vaciar($var){
+	}//fin function
+
+
+
+
+
+
+                                    $aaa = 0;
+                                    foreach($DATOS_agrupa_saldo as $ve3){$aaa++;
+                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["monto_cuota"] = 0;
+                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["cantidad"]    = 0;
+                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["uso_transaccion"] = 0;
+									}//fin foreach
+
+
+
+
+
+
+
+
+
+					       	$cod_dir_superior             =        "";
+						    $deno_cod_dir_superior        =        "";
+					        $cod_coordinacion             =        "";
+						    $deno_cod_coordinacion        =        "";
+						    $cod_secretaria               =        "";
+					        $deno_cod_secretaria          =        "";
+					        $cod_direccion                =        "";
+					        $deno_cod_direccion           =        "";
+					        $cod_division                 =        "";
+					        $deno_cod_division            =        "";
+					        $cod_departamento             =        "";
+					        $deno_cod_departamento        =        "";
+					        $cod_oficina                  =        "";
+					        $deno_cod_oficina             =        "";
+					        $cod_estado                   =        "";
+					        $deno_cod_estado              =        "";
+					        $cod_municipio                =        "";
+					        $deno_cod_municipio           =        "";
+					        $cod_parroquia                =        "";
+					        $deno_cod_parroquia           =        "";
+					        $cod_centro                   =        "";
+					        $deno_cod_centro              =        "";
+					        $ano                          =        "";
+					        $cod_sector                   =        "";
+					        $cod_programa                 =        "";
+					        $cod_sub_prog                 =        "";
+					        $cod_proyecto                 =        "";
+					        $cod_activ_obra               =        "";
+					        $cod_partida                  =        "";
+					        $cod_generica                 =        "";
+					        $cod_especifica               =        "";
+					        $cod_sub_espec                =        "";
+					        $cod_auxiliar                 =        "";
+
+                        $pdf = new fpdfview('P','mm','Letter');
+						$pdf->AliasNbPages('TPAG');
+						$pdf->SetTopMargin(5);
+						$pdf->SetLeftMArgin(5);
+						$pdf->SetRightMargin(5);
+						$pdf->SetAutoPageBreak(true, 5);
+
+						inicio_ventana_barra_proceso("Generando reporte, Espere por favor...");
+
+                        $_SESSION["DIARIO_NOMINA_ORDENAMIENTO"] = $opcion_ordenar;
+
+                        $cantidad_registros = count($datos);
+                        if($cantidad_registros==0){
+
+                                           foreach($datos_nomina as $ve){
+                                            	$_SESSION["cod_tipo_nomina_deno"]     =   "Tipo de nómina: ".mascara_tres($ve["v_cnmd08_historia_trans_con"]["cod_tipo_nomina"])." - ".$ve["v_cnmd08_historia_trans_con"]["denominacion_nomina"];
+												$_SESSION["correspondiente"]          =   "Correspondiente a: ".$ve["v_cnmd08_historia_trans_con"]["correspondiente"];
+												$_SESSION["numero_nomina"]            =   "Número de nómina: ".$ve["v_cnmd08_historia_trans_con"]["numero_nomina"]." Periodo Desde: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_desde"])." Hasta: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_hasta"]);
+											}//fin foreach
+
+						$pdf->AddPage();
+
+                        $pdf->Ln(3);
+						$pdf->SetFont('vera','B',10);
+						$pdf->Cell(0,50,'NO SE ENCONTRARÓN REGISTROS PARA LOS DATOS INGRESADOS','TRBL',1,'C');
+
+						}else{
+
+					                foreach($datos_nomina as $ve){
+                                            	$_SESSION["cod_tipo_nomina_deno"]     =   "Tipo de nómina: ".mascara_tres($ve["v_cnmd08_historia_trans_con"]["cod_tipo_nomina"])." - ".$ve["v_cnmd08_historia_trans_con"]["denominacion_nomina"];
+												$_SESSION["correspondiente"]          =   "Correspondiente a: ".$ve["v_cnmd08_historia_trans_con"]["correspondiente"];
+												$_SESSION["numero_nomina"]            =   "Número de nómina: ".$ve["v_cnmd08_historia_trans_con"]["numero_nomina"]." Periodo Desde: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_desde"])." Hasta: ".cambiar_formato_fecha($ve["v_cnmd08_historia_trans_con"]["periodo_hasta"]);
+											}//fin foreach
+
+							     $cedula_aux = "";
+							     $cargo_aux = "";
+							     $ficha_aux = "";
+							     $total_a=0;
+							     $total_agrupada_asignacion_aux = 0;
+								 $total_agrupada_deduccion_aux  = 0;
+								 $contar_personas_a=0;
+								 $contar_personas_b=0;
+								 $sumatoria_sueldoc_basico = 0;
+                                 $i_cont = 0;
+
+							     foreach($datos as $ve){ $i_cont++;
+
+							     	proceso_ventana_barra_proceso($i_cont, 500, 10000);
+
+							     	          if($cedula_aux != $ve["v_cnmd08_historia_transacciones"]["cedula_identidad"]  ||
+			                                     $cargo_aux  != $ve["v_cnmd08_historia_transacciones"]["cod_cargo"]         ||
+			                                     $ficha_aux  != $ve["v_cnmd08_historia_transacciones"]["cod_ficha"]){
+
+							     	                          if($total_a!=0){
+				                                                    $pdf->SetFont('vera','B',9);
+																	$pdf->Cell(110,5,"TOTALES",'RBL',0,'R');
+																	$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_asignacion_aux),'RB',0,'R');
+																	$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_deduccion_aux),'RB',0,'R');
+																	$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_asignacion_aux-$total_agrupada_deduccion_aux),'RB',0,'R');
+																	$pdf->Cell(0,5,"",'',1,'R');
+																	$pdf->Ln(4);
+
+																	$total_a=0;
+																	$total_agrupada_asignacion_aux = 0;
+												                    $total_agrupada_deduccion_aux  = 0;
+				                                         }//fin if
+
+				                                  }//fin fin
+
+									      $cambio = 0;
+
+
+									              if($opcion_ordenar==1){
+									                if( $cod_secretaria        != $ve["v_cnmd08_historia_transacciones"]["cod_secretaria"]                ||
+												        $deno_cod_secretaria   != $ve["v_cnmd08_historia_transacciones"]["deno_cod_secretaria"]           ||
+												        $cod_direccion         != $ve["v_cnmd08_historia_transacciones"]["cod_direccion"]                 ||
+												        $deno_cod_direccion    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_direccion"]            ||
+												        $cod_division          != $ve["v_cnmd08_historia_transacciones"]["cod_division"]                  ||
+												        $deno_cod_division     != $ve["v_cnmd08_historia_transacciones"]["deno_cod_division"]             ||
+												        $cod_departamento      != $ve["v_cnmd08_historia_transacciones"]["cod_departamento"]              ||
+												        $deno_cod_departamento != $ve["v_cnmd08_historia_transacciones"]["deno_cod_departamento"]         ||
+												        $cod_oficina           != $ve["v_cnmd08_historia_transacciones"]["cod_oficina"]                   ||
+												        $deno_cod_oficina      != $ve["v_cnmd08_historia_transacciones"]["deno_cod_oficina"]){
+			                                                 $cambio = 1;
+												        }
+									        }else if($opcion_ordenar==2){
+										        	if( $cod_estado            != $ve["v_cnmd08_historia_transacciones"]["cod_estado"]                    ||
+												        $deno_cod_estado       != $ve["v_cnmd08_historia_transacciones"]["deno_cod_estado"]               ||
+												        $cod_municipio         != $ve["v_cnmd08_historia_transacciones"]["cod_municipio"]                 ||
+												        $deno_cod_municipio    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_municipio"]            ||
+												        $cod_parroquia         != $ve["v_cnmd08_historia_transacciones"]["cod_parroquia"]                 ||
+												        $deno_cod_parroquia    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_parroquia"]            ||
+												        $cod_centro            != $ve["v_cnmd08_historia_transacciones"]["cod_centro"]                    ||
+												        $deno_cod_centro       != $ve["v_cnmd08_historia_transacciones"]["deno_cod_centro"]){
+			                                                     $cambio = 1;
+												        }
+									        }else if($opcion_ordenar==3){
+										        	if( $cod_secretaria        != $ve["v_cnmd08_historia_transacciones"]["cod_secretaria"]                ||
+												        $deno_cod_secretaria   != $ve["v_cnmd08_historia_transacciones"]["deno_cod_secretaria"]           ||
+												        $cod_direccion         != $ve["v_cnmd08_historia_transacciones"]["cod_direccion"]                 ||
+												        $deno_cod_direccion    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_direccion"]            ||
+												        $cod_division          != $ve["v_cnmd08_historia_transacciones"]["cod_division"]                  ||
+												        $deno_cod_division     != $ve["v_cnmd08_historia_transacciones"]["deno_cod_division"]             ||
+												        $cod_departamento      != $ve["v_cnmd08_historia_transacciones"]["cod_departamento"]              ||
+												        $deno_cod_departamento != $ve["v_cnmd08_historia_transacciones"]["deno_cod_departamento"]         ||
+												        $cod_oficina           != $ve["v_cnmd08_historia_transacciones"]["cod_oficina"]                   ||
+												        $deno_cod_oficina      != $ve["v_cnmd08_historia_transacciones"]["deno_cod_oficina"]              ||
+												        $cod_estado            != $ve["v_cnmd08_historia_transacciones"]["cod_estado"]                    ||
+												        $deno_cod_estado       != $ve["v_cnmd08_historia_transacciones"]["deno_cod_estado"]               ||
+												        $cod_municipio         != $ve["v_cnmd08_historia_transacciones"]["cod_municipio"]                 ||
+												        $deno_cod_municipio    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_municipio"]            ||
+												        $cod_parroquia         != $ve["v_cnmd08_historia_transacciones"]["cod_parroquia"]                 ||
+												        $deno_cod_parroquia    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_parroquia"]            ||
+												        $cod_centro            != $ve["v_cnmd08_historia_transacciones"]["cod_centro"]                    ||
+												        $deno_cod_centro       != $ve["v_cnmd08_historia_transacciones"]["deno_cod_centro"]){
+			                                                      $cambio = 1;
+												        }
+									        }else if($opcion_ordenar==4){
+										        	if( $ano                   != $ve["v_cnmd08_historia_transacciones"]["ano"]                           ||
+												        $cod_sector            != $ve["v_cnmd08_historia_transacciones"]["cod_sector"]                    ||
+												        $cod_programa          != $ve["v_cnmd08_historia_transacciones"]["cod_programa"]                  ||
+												        $cod_sub_prog          != $ve["v_cnmd08_historia_transacciones"]["cod_sub_prog"]                  ||
+												        $cod_proyecto          != $ve["v_cnmd08_historia_transacciones"]["cod_proyecto"]                  ||
+												        $cod_activ_obra        != $ve["v_cnmd08_historia_transacciones"]["cod_activ_obra"]){
+			                                                  $cambio = 1;
+												        }
+										    }else if($opcion_ordenar==5){
+										        	if( $cod_secretaria        != $ve["v_cnmd08_historia_transacciones"]["cod_secretaria"]                ||
+												        $deno_cod_secretaria   != $ve["v_cnmd08_historia_transacciones"]["deno_cod_secretaria"]           ||
+												        $cod_direccion         != $ve["v_cnmd08_historia_transacciones"]["cod_direccion"]                 ||
+												        $deno_cod_direccion    != $ve["v_cnmd08_historia_transacciones"]["deno_cod_direccion"]            ||
+												        $cod_division          != $ve["v_cnmd08_historia_transacciones"]["cod_division"]                  ||
+												        $deno_cod_division     != $ve["v_cnmd08_historia_transacciones"]["deno_cod_division"]             ||
+												        $cod_departamento      != $ve["v_cnmd08_historia_transacciones"]["cod_departamento"]              ||
+												        $deno_cod_departamento != $ve["v_cnmd08_historia_transacciones"]["deno_cod_departamento"]         ||
+												        $cod_oficina           != $ve["v_cnmd08_historia_transacciones"]["cod_oficina"]                   ||
+												        $deno_cod_oficina      != $ve["v_cnmd08_historia_transacciones"]["deno_cod_oficina"]              ||
+										        	    $ano                   != $ve["v_cnmd08_historia_transacciones"]["ano"]                           ||
+												        $cod_sector            != $ve["v_cnmd08_historia_transacciones"]["cod_sector"]                    ||
+												        $cod_programa          != $ve["v_cnmd08_historia_transacciones"]["cod_programa"]                  ||
+												        $cod_sub_prog          != $ve["v_cnmd08_historia_transacciones"]["cod_sub_prog"]                  ||
+												        $cod_proyecto          != $ve["v_cnmd08_historia_transacciones"]["cod_proyecto"]                  ||
+												        $cod_activ_obra        != $ve["v_cnmd08_historia_transacciones"]["cod_activ_obra"]){
+			                                                  $cambio = 1;
+												        }
+									        }
+
+
+
+
+
+									        if($cambio==1){
+									        	        $cod_dir_superior        =  $ve["v_cnmd08_historia_transacciones"]["cod_dir_superior"];
+													    $deno_cod_dir_superior   =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_dir_superior"];
+												        $cod_coordinacion        =  $ve["v_cnmd08_historia_transacciones"]["cod_coordinacion"];
+													    $deno_cod_coordinacion   =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_coordinacion"];
+													    $cod_secretaria          =  $ve["v_cnmd08_historia_transacciones"]["cod_secretaria"];
+												        $deno_cod_secretaria     =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_secretaria"];
+												        $cod_direccion           =  $ve["v_cnmd08_historia_transacciones"]["cod_direccion"];
+												        $deno_cod_direccion      =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_direccion"];
+												        $cod_division            =  $ve["v_cnmd08_historia_transacciones"]["cod_division"];
+												        $deno_cod_division       =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_division"];
+												        $cod_departamento        =  $ve["v_cnmd08_historia_transacciones"]["cod_departamento"];
+												        $deno_cod_departamento   =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_departamento"];
+												        $cod_oficina             =  $ve["v_cnmd08_historia_transacciones"]["cod_oficina"];
+												        $deno_cod_oficina        =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_oficina"];
+												        $cod_estado              =  $ve["v_cnmd08_historia_transacciones"]["cod_estado"];
+												        $deno_cod_estado         =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_estado"];
+												        $cod_municipio           =  $ve["v_cnmd08_historia_transacciones"]["cod_municipio"];
+												        $deno_cod_municipio      =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_municipio"];
+												        $cod_parroquia           =  $ve["v_cnmd08_historia_transacciones"]["cod_parroquia"];
+												        $deno_cod_parroquia      =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_parroquia"];
+												        $cod_centro              =  $ve["v_cnmd08_historia_transacciones"]["cod_centro"];
+												        $deno_cod_centro         =  $ve["v_cnmd08_historia_transacciones"]["deno_cod_centro"];
+												        $ano                     =  $ve["v_cnmd08_historia_transacciones"]["ano"];
+												        $cod_sector              =  $ve["v_cnmd08_historia_transacciones"]["cod_sector"];
+												        $cod_programa            =  $ve["v_cnmd08_historia_transacciones"]["cod_programa"];
+												        $cod_sub_prog            =  $ve["v_cnmd08_historia_transacciones"]["cod_sub_prog"];
+												        $cod_proyecto            =  $ve["v_cnmd08_historia_transacciones"]["cod_proyecto"];
+												        $cod_activ_obra          =  $ve["v_cnmd08_historia_transacciones"]["cod_activ_obra"];
+												        $cod_partida             =  $ve["v_cnmd08_historia_transacciones"]["cod_partida"];
+												        $cod_generica            =  $ve["v_cnmd08_historia_transacciones"]["cod_generica"];
+												        $cod_especifica          =  $ve["v_cnmd08_historia_transacciones"]["cod_especifica"];
+												        $cod_sub_espec           =  $ve["v_cnmd08_historia_transacciones"]["cod_sub_espec"];
+												        $cod_auxiliar            =  $ve["v_cnmd08_historia_transacciones"]["cod_auxiliar"];
+
+                                                    if($contar_personas_a!=0){
+
+                                                    	$pdf->AddPage();
+
+                                                    	$pdf->SetFont('vera','B',7);
+                                                    	$pdf->Ln(3);
+                                                    	$pdf->Cell(0,4,"DISTRIBUCIÓN DE TRANSACCIONES DE LA UBICACIÓN ACTUAL",'TRBL',1,'C');
+														$pdf->Cell(15,4,"NÚMERO",'TRL',0,'C');
+														$pdf->Cell(15,4,"CÓDIGO",'TRL',0,'C');
+														$pdf->Cell(65,4,"",'TR',0,'C');
+														$pdf->Cell(25,4,"MONTO",'TR',0,'C');
+														$pdf->Cell(25,4,"MONTO",'TR',0,'C');
+														$pdf->Cell(25,4,"SUELDO",'TR',0,'C');
+														$pdf->Cell(0,4,"MONTO",'TR',1,'C');
+														$pdf->Cell(0,0,"",'',1,'C');
+														$pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+														$pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+														$pdf->Cell(65,4,"DESCRIPCIÓN DE LA TRANSACCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"ASIGNACCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"DEDUCCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"BASICO",'RB',0,'C');
+														$pdf->Cell(0,4,"NETO",'RB',1,'C');
+
+														$asignaciones=0;
+														$sueldo=0;
+														$deducciones=0;
+														$ap=0;
+														$numero_trabajadores=0;
+
+														foreach($DATOS_agrupa_saldo as $ver){
+															$cod_tipo_transaccion         = $ver["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"];
+															$cod_transaccion              = $ver["v_cnmd08_historia_transacciones"]["cod_transaccion"];
+															$uso_transaccion              = $ver["v_cnmd08_historia_transacciones"]["uso_transaccion"];
+															$cantidad_de_transacciones    = $array_totales[$cod_tipo_transaccion][$cod_transaccion]["cantidad"];
+															$monto_cuota_de_transacciones = $array_totales[$cod_tipo_transaccion][$cod_transaccion]["monto_cuota"];
+															if($cantidad_de_transacciones!=0){
+			                                                            $pdf->SetFont('vera','B',9);
+																        $alto = 5;
+																		$pdf->Cell(15,$alto,$cantidad_de_transacciones,'TRL',0,'R');//--
+																		$pdf->Cell(15,$alto,mascara_tres($cod_transaccion),'TRL',0,'C');//--
+																		$pdf->SetFont('vera','',8);
+																		$pdf->Cell(65,$alto,$ver["v_cnmd08_historia_transacciones"]["deno_transaccion"],'TR',0,'L'); //--[Distribucion]
+																		$pdf->SetFont('vera','',9);
+																		if($cod_tipo_transaccion==1){
+																			    $monto_asignacion = $monto_cuota_de_transacciones;
+																			if($cod_transaccion==1){
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[sueldo]
+																				$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																                $numero_trabajadores=$cantidad_de_transacciones;
+																				$sueldo=$monto_asignacion;
+																			}else{
+																				$pdf->Cell(25,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[asignacion]
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																				$asignaciones +=$monto_asignacion;
+																			}
+																		}else{
+																			        $monto_deduccion = $monto_cuota_de_transacciones;
+																			    if($uso_transaccion==6 || $uso_transaccion==9){
+																			    	$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(25,$alto,$sisap->Formato2($monto_deduccion)."",'TR',0,'R'); //--[deduccion]
+																					$pdf->Cell(25,$alto,"<-- No suma",'TR',0,'L'); //--
+																					$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																					if($uso_transaccion==6){
+																						$ap+=$monto_deduccion;
+																					}
+																			    }else{
+																			    	$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(25,$alto,$sisap->Formato2($monto_deduccion),'TR',0,'R'); //--[deduccion]
+																					$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																					$deducciones+=$monto_deduccion;
+																			    }
+
+																		}
+															}
+														}//fin foreach
+
+														$pdf->SetFont('vera','B',9);
+														$pdf->Cell(95,5,'TOTALES:','TLRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($asignaciones),'TRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($deducciones),'TRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($sueldo),'TRB',0,'R');
+														$pdf->Cell(0,5,$sisap->Formato2(($asignaciones+$sueldo)-$deducciones),'TRB',1,'R');
+
+                                                        $pdf->Ln(4);
+
+												        $pdf->SetFont('vera','B',9);
+														$pdf->Cell(0,5,"TOTAL DE PERSONAS: ".$contar_personas_a,'TRBL',1,'L');
+														$pdf->Ln(4);
+
+														$contar_personas_a=0;
+														$aaa = 0;
+														foreach($DATOS_agrupa_saldo as $ve3){$aaa++;
+					                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["monto_cuota"]   = 0;
+					                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["cantidad"]      = 0;
+					                                 	  $array_totales[$ve3["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve3["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["uso_transaccion"] = 0;
+														}//fin foreach
+                                                     }
+
+
+                                    $pdf->AddPage();
+					        	    $pdf->SetFont('vera','B',7);
+									$pdf->Cell(80,4,"UBICACIÓN GEOGRÁFICA",'RBL',0,'C');
+									$pdf->Cell(85,4,"UBICACIÓN ADMINISTRATIVAS",'RB',0,'C');
+									$pdf->Cell(0,4,"CATEGORÍA PROGRAMÁTICA",'RB',1,'C');
+									$pdf->SetFont('vera','B',6);
+
+									$pdf->Cell(24,5,"ESTADO",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(56,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									if($cod_estado==0){
+									  	  $var = "";
+									}else{
+									  	if($opcion_ordenar==2 || $opcion_ordenar==3){
+									  	  $var =  mascara2($cod_estado)." - ".$deno_cod_estado;
+									  	}else{
+									      $var = "";
+									    }
+									}
+									$pdf->MultiCell(55,2,$var,'','L');//--[ESTADO]
+									$varX = $varX+56;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(56,4,mascara2($cod_estado)." - ".$deno_cod_estado,'R',0,'L');
+									$pdf->SetFont('vera','B',6);
+
+
+									$pdf->Cell(22,5,"SECRETARIA",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(63,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									  if($cod_secretaria==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==1 || $opcion_ordenar==3 || $opcion_ordenar==5){
+									  		$var =  mascara2($cod_secretaria)." - ".$deno_cod_secretaria;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(62,2,$var,'','L');//--[SECRETARIA]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+63;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(63,4,mascara2($cod_secretaria)." - ".$deno_cod_secretaria,'R',0,'L');
+
+									$pdf->Cell(21,5,"SECTOR",'RL',0,'L');
+									if($opcion_ordenar==4 || $opcion_ordenar==5){
+										$var = $cod_sector;
+									}else{
+										$var = "";
+									}
+									$pdf->Cell(0,5,mascara2($var),'R',1,'L');
+									$pdf->Cell(24,5,"MUNICIPIO",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(56,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									if($cod_municipio==0){
+									  	$var = "";
+									}else{
+									  	if($opcion_ordenar==2 || $opcion_ordenar==3){
+									  		$var =  mascara2($cod_municipio)." - ".$deno_cod_municipio;
+									  	}else{
+									  		$var="";
+									  	}
+									}
+									$pdf->MultiCell(55,2,$var,'','L');//--[MUNICIPIO]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+56;
+									$pdf->SetXY($varX,$varY);
+
+
+									$pdf->Cell(22,5,"DIRECCIÓN",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(63,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									  if($cod_direccion==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==1 || $opcion_ordenar==3 || $opcion_ordenar==5){
+									  		$var =  mascara2($cod_direccion)." - ".$deno_cod_direccion;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(62,2,$var,'','L');//--[DIRECCION]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+63;
+									$pdf->SetXY($varX,$varY);
+
+									$pdf->Cell(21,5,"PROGRAMA",'RL',0,'L');
+									if($opcion_ordenar==4 || $opcion_ordenar==5){
+										$var = $cod_programa;
+									}else{
+										$var = "";
+									}
+									$pdf->Cell(0,5,mascara2($var),'R',1,'L');
+
+									$pdf->Cell(24,5,"PARROQUIA",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(56,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									if($cod_parroquia==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==2 || $opcion_ordenar==3){
+									  		$var =  mascara2($cod_parroquia)." - ".$deno_cod_parroquia;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(55,2,$var,'','L');//--[MUNICIPIO]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+56;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(56,4,mascara2($cod_estado)." - ".$deno_cod_estado,'R',0,'L');
+
+									$pdf->Cell(22,5,"DIVISIÓN",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(63,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									  if($cod_division==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==1 || $opcion_ordenar==3 || $opcion_ordenar==5){
+									  		$var =  mascara2($cod_division)." - ".$deno_cod_division;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(62,2,$var,'','L');//--[MUNICIPIO]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+63;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(63,4,mascara2($cod_division)." - ".$deno_cod_division,'R',0,'L');
+
+									$pdf->Cell(21,5,"SUBPROGRAMA",'RL',0,'L');
+									if($opcion_ordenar==4 || $opcion_ordenar==5){
+										$var = $cod_sub_prog;
+									}else{
+										$var = "";
+									}
+									$pdf->Cell(0,5,mascara2($var),'R',1,'L');
+
+									$pdf->Cell(24,5,"CENTRO POBLADO",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(56,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									 if($cod_centro==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==2 || $opcion_ordenar==3){
+									  		$var =  mascara2($cod_centro)." - ".$deno_cod_centro;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(55,2,$var,'','L');//--[CENTRO POBLADO]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+56;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(56,4,mascara2($cod_parroquia)." - ".$deno_cod_parroquia,'R',0,'L');
+
+
+									$pdf->Cell(22,5,"DEPARTAMENTO",'RL',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(63,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									  if($cod_departamento==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==1 || $opcion_ordenar==3 || $opcion_ordenar==5){
+									  		$var =  mascara2($cod_departamento)." - ".$deno_cod_departamento;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(62,2,$var,'','L');//--[DEPARTAMENTO]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+63;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(63,4,mascara2($cod_departamento)." - ".$deno_cod_departamento,'R',0,'L');
+
+
+									$pdf->Cell(21,5,"PROYECTO",'RL',0,'L');
+									if($opcion_ordenar==4 || $opcion_ordenar==5){
+										$var = $cod_proyecto;
+									}else{
+										$var = "";
+									}
+									$pdf->Cell(0,5,mascara2($var),'R',1,'L');
+
+									$pdf->Cell(24,5,"",'RBL',0,'L');
+									$pdf->Cell(56,5,"",'RB',0,'L');
+									$pdf->Cell(22,5,"OFICINA",'BR',0,'L');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->Cell(63,1,"",'',2,'C');
+									$pdf->SetFont('vera','',6);
+									  if($cod_oficina==0){
+									  	     $var = "";
+									  }else{
+									  	if($opcion_ordenar==1 || $opcion_ordenar==3 || $opcion_ordenar==5){
+									  		$var =  mascara2($cod_oficina)." - ".$deno_cod_oficina;
+									  	}else{
+									  		$var = "";
+									  	}
+									  }
+									$pdf->MultiCell(62,2,$var,'','L');//--[OFICINA]
+									$pdf->SetFont('vera','B',6);
+									$varX = $varX+63;
+									$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(63,4,mascara2($cod_oficina)." - ".$deno_cod_oficina,'BR',0,'L');
+									$pdf->Cell(21,5,"ACTIVIDAD",'BRL',0,'L');
+									if($opcion_ordenar==4 || $opcion_ordenar==5){
+										$var = $cod_activ_obra;
+									}else{
+										$var = "";
+									}
+									$pdf->Cell(0,5,mascara2($var),'BR',1,'L');
+									$pdf->Cell(0,0,'','T',1);//PARA TRAZAR UNA LINEA
+
+							        $pdf->Ln(4);
+
+						           }
+
+                                if($cedula_aux != $ve["v_cnmd08_historia_transacciones"]["cedula_identidad"]  ||
+                                   $cargo_aux  != $ve["v_cnmd08_historia_transacciones"]["cod_cargo"]         ||
+                                   $ficha_aux  != $ve["v_cnmd08_historia_transacciones"]["cod_ficha"]){
+
+                          			$contar_personas_a++;
+ 	          	            		$contar_personas_b++;
+
+                                    $pdf->SetFont('vera','B',7);
+			                        $pdf->Cell(24,3,"CÉDULA",'TRL',0,'C');
+									$pdf->Cell(50,3,"",'TR',0,'C');
+									$pdf->Cell(15,3,"CÓDIGO",'TR',0,'C');
+									$pdf->Cell(15,3,"CÓDIGO",'TR',0,'C');
+									$pdf->Cell(58,3,"",'TR',0,'C');
+									$pdf->Cell(17,3,"FECHA",'TR',0,'C');
+									$pdf->Cell(0,3,"",'TR',1,'C');
+
+									$pdf->Cell(24,3,"IDENTIDAD",'RL',0,'C');
+									$pdf->Cell(50,3,"APELLIDOS Y NOMBRES",'R',0,'C');
+									$pdf->Cell(15,3,"FICHA",'R',0,'C');
+									$pdf->Cell(15,3,"CARGO",'R',0,'C');
+									$pdf->Cell(58,3,"DENOMINACIÓN CARGO",'R',0,'C');
+									$pdf->Cell(17,3,"INGRESO",'R',0,'C');
+									$pdf->Cell(0,3,"SUELDO MENSUAL",'R',1,'C');
+
+									$nombres  = $ve["v_cnmd08_historia_transacciones"]["primer_apellido"]." ";
+                                    $nombres .= $ve["v_cnmd08_historia_transacciones"]["segundo_apellido"]." ";
+                                    $nombres .= $ve["v_cnmd08_historia_transacciones"]["primer_nombre"]." ";
+                                    $nombres .= $ve["v_cnmd08_historia_transacciones"]["segundo_nombre"]." ";
+
+                                     ///MENSUAL
+                                     if($ve["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]==1 &&
+	                                    $ve["v_cnmd08_historia_transacciones"]["cod_transaccion"]==1
+	                                 ){
+	                                 	$ve["v_cnmd08_historia_transacciones"]["sueldo_basico"] = $ve["v_cnmd08_historia_transacciones"]["monto_cuota"];
+	                                 	//$A1= $ve["v_cnmd08_historia_transacciones"]["monto_cuota"];
+	                                 }else{
+	                                 	$ve["v_cnmd08_historia_transacciones"]["sueldo_basico"] = 0;
+	                                 	//$A1= 0;
+	                                 }
+
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==1){ $A1=$ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]*30;        $A2=$ve["v_cnmd08_historia_transacciones"]["compensaciones"]*30;         $A3=$ve["v_cnmd08_historia_transacciones"]["primas"]*30;         $A4=$ve["v_cnmd08_historia_transacciones"]["bonos"]*30; }
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==2){ $A1=(($ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]*52)/12); $A2=(($ve["v_cnmd08_historia_transacciones"]["compensaciones"]*52)/12);   $A3=(($ve["v_cnmd08_historia_transacciones"]["primas"]*52)/12);  $A4=(($ve["v_cnmd08_historia_transacciones"]["bonos"]*52)/12); }
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==3){ $A1=$ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]*2 ;         $A2=$ve["v_cnmd08_historia_transacciones"]["compensaciones"]*2;          $A3=$ve["v_cnmd08_historia_transacciones"]["primas"]*2;          $A4=$ve["v_cnmd08_historia_transacciones"]["bonos"]*2; }
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==4){ $A1=$ve["v_cnmd08_historia_transacciones"]["sueldo_basico"];           $A2=$ve["v_cnmd08_historia_transacciones"]["compensaciones"];            $A3=$ve["v_cnmd08_historia_transacciones"]["primas"];            $A4=$ve["v_cnmd08_historia_transacciones"]["bonos"]; }
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==5){ $A1=(($ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]*6)/12);  $A2=(($ve["v_cnmd08_historia_transacciones"]["compensaciones"]*6)/12);   $A3=(($ve["v_cnmd08_historia_transacciones"]["primas"]*6)/12);   $A4=(($ve["v_cnmd08_historia_transacciones"]["bonos"]*6)/12); }
+									if ($ve["v_cnmd08_historia_transacciones"]["frecuencia_cobro"]==6){ $A1=(($ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]*4)/12);  $A2=(($ve["v_cnmd08_historia_transacciones"]["compensaciones"]*4)/12);   $A3=(($ve["v_cnmd08_historia_transacciones"]["primas"]*4)/12);   $A4=(($ve[$i]["bonos"]*4)/12); }
+
+									$pdf->SetFont('vera','',8);
+									$pdf->Cell(24,7,$ve["v_cnmd08_historia_transacciones"]["cedula_identidad"],'TRL',0,'C');
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(50,1,"",'T',2,'C');
+										$pdf->MultiCell(48,3,$nombres,'','L');
+										$varX = $varX+50;
+										$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(50,7,$nombres,'TR',0,'L');
+									$pdf->Cell(15,7,mascara_seis($ve["v_cnmd08_historia_transacciones"]["cod_ficha"]),'TRL',0,'C');
+									$pdf->Cell(15,7,mascara_seis($ve["v_cnmd08_historia_transacciones"]["cod_cargo"]),'TR',0,'C');
+										$varX = $pdf->GetX();
+										$varY = $pdf->GetY();
+										$pdf->Cell(58,1,"",'T',2,'C');
+										$pdf->MultiCell(56,3,$ve["v_cnmd08_historia_transacciones"]["denominacion_puesto"],'','L');
+										$varX = $varX+58;
+										$pdf->SetXY($varX,$varY);
+									//$pdf->Cell(58,7,$ve["v_cnmd08_historia_transacciones"]["denominacion_puesto"],'TR',0,'L');
+									$pdf->Cell(17,7,cambia_fecha($ve["v_cnmd08_historia_transacciones"]["fecha_ingreso"]),'TRL',0,'C');
+									$pdf->SetFont('vera','B',9);
+									$pdf->Cell(0,7,$sisap->Formato2($A1),'TR',1,'R');
+
+								    $pdf->SetFont('vera','B',7);
+									$pdf->Cell(19,3,"",'TRL',0,'C');
+									$pdf->Cell(70,3,"",'TR',0,'C');
+									$pdf->Cell(21,3,"",'TR',0,'C');
+									$pdf->Cell(23,3,"MONTO",'TR',0,'C');
+									$pdf->Cell(23,3,"MONTO",'TR',0,'C');
+									$pdf->Cell(23,3,"NETO",'TR',0,'C');
+									$pdf->Cell(0,3,"",'TR',1,'C');
+
+									$pdf->SetFont('vera','B',8);
+									$pdf->Cell(19,3,"CÓDIGO",'RBL',0,'C');
+									$pdf->Cell(70,3,"DENOMINACIÓN",'RB',0,'C');
+									$pdf->SetFont('vera','B',6);
+									$pdf->Cell(21,3,"DIAS/HORAS",'RB',0,'C');
+									$pdf->Cell(23,3,"ASIGNACION",'RB',0,'C');
+									$pdf->Cell(23,3,"DEDUCCIÓN",'RB',0,'C');
+									$pdf->Cell(23,3,"A COBRAR",'RB',0,'C');
+									$pdf->SetFont('vera','B',8);
+									$pdf->Cell(0,3,"SALDO",'RB',1,'C');
+									$pdf->SetFont('vera','B',6);
+
+
+							             $cedula_aux = $ve["v_cnmd08_historia_transacciones"]["cedula_identidad"];
+							             $cargo_aux  = $ve["v_cnmd08_historia_transacciones"]["cod_cargo"];
+								         $ficha_aux  = $ve["v_cnmd08_historia_transacciones"]["cod_ficha"];
+
+
+
+				                   }//fin fin
+
+	                                /* if($total_a==0){
+	                                        $pdf->SetFont('vera','',6);
+											$pdf->Cell(19,5,mascara_tres(0),'RBL',0,'C');
+											$varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(70,1,"",'',2,'L');
+											$pdf->MultiCell(69,2,"SUELDO BASICO",'','L');
+											$varX = $varX+70;
+											$pdf->SetXY($varX,$varY);
+											$pdf->Cell(21,5,mascara2($ve["v_cnmd08_historia_transacciones"]["dias_horas"]),'RBL',0,'C');
+
+										    $pdf->Cell(23,5,$sisap->Formato2($ve["v_cnmd08_historia_transacciones"]["sueldo_basico"]),'RB',0,'R');
+										    $pdf->Cell(23,5,"",'RB',0,'R');
+										    $total_agrupada_asignacion_aux += $ve["v_cnmd08_historia_transacciones"]["sueldo_basico"];
+										    $sumatoria_sueldoc_basico      += $ve["v_cnmd08_historia_transacciones"]["sueldo_basico"];
+
+	                                        $pdf->Cell(23,5,"",'RB',0,'R');
+											$pdf->Cell(0,5,"",'RB',1,'R');
+											$pdf->Cell(0,0,"",'T',1,'C');
+
+	                                 }//fin if*/
+
+
+
+
+								    $pdf->SetFont('vera','',9);
+									$pdf->Cell(19,7,mascara_tres($ve["v_cnmd08_historia_transacciones"]["cod_transaccion"]),'RL',0,'C');
+									$varX = $pdf->GetX();
+									$varY = $pdf->GetY();
+									$pdf->SetFont('vera','',7);
+									$pdf->Cell(70,1,"",'',2,'L');
+									$pdf->MultiCell(69,3,$ve["v_cnmd08_historia_transacciones"]["deno_transaccion"],'','L');
+									$varX = $varX+70;
+									$pdf->SetXY($varX,$varY);
+
+									$pdf->SetFont('vera','',9);
+
+									if($ve["v_cnmd08_historia_transacciones"]["dias_cnmd09_dias_trabajados_fa"]==0){
+                                    	$dias_horas = $ve["v_cnmd08_historia_transacciones"]["dias_cnmd09_dias_trabajados_fa"];
+									}else if($ve["v_cnmd08_historia_transacciones"]["dias_cnmd09_dias_trabajados_in"]==0){
+                                    	$dias_horas = $ve["v_cnmd08_historia_transacciones"]["dias_cnmd09_dias_trabajados_in"];
+									}else{
+										$dias_horas = $ve["v_cnmd08_historia_transacciones"]["dias_cobro_cnmd01"];
+									}//fin else
+
+									$pdf->Cell(21,7,mascara2($dias_horas),'RL',0,'C');
+
+									if($ve["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]==1){
+                                    	$pdf->Cell(23,7,$sisap->Formato2($ve["v_cnmd08_historia_transacciones"]["monto_cuota"]),'R',0,'R');
+									    $pdf->Cell(23,7,"",'R',0,'R');
+									    $pdf->Cell(23,7,"",'R',0,'R');
+									    $total_agrupada_asignacion_aux += $ve["v_cnmd08_historia_transacciones"]["monto_cuota"];
+                                    }else{
+                                    	$pdf->Cell(23,7,"",'R',0,'R');
+									    $pdf->Cell(23,7,$sisap->Formato2($ve["v_cnmd08_historia_transacciones"]["monto_cuota"]),'R',0,'R');
+									    // No se suma la deduccion si el uso_transaccion es igual a 6 0 9
+									    if($ve["v_cnmd08_historia_transacciones"]["uso_transaccion"] == 6 || $ve["v_cnmd08_historia_transacciones"]["uso_transaccion"] == 9){
+									    	$pdf->Cell(23,7,"<--- NO SUMA",'R',0,'R');
+									    }else{
+									    	$pdf->Cell(23,7,"",'R',0,'R');
+									    	$total_agrupada_deduccion_aux  += $ve["v_cnmd08_historia_transacciones"]["monto_cuota"];
+									    }
+                                    }//fin else
+
+									$pdf->Cell(0,7,$sisap->Formato2($ve["v_cnmd08_historia_transacciones"]["saldo"]),'R',1,'R');
+									$pdf->Cell(0,0,"",'T',1,'C');
+                                    $total_a++;
+
+                                    $array_totales[$ve["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["monto_cuota"]    += $ve["v_cnmd08_historia_transacciones"]["monto_cuota"];
+                                    $array_totales[$ve["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["uso_transaccion"] = $ve["v_cnmd08_historia_transacciones"]["uso_transaccion"];
+                                    $array_totales[$ve["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]][$ve["v_cnmd08_historia_transacciones"]["cod_transaccion"]]["cantidad"]++;
+
+
+							     }//fin foreach
+
+
+
+
+
+
+
+
+
+
+
+
+                                    $pdf->SetFont('vera','B',9);
+									$pdf->Cell(110,5,"TOTALES",'RBL',0,'R');
+									$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_asignacion_aux),'RB',0,'R');
+									$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_deduccion_aux),'RB',0,'R');
+									$pdf->Cell(23,5,$sisap->Formato2($total_agrupada_asignacion_aux-$total_agrupada_deduccion_aux),'RB',0,'R');
+									$pdf->Cell(0,5,"",'',1,'R');
+									$pdf->Ln(4);
+
+
+									$pdf->AddPage();
+
+                                                    	$pdf->SetFont('vera','B',7);
+                                                    	$pdf->Ln(3);
+                                                    	$pdf->Cell(0,4,"DISTRIBUCIÓN DE TRANSACCIONES DE LA UBICACIÓN ACTUAL",'TRBL',1,'C');
+														$pdf->Cell(15,4,"NÚMERO",'TRL',0,'C');
+														$pdf->Cell(15,4,"CÓDIGO",'TRL',0,'C');
+														$pdf->Cell(65,4,"",'TR',0,'C');
+														$pdf->Cell(25,4,"MONTO",'TR',0,'C');
+														$pdf->Cell(25,4,"MONTO",'TR',0,'C');
+														$pdf->Cell(25,4,"SUELDO",'TR',0,'C');
+														$pdf->Cell(0,4,"MONTO",'TR',1,'C');
+														$pdf->Cell(0,0,"",'',1,'C');
+														$pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+														$pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+														$pdf->Cell(65,4,"DESCRIPCIÓN DE LA TRANSACCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"ASIGNACCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"DEDUCCIÓN",'RB',0,'C');
+														$pdf->Cell(25,4,"BASICO",'RB',0,'C');
+														$pdf->Cell(0,4,"NETO",'RB',1,'C');
+
+														$asignaciones=0;
+														$sueldo=0;
+														$deducciones=0;
+														$ap=0;
+														$numero_trabajadores=0;
+
+														foreach($DATOS_agrupa_saldo as $ver){
+															$cod_tipo_transaccion         = $ver["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"];
+															$cod_transaccion              = $ver["v_cnmd08_historia_transacciones"]["cod_transaccion"];
+															$uso_transaccion              = $ver["v_cnmd08_historia_transacciones"]["uso_transaccion"];
+															$cantidad_de_transacciones    = $array_totales[$cod_tipo_transaccion][$cod_transaccion]["cantidad"];
+															$monto_cuota_de_transacciones = $array_totales[$cod_tipo_transaccion][$cod_transaccion]["monto_cuota"];
+															if($cantidad_de_transacciones!=0){
+			                                                            $pdf->SetFont('vera','B',9);
+																        $alto = 5;
+																		$pdf->Cell(15,$alto,$cantidad_de_transacciones,'TRL',0,'R');//--
+																		$pdf->Cell(15,$alto,mascara_tres($cod_transaccion),'TRL',0,'C');//--
+																		$pdf->SetFont('vera','',7);
+																		$pdf->Cell(65,$alto,$ver["v_cnmd08_historia_transacciones"]["deno_transaccion"],'TR',0,'L'); //--[Distribucion]
+																		$pdf->SetFont('vera','',9);
+																		if($cod_tipo_transaccion==1){
+																			    $monto_asignacion = $monto_cuota_de_transacciones;
+																			if($cod_transaccion==1){
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[sueldo]
+																				$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																                $numero_trabajadores=$cantidad_de_transacciones;
+																				$sueldo=$monto_asignacion;
+																			}else{
+																				$pdf->Cell(25,$alto,$sisap->Formato2($monto_asignacion),'TR',0,'R'); //--[asignacion]
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																				$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																				$asignaciones +=$monto_asignacion;
+																			}
+																		}else{
+																			        $monto_deduccion = $monto_cuota_de_transacciones;
+																			    if($uso_transaccion==6 || $uso_transaccion==9){
+																			    	$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(25,$alto,$sisap->Formato2($monto_deduccion)."",'TR',0,'R'); //--[deduccion]
+																					$pdf->Cell(25,$alto,"<-- No suma",'TR',0,'L'); //--
+																					$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																					if($uso_transaccion==6){
+																						$ap+=$monto_deduccion;
+																					}
+																			    }else{
+																			    	$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(25,$alto,$sisap->Formato2($monto_deduccion),'TR',0,'R'); //--[deduccion]
+																					$pdf->Cell(25,$alto,"",'TR',0,'R'); //--
+																					$pdf->Cell(0,$alto,"",'TR',1,'R');  //--
+																					$deducciones+=$monto_deduccion;
+																			    }
+
+																		}
+															}
+														}//fin foreach
+
+														$pdf->SetFont('vera','B',9);
+														$pdf->Cell(95,5,'TOTALES:','TLRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($asignaciones),'TRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($deducciones),'TRB',0,'R');
+														$pdf->Cell(25,5,$sisap->Formato2($sueldo),'TRB',0,'R');
+														$pdf->Cell(0,5,$sisap->Formato2(($asignaciones+$sueldo)-$deducciones),'TRB',1,'R');
+
+                                                        $pdf->Ln(4);
+
+
+							        //--------------------------------------------------------//
+									//----------- AL FINALIZAR EL TIPO DE NÓMINA -------------//
+									$pdf->SetFont('vera','B',9);
+									$pdf->Cell(0,5,"TOTAL DE PERSONAS: ".$contar_personas_a,'TRBL',1,'L');
+									$pdf->Ln(4);
+
+									$pdf->Cell(0,5,"TOTAL FINAL DE PERSONAS: ".$contar_personas_b,'TRBL',1,'L');
+									$pdf->Ln(4);
+
+									//--------------------------------------------------------//
+									//--------------------------------------------------------//
+                                   $pdf->AddPage();
+                                   $pdf->Ln(4);
+
+								   $total_agrupada_asignacion = 0;
+								   $total_agrupada_deduccion  = 0;
+
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(0,4,"DISTRIBUCIÓN DE TRANSACCIONES",'TRBL',1,'C');
+									$pdf->Cell(24,4,"CÓDIGO",'RBL',0,'C');
+									$pdf->Cell(120,4,"DENOMINACIÓN",'RB',0,'C');
+									$pdf->Cell(30,4,"ASIGNACIONES",'RB',0,'C');
+									$pdf->Cell(0,4,"DEDUCCIONES",'RB',1,'C');
+									$pdf->SetFont('vera','',6);
+
+								    $total_agrupada_asignacion += $sumatoria_sueldoc_basico;
+
+									foreach($DATOS_agrupa as $ve2){
+										$pdf->SetFont('vera','B',9);
+										$pdf->Cell(24,5,mascara_tres($ve2["v_cnmd08_historia_transacciones"]["cod_transaccion"]),'RBL',0,'C');
+										$pdf->SetFont('vera','',7);
+										$pdf->Cell(120,5,$ve2["v_cnmd08_historia_transacciones"]["deno_transaccion"],'RB',0,'L');
+										$pdf->SetFont('vera','',9);
+                                        if($ve2["v_cnmd08_historia_transacciones"]["cod_tipo_transaccion"]==1){
+                                        	$pdf->Cell(30,5,$sisap->Formato2($ve2[0]["monto_cuota"]),'RB',0,'R');
+										    $pdf->Cell(0,5,"",'RB',1,'R');
+										    $total_agrupada_asignacion += $ve2[0]["monto_cuota"];
+                                        }else{
+
+
+	                                        if($ve2["v_cnmd08_historia_transacciones"]["uso_transaccion"] == 6 || $ve2["v_cnmd08_historia_transacciones"]["uso_transaccion"] == 9){
+										    	 $pdf->Cell(30,5,"NO SUMA --->",'RB',0,'R');
+										    	 $pdf->Cell(0,5,$sisap->Formato2($ve2[0]["monto_cuota"]),'RB',1,'R');
+										    }else{
+										    	$pdf->Cell(30,5,"",'RB',0,'R');
+											    $pdf->Cell(0,5,$sisap->Formato2($ve2[0]["monto_cuota"]),'RB',1,'R');
+	                                            $total_agrupada_deduccion  += $ve2[0]["monto_cuota"];
+										    }
+
+
+
+
+                                        }//fin else
+									}//fin foreach
+
+
+
+
+
+
+
+
+
+
+									$pdf->SetFont('vera','B',9);
+									$pdf->Cell(144,5,"TOTALES",'RBL',0,'R');
+									$pdf->Cell(30,5,$sisap->Formato2($total_agrupada_asignacion),'RB',0,'R');
+									$pdf->Cell(0,5,$sisap->Formato2($total_agrupada_deduccion),'RB',1,'R');
+									$pdf->Ln(4);
+
+                                    $neto_cobrar_total  = $total_agrupada_asignacion - $total_agrupada_deduccion;
+
+                                    $pdf->AddPage();
+                                    $pdf->Ln(4);
+
+									//---------------------------------------------------------
+									//---------------------------------------------------------
+									$pdf->SetFont('vera','B',7);
+									$pdf->Cell(0,4,"DISTRIBUCIÓN DE MONEDA",'TRBL',1,'C');
+									$pdf->Cell(67,4,"VALOR MONEDA",'RBL',0,'C');
+									$pdf->Cell(67,4,"CANTIDAD MONEDA",'RB',0,'C');
+									$pdf->Cell(0,4,"BOLIVARES",'RB',1,'C');
+
+									$pdf->SetFont('vera','',9);
+									$pdf->Cell(67,6,"100,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 100, true),'TRB',0,'C');
+									    $monto = "";
+										$monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 100, true));
+										if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"50,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 50),'TRB',0,'C');
+									    $monto = "";
+										$monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 50));
+										if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"20,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 20),'TRB',0,'C');
+									    $monto = "";
+									    $monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 20));
+										if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"10,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 10),'TRB',0,'C');
+									    $monto = "";
+									    $monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 10));
+										if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"5,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 5),'TRB',0,'C');
+									     $monto = "";
+									     $monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 5));
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"2,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 2),'TRB',0,'C');
+									     $monto = "";
+									     $monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 2));
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,"1,00",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 1),'TRB',0,'C');
+									     $monto = "";
+									     $monto = $sisap->Formato2(devolver_bolivares_moneda($neto_cobrar_total, 1));
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",50",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.50),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.50);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",25",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.25),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.25);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",20",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.20),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.20);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",10",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.10),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.10);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",05",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.05),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.05);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->Cell(67,6,",01",'TRBL',0,'C');
+									$pdf->Cell(67,6,devolver_cantidad_moneda($neto_cobrar_total, 0.01),'TRB',0,'C');
+									     $monto = "";
+									     $monto = devolver_bolivares_moneda($neto_cobrar_total, 0.01);
+										 if($monto == 0){$monto="";}
+									$pdf->Cell(0,6,$monto,'TRB',1,'C');
+
+									$pdf->SetFont('vera','B',9);
+									$pdf->Cell(134,6,"TOTAL",'TLRB',0,'R');
+									$pdf->Cell(0,6,$sisap->Formato2($neto_cobrar_total),'TRB',1,'C');
+									$pdf->Cell(0,6,"",'T',1);
+
+							 }//fin else
+
+							 fin_ventana_barra_proceso();
+
+						$pdf->Output('diario_nomina_historico_'.date("d-m-Y")."",'SISAP_AJAX');
+
+
+
+       }//fin else
+
+?>

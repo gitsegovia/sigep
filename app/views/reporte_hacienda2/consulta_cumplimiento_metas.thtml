@@ -1,0 +1,323 @@
+<?php if($opcion==1){
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('CUMPLIMIENTO DE METAS'),'','950');
+echo $sisap->OpenTable('950');
+
+?>
+
+<form>
+   <table width="13%" border="0" align='left' class="tablacompromiso tablacompromiso2">
+    <tr>
+        <td align='right' class='fila_titulos'>Año:</td>
+	    <td align="center">
+        	<?= $sisap->selectTagRemote('reporte_hacienda2/ano', $lista_ano,  null,  $ano_arranque ,array('onchange1' => '/reporte_hacienda2/consulta_cumplimiento_metas/2', 'update1'=>'consulta_capa', 'id'=>'ano',  'maxlength'=>'8', true), null, true); ?>
+	    </td>
+    </tr>
+    </table>
+
+<br>
+    <table border="0">
+    <tr>
+       <td  align="center">
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+    </table>
+
+<br><br>
+
+<div id="consulta_capa">
+	<div id="distribuir" style="height:250px; overflow:auto;">
+			<table width="100%" cellspacing="0" cellpadding="0" id="grid" border="0" class="tablacompromiso tablacompromiso2">
+				<tr class="tr_negro" align="center">
+				    <td width="10%">Código <br> Ingreso</td>
+				    <td width="30%">Denominación del ingreso</td>
+				    <td width="10%">Monto <br> Estimado</td>
+				    <td width="10%">Monto <br> Recaudado</td>
+				    <td width="10%">Monto por<br> Recaudar</td>
+				    <td width="10%">Monto <br> Superávit</td>
+				</tr>
+	       <?php
+
+	                          $total_a = 0;
+							  $total_b = 0;
+							  $total_c = 0;
+							  $total_d = 0;
+
+	       if(!empty($datos2)){ $ii=0;
+
+  	       	   foreach($datos2 as $ve){
+
+				       	    if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } $ii++;
+
+
+                              $cod_partida      = $ve["v_cfpd03_denominacion_partida"]['cod_partida'];
+						      $cod_generica     = $ve["v_cfpd03_denominacion_partida"]['cod_generica'];
+						      $cod_especifica   = $ve["v_cfpd03_denominacion_partida"]['cod_especifica'];
+						      $cod_sub_espec    = $ve["v_cfpd03_denominacion_partida"]['cod_sub_espec'];
+						      $cod_auxiliar     = $ve["v_cfpd03_denominacion_partida"]['cod_auxiliar'];
+							  $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+							  $deno_partida    = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+							  $deno_generica   = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+							  $deno_especifica = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+							  $deno_sub_espe   = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+							  $deno_auxiliar   = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+
+							  $estimacion_inicial    = $ve["v_cfpd03_denominacion_partida"]['estimacion_inicial'];
+							  $ingresos_adicionales  = $ve["v_cfpd03_denominacion_partida"]['ingresos_adicionales'];
+							  $rebajas               = $ve["v_cfpd03_denominacion_partida"]['rebajas'];
+							  $monto_facturado       = $ve["v_cfpd03_denominacion_partida"]['monto_facturado'];
+							  $monto_cobrado         = $ve["v_cfpd03_denominacion_partida"]['monto_cobrado'];
+
+							  $monto_estimado     = ($estimacion_inicial+$ingresos_adicionales)-$rebajas;
+							  $monto_recaudado    = $monto_cobrado;
+
+							        if($monto_estimado > $monto_recaudado){
+							  	$monto_por_recaudar = $monto_estimado - $monto_recaudado;
+							    $monto_supervati    = 0;
+							  }else if ($monto_recaudado > $monto_estimado ){
+							  	$monto_por_recaudar = 0;
+							    $monto_supervati    = $monto_recaudado - $monto_estimado;
+							  }else{
+							  	$monto_por_recaudar = 0;
+							    $monto_supervati    = 0;
+							  }
+
+							  $total_a += $monto_estimado;
+							  $total_b += $monto_recaudado;
+							  $total_c += $monto_por_recaudar;
+							  $total_d += $monto_supervati;
+
+
+							  if($deno_auxiliar==null || $deno_auxiliar==""){
+							  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+							  	 	if($deno_especifica==null || $deno_especifica==""){
+							  	 		if($deno_generica==null || $deno_generica==""){
+							  	 			if($deno_partida==null || $deno_partida==""){
+					                               $denominacion_impuesto = "";
+											  }else{
+											  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+											  }
+										  }else{
+										  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+										  }
+									  }else{
+									  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+									  }
+								  }else{
+								  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+								  }
+							  }else{
+							  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+							  }
+
+
+				       	   ?>
+				       	    <tr bgcolor="<?= $color ?>" align="center">
+							    <td height="22"  width="2"><?= $cod_ingreso ?></td>
+							    <td align="left"><?= cambiar_mayuscula_basic($denominacion_impuesto) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_estimado) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_recaudado) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_por_recaudar) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_supervati) ?></td>
+							</tr>
+					<?php
+			             }//fin for
+			             if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  }
+			         ?>
+			         <tr bgcolor="<?= $color  ?>" align="center">
+						    <td height="22"  width="2">--</td>
+						    <td align='right'><b>TOTALES:</b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_a) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_b) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_c) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_d) ?></b></td>
+						</tr>
+
+	       <?php }else{?>
+				<tr bgcolor="#DAEBFF" align="center">
+				    <td height="22"  width="2">--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				</tr>
+				<tr bgcolor="#CDF2FF" align="center">
+				    <td height="22"  width="2">--</td>
+				    <td align='right'><b>TOTALES:</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				</tr>
+			<?php } ?>
+			</table>
+	</div>
+	<?$sisap->link_paginacion_ventanas('/reporte_hacienda2/consulta_cumplimiento_metas/2/'.$ano_arranque, 'consulta_capa', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+</div>
+
+
+
+
+</form>
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+<?php }else if($opcion==2){ ?>
+
+
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+	     <table width="100%" cellspacing="0" cellpadding="0" id="grid" border="0" class="tablacompromiso tablacompromiso2">
+				<tr class="tr_negro" align="center">
+				    <td width="10%">Código <br> Ingreso</td>
+				    <td width="30%">Denominación del ingreso</td>
+				    <td width="10%">Monto <br> Estimado</td>
+				    <td width="10%">Monto <br> Recaudado</td>
+				    <td width="10%">Monto por<br> Recaudar</td>
+				    <td width="10%">Monto <br> Superávit</td>
+				</tr>
+	       <?php
+
+	                          $total_a = 0;
+							  $total_b = 0;
+							  $total_c = 0;
+							  $total_d = 0;
+
+
+	       if(!empty($datos2)){$ii=0;
+
+  	       	   foreach($datos2 as $ve){
+
+				       	   if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } $ii++;
+
+
+                              $cod_partida      = $ve["v_cfpd03_denominacion_partida"]['cod_partida'];
+						      $cod_generica     = $ve["v_cfpd03_denominacion_partida"]['cod_generica'];
+						      $cod_especifica   = $ve["v_cfpd03_denominacion_partida"]['cod_especifica'];
+						      $cod_sub_espec    = $ve["v_cfpd03_denominacion_partida"]['cod_sub_espec'];
+						      $cod_auxiliar     = $ve["v_cfpd03_denominacion_partida"]['cod_auxiliar'];
+							  $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+							  $deno_partida    = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+							  $deno_generica   = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+							  $deno_especifica = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+							  $deno_sub_espe   = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+							  $deno_auxiliar   = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+
+							  $estimacion_inicial    = $ve["v_cfpd03_denominacion_partida"]['estimacion_inicial'];
+							  $ingresos_adicionales  = $ve["v_cfpd03_denominacion_partida"]['ingresos_adicionales'];
+							  $rebajas               = $ve["v_cfpd03_denominacion_partida"]['rebajas'];
+							  $monto_facturado       = $ve["v_cfpd03_denominacion_partida"]['monto_facturado'];
+							  $monto_cobrado         = $ve["v_cfpd03_denominacion_partida"]['monto_cobrado'];
+
+							  $monto_estimado     = ($estimacion_inicial+$ingresos_adicionales)-$rebajas;
+							  $monto_recaudado    = $monto_cobrado;
+
+							        if($monto_estimado > $monto_recaudado){
+							  	$monto_por_recaudar = $monto_estimado - $monto_recaudado;
+							    $monto_supervati    = 0;
+							  }else if ($monto_recaudado > $monto_estimado ){
+							  	$monto_por_recaudar = 0;
+							    $monto_supervati    = $monto_recaudado - $monto_estimado;
+							  }else{
+							  	$monto_por_recaudar = 0;
+							    $monto_supervati    = 0;
+							  }
+
+							  if($deno_auxiliar==null || $deno_auxiliar==""){
+							  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+							  	 	if($deno_especifica==null || $deno_especifica==""){
+							  	 		if($deno_generica==null || $deno_generica==""){
+							  	 			if($deno_partida==null || $deno_partida==""){
+					                               $denominacion_impuesto = "";
+											  }else{
+											  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+											  }
+										  }else{
+										  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+										  }
+									  }else{
+									  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+									  }
+								  }else{
+								  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+								  }
+							  }else{
+							  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+							  }
+
+							  $total_a += $monto_estimado;
+							  $total_b += $monto_recaudado;
+							  $total_c += $monto_por_recaudar;
+							  $total_d += $monto_supervati;
+
+
+				       	   ?>
+				       	    <tr bgcolor="<?= $color ?>" align="center">
+							    <td height="22"  width="2"><?= $cod_ingreso ?></td>
+							    <td align="left"><?= cambiar_mayuscula_basic($denominacion_impuesto) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_estimado) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_recaudado) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_por_recaudar) ?></td>
+							    <td align='right'><?= $sisap->Formato2($monto_supervati) ?></td>
+							</tr>
+					<?php
+			             }//fin for
+
+			             if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  }
+			         ?>
+
+			           <tr bgcolor="<?= $color  ?>" align="center">
+						    <td height="22"  width="2">--</td>
+						    <td align='right'><b>TOTAL PAGINA:</b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_a) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_b) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_c) ?></b></td>
+						    <td align='right'><b><?= $sisap->Formato2($total_d) ?></b></td>
+						</tr>
+
+						<?php if($total_paginas==$pagina_actual){ ?>
+
+							   <tr bgcolor="<?= $color  ?>" align="center">
+								    <td height="22"  width="2">--</td>
+								    <td align='right'><b>TOTAL GENERAL:</b></td>
+								    <td align='right'><b><?= $sisap->Formato2($total_a_general) ?></b></td>
+								    <td align='right'><b><?= $sisap->Formato2($total_b_general) ?></b></td>
+								    <td align='right'><b><?= $sisap->Formato2($total_c_general) ?></b></td>
+								    <td align='right'><b><?= $sisap->Formato2($total_d_general) ?></b></td>
+								</tr>
+
+						<?php } ?>
+
+	       <?php }else{?>
+				<tr bgcolor="#DAEBFF" align="center">
+				    <td height="22"  width="2">--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				    <td>--</td>
+				</tr>
+				<tr bgcolor="#CDF2FF" align="center">
+				    <td height="22"  width="2">--</td>
+				    <td align='right'><b>TOTALES:</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				    <td align='right'><b>0,00</b></td>
+				</tr>
+
+			<?php } ?>
+			</table>
+</div>
+
+<?$sisap->link_paginacion_ventanas('/reporte_hacienda2/consulta_cumplimiento_metas/2/'.$year, 'consulta_capa', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+
+<?php } ?>

@@ -1,0 +1,321 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+$_SESSION['encabezado']="si";
+//$_SESSION['titulo_inst'] = $titulo_inst;
+//$_SESSION['titulo_a'] = $titulo_a;
+
+
+//
+// INICIO DEL FORMULARIO
+// 
+// Vista html para seleccion de año a generar
+if(isset($ir) && $ir=='si'){ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE ORDENES DE PAGO CON/SIN TIMBRE FISCAL",null,"950");?>
+<form name='data[relacion_ordenpago]' method = "post" id='form' action="<?php echo  $html->url('/reporte4/reporte_ordenes_sin_timbre_fiscal/no'); ?>" >
+<!-- esto es para la validacion del formulario buscar y crear una para este formulario 
+    onSubmit="return valida_reporte_relacion_ordenpago(3);"
+-->
+
+<?= $sisap->OpenTable("950")?>
+
+
+<table width="820" cellspacing="0" cellpadding="0">
+<tr><td align="center">&nbsp;</td></tr>
+<tr>
+    <td align="center" colspan="3">
+        <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;
+        <?= $sisap->inputTagRemote('relacion_ordenpago/ano', array('style'=>'text-align:center;', 'value'=>$anho, 'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);')) ?>
+    </td>
+</tr>
+<tr>
+    <td width="20%">Dependencia:</td>
+    <td width="60%">
+        <?=  $sisap->selectTagRemote('relacion_ordenpago/cod_dep', isset($dependencias)?$dependencias:array(),null,  '', null, true); ?>
+    </td>
+    <td width="20%"> </td>
+</tr>
+<!--tr>
+    <td align="center" id="td-opcionfecha">
+        <?= $sisap->radioTagRemote("relacion_ordenpago/opciondep", array('1'=>'Generar todo', '2'=>'Generar por dependencia'), array('url1'=>'/reporte4/seleccionardep_timbrefiscal/1', 'update1'=>'td-dep', 'disabled'=>'enabled', 'id'=>'opciondep', array('value'=>'1')), null, 1);?>
+    </td>
+</tr-->
+<tr>
+    <td align="center" colspan="3">
+        <?= $html->radio('relacion_ordenpago/tipo_reporte', array('1'=>'Ordenes Con Retencion', '2'=>'Ordenes sin Retencion'), null, array('value'=>'1'))?>
+    </td>
+</tr>
+<tr><td align="center">&nbsp;</td></tr>
+<!--tr><td align="center" id="td-fecha">&nbsp;</td></tr-->
+<tr><td align="center">&nbsp;</td></tr>
+</table>
+
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+/*
+$_SESSION['dep_vacio']=$vacio;
+if($_SESSION['dep_vacio']){
+    $_SESSION['dep_ordenes']=$datos[0][0]['dependecia'];
+    var_dump($datos);
+    exit();
+}*/
+//
+// INICIO DEL REPORTE EN PDF
+// reporte en pdf
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape', $unit='mm', $format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }//Cabecera de pagina
+/*
+    function Footer(){
+        //$this->SetY(-12);
+        //$this->SetFont('vera','',6);
+        //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+*/
+    function Header(){
+        
+        $this->image_escudo_sin_consolidado(6,15,13);
+        
+        $this->SetFont('vera','B',9);
+        $this->Cell(0,1,"",'TRL',1);
+        $this->Cell(14,4,"",'L',0);
+        $this->Cell(0,4,$_SESSION['entidad_federal'],'',0);
+        $this->SetFont('vera','',6);
+        $this->Cell(0,4,"",'R',1);
+        $this->Cell(14,3,"",'L',0);
+        $this->SetFont('vera','',7);
+        $this->Cell(0,3,$_SESSION['dependencia'],'',0); // cambiar a la dependencia correspondiente
+        $this->SetFont('vera','B',6);
+        $this->Cell(0,3,"",'R',1);
+        $this->SetFont('vera','B',10);
+        $this->Cell(0,2,"",'RL',1,'C');
+            $this->Cell(0,4,"RELACIÓN DE ORDENES DE PAGO CON/SIN RETENCION DEL TIMBRE FISCAL",'RL',1,'C');   
+        $this->SetFont('vera','B',6);
+        if($_SESSION['dep_vacio']=="no"){
+            $this->Cell(0,4,"DEPENDENCIA: ".$_SESSION['dep_ordenes'],'RLB',1,'C');
+        }else{
+            $this->Cell(0,4,"",'RLB',1,'C');
+        }
+        $this->Ln(2);
+
+        $varX_aux = $this->GetX() + 250;
+        $varY_aux = $this->GetY() - 18;
+        $this->SetFont('vera','B',5);
+        $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+        $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+        $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+        $this->Ln(2);
+        
+        if($_SESSION['encabezado']=="si"){
+            $this->SetFont('vera','B',4);
+            $this->Cell(8,4,"",'TRL',0,'C');
+            $this->Cell(10,4,"Nº ORDEN",'TRL',0,'C');
+            $this->Cell(15,4,"FECHA ORDEN",'TRL',0,'C');
+
+            $this->Cell(20,4,"",'TRL',0,'C');
+            $this->Cell(47,4,"",'TRL',0,'C');
+            $this->Cell(90,4,"",'TRL',0,'C');
+
+            $this->Cell(20,4,"MONTO ORDEN",'TRL',0,'C');
+            $this->Cell(20,4,"MONTO RETENCION",'TRL',0,'C');
+            $this->Cell(20,4,"MONTO TIMBRE",'TRL',0,'C');
+            $this->Cell(0,4,"MONTO A",'TRL',1,'C');
+
+
+            $this->Cell(8,4,"AÑO",'RLB',0,'C');
+            $this->Cell(10,4,"DE PAGO",'RLB',0,'C');
+            $this->Cell(15,4,"DE PAGO",'RLB',0,'C');
+
+            $this->Cell(20,4,"RIF",'RLB',0,'C');
+            $this->Cell(47,4,"BENFICIARIO",'RLB',0,'C');
+            $this->Cell(90,4,"CONCEPTO",'RLB',0,'C');
+
+            $this->Cell(20,4,"DE PAGO",'RLB',0,'C');
+            $this->Cell(20,4,"IMPUESTO",'RLB',0,'C');
+            $this->Cell(20,4,"FISCAL RETENIDO",'RLB',0,'C');
+            $this->Cell(0,4,"RETENER",'RLB',1,'C');
+
+        }else{
+            # agregar algo q muestre un recuadro
+        }
+    }//fin funtion
+
+    function tam_celda($total_char){
+        if($total_char<25){
+            $heigth = 6;
+        }elseif($total_char>=25 && $total_char<55){
+            $heigth = 8;
+        }elseif($total_char>=55 && $total_char<85){
+            $heigth = 10;
+        }elseif($total_char>=85 && $total_char<140){
+            $heigth = 12;
+        }elseif($total_char>=140 && $total_char<200){
+            $heigth = 14;
+        }elseif($total_char>=200 && $total_char<260){
+            $heigth = 16;
+        }elseif($total_char>=260 && $total_char<320){
+            $heigth = 18;
+        }elseif($total_char>=320 && $total_char<400){
+            $heigth = 25;
+        }else{
+            $heigth = 28;
+        }
+        return $heigth;
+    }// fin funtion tam_celda
+
+}//fin clase FPDF
+
+/**
+* Aqui se inicializa la clase fpdfview la cual extiende de TCPDF
+* a la variable a usar para el generar el Documento PDF sera -- $pdf->
+*/
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 20);
+
+// INICIO DEL CONTENIDO DEL REPORTE
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+
+$total_monto=0;
+$total_monto_siniva=0;
+$total_monto_timbre=0;
+$total_a_retener=0;
+
+    if($vacio=="no"){
+        foreach($datos as $x){
+
+
+            // determinar tamaño del texto mas largo entre concepto y beneficiario
+            $beneficiario = str_replace("\n", "", $x[0]['beneficiario']);
+            $concepto = str_replace("\n", "", $x[0]['concepto']);
+            $total_char_beneficiario = strlen($beneficiario);
+            $total_char_concepto = strlen($concepto);
+
+            if($total_char_beneficiario>=$total_char_concepto){
+                $theigth = $pdf->tam_celda($total_char_beneficiario);
+            }else{
+                $theigth = $pdf->tam_celda($total_char_concepto);
+            }
+
+            // MOSTRAR MULTICELDA Y SEGUIR EN LA MISMA LINEA LAS DEMAS CELDAS
+            /*
+                 $pdf->Cell(15, $theigth,$rnom_ctotal['v_cnmp99_costo_nominas']['cod_tipo_nomina'], 'LR', 0, 'C'); // --------[COD_TIPO_NOMINA]
+
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(63, 1, "", '', 2, '');
+                $pdf->MultiCell(63, 3, $nomina, '', 'L'); // --------[NOMINA]
+                $varX = $varX + 63;
+                $pdf->SetXY($varX, $varY);
+
+                
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(39, 1, "", '', 2, '');
+
+                if($correspondiente=="0"){$correspondiente="";}  //-----CUANDO ES 0
+
+                $pdf->MultiCell(39, 3, $correspondiente, '', 'L'); // --------[CORRESPONDIENTE]
+                $varX = $varX + 39;
+                $pdf->SetXY($varX, $varY);
+
+                $pdf->Cell(23, $theigth, $sisap->Formato2($rnom_ctotal['v_cnmp99_costo_nominas']['asignacion']), 'LR', 0, 'R'); // --------[ASIGNACIONES]
+            */
+            $pdf->Cell(8,$theigth,$x[0]['ano_orden_pago'],'TLRB',0,'C');
+            $pdf->Cell(10,$theigth,$x[0]['numero_orden_pago'],'TLRB',0,'C');
+            $pdf->Cell(15,$theigth,$x[0]['fecha_orden_pago'],'TLRB',0,'C');
+
+            $pdf->Cell(20,$theigth,$x[0]['rif'],'TLRB',0,'C');
+            //multicell
+            /*
+            
+    $pdf->SetFont('vera','',5);
+    $pdf->Cell(70,1,"",'T',2,'C');
+    $pdf->MultiCell(69,2,$datos_compromiso_cuerpo[$i][0]['beneficiario'],'','L');//---[Beneficiario]
+    $varX = $varX+70;
+    $pdf->SetXY($varX,$varY);
+    $pdf->SetFont('vera','',6);
+             */
+            // $pdf->SetFont('vera','',5); cambiar tamaño de letra si se necesita
+            $varX = $pdf->GetX(); // capturo X
+            $varY = $pdf->GetY(); // capturo Y
+            $pdf->Cell(47,1,"",'T',2,'C');
+            $pdf->MultiCell(46,2,$beneficiario,'','L'); // Nombre del Beneficiario
+            $varX = $varX+47;
+            $pdf->SetXY($varX,$varY); // cargo XY
+
+            $pdf->Cell(1, $theigth, "", 'L', 0, 'L'); // Division
+
+            $varX = $pdf->GetX(); // capturo X
+            $varY = $pdf->GetY(); // capturo Y
+            $pdf->Cell(89, 1, "", 'T', 2, 'C');
+            $pdf->MultiCell(89,3,$concepto,'','L'); // Concepto de la orden de pago
+            $varX = $varX+89;
+            $pdf->SetXY($varX,$varY); // cargo XY            
+
+            $pdf->SetFont('vera','',6);
+            $pdf->Cell(20,$theigth,$sisap->Formato2($x[0]['monto_orden_pago']),'TRLB',0,'C');
+            $pdf->Cell(20,$theigth,$sisap->Formato2($x[0]['monto_descontar_impuesto']),'TRLB',0,'C');
+            $pdf->Cell(20,$theigth,$sisap->Formato2($x[0]['monto_timbre_fiscal']),'TRLB',0,'C');
+            $monto_a_retener=round($x[0]['monto_descontar_impuesto']*0.01,2);
+            $pdf->Cell(0,$theigth,$sisap->Formato2($monto_a_retener),'TRLB',1,'C');
+            $pdf->Cell(0,0,"",'T',1);// Linea sola.
+
+            // SUMA TOTALES
+            $total_monto+=$x[0]['monto_orden_pago'];
+            $total_monto_descontar_impuesto+=$x[0]['monto_descontar_impuesto'];
+            $total_monto_timbre+=$x[0]['monto_timbre_fiscal'];
+            $total_a_retener+=$monto_a_retener;
+
+        }//fin foreach
+
+        // TOTALES
+        $pdf->SetFont('vera','B', 7);
+        $pdf->Cell(190,10,'TOTALES','TRLB',0,'R');
+        $pdf->SetFont('vera','B', 5);
+        $pdf->Cell(20,10,$sisap->Formato2($total_monto),'TRLB',0,'L');
+        $pdf->Cell(20,10,$sisap->Formato2($total_monto_descontar_impuesto),'TRLB',0,'C');
+        $pdf->Cell(20,10,$sisap->Formato2($total_monto_timbre),'TRLB',0,'C');
+        $pdf->Cell(0,10,$sisap->Formato2($total_a_retener),'TRLB',1,'C');
+
+    }else{
+
+        $pdf->SetFont('vera','',6);
+        $pdf->Cell(0,6,$mensaje,'TRLB',1,'C');
+
+    }
+
+    //$pdf->Cell(0,4,"aaaaaa",'TRL',0,'C');
+
+    // Colocamos el nobre al documento y lo enviamos al navegador
+    $pdf->Output('listado_ordenes_'.date("d-m-Y").".pdf",'D');
+}
+
+?>

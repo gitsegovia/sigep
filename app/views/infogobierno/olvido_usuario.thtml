@@ -1,0 +1,123 @@
+<?php
+if(isset($msj)){
+if(is_array($msj)){
+   if($msj[1]=='error'){
+      echo $infogob->msj_error('&nbsp;'.$msj[0].'&nbsp;');
+   }
+
+   if($msj[1]=='exito'){
+      echo $infogob->msj_exito('&nbsp;'.$msj[0].'&nbsp;');
+   }
+}
+}
+?>
+
+<style>
+.button_recup_usu{
+    background: #e7e7e7 url(/img/unlock.png) no-repeat scroll center left;
+	padding: 2px 1px 0px 18px;
+	height: 25px;
+	width: auto;
+}
+</style>
+
+<?php
+
+	if((int)$var_accion == 1){ // Vista form
+
+	echo $infogob->AbrirMarco('Recuperar Usuario');
+
+?>
+	<br />
+	<form name="data[cugd_usuarios]" method="post" action="<?php echo $html->url("/info_constancia/constancia_trabajo/i");?>">
+
+	<?php echo $html->radio("cugd_usuarios/personalidad", array('1'=>'Persona Natural', '2'=>'Persona Jur&iacute;dica'), "&nbsp;&nbsp;", array('value'=>'1', 'id'=>'personalidad', 'onclick'=>"javascript:if(this.value=='1'){document.getElementById('tipo_personalidad').value = '2'; document.getElementById('tdt_cedula_rif').innerHTML='Ingresar C&eacute;dula de Identidad:';}else{document.getElementById('tipo_personalidad').value = '3'; document.getElementById('tdt_cedula_rif').innerHTML='Ingresar R.I.F.:';}")); ?>
+
+<br /><br />
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="25%" class="fila_titulos" id="tdt_cedula_rif">Ingresar C&eacute;dula de Identidad:</td>
+			<td width="75%">
+				<input name="data[cugd_usuarios][cedula_identidad]" type="text" value="" maxlength="20" id="cedula_identidad" class="campoText" />
+			</td>
+		</tr>
+
+		<tr>
+			<td width="25%" class="fila_titulos">Ingresar Fecha de Nacimiento:</td>
+			<td width="75%">
+				<?= $infogob->input_fecha("data[cugd_usuarios][fecha_nacimiento]", "fecha_nacimiento", null); ?>
+			</td>
+		</tr>
+	</table>
+
+<input name="data[cugd_usuarios][tipo_personalidad]" type="hidden" value="2" id="tipo_personalidad" class="campoText" readonly="readonly" />
+
+<div id="recuperacion_usua">
+</div>
+
+<br /><br />
+
+	<?php $infogob->submitTagRemote('Recuperar Usuario', array('funcion'=>'validar_info_olvido_usua', 'url1' => '/infogobierno/olvido_usuario', 'update1'=>'recuperacion_usua','id'=>'bt_procesar', 'class'=>"button_recup_usu")); ?>
+	<?= $infogob->buttonTagRemote('/cnmd06_constancia/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/infogobierno/vacio', 'update1'=>'contenido'));?>
+
+	</form>
+	<?php
+	echo $infogob->CerrarMarco();
+
+
+
+
+
+	}else if((int)$var_accion == 2){ // Proceso de recuperacion usuario natural
+
+
+
+
+		if(isset($datos_usuario) && !empty($datos_usuario)){
+			echo "<br><br>";
+			echo "Usuario: <span style='color:#920000;'>" . $datos_usuario[0]["cugd_usuarios"]["correo_electronico"]."</span><br>";
+			echo "Clave: <span style='color:#920000;'>" . $datos_usuario[0]["cugd_usuarios"]["password"]."</span><br>";
+
+?>
+
+
+<br>
+<span style="color:#003a4c;font-size:12px;">
+	¿Desea eliminar esta cuenta de usuario y registrar una cuenta nueva?&nbsp;<a href="#" style="background-color:#003a4c;color:#FFFFFF;font-size:12px;font-weight:bold;" onclick="javascript: var confirm_rspta = confirm('Seguro de eliminar esta cuenta?'); if(confirm_rspta){ver_documento('/infogobierno/eliminar_cuenta/<?=$var_accion?>/<?=$datos_usuario[0]["cugd_usuarios"]["correo_electronico"]?>','contenido');}else{}">&nbsp;Haga Click Aqu&iacute;&nbsp;</a>
+</span>
+
+
+
+
+<?php
+		}else if(isset($pregunta_secreta) && !empty($pregunta_secreta) && $pregunta_secreta!=''){ // Proceso validar Pregunta secreta
+
+
+?>
+
+<input name="data[cugd_usuarios][respuesta_correcta]" type="hidden" value="<?php echo $respuesta_secreta; ?>" id="respuesta_correcta" class="campoText" readonly="readonly" />
+
+	<br><br>
+			<b>¿<?php echo $pregunta_secreta; ?>?</b>
+	<br>
+			Respuesta Secreta:&nbsp;<input name="data[cugd_usuarios][respuesta_secreta]" type="password" value="" maxlength="500" id="respuesta_secreta" class="campoText" />
+
+	<?php /* $infogob->submitTagRemote('Aceptar', array('funcion'=>'validar_info_olvido_usua', 'url1' => '/infogobierno/olvido_usuario', 'update1'=>'recuperacion_usua','id'=>'bt_aceptar')); */ ?>
+
+<?php
+
+		}
+	}else if((int)$var_accion == 3){ // Proceso de recuperacion usuario juridico
+?>
+
+
+
+
+
+
+<?php
+
+	}
+
+?>

@@ -1,0 +1,141 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: ordencompra_pdf.thtml
+ * Fecha de creacion: 06/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		$this->image_escudo_sin_consolidado(5,15,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"RELACIÓN DE ORDENES DE COMPRA",'RLB',1,'C');
+		$this->Ln(2);
+
+		$varX_aux = $this->GetX() + 329;
+		$varY_aux = $this->GetY() - 16;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(12,5,"AÑO",'TRBL',0,'C');
+		$this->Cell(20,5,"NÚMERO",'TRBL',0,'C');
+		$this->Cell(15,5,"FECHA",'TBRL',0,'C');
+		$this->Cell(85,5,"PROVEEDOR",'TRBL',0,'C');
+
+		$this->Cell(24,5,"MONTO",'TRBL',0,'C');
+		$this->Cell(24,5,"AUMENTO",'TRBL',0,'C');
+		$this->Cell(24,5,"DISMINUCIÓN",'TBRL',0,'C');
+		$this->Cell(24,5,"TOTAL ORDEN",'TRBL',0,'C');
+
+		$this->Cell(24,5,"CANCELACIONES",'TRBL',0,'C');
+		$this->Cell(24,5,"ANTICIPO",'TRBL',0,'C');
+		$this->Cell(24,5,"SALDO ORDEN",'TRBL',0,'C');
+		$this->Cell(24,5,"AMORTIZACION",'TBRL',0,'C');
+		$this->Cell(0,5,"SALDO ANTICIPO",'TRBL',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(3);
+$pdf->SetRightMargin(3);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+/*
+* Luis Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$cod_obra_aux = "";
+foreach($datos as $row){
+
+
+
+if($cod_obra_aux!=$row['v_cscd04_ordencompra']['cod_obra']){
+    $cod_obra_aux=$row['v_cscd04_ordencompra']['cod_obra'];
+
+                $pdf->SetFont('vera','B',8);
+					$pdf->Cell(0,9,"CÓDIGO DE LA OBRA: ".$cod_obra_aux,'TRBL',1,'L');
+				$pdf->SetFont('vera','',6);
+}
+
+
+
+$ano = $row['v_cscd04_ordencompra']['ano_orden_compra'];
+$numero_orden_compra = $sisap->zero($row['v_cscd04_ordencompra']['numero_orden_compra']);
+$fecha_orden_compra = $sisap->Cfecha($row['v_cscd04_ordencompra']['fecha_orden_compra'], 'D/M/A');
+$razon_social = $row['v_cscd04_ordencompra']['razon_social'];
+$monto_orden = $sisap->Formato2($row['v_cscd04_ordencompra']['monto_orden']);
+$modificacion_aumento = $sisap->Formato2($row['v_cscd04_ordencompra']['modificacion_aumento']);
+$modificacion_disminucion = $sisap->Formato2($row['v_cscd04_ordencompra']['modificacion_disminucion']);
+$monto_anticipo = $sisap->Formato2($row['v_cscd04_ordencompra']['monto_anticipo']);
+$monto_amortizacion = $sisap->Formato2($row['v_cscd04_ordencompra']['monto_amortizacion']);
+$monto_cancelado = $sisap->Formato2($row['v_cscd04_ordencompra']['monto_cancelado']);
+$porcentaje_anticipo = $sisap->Formato2($row['v_cscd04_ordencompra']['porcentaje_anticipo']);
+$total_orden = $row['v_cscd04_ordencompra']['monto_orden'] + ($row['v_cscd04_ordencompra']['modificacion_aumento'] - $row['v_cscd04_ordencompra']['modificacion_disminucion']);
+$saldo_orden = $total_orden -  ($row['v_cscd04_ordencompra']['monto_cancelado'] + $row['v_cscd04_ordencompra']['monto_anticipo']);
+$saldo_anticipo = $row['v_cscd04_ordencompra']['monto_anticipo'] - $row['v_cscd04_ordencompra']['monto_amortizacion'];
+
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(12,7,$ano,'TRBL',0,'C');//------------[AÑO]
+$pdf->Cell(20,7,$numero_orden_compra,'TRBL',0,'C');//---------[NUMERO]
+$pdf->Cell(15,7,$fecha_orden_compra,'TBRL',0,'C');//----------[FECHA]
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(85,1,"",'T',2,'C');
+    $pdf->MultiCell(85,2,$razon_social,'','L');//-[PROVEEDOR]
+    $varX = $varX+85;
+    $pdf->SetXY($varX,$varY);
+
+
+$pdf->Cell(24,7,$monto_orden,'TBRL',0,'C');//----------[MONTO]
+$pdf->Cell(24,7,$modificacion_aumento,'TRBL',0,'C');//--------[AUMENTO]
+$pdf->Cell(24,7,$modificacion_disminucion,'TBRL',0,'C');//----[DISMINUCIÓN]
+$pdf->Cell(24,7,$sisap->Formato2($total_orden),'TRBL',0,'C');//----[TOTAL ORDEN]
+
+$pdf->Cell(24,7,$monto_cancelado,'TRBL',0,'C');//--[CANCELACIONES]
+$pdf->Cell(24,7,$monto_anticipo,'TRBL',0,'C');//----[ANTICIPO]
+$pdf->Cell(24,7,$sisap->Formato2($saldo_orden),'TRBL',0,'C');//-------[SALDO ORDEN]
+$pdf->Cell(24,7,$monto_amortizacion,'TBRL',0,'C');//---[AMORTIZACION]
+$pdf->Cell(0,7,$sisap->Formato2($saldo_anticipo),'TRBL',1,'C');//--[SALDO ANTICIPO]
+$pdf->Cell(0,0,"",'T',1,'C');
+}
+
+$pdf->Output('ordenes_de_compra_detalladas_'.date("d-m-y_h:sa").".pdf",'D');
+?>

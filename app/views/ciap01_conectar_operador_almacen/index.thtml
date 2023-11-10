@@ -1,0 +1,114 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+$j=0;
+	foreach($alma as $x){
+		$deno[$j] = $x['ciad01_inventario_almacen']['denominacion'];
+		$codigo[$j] = $x['ciad01_inventario_almacen']['cod_almacen'];
+		$j++;
+	}
+
+
+?>
+
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"CONECTAR OPERADOR CON EL ALMACÉN","","950","ciap");?>
+
+<form name='data[capp01]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr align="center">
+		<td width="15%">Usuario (Logín)</td>
+		<td width="10%">Selección</td>
+		<td width="55%">Denominación del Almacén</td>
+		<td width="10%">Acción</td>
+	</tr>
+	<tr>
+		<td ><?= $sisap->input_buscar('ciap01/usuario',array('id'=>'usuario','style'=>'with:98%;text-align:center'),1,"Buscar", "/ciap01_conectar_operador_almacen/buscar_datos/2", "750px", "333px" ); ?></td>
+		<td><?= $sisap->selectTagRemote('ciap01/almacenes',$almacenes,  array('value1'=>'otros'),'', array('onchange1'=>'/ciap01_conectar_operador_almacen/denominacion', 'update1'=>'deno', 'id'=>'select_1' , true), null, true);?></td>
+		<td align="center" id="deno"><?= $html->input('ciap01/denominacion', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		<td align="center"><?= $sisap->submitTagRemote('+', array('id'=>'save','url1' => '/ciap01_conectar_operador_almacen/guardar', 'update1'=>'vacio', 'disabled'=>'disabled')); ?></td>
+	</tr>
+
+</table>
+<br>
+
+<div id="carga_grilla"  style="height:300px; overflow:auto;" >
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr align="center" class="tr_negro">
+		<td width="19%">Usuario</td>
+		<td width="10%">Selección</td>
+		<td width="51%">Denominación del Almacén</td>
+		<td width="10%">Acción</td>
+	</tr>
+
+
+	 <?
+    if($datos!=null){
+    	for($i=0;$i<count($datos);$i++){
+
+			if($i%2==0){
+    			$color = "tr_grid_c1";
+	    	}else{
+	    		$color = "tr_grid_c2";
+	    	}
+	    	$id_fila = (int) rand()."_".$i;
+			$fila = "fila_".$id_fila;
+
+	    	?>
+	    	<tr class=<?=$color?> id="<?= $fila ?>" onclick="new Effect.Highlight(this);" >
+		    	<td><?= $html->input('ciap01/codigo12', $htmlAttributes = array('value'=>$datos[$i][0]['username'],'style'=>'width:98%;text-align:center','id'=>'codigo','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+				<td><?= $html->input('ciap01/codigo12', $htmlAttributes = array('value'=>mascara($datos[$i][0]['cod_almacen'],2),'style'=>'width:98%;text-align:center','id'=>'codigo','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+				<td align="center"><?= $html->input('ciap01/denominacion', $htmlAttributes = array('value'=>denominacion($deno, $codigo,$datos[$i][0]['cod_almacen']),'style'=>'width:98%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+				<td align="center"><?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/ciap01_conectar_operador_almacen/eliminar/'.$datos[$i][0]['username'].'/'.$datos[$i][0]['cod_almacen'], array('update'=>'vacio', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$fila');"), "Realmente desea Eliminar este registro?", false, true); ?></td>
+			</tr>
+
+    	<? }
+
+    }else{ ?>
+
+    	<tr bgcolor="#CDF2FF">
+			<td align="center">&nbsp;</td>
+			<td align="center">&nbsp;</td>
+			<td align="center">&nbsp;</td>
+			<td align="center">&nbsp;</td>
+		</tr>
+    <? }
+
+    ?>
+
+
+</table>
+
+
+
+
+<div id="vacio"></div>
+
+
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+
+<?=$sisap->CloseTable() ?>
+</form>

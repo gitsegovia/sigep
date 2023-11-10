@@ -1,0 +1,85 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+function denominacion($deno, $codigo, $cod_trans){
+		for($j=0; $j<count($deno);$j++){
+			if($codigo[$j]==$cod_trans){
+				$deno_trans = $deno[$j];
+				break;
+			}
+		}
+		return $deno_trans;
+	}
+
+
+?>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<tr class="tr_negro">
+			<td align="center" width="11%">Parentesco</td>
+			<td align="center" width="10%">Cédula</td>
+			<td align="center" width="40%">Apellidos y Nombres</td>
+			<td align="center" width="10%">Fecha nacimiento</td>
+			<td align="center" width="7%">Sexo</td>
+			<td align="center" width="7%">Trabaja</td>
+			<td align="center" width="7%">Estudia</td>
+			<td align="center" width="8%">Acción</td>
+		</tr>
+
+		<?
+//		pr($fami);
+		$j=0;
+		foreach($paren as $x){
+			$deno[$j] = $x['cnmd06_parentesco']['denominacion'];
+			$codigo[$j] = $x['cnmd06_parentesco']['cod_parentesco'];
+			$j++;
+		}
+		$_SESSION ["items1"]=array();
+
+		for($i=0;$i<count($fami);$i++){
+			if($i%2==0){
+				$color="#CDF2FF";
+			}else{
+				$color="#DAEBFF";
+			}
+			$id_fila = (int) rand()."_".$i;
+			$fila = "fila_".$id_fila;
+	    	if($fami[$i][0]['sexo']==1)$sexo1='M'; else $sexo1='F';
+	    	if($fami[$i][0]['trabaja']==1)$trabaja='SI'; else $trabaja='NO';
+	    	if($fami[$i][0]['estudia']==1)$estudia='SI'; else $estudia='NO';
+		?>
+			<tr bgcolor=<?=$color?> id="<?= $fila?>"  onclick="new Effect.Highlight(this);" >
+				<td align="center"><?=denominacion($deno, $codigo,$fami[$i][0]['cod_parentesco'])?></td>
+				<td align="center"><?=$fami[$i][0]['cedula']?></td>
+				<td align="lefth"><?=$fami[$i][0]['apellidos_nombres']?></td>
+				<td align="center"><?=$sisap->cambia_fecha($fami[$i][0]['fecha_nacimiento'])?></td>
+				<td align="center"><?=$sexo1?></td>
+				<td align="center"><?=$trabaja?></td>
+				<td align="center"><?=$estudia?></td>
+				<td align="center" id="<?= "li_".$i ?>">
+					<a href="javascript:ver_documento('/casp01_atencion_social/modificar_items/<?=$fami[$i][0]['cedula_identidad']?>/<?=$fami[$i][0]['cedula']?>/<?=$i?>','<?= $fila ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos del familiar'))?></a>
+					<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/casp01_atencion_social/eliminar_familiar/'.$fami[$i][0]['cedula_identidad'].'/'.$fami[$i][0]['cedula'], array('update'=>'vacio', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$fila');"), "Realmente desea Eliminar a este familiar?", false, true); ?>
+				</td>
+			</tr>
+
+	 	<? } ?>
+
+</table>
+<input type="hidden" id="TI" value="<?=$i?>"/>
+<script>
+	document.getElementById('parentesco').value='';
+	document.getElementById('cedula_fami').value='';
+	document.getElementById('apenom').value='';
+	document.getElementById('fecha_nacimiento_2').value='';
+	document.getElementById('sexofami').value='';
+	document.getElementById('sexofami').text='';
+	document.getElementById('trabaja_1').checked=false;
+	document.getElementById('trabaja_2').checked=false;
+	document.getElementById('estudia_1').checked=false;
+	document.getElementById('estudia_2').checked=false;
+</script>

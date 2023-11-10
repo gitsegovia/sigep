@@ -1,0 +1,369 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+	set_time_limit(0);
+
+	function de_contenido_subrayado($var_sub){
+		$contenido_sub = "<u>".$var_sub."</u>";
+		return $contenido_sub;
+	}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+		$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,3,"DIRECCIÓN DE RECURSOS HUMANOS",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,1,"",'RL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+	}
+
+	function Footer(){
+
+	}
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 15);
+
+
+
+if(isset($datos_vacaciones) && !empty($datos_vacaciones)){
+
+	 foreach($datos_vacaciones as $datos_bono_va){
+
+	 	$nombre        = $datos_bono_va[0]['nombre'];
+		$cedula        = $datos_bono_va[0]['cedula_identidad'];
+		$p_desde       = $datos_bono_va[0]['periodo_desde'];
+		$p_hasta       = $datos_bono_va[0]['periodo_hasta'];
+		$fecha_calculo = $datos_bono_va[0]['fecha_calculo'];
+		$c_anos        = $datos_bono_va[0]['dia_antig'];
+		$c_meses       = $datos_bono_va[0]['mes_antig'];
+		$c_anos        = $datos_bono_va[0]['ano_antig'];
+		$c_anos_ante   = $datos_bono_va[0]['ano_antig_ante'];
+
+		$c_anos_antig = ($c_anos+$c_anos_ante);
+	$pdf->AddPage();
+
+	$pdf->SetFont('vera','B',9);
+	$pdf->Cell(0,8,"VACACIONES Y/O BONO VACACIONAL Nº ".$datos_bono_va[0]['ano']." - ".mascara_seis($datos_bono_va[0]['numero']),'',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Nombres y Apellidos",'TRBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->MultiCell(0,6,$nombre,'TRB','L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Cédula de Identidad",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$cedula,'RB',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Denominación del Cargo",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$datos_bono_va[0]['cargo'],'RB',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Periodo de Vacaciones",'BL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,"Desde: $p_desde    Hasta: $p_hasta",'RBL',1,'L', 0, '', 1);
+
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Calculadas Hasta",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$sisap->Cfecha($fecha_calculo, "D/M/A"),'RB',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Tiempo de Servicio",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,"Días: $c_dias    Meses: $c_meses    Años: $c_anos     Años Anteriores: $c_anos_ante    Años Antiguedad: $c_anos_antig",'RB',1,'L', 0, '', 1);
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Fecha Inicio Vacaciones",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$sisap->Cfecha($datos_bono_va[0]['fecha_inicio'], "D/M/A"),'RB',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Fecha Finaliza Vacaciones",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$sisap->Cfecha($datos_bono_va[0]['fecha_termina'], "D/M/A"),'RB',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Salario Mensual",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$sisap->Formato2($datos_bono_va[0]['salario_mensual'])." Bs",'RB',1,'L', 0, '', 1);
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,6,"Salario Diario",'RBL',0,'L', 0, '', 1);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,6,$sisap->Formato2($datos_bono_va[0]['salario_diario'])." Bs",'RB',1,'L', 0, '', 1);
+
+	$pdf->Cell(0,8,"",'',1,'L');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(110,3,"",'TL',0,'C');
+	$pdf->Cell(25,3,"DIAS",'TL',0,'C');
+	$pdf->Cell(27,3,"",'TL',0,'C');
+	$pdf->Cell(0,3,"",'TRL',1,'C');
+
+	$pdf->Cell(110,3,"CONCEPTOS",'L',0,'C');
+	$pdf->Cell(25,3,"PORCENTAJE",'L',0,'C');
+	$pdf->Cell(27,3,"SALARIO",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->Cell(110,3,"",'BL',0,'C');
+	$pdf->Cell(25,3,"CUOTA",'BL',0,'C');
+	$pdf->Cell(27,3,"DIARIO",'BL',0,'C');
+	$pdf->Cell(0,3,"TOTAL",'RBL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+
+	$pdf->Cell(110,3,"",'L',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->Cell(19,3,"ASIGNACIONES:",'BL',0,'L');
+	$pdf->Cell(91,3,"",'',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->Cell(110,3,"",'L',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(110,4,"Vacaciones",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_vacaciones']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_vacaciones']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['salario_diario_vaca']!=0 ? $sisap->$datos_bono_va[0]['salario_diario_vaca'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_vacaciones']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_vacaciones'] * $datos_bono_va[0]['salario_diario_vaca']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Días Adicionales de Vacaciones por Antiguedad",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_adicio_vacaciones']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_adicio_vacaciones']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['dias_adicio_vacaciones']!=0 ? $datos_bono_va[0]['salario_diario_vaca'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_adicio_vacaciones']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_adicio_vacaciones'] * $datos_bono_va[0]['salario_diario_vaca']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Bono Vacacional",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_bono_vacacional']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_bono_vacacional']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['salario_diario_bono_vac']!=0 ? $datos_bono_va[0]['salario_diario_bono_vac'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_bono_vacacional']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_bono_vacacional'] * $datos_bono_va[0]['salario_diario_bono_vac']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Días Adicionales de Bono Vacacional por Antiguedad",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_adicio_bono_vaca']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_adicio_bono_vaca']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['dias_adicio_bono_vaca']!=0 ? $datos_bono_va[0]['salario_diario_bono_vac'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_adicio_bono_vaca']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_adicio_bono_vaca'] * $datos_bono_va[0]['salario_diario_bono_vac']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Bonificación",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_bonificacion']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_bonificacion']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['sueldo_diario_bonifica']!=0 ? $datos_bono_va[0]['sueldo_diario_bonifica'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_bonificacion']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_bonificacion'] * $datos_bono_va[0]['sueldo_diario_bonifica']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Sábados, Domingos y Feriados",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['dias_sab_dom_fer']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_sab_dom_fer']) : '','L',0,'C');
+	$pdf->Cell(27,4,$datos_bono_va[0]['dias_sab_dom_fer']!=0 ? $datos_bono_va[0]['salario_diario_vaca'] : '','L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['dias_sab_dom_fer']!=0 ? $sisap->Formato2($datos_bono_va[0]['dias_sab_dom_fer'] * $datos_bono_va[0]['salario_diario_vaca']) : '','RL',1,'C');
+
+
+	$total_vacaciones_dias  = ($datos_bono_va[0]['dias_vacaciones'] + $datos_bono_va[0]['dias_adicio_vacaciones'] + $datos_bono_va[0]['dias_sab_dom_fer']);
+	$total_vacaciones_monto = (($datos_bono_va[0]['dias_vacaciones'] * $datos_bono_va[0]['salario_diario_vaca']) + ($datos_bono_va[0]['dias_adicio_vacaciones'] * $datos_bono_va[0]['salario_diario_vaca']) + ($datos_bono_va[0]['dias_sab_dom_fer'] * $datos_bono_va[0]['salario_diario_vaca']));
+	$total_bono_vaca_dias   = ($datos_bono_va[0]['dias_bono_vacacional'] + $datos_bono_va[0]['dias_adicio_bono_vaca'] + $datos_bono_va[0]['dias_bonificacion']);
+	$total_bono_vaca_monto  = (($datos_bono_va[0]['dias_bono_vacacional'] * $datos_bono_va[0]['salario_diario_bono_vac']) + ($datos_bono_va[0]['dias_adicio_bono_vaca'] * $datos_bono_va[0]['salario_diario_bono_vac']) + ($datos_bono_va[0]['dias_bonificacion'] * $datos_bono_va[0]['sueldo_diario_bonifica']));
+	$total_recibir          = ($total_vacaciones_monto + $total_bono_vaca_monto);
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(110,4,"TOTAL VACACIONES",'L',0,'R');
+	$pdf->Cell(25,4,$total_vacaciones_dias!=0 ? $sisap->Formato2($total_vacaciones_dias) : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$total_vacaciones_monto!=0 ? $sisap->Formato2($total_vacaciones_monto) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"TOTAL BONO VACACIONAL",'L',0,'R');
+	$pdf->Cell(25,4,$total_bono_vaca_dias!=0 ? $sisap->Formato2($total_bono_vaca_dias) : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$total_bono_vaca_monto!=0 ? $sisap->Formato2($total_bono_vaca_monto) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"DINERO A RECIBIR",'L',0,'R');
+	$pdf->Cell(25,4,"",'L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$total_recibir!=0 ? $sisap->Formato2($total_recibir) : '','RL',1,'C');
+
+	$pdf->Cell(110,3,"",'L',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->Cell(18,3,"DEDUCCIONES:",'BL',0,'L');
+	$pdf->Cell(92,3,"",'',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->Cell(110,3,"",'L',0,'L');
+	$pdf->Cell(25,3,"",'L',0,'C');
+	$pdf->Cell(27,3,"",'L',0,'C');
+	$pdf->Cell(0,3,"",'RL',1,'C');
+
+	$pdf->SetFont('vera','',7);
+
+	$pdf->Cell(110,4,"Seguro Social Obligatorio",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['porc_seguro_social']!=0 ? $sisap->Formato2($datos_bono_va[0]['porc_seguro_social']).' %' : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_seguro_social']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_seguro_social']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Paro Forzoso",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['porc_paro_forzoso']!=0 ? $sisap->Formato2($datos_bono_va[0]['porc_paro_forzoso']).' %' : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_paro_forzoso']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_paro_forzoso']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Fondo de Ahorro Obligatorio para la Vivienda",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['porc_fondo_ahorro']!=0 ? $sisap->Formato2($datos_bono_va[0]['porc_fondo_ahorro']).' %' : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_fondo_ahorro']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_fondo_ahorro']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Fondo de Jubilación",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['porc_fondo_jub']!=0 ? $sisap->Formato2($datos_bono_va[0]['porc_fondo_jub']).' %' : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_fondo_jub']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_fondo_jub']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Caja de Ahorros",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['porc_caja_ahorro']!=0 ? $sisap->Formato2($datos_bono_va[0]['porc_caja_ahorro']).' %' : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_caja_ahorro']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_caja_ahorro']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Prestamo de Caja de Ahorros",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['cuota_prestamo']!=0 ? $sisap->Formato2($datos_bono_va[0]['cuota_prestamo']) : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_prestamo_caja']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_prestamo_caja']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Cuota Sindical",'L',0,'L', 0, '', 1);
+
+	if($datos_bono_va[0]['porc_cuota_sindical']!=0){ $var_porc_cuota_sind = $datos_bono_va[0]['porc_cuota_sindical']; $vpor = ' %'; }else{ $var_porc_cuota_sind = $datos_bono_va[0]['cuota_sindical']; $vpor = ''; }
+
+	$pdf->Cell(25,4,$var_porc_cuota_sind!=0 ? $sisap->Formato2($var_porc_cuota_sind).$vpor : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_cuota_sindical']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_cuota_sindical']) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"Cuota Crédito de Vivienda",'L',0,'L', 0, '', 1);
+	$pdf->Cell(25,4,$datos_bono_va[0]['cuota_vivienda']!=0 ? $sisap->Formato2($datos_bono_va[0]['cuota_vivienda']) : '','L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$datos_bono_va[0]['monto_credito_vivienda']!=0 ? $sisap->Formato2($datos_bono_va[0]['monto_credito_vivienda']) : '','RL',1,'C');
+
+
+	$total_deducciones  = ($datos_bono_va[0]['monto_seguro_social'] + $datos_bono_va[0]['monto_paro_forzoso'] + $datos_bono_va[0]['monto_fondo_ahorro'] + $datos_bono_va[0]['monto_fondo_jub'] + $datos_bono_va[0]['monto_cuota_sindical'] + $datos_bono_va[0]['monto_caja_ahorro'] + $datos_bono_va[0]['monto_prestamo_caja'] + $datos_bono_va[0]['monto_credito_vivienda']);
+	$total_recibir_neto = ($total_recibir - $total_deducciones);
+
+
+	$pdf->SetFont('vera','B',6);
+
+	$pdf->Cell(110,4,"TOTAL DEDUCCIONES",'L',0,'R');
+	$pdf->Cell(25,4,"",'L',0,'C');
+	$pdf->Cell(27,4,"",'L',0,'C');
+	$pdf->Cell(0,4,$total_deducciones!=0 ? $sisap->Formato2($total_deducciones) : '','RL',1,'C');
+
+	$pdf->Cell(110,4,"DINERO A RECIBIR NETO",'BL',0,'R');
+	$pdf->Cell(25,4,"",'BL',0,'C');
+	$pdf->Cell(27,4,"",'BL',0,'C');
+	$pdf->Cell(0,4,$total_recibir_neto!=0 ? $sisap->Formato2($total_recibir_neto) : '','RBL',1,'C');
+
+
+				     /** *** PARA IMPRESION *** */
+	// ---------------- **** DATOS FIRMANTES **** -------------------
+
+if(isset($datos_firmantes) && !empty($datos_firmantes)){
+
+		$nombre_primera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_primera_firma']; $cargo_primera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_primera_firma'];
+		$nombre_segunda_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_segunda_firma']; $cargo_segunda_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_segunda_firma'];
+		$nombre_tercera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_tercera_firma']; $cargo_tercera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_tercera_firma'];
+		$nombre_cuarta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_cuarta_firma'];  $cargo_cuarta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_cuarta_firma'];
+		$nombre_quinta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_quinta_firma'];  $cargo_quinta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_quinta_firma'];
+		$nombre_sexta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_sexta_firma'];   $cargo_sexta_firma    = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_sexta_firma'];
+		$nombre_septima_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_septima_firma']; $cargo_septima_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_septima_firma'];
+		$nombre_octava_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_octava_firma'];  $cargo_octava_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_octava_firma'];
+		$primera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['primera_copia'];  	   $segunda_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['segunda_copia'];
+		$tercera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['tercera_copia']; 	   $cuarta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['cuarta_copia'];
+		$quinta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['quinta_copia'];		   $sexta_copia          = $datos_firmantes[0]['cnmd15_firmas_informes']['sexta_copia'];
+		$septima_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['septima_copia'];		   $octava_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['octava_copia'];
+		$pie_pagina           = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+
+	}else{
+
+		$nombre_primera_firma = '';		$cargo_primera_firma  = '';
+		$nombre_segunda_firma = '';		$cargo_segunda_firma  = '';
+		$nombre_tercera_firma = '';		$cargo_tercera_firma  = '';
+		$nombre_cuarta_firma  = '';		$cargo_cuarta_firma   = '';
+		$nombre_quinta_firma  = '';		$cargo_quinta_firma   = '';
+		$nombre_sexta_firma   = '';		$cargo_sexta_firma    = '';
+		$nombre_septima_firma = '';		$cargo_septima_firma  = '';
+		$nombre_octava_firma  = '';		$cargo_octava_firma   = '';
+		$primera_copia        = '';		$segunda_copia        = '';
+		$tercera_copia        = '';		$cuarta_copia         = '';
+		$quinta_copia         = '';		$sexta_copia          = '';
+		$septima_copia        = '';		$octava_copia         = '';
+		$pie_pagina           = '';
+
+	}
+
+	$pdf->Cell(0,7,"",'',1,'C');
+
+	$pdf->Cell(66,7,"FIRMA",'TL',0,'C');
+	$pdf->Cell(66,7,"FIRMA",'TL',0,'C');
+	$pdf->Cell(0,7,"RECIBI CONFORME",'TRL',1,'C');
+
+	$pdf->Cell(66,15,"",'L',0,'C');
+	$pdf->Cell(66,15,"",'L',0,'C');
+	$pdf->Cell(0,15,"",'RL',1,'C');
+
+	$pdf->Cell(66,4,$nombre_primera_firma,'L',0,'C');
+	$pdf->Cell(66,4,$nombre_segunda_firma,'L',0,'C');
+	$pdf->Cell(0,4,$nombre,'RL',1,'C');
+
+	$pdf->Cell(66,3,$cargo_primera_firma,'BL',0,'C');
+	$pdf->Cell(66,3,$cargo_segunda_firma,'BL',0,'C');
+	$pdf->Cell(0,3,"C.I. ".$cedula,'BRL',1,'C');
+
+	 }// foreach
+
+
+}else{
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+}
+
+	$pdf->Output('Emision_bono_vacacional_'.date("d-m-Y_h_i_sa").".pdf",'D');
+
+?>

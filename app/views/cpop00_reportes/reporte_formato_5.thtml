@@ -1,0 +1,458 @@
+<?php
+if(!$pdf){
+?>
+
+    <?$sisap->Tabla_modulos("",true,"FORMATO POAI-5","","950","cpop");?>
+
+    <?$sisap->OpenTable("950");?>
+
+    <form name='data[reporte_formato_poai_5]' method = "post" id='form1' action="<?= $html->url('/cpop00_reportes/reporte_formato_5/1'); ?>">
+        <table>
+            <tbody>
+                <tr>
+                    <td>EJERCICIO PRESUPUESTARIO:</td>
+                    <td>
+                         <?= $html->input('reporte_formato_poai_5/ano', array('size'=>'4' , 'id'=>'ano','disabled' => true, 'onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:16','value'=>$ano));?>
+                    </td>
+                     <?php 
+              if ($cod_dep==1) {?>
+
+               <td>DEPENDENCIA:</td>               
+               <td>
+               <?=  $html->selectTag('reporte_formato_poai_5/select_dependencia', $listadependencia, null, array('id' =>'select_dependencia', 'class' => 'campoText', 'style' => 'border:1px solid cyan;'), null, true)?>
+                
+               </td>
+              
+                <?php }
+             
+
+              ?>
+                </tr>
+            </tbody>
+        </table>
+
+      
+        
+
+    <?= $html->submit('Generar'); ?>
+
+    </form>
+
+    <?= $sisap->buttonTagRemote('reporte_formato_poai_5/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+    <?php echo $sisap->CloseTable(); ?>
+
+<?php
+}else{
+     
+
+$_SESSION['ano'] = $ano;
+
+$_SESSION['nombre_dependencia'] = $nombre_dependencia;
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function top_reporte2($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true){
+                   $escudo_array      = top_reporte_escudo($consolidado);
+                   $escudo            = $escudo_array["escudo"];
+                   $entidad_federal   = $escudo_array["entidad_federal"];
+                   $dependencia       = str_replace("(U.L.A)", "", $escudo_array["dependencia"]);
+
+                   if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+                   if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+                   if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+                            $this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"]);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(14,4,"",'TL',0);
+                            $this->Cell(0,4,$entidad_federal,'TR',1);
+                            $this->Cell(14,3,"",'L',0);
+                            $this->SetFont('vera','',7);
+                            $this->Cell(0,3,$dependencia,'R',1);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(0,3,"",'RL',1,'C');
+                            $this->Cell(0,5,$titulo_varios[0],'RL',1,'C');
+                            $this->SetFont('vera','B',7);
+                            if(count($titulo_varios)>1){
+                               for($it=1;$it<count($titulo_varios);$it++){
+                                   $this->Cell(0,5,$titulo_varios[$it],'RL',1,'C');
+                               }
+                            }
+
+                            $this->Cell(0,1,"",'RLB',1,'C');
+                                $this->SetFont('vera','B',5);
+                                if(isset($posicion_pie_pagina["Y"])){
+                                    $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"],'PAGINA: '.$this->PageNo().'/TPAG');
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: '.date("d/m/Y"));
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: 13/12/2017');
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+6, 'HORA: '.date("h:i a"));
+                                }//fin if
+                            $this->Ln(3);
+       }//function
+       
+        function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput ($name = '', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Footer(){
+            $this->SetY(-15);
+            $this->SetFont('vera','B',6);
+            //$this->Cell(150,8," ",0,0,'R');
+            $this->Cell(100,18,"FORMATO: POAI-".$_SESSION['ano']."-5",0,0,'L');
+            $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'R');
+        }
+
+
+        function Header()
+        {
+            //$this->top_reporte("IDENTIFICACIÓN DE LA ENTIDAD FEDERAL", null, null, array("Y"=>"17", "X"=>"20", "Z"=>"11"), null, false);
+            $this->top_reporte2(array('POAI '.$_SESSION['ano'], '5.-PROGRAMACIÓN DE ACTIVIDADES INSTITUCIONALES'), array("Y"=>"11", "X"=>"16", "Z"=>"11"), array("Y"=>"17", "X"=>"186"));
+
+        }//fin funtion 20,55,55,30,37
+
+/**
+ * DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO
+ */
+    var $widths;
+    var $aligns;
+
+    function SetWidths($w){
+        //Set the array of column widths
+        $this->widths=$w;
+    }
+
+    function SetAligns($a){
+        //Set the array of column alignments
+        $this->aligns=$a;
+    }
+
+    function cambiarNLine($cadena) {
+        $cadena = str_replace("à","A", $cadena);
+        $cadena = str_replace("è","E", $cadena);
+        $cadena = str_replace("ì","I", $cadena);
+        $cadena = str_replace("ò","O", $cadena);
+        $cadena = str_replace("ù","U", $cadena);
+        $cadena = str_replace("á","A", $cadena);
+        $cadena = str_replace("é","E", $cadena);
+        $cadena = str_replace("í","I", $cadena);
+        $cadena = str_replace("ó","O", $cadena);
+        $cadena = str_replace("ú","U", $cadena);
+        $cadena = str_replace("ñ","N", $cadena);
+
+        $cadena = str_replace("À", "A", $cadena);
+        $cadena = str_replace("È", "E", $cadena);
+        $cadena = str_replace("Ì", "I", $cadena);
+        $cadena = str_replace("Ò", "O", $cadena);
+        $cadena = str_replace("Ù", "U", $cadena);
+        $cadena = str_replace("Á", "A", $cadena);
+        $cadena = str_replace("É", "E", $cadena);
+        $cadena = str_replace("Í", "I", $cadena);
+        $cadena = str_replace("Ó", "O", $cadena);
+        $cadena = str_replace("Ú", "U", $cadena);
+        $cadena = str_replace("Ñ", "N", $cadena);
+
+        $cadena = str_replace("º", ".", $cadena);
+        return $cadena;
+    }
+
+    function Row($data){
+        //Calculate the height of the row
+        $nb=0;
+        for($i=0;$i<count($data);$i++){
+            $nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+        }
+        $h=3*$nb;
+        //Issue a page break first if needed
+        $this->CheckPageBreak($h);
+        //Draw the cells of the row
+        for($i=0;$i<count($data);$i++){
+            $w=$this->widths[$i];
+            $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+            //Save the current position
+            $x=$this->GetX();
+            $y=$this->GetY();
+            //Draw the border
+            $this->Rect($x,$y,$w,$h);
+            //Print the text
+            $this->MultiCell($w,3,$data[$i],0,$a);
+            //Put the position to the right of the cell
+            $this->SetXY($x+$w,$y);
+        }
+        //Go to the next line
+        $this->Ln($h);
+    }
+
+    function CheckPageBreak($h){
+        //If the height h would cause an overflow, add a new page immediately
+        if($this->GetY()+$h>$this->PageBreakTrigger)
+        $this->AddPage($this->CurOrientation);
+    }
+
+    function NbLines($w,$txt){
+        //Computes the number of lines a MultiCell of width w will take
+        $cw=&$this->CurrentFont['cw'];
+        if($w==0){
+            $w=$this->w-$this->rMargin-$this->x;
+        }
+
+        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+
+        $contenido=str_replace("\r",'',$txt);
+        $contenido=$this->cambiarNLine($contenido);
+        $numero_letras=strlen($contenido);
+
+        if($numero_letras>0 and $contenido[$numero_letras-1]=="\n"){
+            $numero_letras--;
+        }
+
+        $espacios=-1;
+        $i=0; $j=0; $l=0;
+        $numero_lineas=1;
+
+        while($i<$numero_letras){
+            $caracter=$contenido[$i];
+
+            if($caracter=="\n"){
+                $i++;
+                $espacios=-1;
+                $j=$i;
+                $l=0;
+                $numero_lineas++;
+                continue;
+            }
+
+            if($caracter==' '){
+                $espacios=$i;
+            }
+
+            $unicode = $this->UTF8StringToArray($caracter);
+            $l+=$cw[$unicode[0]];
+            if($l>$wmax){
+                if($espacios==-1){
+                    if($i==$j){
+                        $i++;
+                    }
+                }else{
+                    $i=$espacios+1;
+                }
+
+                $espacios=-1;
+                $j=$i;
+                $l=0;
+                $numero_lineas++;
+            }else{
+                $i++;
+            }
+        }
+
+        return $numero_lineas;
+    }
+
+    /**
+     * FIN DE LA DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO
+     */
+
+    function cabezera($metas, $datos_proyectos, $datos_objetivos){
+
+        foreach ($datos_proyectos as $proyectos) {
+            if($proyectos['cpod01_proyectos']['tipo_proyecto']==$metas['cpod05_control_metas']['tipo_proyecto'] && $proyectos['cpod01_proyectos']['numero_proyecto']==$metas['cpod05_control_metas']['numero_proyecto']){
+                $den_proyecto=$proyectos['cpod01_proyectos']['proyectos'];
+                $responsable = $proyectos['cpod01_proyectos']['responsable'];
+            }
+        }
+
+        foreach ($datos_objetivos as $objetivos) {
+            if($objetivos['cpod04_objetivos']['tipo_proyecto']==$metas['cpod05_control_metas']['tipo_proyecto'] && $objetivos['cpod04_objetivos']['numero_proyecto']==$metas['cpod05_control_metas']['numero_proyecto']){
+                $den_objetivo=$objetivos['cpod04_objetivos']['objetivo'];
+            }
+        }
+
+        $this->SetFont('vera','B',5);
+
+        $this->Cell(125,5,"5.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,0,'L');
+        $this->Cell(70.8,5,"5.2.- Profesional Responsable: ".$responsable,1,1,'L');
+
+        $this->SetFont('vera','',5);
+        // poner esto en multi cell funcion row con año del proyecto
+        $this->SetWidths(array(160,35.8));
+        $this->Row(array("5.3.- Denominación del Proyecto: ".$den_proyecto,"5.4.- Año del Proyecto: ".$_SESSION['ano']));
+
+        // multi cell funcion row
+        $this->SetWidths(array(195.8));
+        $this->Row(array("5.5.- Objetivo: ".$den_objetivo));
+
+        $this->SetFont('vera','B',5);
+        $this->Cell(55,3,"",'LT',0,'C');
+        $this->Cell(20,3,"5.7.- Costos de ",'LT',0,'C');
+        $this->Cell(50,3,"",'LT',0,'C');
+        $this->Cell(20,3,"",'LT',0,'C');
+        $this->Cell(50.8,3,"5.10.- Resultados Esperados",'LTR',1,'C');
+
+        $this->Cell(55,3,"5.6.- Metas Programadas: ",'L',0,'C');
+        $this->Cell(20,3,"Las Metas",'L',0,'C');
+        $this->Cell(50,3,"5.8.- Actividades",'L',0,'C');
+        $this->Cell(20,3,"5.9.- Indicadores",'L',0,'C');
+        $this->Cell(50.8,3,"5.10.1.- Meta Física Trimestral ",'LTR',1,'C');
+
+        $this->Cell(55,3,"",'L',0,'C');
+        $this->Cell(20,3,"Programadas",'L',0,'C');
+        $this->Cell(50,3,"",'L',0,'C');
+        $this->Cell(20,3,"",'L',0,'C');
+        $this->Cell(10,3,"5.10.1.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.2.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.3.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.4.-",'LT',0,'C');
+        $this->Cell(10.8,3,"5.10.5.-",'LTR',1,'C');
+
+        $this->Cell(55,3,"",'L',0,'C');
+        $this->Cell(20,3,"en Bs.",'L',0,'C');
+        $this->Cell(50,3,"",'L',0,'C');
+        $this->Cell(20,3,"",'L',0,'C');
+        $this->Cell(10,3,"I",'L',0,'C');
+        $this->Cell(10,3,"II",'L',0,'C');
+        $this->Cell(10,3,"III",'L',0,'C');
+        $this->Cell(10,3,"IV",'L',0,'C');
+        $this->Cell(10.8,3,"Total",'LR',1,'C');
+
+        $this->Cell(55,3,"",'LB',0,'C');
+        $this->Cell(20,3,"",'LB',0,'C');
+        $this->Cell(50,3,"",'LB',0,'C');
+        $this->Cell(20,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10.8,3,"Anual",'LBR',1,'C');
+    }// 55,20,50,20,10,10,10,10,10.8
+
+    }//fin clases
+
+    $pdf = new fpdfview('P','mm','Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(10);
+    $pdf->SetRightMargin(10);
+    $pdf->SetAutoPageBreak(true, 10);
+
+    $id_proyecto="";
+    $tipo_proyecto="";
+    $total_proyecto=0.00;
+    $pagina=0;
+    $contador_pagina=0;
+    $total_propios=0.00;
+    $total_gobernacion=0.00;
+    $den_situacion_actual="NO POSEE DATO REGISTRADO";
+    $den_supuestos="NO POSEE DATO REGISTRADO";
+
+    if(!isset($errorMessage)) {
+        foreach ($datos_metas as $metas) {
+
+            if($tipo_proyecto!=$metas['cpod05_control_metas']['tipo_proyecto'] || $id_proyecto!=$metas['cpod05_control_metas']['numero_proyecto']){
+
+                if($total_proyecto!=0.00){
+
+                    $pdf->SetFont('vera','B',6);
+                    $pdf->Cell(0,4,"5.11.- Asignación Presupuestaria en Bs.",'LTRB',1,'L');
+                    $pdf->SetWidths(array(48.9,48.9,48.9,49.1));
+                    $pdf->Row(array("5.11.1-Gobernación: \n".$sisap->Formato2($total_gobernacion)." Bs.","5.11.2.-OTRO ENTE:  \n","5.11.3.- Recursos Propios:  \n".$sisap->Formato2($total_propios)." Bs.","5.11.4.-Costo Total del Proyecto:  \n".$sisap->Formato2($total_proyecto)." Bs."));
+                    $pdf->Cell(97.8,4,"5.12.- Situación Actual: ",'LTRB',0,'L');
+                    $pdf->Cell(98,4,"5.13.- Supuestos",'LTRB',1,'L');
+                    $pdf->SetFont('vera','',6);
+                    $pdf->SetWidths(array(97.8,98));
+                    $pdf->Row(array($den_situacion_actual,$den_supuestos));
+                    $total_proyecto=0.00;
+                    $total_propios=0.00;
+                    $total_gobernacion=0.00;
+                    $den_situacion_actual="NO POSEE DATO REGISTRADO";
+                    $den_supuestos="NO POSEE DATO REGISTRADO";
+                }
+                $pdf->AddPage();
+                $tipo_proyecto=$metas['cpod05_control_metas']['tipo_proyecto'];
+                $id_proyecto=$metas['cpod05_control_metas']['numero_proyecto'];
+                $pagina++;
+            }
+
+            if($contador_pagina!=$pagina){
+                $pdf->cabezera($metas, $datos_proyectos, $datos_objetivos);
+                $contador_pagina++;
+            }
+
+            /**
+             *  text NOT NULL,
+               numeric(26,2),
+               text NOT NULL,
+               text,
+               integer NOT NULL,
+               integer NOT NULL,
+               integer NOT NULL,
+               integer NOT NULL,
+             */
+            //funcion que retorne la denominacion de la partida
+            $denominacion="";
+            (float)$total_trimestre = (float)$metas['cpod05_control_metas']['metas_fisicas_1er_trim'] + (float)$metas['cpod05_control_metas']['metas_fisicas_2do_trim']+ (float)$metas['cpod05_control_metas']['metas_fisicas_3er_trim']+ (float)$metas['cpod05_control_metas']['metas_fisicas_4to_trim'];
+
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(55,20,50,20,10,10,10,10,10.8));
+            $pdf->Row(array(
+                    $metas['cpod05_control_metas']['descripcion_meta'],
+                    $sisap->Formato2($metas['cpod05_control_metas']['costo_total_meta']),
+                    $metas['cpod05_control_metas']['actividad'],
+                    $metas['cpod05_control_metas']['indicador_resultados'],
+                    $metas['cpod05_control_metas']['metas_fisicas_1er_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_2do_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_3er_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_4to_trim'],
+                    $sisap->Formato2($total_trimestre),
+
+            ));
+
+                foreach ($datos_situacion_actual as $situacion_actual) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$situacion_actual['cpod05_situacion_actual']['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$situacion_actual['cpod05_situacion_actual']['numero_proyecto']){
+                        $den_situacion_actual=$situacion_actual['cpod05_situacion_actual']['situacion_actual'];
+                        $den_supuestos=$situacion_actual['cpod05_situacion_actual']['supuestos'];
+                    }
+                }
+
+                foreach ($totales_propios as $montos_propios) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$montos_propios[0]['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$montos_propios[0]['numero_proyecto']){
+                        $total_propios=$montos_propios[0]['total'];
+                    }
+                }
+
+                foreach ($totales_gobernacion as $monto_gobernacion) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$monto_gobernacion[0]['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$monto_gobernacion[0]['numero_proyecto']){
+                        $total_gobernacion=$monto_gobernacion[0]['total'];
+                    }
+                }
+
+            (float)$total_proyecto= (float)$total_proyecto + (float)$metas['cpod05_control_metas']['costo_total_meta'];
+           // echo $presupuesto['cpod06_vinculacion_presupuesto']['monto']."<br>";
+        }
+
+        //echo $total_proyecto;exit();
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(0,4,"5.11.- Asignación Presupuestaria en Bs.",'LTRB',1,'L');
+        $pdf->SetWidths(array(48.9,48.9,48.9,49.1));
+        $pdf->Row(array("5.11.1-Gobernación: \n".$sisap->Formato2($total_gobernacion)." Bs.","5.11.2.-OTRO ENTE:  \n0,00 BS.","5.11.3.- Recursos Propios:  \n".$sisap->Formato2($total_propios)." Bs.","5.11.4.-Costo Total del Proyecto:  \n".$sisap->Formato2($total_proyecto)." Bs."));
+        $pdf->Cell(97.8,4,"5.12.- Situación Actual",'LTRB',0,'L');
+        $pdf->Cell(98,4,"5.13.- Supuestos",'LTRB',1,'L');
+        $pdf->SetFont('vera','',6);
+        $pdf->SetWidths(array(97.8,98));
+        $pdf->Row(array($den_situacion_actual,$den_supuestos));
+
+    }else{
+        $pdf->AddPage();
+        $pdf->Cell(195.8,4,"FORMATO NO GENERADO POR FALTA INFORMACIÓN",'LTRB',1,'C');
+        $pdf->Cell(195.8,4,$errorMessage,'LTRB',1,'C');
+    }
+
+ 	$pdf->fpdfOutput('formato_poai_'.$ano.'_5'.'.pdf', 'D');
+
+}
+?>

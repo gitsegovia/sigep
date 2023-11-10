@@ -1,0 +1,291 @@
+<?php
+ if(isset($var) && $var=="no"){
+?>
+
+<?php
+}elseif(isset($var) && $var=="si"){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['entidad_freporta'] = $entidad_federal;
+if(isset($data_acta) && !empty($data_acta)){
+	$_SESSION['nombre_primera_firma'] = $data_acta[0][0]['funcionario_primero'];
+	$_SESSION['cedula_primera_firma'] = "C.I: ".$data_acta[0][0]['cedula_primero'];
+	$_SESSION['cargo_primera_firma'] = $data_acta[0][0]['cargo_primero'];
+
+	$_SESSION['nombre_segunda_firma'] = $data_acta[0][0]['funcionario_segundo'];
+	$_SESSION['cedula_segunda_firma'] = "C.I: ".$data_acta[0][0]['cedula_segundo'];
+	$_SESSION['cargo_segunda_firma'] = $data_acta[0][0]['cargo_segundo'];
+
+	$_SESSION['nombre_tercero_firma'] = $data_acta[0][0]['funcionario_tercero'];
+	$_SESSION['cedula_tercero_firma'] = "C.I: ".$data_acta[0][0]['cedula_tercero'];
+	$_SESSION['cargo_tercero_firma'] = $data_acta[0][0]['cargo_tercero'];
+
+	$_SESSION['nombre_cuarto_firma'] = $data_acta[0][0]['funcionario_cuarto'];
+	$_SESSION['cedula_cuarto_firma'] = "C.I: ".$data_acta[0][0]['cedula_cuarto'];
+	$_SESSION['cargo_cuarto_firma'] = $data_acta[0][0]['cargo_cuarto'];
+
+	if($data_acta[0][0]['cod_dependencia']!=1){
+		$_SESSION['deno_dependencia'] = $data_acta[0][0]['deno_dependencia'];
+	}else{
+		$_SESSION['deno_dependencia'] = "SECRETARÍA DE FINANZAS";
+	}
+}else{
+	$_SESSION['nombre_primera_firma'] = '';
+	$_SESSION['cedula_primera_firma'] = '';
+	$_SESSION['cargo_primera_firma'] = '';
+
+	$_SESSION['nombre_segunda_firma'] = '';
+	$_SESSION['cedula_segunda_firma'] = '';
+	$_SESSION['cargo_segunda_firma'] = '';
+
+	$_SESSION['nombre_tercero_firma'] = '';
+	$_SESSION['cedula_tercero_firma'] = '';
+	$_SESSION['cargo_tercero_firma'] = '';
+
+	$_SESSION['nombre_cuarto_firma'] = '';
+	$_SESSION['cedula_cuarto_firma'] = '';
+	$_SESSION['cargo_cuarto_firma'] = '';
+
+	$_SESSION['deno_dependencia'] = '';
+}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		// $titulo_A = "ACTA DE DESINCORPORACIÓN DE BIENES MUEBLES";
+		// $this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"21", "Z"=>"13"), array("Y"=>"23", "X"=>"185"));
+
+		$this->image_escudo(11,21,13);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+		$this->Cell(0,3,$_SESSION['entidad_freporta'],'RL',1,'C');
+		$this->Cell(0,3,$_SESSION['deno_dependencia'],'RL',1,'C');
+		$this->Cell(0,3,"DIVISIÓN DE BIENES",'RL',1,'C');
+	  //$this->Cell(0,3,"DIRECCIÓN ESTADAL DE BIENES",'RL',1,'C');
+	  //$this->Cell(0,3,"UNIDAD DE BIENES MUEBLES",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"ACTA DE DESINCORPORACIÓN DE BIENES MUEBLES",'RL',1,'C');
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 12;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+    }//fin funtion
+
+    function footer(){
+		$this->SetY(-65);
+		$this->SetFont('vera','B',6);
+
+	// FIRMAS 1 Y 2:
+
+		$this->Cell(100,17,"",'TRL',0,'C');
+		$this->Cell(0,17,"",'TR',1,'C');
+
+		$this->Cell(100,3,"__________________________________________________________________________",'RL',0,'C');
+		$this->Cell(0,3,"__________________________________________________________________________",'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['nombre_primera_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['nombre_segunda_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cedula_primera_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['cedula_segunda_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cargo_primera_firma'],'BRL',0,'C');
+		$this->Cell(0,3,$_SESSION['cargo_segunda_firma'],'BR',1,'C');
+
+
+	// FIRMAS 3 Y 4:
+
+		$this->Cell(100,17,"",'RL',0,'C');
+		$this->Cell(0,17,"",'R',1,'C');
+
+		$this->Cell(100,3,"__________________________________________________________________________",'RL',0,'C');
+		$this->Cell(0,3,"__________________________________________________________________________",'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['nombre_tercero_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['nombre_cuarto_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cedula_tercero_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['cedula_cuarto_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cargo_tercero_firma'],'BRL',0,'C');
+		$this->Cell(0,3,$_SESSION['cargo_cuarto_firma'],'BR',1,'C');
+    }
+
+
+
+function fecha_alfabetico_acta($var=null){
+
+
+
+$fecha = $var;
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+
+}//fin
+
+
+
+switch($mes){
+    case"1":{$var="Enero"; }break;
+    case"2":{ $var="Febrero"; }break;
+    case"3":{ $var="Marzo"; }break;
+    case"4":{ $var="Abril"; }break;
+    case"5":{ $var="Mayo"; }break;
+    case"6":{ $var="Junio"; }break;
+    case"7":{ $var="Julio"; }break;
+    case"8":{ $var="Agosto"; }break;
+    case"9":{ $var="Septiembre"; }break;
+    case"10":{$var="Octubre"; }break;
+    case"11":{$var="Noviembre"; }break;
+    case"12":{$var="Diciembre"; }break;
+}//fin
+
+$var_aux = $dia.' DE '.$var.' DEL '.$year;
+
+
+return $var_aux;
+
+
+
+}//fin function
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 35);
+//$pdf->AddPage();
+
+if(!empty($data_acta)){
+	foreach($data_acta as $poc => $datos_acta){
+	$pdf->AddPage();
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,3,"",'',1,'C');
+	$pdf->Cell(145,4,"",'',0,'C');
+	$pdf->Cell(0,4,"ACTA DE DESINCORPORACIÓN",'TRBL',1,'C');
+	$pdf->Cell(145,4,"",'',0,'C');
+	$pdf->Cell(28,4,"NÚMERO",'RBL',0,'C');
+	$pdf->Cell(0,4,"FECHA",'RB',1,'C');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(145,4,"",'',0,'C');
+	$pdf->Cell(28,6,mascara_seis($datos_acta[0]['numero_acta']),'RBL',0,'C');
+	$pdf->Cell(0,6,$sisap->cambia_fecha($datos_acta[0]['fecha_desincorporacion']),'RB',1,'C');
+
+	// ARREGLAR 
+	// esta es la informacion que se debe generar dinamica con la institucion de donde se genera el reporte
+	/*
+	 la Dirección Estadal de Bienes del Ejecutivo Regional, adscrita a la Secretaria de Finanzas; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	*/
+	$nota1 = "En el día de hoy ".$pdf->fecha_alfabetico_acta($datos_acta[0]['fecha_desincorporacion']).", reunidos en la división de bienes, adscrita a: ".$datos_acta[0]['deno_dependencia'].";
+		<br/><b>".$datos_acta[0]['funcionario_primero']."</b>; titular de la cédula de identidad Nº &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>".$datos_acta[0]['cedula_primero']."</b>, en su carácter de &nbsp;&nbsp;&nbsp; <b>".$datos_acta[0]['cargo_primero']."</b> y por otra parte el Ciudadano(a): &nbsp;&nbsp;&nbsp;&nbsp; <b>".$datos_acta[0]['funcionario_segundo']."</b> en su carácter de: &nbsp;&nbsp; <b>".$datos_acta[0]['cargo_segundo']."</b>, a fin de dejar Constancia de la desincorporación de los siguientes Bienes de: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>".$datos_acta[0]['deno_dependencia']."</b>.";
+	
+	$pdf->writeHTMLCell(180, 30, '', '', $nota1, 0, 2);
+	
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','B',6);
+
+	
+	$pdf->Cell(0,6,"REGISTROS DE BIENES A DESINCORPORAR",'TRL',1,'C');
+	$pdf->Cell(10,3,"",'TRL',0,'C');
+	$pdf->Cell(40,3,"",'TR',0,'C');
+	$pdf->Cell(25,3,"IDENTIFICACIÓN",'TR',0,'C');
+	$pdf->Cell(18,3,"TIPO DE",'TR',0,'C');
+	$pdf->Cell(15,3,"VALOR",'TR',0,'C');
+	//$pdf->Cell(80,3,"VALOR",'RB',0,'C');
+	$pdf->Cell(60,3,"",'TR',0,'C');
+	$pdf->Cell(0,3,"",'TR',1,'C');
+
+	$pdf->Cell(10,3,"ITEM",'RBL',0,'C');
+	$pdf->Cell(40,3,"DESCRIPCIÓN DEL BIEN MUEBLE",'RB',0,'C');
+	$pdf->Cell(25,3,"DEL BIEN MUEBLE",'RB',0,'C');
+	$pdf->Cell(18,3,"MOVIMIENTO",'RB',0,'C');
+	$pdf->Cell(15,3,"(Bs.)",'RB',0,'C',0,'',1);
+	//$pdf->Cell(150,3,"(Bs.)",'RB',0,'C',0,'',1);
+	
+	$pdf->Cell(60,3,"UBICACIÓN",'RB',0,'C');
+	$pdf->Cell(0,3,"FECHA PROCESO",'RB',1,'C');
+	
+
+	$pdf->SetFont('vera','',6);
+
+	$pdf->Cell(10,16,$sisap->zero($poc+1),'RL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(40,1,"",'',2,'C');
+	$pdf->MultiCell(40,2.5,$datos_acta[0]['denominacion'],'','L');//---------[DENOMINACION]
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(25,16,mascara_seis($datos_acta[0]['numero_identificacion']),'RL',0,'C');
+	$pdf->Cell(18,16,$datos_acta[0]['cod_tipo_desincorporacion'],'R',0,'C');
+	$pdf->Cell(15,16,$sisap->Formato2($datos_acta[0]['valor_unitario']),'R',0,'R');
+
+
+	$pdf->Cell(0,1,"",'',2,'C');
+	$pdf->MultiCell(60,2.5,$datos_acta[0]['deno_oficina'].", ".$datos_acta[0]['deno_direccion'].", ".$datos_acta[0]['deno_secretaria'],'','L');//---------[UBICACION]
+	$varX = $varX+118;
+	$pdf->SetXY($varX,$varY);
+	
+	$pdf->Cell(30,16,$sisap->cambia_fecha($datos_acta[0]['fecha_proceso_desincorporacion']),'L',0,'C');
+
+	
+	$pdf->Cell(0,16,"",'R',1,'L');
+	$pdf->Cell(0,0,'','T',1);
+
+
+	$pdf->SetRightMargin(38);
+
+	$pdf->Cell(0,6,"",'',2,'C');
+	$nota2 = "<p align='justify'>La Desincorporación será registrada bajo el concepto Nº &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>".$datos_acta[0]['cod_tipo_desincorporacion']." (".$datos_acta[0]['deno_desincorporacion'].")</b> como lo especifica la Publicación Nº 20 (Instrucciones y Modelo para la Contabilidad Fiscal de los Estados de la República) y la Publicación Nº 9 (Instrucciones para la Contabilidad de Bienes Nacionales de las Unidades de Trabajo), de la Contraloría General de la República.</p>";
+	$pdf->MultiCell(0,5, $pdf->WriteHTML($nota2), '', 'J', 0, 1, '', '', true, 0, false);
+
+	$pdf->SetRightMargin(10);
+	$pdf->Ln(2);
+
+	if(!empty($datos_acta[0]['observaciones_desincorporacion'])){
+		$nota = "<p align='justify'><b>Nota:</b>&nbsp; <u>".$datos_acta[0]['observaciones_desincorporacion']."</u>";
+	}else{
+		$nota = "<p align='justify'>";
+	}
+
+	$nota3 = "<br><br>Leída la presente \"A c t a\" y no habiendo nada mas que agregar se firma  la presente en conformidad con todo lo antes expuesto.</p>";
+
+	$pdf->MultiCell(0,4,$pdf->WriteHTML($nota.$nota3),'','J');
+
+	} // fin foreach
+}else{
+	$pdf->AddPage();
+	$pdf->Ln(10);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,5,'NO EXISTEN DATOS','TBRL',1,'C');
+	$pdf->SetFont('vera','',6);
+}
+
+	$pdf->Output('Acta_Desincorporacion'.date('d-m-Y').'.pdf','D');
+
+}
+?>

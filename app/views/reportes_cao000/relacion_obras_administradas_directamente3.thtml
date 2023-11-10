@@ -1,0 +1,298 @@
+<?php
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"BALANCE DE LAS OBRAS ADMINISTRADAS DIRECTAMENTE","COSTO DETALLADO","950");?>
+<form name='data[relacion_otroscompromisos]' method = "post" id='form' action="<?php echo  $html->url('/reportes_cao000/relacion_obras_administradas_directamente3/no'); ?>" onSubmit="return valida_reporte_relacion_ordenpago(4);">
+<?= $sisap->OpenTable("950")?>
+
+<table width="700" cellspacing="0" cellpadding="0">
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">
+      <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;
+      <?= $sisap->inputTagRemote('relacion_otroscompromisos/ano', array('url'=>'/reportes_cao000/buscar_year_otroscompromisos/', 'update'=>'carga_radio', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+     </td>
+</tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr>
+	<td align="center">
+	   <?= $sisap->radioTagRemote('relacion_otroscompromisos/tipo_peticion', array('1'=>'Todo', '2'=>'Una obra especifica','3'=>'por fecha'), array('url1'=>'/reportes_cao000/ventana4', 'update1'=>'capita','value'=>'','disabled'=>'','id'=>'peticion'),null,$opc=1);?>
+	</td>
+</tr>
+<tr>
+	<td id="carga_radio"></td>
+</tr>
+
+</table>
+<div id="periodo_fechas_seleccion" style="display:none;">
+<br>
+<b>Desde:</b><?$sisap->input_fecha("relacion_otroscompromisos","desde","desde",date("d/m/Y"));?>
+&nbsp;&nbsp;<b>Hasta:</b><?$sisap->input_fecha("relacion_otroscompromisos","hasta","hasta",date("d/m/Y"));?>
+
+</div>
+<div id="capita"></div>
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('cnmp04_tipo/salir', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['tipo_peticion_reporte'] = $tipo_peticion_reporte;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$desde = $_SESSION['desde_cao'];
+    	$hasta = $_SESSION['hasta_cao'];
+
+		$titulo_A = "BALANCE DE LAS OBRAS ADMINISTRADAS DIRECTAMENTE";
+		$titulo_B = "(COSTO DETALLADO)";
+		$titulo_C = "Desde periodo: $desde - Hasta Periodo: $hasta";
+		if($_SESSION['tipo_peticion_reporte']==3){
+			$titulos = array($titulo_A,$titulo_B,$titulo_C);
+		}else{
+			$titulos = array($titulo_A,$titulo_B);
+		}
+       	$this->top_reporte2($titulos, array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"254"));
+
+	$this->SetFont('vera','B',9);
+	$this->Cell(145,5,"O B R A",'TRL',0,'C');
+	$this->Cell(0,5,"DETALLES DE LOS COSTOS",'TR',1,'C');
+
+	$this->SetFont('vera','B',5);
+	$this->Cell(25,2.5,"",'TRL',0,'C');
+	$this->Cell(60,2.5,"",'TR',0,'C');
+	$this->Cell(20,2.5,"",'TR',0,'C');
+	$this->Cell(20,2.5,"MONTO ",'TR',0,'C');
+	$this->Cell(20,2.5,"MONTO ",'TR',0,'C');
+	$this->Cell(13.5,2.5,"CÓDIGO ",'TR',0,'C');
+	$this->Cell(12,2.5,"CODIGO ",'TR',0,'C');
+	$this->Cell(48,2.5," ",'TR',0,'C');
+	$this->Cell(15,2.5," ",'TR',0,'C');
+	$this->Cell(20,2.5,"PRECIO UNITARIO",'TR',0,'C');
+	$this->Cell(0,2.5," ",'TR',1,'C');
+
+	$this->Cell(25,2,"CÓDIGO",'RBL',0,'C');
+	$this->Cell(60,2,"DENOMINACIÓN",'RB',0,'C');
+	$this->Cell(20,2,"MONTO",'RB',0,'C');
+	$this->Cell(20,2,"EJECUTADO",'RB',0,'C');
+	$this->Cell(20,2,"DISPONIBLE",'RB',0,'C');
+	$this->Cell(13.5,2,"SNC",'BR',0,'C');
+	$this->Cell(12,2,"SISTEMA",'BR',0,'C');
+	$this->Cell(48,2,"DENOMINACIÓN",'BR',0,'C');
+	$this->Cell(15,2,"CANTIDAD",'RB',0,'C');
+	$this->Cell(20,2,"PROMEDIO",'RB',0,'C');
+	$this->Cell(0,2,"COSTO TOTAL",'RB',1,'C');
+    }
+}//fin clase
+
+
+function limpiar_cadena ($cadena) {
+      $cadena = trim($cadena);
+      $cadena = str_replace("  "," ",$cadena);
+      $cadena = str_replace("\n"," ",$cadena);
+      $cadena = str_replace("\r"," ",$cadena);
+      $cadena = str_replace("\t"," ",$cadena);
+      return $cadena;
+
+}//fin funcion limpiar_cadena
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+if(count($data_reporte)>0){
+
+$t_monto            = 0;
+$t_montof           = 0;
+
+
+$cod_obra_aux="";
+$cod_obra_aux2 ="";
+$ix=0;
+foreach($data_reporte as $DT){
+	$pdf->SetFont('vera','',5);
+	extract($DT[$modelo_reporte]);
+	$denominacion = limpiar_cadena($denominacion);
+	$tdc=strlen($denominacion);
+
+ 	$denominacion_snc_cp = limpiar_cadena($denominacion_snc_cp);
+ 	$tdc2=strlen($denominacion_snc_cp);
+
+
+	if($tdc<=100){
+		$altura = 5;
+	}else if($tdc>100 && $tdc<=130){
+		$altura = 7;
+	}else if($tdc>130 && $tdc<=160){
+		$altura = 8;
+	}else if($tdc>160 && $tdc<=190){
+		$altura = 9;
+	}else if($tdc>190 && $tdc<=220){
+		$altura = 10.5;
+	}else if($tdc>220 && $tdc<=250){
+		$altura = 11.5;
+	}else if($tdc>250 && $tdc<=280){
+		$altura = 12.5;
+	}else if($tdc>280 && $tdc<=310){
+		$altura = 13.5;
+	}else if($tdc>310 && $tdc<=340){
+		$altura = 14.5;
+	}else{
+		$altura = 16.5;
+	}
+
+	if($tdc2<=40){
+		$altura2 = 5;
+	}else if($tdc2>50 && $tdc2<=130){
+		$altura2 = 7;
+	}else if($tdc2>130 && $tdc2<=160){
+		$altura2 = 8;
+	}else if($tdc2>160 && $tdc2<=190){
+		$altura2 = 9;
+	}else if($tdc2>190 && $tdc2<=220){
+		$altura2 = 10.5;
+	}else if($tdc2>220 && $tdc2<=250){
+		$altura2 = 11.5;
+	}else if($tdc2>250 && $tdc2<=280){
+		$altura2 = 12.5;
+	}else if($tdc2>280 && $tdc2<=310){
+		$altura2 = 13.5;
+	}else if($tdc2>310 && $tdc2<=340){
+		$altura2 = 14.5;
+	}else{
+		$altura2 = 16.5;
+	}
+
+    if($cod_obra_aux!=$cod_obra){
+        $denominacion = $denominacion;
+        $cod_obra_aux = $cod_obra;
+        $cod_obra_mostrar = $cod_obra;
+        $mmostrar=true;
+    }else{
+    	$denominacion = '';
+    	$cod_obra_mostrar = '';
+    	$mmostrar=false;
+    }
+
+   if($cod_obra_aux2==""){
+      $cod_obra_aux2=$cod_obra;
+   }
+
+    if($cod_obra_aux2!=$cod_obra && $ix!=0){
+		$cod_obra_aux2=$cod_obra;
+
+        $pdf->SetFont('vera','B',6);
+		$pdf->Cell(253.5,4,"TOTAL: ",'RBL',0,'R');
+		$pdf->SetFont('vera','B',5);
+		$pdf->Cell(0,4,$sisap->Formato2($t_montof),'RB',1,'R');// TOTAL MONTO DISPONIBLE
+        $t_montof =0;
+        $t_montof +=$costo_total1;
+	}else{
+		$t_montof +=$costo_total1;
+	}
+
+    $pdf->SetFont('vera','',5);
+	$pdf->Cell(25,$altura,$cod_obra_mostrar,'RL',0,'C');// CÓDIGO
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(60,1,"",'',2,'C');
+	$pdf->MultiCell(59,2,$denominacion,'','L');// DENOMINACIÓN
+	$varX = $varX+60;
+	$pdf->SetXY($varX,$varY);
+	$a1=$sisap->Formato2(($costo_total+$aumento_obras_cuerpo)-$disminucion_obras_cuerpo);
+	$a2=$sisap->Formato2($monto_contratado_cuerpo)=='0,00'?'':$sisap->Formato2($monto_contratado_cuerpo);
+	$a3=$sisap->Formato2(($costo_total+$aumento_obras_cuerpo)-($disminucion_obras_cuerpo+$monto_contratado_cuerpo));
+	$pdf->Cell(20,$altura,$mmostrar==true?$a1:'','RL',0,'C');// MONTO
+	$pdf->Cell(20,$altura,$mmostrar==true?$a2:'','R',0,'R');// MONTO EJECUTADO
+	$pdf->Cell(20,$altura,$mmostrar==true?$a3:'','R',0,'R');// MONTO DISPONIBLE
+
+
+	if($tipo_documento==1){
+		$pdf->Cell(13.5,$altura,$cod_snc,'R',0,'C');// codigo snc
+		$pdf->Cell(12,$altura,$codigo_prod_serv,'R',0,'C');// codico sistema
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(48,1,"",'',2,'C');
+		$pdf->MultiCell(47,2,$denominacion_snc_cp,'','L');// DENOMINACIÓN
+		$varX = $varX+48;
+		$pdf->SetXY($varX,$varY);
+		//$pdf->Cell(48,$altura,$denominacion_snc_cp,'R',0,'L');// denominacion snc o denominac tipo compromiso
+		$v_cantidad = explode('.',$cantidad);
+		if($v_cantidad[1]!=0){
+            $cantidad = number_format($cantidad,3,',','');
+		}else{
+			$cantidad = $v_cantidad[0];
+		}
+
+		//$var = str_replace('.',',',$var);
+		$pdf->Cell(15,$altura,$cantidad,'LR',0,'R');// cantidad
+		$pdf->Cell(20,$altura,$sisap->Formato2($costo_total1/$cantidad),'R',0,'R');//precio unitario promedio
+		$pdf->Cell(0,$altura,$sisap->Formato2($costo_total1),'R',1,'R');// costo total
+
+	}else{
+		$pdf->Cell(13.5,$altura,'','R',0,'C');// codigo snc
+		$pdf->Cell(12,$altura,'','R',0,'C');// codico sistema
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(48,1,"",'',2,'C');
+		$pdf->MultiCell(47,2,$denominacion_snc_cp,'','L');// DENOMINACIÓN
+		$varX = $varX+48;
+		$pdf->SetXY($varX,$varY);
+		//$pdf->Cell(48,$altura,"".$denominacion_snc_cp,'R',0,'L');// denominacion snc o denominac tipo compromiso
+        $pdf->Cell(15,$altura,'','LR',0,'L');// cantidad
+		$pdf->Cell(20,$altura,'','R',0,'C');//precio unitario promedio
+		$pdf->Cell(0,$altura,$sisap->Formato2($costo_total1),'R',1,'R');// costo total
+
+	}
+
+
+	$pdf->Cell(0,0,"",'T',1,'C');
+	$t_monto +=$costo_total1;
+
+
+
+
+
+$ix++;
+}
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(253.5,4,"TOTAL: ",'RBL',0,'R');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,$sisap->Formato2($t_montof),'RB',1,'R');// TOTAL MONTO DISPONIBLE
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(253.5,4,"T O T A L: ",'RBL',0,'R');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,4,$sisap->Formato2($t_monto),'RB',1,'R');// TOTAL MONTO DISPONIBLE
+
+}
+$pdf->Output('Relacion_obras_administradas_directamente_detallado'.date('d_m_Y').'_pdf','D');
+}
+
+?>

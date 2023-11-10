@@ -1,0 +1,1356 @@
+<?php
+if(!$pdf){
+?>
+
+    <?$sisap->Tabla_modulos("",true,"REPORTE POAI- COMPLETO","","950","cpop");?>
+
+    <?$sisap->OpenTable("950");?>
+
+    <form name='data[reporte_formato_poai_1]' method = "post" id='form1' action="<?= $html->url('/cpop00_reportes/reporte_formato_unico/1'); ?>">       
+        <table>          
+          <tbody>
+            <tr>
+            <td>EJERCICIO PRESUPUESTARIO:</td>
+              <td>                 
+        <?= $html->input('reporte_formato_poai_1/ano', array('size'=>'4' , 'id'=>'ano', 'onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:16','value'=>$ano));?>
+              </td>
+              <?php 
+              if ($cod_dep==1) {?>
+               <td>DEPENDENCIA:</td>  
+               <td>
+               <?=  $html->selectTag('reporte_formato_poai_1/select_dependencia', $listadependencia, null, array('id' =>'select_dependencia', 'class' => 'campoText', 'style' => 'border:1px solid cyan;'), null, true)?>                
+               </td>
+                <?php } ?>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+       
+
+    <?= $html->submit('Generar'); ?>
+
+    </form>
+
+    <?= $sisap->buttonTagRemote('reporte_formato_poai_1/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+    <?php echo $sisap->CloseTable(); ?>
+
+<?php
+}else{
+
+$_SESSION['ano'] = $ano;
+$_SESSION['nombre_dependencia'] = $nombre_dependencia;
+$imprimir=true;
+
+
+
+    vendor('utf8_tcpdf/tcpdf');
+    set_time_limit(300);
+    class fpdfview extends TCPDF {
+        function top_reporte2($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true){
+                   $escudo_array      = top_reporte_escudo($consolidado);
+                   $escudo            = $escudo_array["escudo"];
+                   $entidad_federal   = $escudo_array["entidad_federal"];
+                   $dependencia       = str_replace("(U.L.A)", "", $escudo_array["dependencia"]);
+
+                   if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+                   if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+                   if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+                            $this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"]);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(14,4,"",'TL',0);
+                            $this->Cell(0,4,$entidad_federal,'TR',1);
+                            $this->Cell(14,3,"",'L',0);
+                            $this->SetFont('vera','',7);
+                            $this->Cell(0,3,$dependencia,'R',1);
+                            $this->SetFont('vera','B',8);
+                            $this->Cell(0,3,"",'RL',1,'C');
+                            //$this->Cell(0,5,$titulo_varios[0],'RL',1,'C');
+                            $this->SetFont('vera','B',7);
+                           /* if(count($titulo_varios)>1){
+                               for($it=1;$it<count($titulo_varios);$it++){
+                                   $this->Cell(0,5,$titulo_varios[$it],'RL',1,'C');
+                               }
+                            }*/
+
+                            $this->Cell(0,1,"",'RLB',1,'C');
+                                $this->SetFont('vera','B',5);
+                                if(isset($posicion_pie_pagina["Y"])){
+                                    $this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"],'PAGINA: '.$this->PageNo().'/TPAG');
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: '.date("d/m/Y"));
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+3, 'FECHA: 13/12/2017');
+                                    //$this->Text($posicion_pie_pagina["X"], $posicion_pie_pagina["Y"]+6, 'HORA: '.date("h:i a"));
+                                }//fin if
+                            $this->Ln(3);
+       }//function
+       
+        function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput ($name = '', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Footer(){
+          if($this->print_footer){
+            $this->SetY(-15);
+            $this->SetFont('vera','B',6);
+            if($this->PageNo()==1){
+              $this->Cell(100,18,"FORMATO: POAI-".$_SESSION['ano'],0,0,'L');
+            }else{
+              $this->Cell(100,18,"FORMATO: POAI-".$_SESSION['ano'],0,0,'L');
+            }
+            $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'R');
+          }
+        }
+
+        function top_portada($titulo_varios = array(), $posicion_img = array(), $posicion_pie_pagina = array(), $consolidado=true){
+           $escudo_array      = top_reporte_escudo($consolidado);
+           $escudo            = $escudo_array["escudo"];
+           $entidad_federal   = $escudo_array["entidad_federal"];
+           $dependencia       = str_replace("(U.L.A)", "", $escudo_array["dependencia"]);
+
+           if(!isset($posicion_img["Y"])){$posicion_img["Y"]=12;}
+           if(!isset($posicion_img["X"])){$posicion_img["X"]=10;}
+           if(!isset($posicion_img["Z"])){$posicion_img["Z"]=12;}
+
+          $this->Image($escudo,$posicion_img["Y"],$posicion_img["X"],$posicion_img["Z"],$posicion_img["Z"]);
+          $this->Ln(3);
+       }//function
+
+
+        function Header()
+        {
+          if($this->print_header){
+            $this->top_reporte2(array('POAI '.$_SESSION['select_dependencia']), array("Y"=>"11", "X"=>"16", "Z"=>"11"), array("Y"=>"17", "X"=>"186"));
+          }else{
+            $this->top_portada(array('POAI '.$_SESSION['select_dependencia']), array("Y"=>"70", "X"=>"35", "Z"=>"80"), array(), false);
+          }
+        }//fin funtion
+
+/**
+ * DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO   
+ */
+  var $widths;
+  var $aligns;
+
+  function SetWidths($w){
+    //Set the array of column widths
+    $this->widths=$w;
+  }
+
+  function SetAligns($a){
+    //Set the array of column alignments
+    $this->aligns=$a;
+  }
+
+  function cambiarNLine($cadena) {
+    $cadena = str_replace("à","A", $cadena);
+    $cadena = str_replace("è","E", $cadena);
+    $cadena = str_replace("ì","I", $cadena);
+    $cadena = str_replace("ò","O", $cadena);
+    $cadena = str_replace("ù","U", $cadena);
+    $cadena = str_replace("á","A", $cadena);
+    $cadena = str_replace("é","E", $cadena);
+    $cadena = str_replace("í","I", $cadena);
+    $cadena = str_replace("ó","O", $cadena);
+    $cadena = str_replace("ú","U", $cadena);
+    $cadena = str_replace("ñ","N", $cadena);
+
+    $cadena = str_replace("À", "A", $cadena);
+    $cadena = str_replace("È", "E", $cadena);
+    $cadena = str_replace("Ì", "I", $cadena);
+    $cadena = str_replace("Ò", "O", $cadena);
+    $cadena = str_replace("Ù", "U", $cadena);
+    $cadena = str_replace("Á", "A", $cadena);
+    $cadena = str_replace("É", "E", $cadena);
+    $cadena = str_replace("Í", "I", $cadena);
+    $cadena = str_replace("Ó", "O", $cadena);
+    $cadena = str_replace("Ú", "U", $cadena);
+    $cadena = str_replace("Ñ", "N", $cadena);
+    return $cadena;
+  }
+
+  function Row($data){
+    //Calculate the height of the row
+    $nb=0;
+    for($i=0;$i<count($data);$i++){
+      $nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+    }
+    $h=3*$nb;
+    //Issue a page break first if needed
+    $this->CheckPageBreak($h);
+    //Draw the cells of the row
+    for($i=0;$i<count($data);$i++){
+      $w=$this->widths[$i];
+      $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+      //Save the current position
+      $x=$this->GetX();
+      $y=$this->GetY();
+      //Draw the border
+      $this->Rect($x,$y,$w,$h);
+      //Print the text
+      $this->MultiCell($w,3,$data[$i],0,$a);
+      //Put the position to the right of the cell
+      $this->SetXY($x+$w,$y);
+    }
+    //Go to the next line
+    $this->Ln($h);
+  }
+
+  function CheckPageBreak($h){
+    //If the height h would cause an overflow, add a new page immediately
+    if($this->GetY()+$h>$this->PageBreakTrigger)
+    $this->AddPage($this->CurOrientation);
+  }
+
+  function NbLines($w,$txt){
+    //Computes the number of lines a MultiCell of width w will take
+    $cw=&$this->CurrentFont['cw'];
+    if($w==0){
+      $w=$this->w-$this->rMargin-$this->x;
+    }
+
+    $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+
+    $contenido=str_replace("\r",'',$txt);
+    $contenido=$this->cambiarNLine($contenido);
+    $numero_letras=strlen($contenido);
+
+    if($numero_letras>0 and $contenido[$numero_letras-1]=="\n"){
+      $numero_letras--;
+    }
+
+    $espacios=-1;
+    $i=0; $j=0; $l=0;
+    $numero_lineas=1;
+
+    while($i<$numero_letras){
+      $caracter=$contenido[$i];
+
+      if($caracter=="\n"){
+        $i++;
+        $espacios=-1;
+        $j=$i;
+        $l=0;
+        $numero_lineas++;
+        continue;
+      }
+
+      if($caracter==' '){
+        $espacios=$i;
+      }
+
+      $unicode = $this->UTF8StringToArray($caracter);
+      $l+=$cw[$unicode[0]];
+      if($l>($wmax-150)){
+        if($espacios==-1){
+          if($i==$j){
+            $i++;
+          }
+        }else{
+          $i=$espacios+1;
+        }
+
+        $espacios=-1;
+        $j=$i;
+        $l=0;
+        $numero_lineas++;
+      }else{
+        $i++;
+      }
+    }
+
+    return $numero_lineas;
+  }
+
+/**
+ * FIN DE LA DEFINICION DE FUNCIONES PARA MULTICELDAS DEL MISMO TAMAÑO
+ */
+      function cabezera($metas, $datos_proyectos, $datos_objetivos){
+
+        foreach ($datos_proyectos as $proyectos) {
+            if($proyectos['cpod01_proyectos']['tipo_proyecto']==$metas['cpod05_control_metas']['tipo_proyecto'] && $proyectos['cpod01_proyectos']['numero_proyecto']==$metas['cpod05_control_metas']['numero_proyecto']){
+                $den_proyecto=$proyectos['cpod01_proyectos']['proyectos'];
+                $responsable = $proyectos['cpod01_proyectos']['responsable'];
+            }
+        }
+
+        foreach ($datos_objetivos as $objetivos) {
+            if($objetivos['cpod04_objetivos']['tipo_proyecto']==$metas['cpod05_control_metas']['tipo_proyecto'] && $objetivos['cpod04_objetivos']['numero_proyecto']==$metas['cpod05_control_metas']['numero_proyecto']){
+                $den_objetivo=$objetivos['cpod04_objetivos']['objetivo'];
+            }
+        }
+
+
+        $this->SetFont('vera','B',7);
+        $this->Cell(0,6,'5.-PROGRAMACIÓN DE ACTIVIDADES INSTITUCIONALES',1,1,'L');
+        $this->SetFont('vera','B',5);
+
+        $this->Cell(125,5,"5.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,0,'L');
+        $this->Cell(70.8,5,"5.2.- Profesional Responsable: ".$responsable,1,1,'L');
+
+        $this->SetFont('vera','',5);
+        // poner esto en multi cell funcion row con año del proyecto
+        $this->SetWidths(array(160,35.8));
+        $this->Row(array("5.3.- Denominación del Proyecto: ".$den_proyecto,"5.4.- Año del Proyecto: ".$_SESSION['ano']));
+
+        // multi cell funcion row
+        $this->SetWidths(array(195.8));
+        $this->Row(array("5.5.- Objetivo: ".$den_objetivo));
+
+        $this->SetFont('vera','B',5);
+        $this->Cell(55,3,"",'LT',0,'C');
+        $this->Cell(20,3,"5.7.- Costos de ",'LT',0,'C');
+        $this->Cell(50,3,"",'LT',0,'C');
+        $this->Cell(20,3,"",'LT',0,'C');
+        $this->Cell(50.8,3,"5.10.- Resultados Esperados",'LTR',1,'C');
+
+        $this->Cell(55,3,"5.6.- Metas Programadas: ",'L',0,'C');
+        $this->Cell(20,3,"Las Metas",'L',0,'C');
+        $this->Cell(50,3,"5.8.- Actividades",'L',0,'C');
+        $this->Cell(20,3,"5.9.- Indicadores",'L',0,'C');
+        $this->Cell(50.8,3,"5.10.1.- Meta Física Trimestral ",'LTR',1,'C');
+
+        $this->Cell(55,3,"",'L',0,'C');
+        $this->Cell(20,3,"Programadas",'L',0,'C');
+        $this->Cell(50,3,"",'L',0,'C');
+        $this->Cell(20,3,"",'L',0,'C');
+        $this->Cell(10,3,"5.10.1.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.2.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.3.-",'LT',0,'C');
+        $this->Cell(10,3,"5.10.4.-",'LT',0,'C');
+        $this->Cell(10.8,3,"5.10.5.-",'LTR',1,'C');
+
+        $this->Cell(55,3,"",'L',0,'C');
+        $this->Cell(20,3,"en Bs.",'L',0,'C');
+        $this->Cell(50,3,"",'L',0,'C');
+        $this->Cell(20,3,"",'L',0,'C');
+        $this->Cell(10,3,"I",'L',0,'C');
+        $this->Cell(10,3,"II",'L',0,'C');
+        $this->Cell(10,3,"III",'L',0,'C');
+        $this->Cell(10,3,"IV",'L',0,'C');
+        $this->Cell(10.8,3,"Total",'LR',1,'C');
+
+        $this->Cell(55,3,"",'LB',0,'C');
+        $this->Cell(20,3,"",'LB',0,'C');
+        $this->Cell(50,3,"",'LB',0,'C');
+        $this->Cell(20,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10,3,"",'LB',0,'C');
+        $this->Cell(10.8,3,"Anual",'LBR',1,'C');
+      }// 55,20,50,20,10,10,10,10,10.8
+
+      function cabezera6($presupuesto, $datos_proyectos){
+
+        foreach ($datos_proyectos as $proyectos) {
+          if($proyectos['cpod01_proyectos']['tipo_proyecto']==$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'] && $proyectos['cpod01_proyectos']['numero_proyecto']==$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto']){
+            $den_proyecto=$proyectos['cpod01_proyectos']['proyectos'];
+          }
+        }
+
+        /*
+          CABECERA TABLA
+         */
+
+        $this->SetFont('vera','B',7);
+        $this->Cell(0,6,'6.-VINCULACIÓN DEL PLAN PRESUPUESTARIO',1,1,'L');
+        $this->Cell(0,5,"6.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+        $this->SetFont('vera','B',6);
+
+        $this->SetWidths(array(195.8));
+        $this->Row(array("6.2.- Denominación del Proyecto: ".$den_proyecto));
+        //$this->Cell(35.8,5,"5.4.- Año del Proyecto: ".$_SESSION['ano'],'LTR',1,'J');
+
+        $this->Cell(36,5,"6.3.- CÓDIGO",'LT',0,'C');
+        $this->Cell(39,5,"6.4.-",'LT',0,'C');
+        $this->Cell(97,5,"",'LT',0,'C');
+        $this->Cell(23.8,5,"",'LTR',1,'C');
+
+        $this->Cell(36,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(39,5,"CUENTA PRESUPUESTARIA",'L',0,'C');
+        $this->Cell(97,5,"",'L',0,'C');
+        $this->Cell(23.8,5,"",'LR',1,'C');
+
+        $this->Cell(36,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(39,5,"SEGÚN LA ONAPRE",'LB',0,'C');
+        $this->Cell(97,5,"6.5.- DENOMINACIÓN",'L',0,'C');
+        $this->Cell(23.8,5,"6.6.- MONTO EN BS",'LR',1,'C');
+
+        $this->Cell(36,5,"LEY DE PRESUPUESTO",'LB',0,'C');
+        $this->Cell(39,5,"SUB-PARTIDA",'LB',0,'C');
+        $this->Cell(97,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(9,5,"6.3.1.-",'LB',0,'C');
+        $this->Cell(9,5,"6.3.2.-",'LB',0,'C');
+        $this->Cell(9,5,"6.3.3.-",'LB',0,'C');
+        $this->Cell(9,5,"6.4.1.-",'LB',0,'C');
+
+        $this->Cell(13,5,"6.4.2.-",'LB',0,'C');
+        $this->Cell(13,5,"6.4.3.-",'LB',0,'C');
+        $this->Cell(13,5,"6.4.4.-",'LB',0,'C');
+        $this->Cell(97,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(9,5,"SECT.",'LB',0,'C');
+        $this->Cell(9,5,"PROG.",'LB',0,'C');
+        $this->Cell(9,5,"ACTIV.",'LB',0,'C');
+        $this->Cell(9,5,"PART.",'LB',0,'C');
+
+        $this->Cell(13,5,"GEN.",'LB',0,'C');
+        $this->Cell(13,5,"ESPEC.",'LB',0,'C');
+        $this->Cell(13,5,"SUB-ESP.",'LB',0,'C');
+        $this->Cell(97,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+       /*
+        FIN TABLA
+        */
+      }
+
+      function cabezera7($presupuesto, $datos_proyectos){
+
+        foreach ($datos_proyectos as $proyectos) {
+          if($proyectos['cpod01_proyectos']['tipo_proyecto']==$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'] && $proyectos['cpod01_proyectos']['numero_proyecto']==$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto']){
+            $den_proyecto=$proyectos['cpod01_proyectos']['proyectos'];
+          }
+        }
+
+        /*
+          CABECERA TABLA
+         */
+
+        $this->SetFont('vera','B',7);
+        $this->Cell(0,6,'7.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Ingresos Propios',1,1,'L');
+        $this->Cell(0,5,"7.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+        $this->SetFont('vera','B',6);
+
+        $this->SetWidths(array(195.8));
+        $this->Row(array("7.2.- Denominación del Proyecto: ".$den_proyecto));
+        //$this->Cell(35.8,5,"5.4.- Año del Proyecto: ".$_SESSION['ano'],'LTR',1,'J');
+
+        $this->Cell(40,5,"7.3.- CÓDIGO",'LT',0,'C');
+        $this->Cell(42,5,"7.4.-",'LT',0,'C');
+        $this->Cell(90,5,"",'LT',0,'C');
+        $this->Cell(23.8,5,"",'LTR',1,'C');
+
+        $this->Cell(40,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(42,5,"CUENTA PRESUPUESTARIA",'L',0,'C');
+        $this->Cell(90,5,"",'L',0,'C');
+        $this->Cell(23.8,5,"",'LR',1,'C');
+
+        $this->Cell(40,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(42,5,"SEGÚN LA ONAPRE",'LB',0,'C');
+        $this->Cell(90,5,"7.5.- DENOMINACIÓN",'L',0,'C');
+        $this->Cell(23.8,5,"7.7.- MONTO EN BS",'LR',1,'C');
+
+        $this->Cell(40,5,"LEY DE PRESUPUESTO",'LB',0,'C');
+        $this->Cell(42,5,"",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(10,5,"7.3.1.-",'LB',0,'C');
+        $this->Cell(10,5,"7.3.2.-",'LB',0,'C');
+        $this->Cell(10,5,"7.3.3.-",'LB',0,'C');
+        $this->Cell(10,5,"7.4.1.-",'LB',0,'C');
+        $this->Cell(14,5,"7.4.2.-",'LB',0,'C');
+        $this->Cell(14,5,"7.4.3.-",'LB',0,'C');
+        $this->Cell(14,5,"7.4.4.-",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(10,5,"SECT.",'LB',0,'C');
+        $this->Cell(10,5,"PROG.",'LB',0,'C');
+        $this->Cell(10,5,"ACTIV.",'LB',0,'C');
+        $this->Cell(10,5,"RAMO",'LB',0,'C');
+        $this->Cell(14,5,"SUB-R.",'LB',0,'C');
+        $this->Cell(14,5,"ESPEC.",'LB',0,'C');
+        $this->Cell(14,5,"SUB-ESP.",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+       /*
+        FIN TABLA
+        */
+      }
+
+      function cabezera8($presupuesto, $datos_proyectos){
+
+        foreach ($datos_proyectos as $proyectos) {
+          if($proyectos['cpod01_proyectos']['tipo_proyecto']==$presupuesto['cpod06_distribucion_ingresos_propios']['tipo_proyecto'] && $proyectos['cpod01_proyectos']['numero_proyecto']==$presupuesto['cpod06_distribucion_ingresos_propios']['numero_proyecto']){
+            $den_proyecto=$proyectos['cpod01_proyectos']['proyectos'];
+          }
+        }
+
+        /*
+          CABECERA TABLA
+         */
+
+        $this->SetFont('vera','B',7);
+        $this->Cell(0,6,'8.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Distribución Ingresos Propios',1,1,'L');
+        $this->Cell(0,5,"8.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+        $this->SetFont('vera','B',6);
+
+        $this->SetWidths(array(195.8));
+        $this->Row(array("8.2.- Denominación del Proyecto: ".$den_proyecto));
+        //$this->Cell(35.8,5,"5.4.- Año del Proyecto: ".$_SESSION['ano'],'LTR',1,'J');
+
+        $this->Cell(40,5,"8.3.- CÓDIGO",'LT',0,'C');
+        $this->Cell(42,5,"8.4.-",'LT',0,'C');
+        $this->Cell(90,5,"",'LT',0,'C');
+        $this->Cell(23.8,5,"",'LTR',1,'C');
+
+        $this->Cell(40,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(42,5,"CUENTA PRESUPUESTARIA",'L',0,'C');
+        $this->Cell(90,5,"",'L',0,'C');
+        $this->Cell(23.8,5,"",'LR',1,'C');
+
+        $this->Cell(40,5,"PRESUPUESTARIO SEGÚN",'L',0,'C');
+        $this->Cell(42,5,"SEGÚN LA ONAPRE",'LB',0,'C');
+        $this->Cell(90,5,"8.5.- DENOMINACIÓN",'L',0,'C');
+        $this->Cell(23.8,5,"8.8.- MONTO EN BS",'LR',1,'C');
+
+        $this->Cell(40,5,"LEY DE PRESUPUESTO",'LB',0,'C');
+        $this->Cell(42,5,"",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(10,5,"8.3.1.-",'LB',0,'C');
+        $this->Cell(10,5,"8.3.2.-",'LB',0,'C');
+        $this->Cell(10,5,"8.3.3.-",'LB',0,'C');
+        $this->Cell(10,5,"8.4.1.-",'LB',0,'C');
+        $this->Cell(14,5,"8.4.2.-",'LB',0,'C');
+        $this->Cell(14,5,"8.4.3.-",'LB',0,'C');
+        $this->Cell(14,5,"8.4.4.-",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+
+        $this->Cell(10,5,"SECT.",'LB',0,'C');
+        $this->Cell(10,5,"PROG.",'LB',0,'C');
+        $this->Cell(10,5,"ACTIV.",'LB',0,'C');
+        $this->Cell(10,5,"PART.",'LB',0,'C');
+        $this->Cell(14,5,"GEN.",'LB',0,'C');
+        $this->Cell(14,5,"ESPEC.",'LB',0,'C');
+        $this->Cell(14,5,"SUB-ESP.",'LB',0,'C');
+        $this->Cell(90,5,"",'LB',0,'C');
+        $this->Cell(23.8,5,"",'LBR',1,'C');
+       /*
+        FIN TABLA
+        */
+      }
+
+    }//fin clases
+
+    $pdf = new fpdfview('P','mm','Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(10);
+    $pdf->SetRightMargin(10);
+    $pdf->SetAutoPageBreak(true, 10);
+
+    //verificar informacion
+
+    if(isset($datos_filosofia['cpod01_filosofia_gestion']['mision'])){
+      $mision=$datos_filosofia['cpod01_filosofia_gestion']['mision'];
+    }else{
+     $imprimir=false;
+    }
+
+    if(isset($datos_filosofia['cpod01_filosofia_gestion']['vision'])){
+      $vision=$datos_filosofia['cpod01_filosofia_gestion']['vision'];
+    }else{
+      $imprimir=false;
+    }
+
+    $count_datos_proyectos_estrategicos = count($datos_proyectos_estrategicos);
+    $count_datos_proyectos_gestion = count($datos_proyectos_gestion);
+
+    if($count_datos_proyectos_estrategicos==0 && $count_datos_proyectos_gestion==0){
+      $imprimir=false;
+    }
+
+    $pdf->AddPage();
+    if($imprimir){
+      // HOJA MISION VISION
+      //
+      /*
+
+            $this->Cell(250,10,"1.2.- MISIÓN",1,0,'C');
+            $this->Cell(250,10,"1.3.- VISIÓN",1,0,'C');
+
+            $varX = $this->GetX();
+            $varY = $this->GetY();
+            $this->MultiCell(50,5,"1.4.- PROYECTOS ESTRATÉGICOS",1,'J',0);
+            $this->SetXY($varX+50,$varY);
+            $varX = $this->GetX();
+            $varY = $this->GetY();
+            $this->MultiCell(50,5,"1.5.- PROYECTOS DE GESTIÓN INSTITUCIONAL",1,'J',0);
+       */
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'1.-PROPÓSITOS INSTITUCIONALES',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,6,"1.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+      $pdf->SetFont('vera','B',7);
+
+      $pdf->Cell(97.9,6,"1.2.- MISIÓN",1,0,'C');
+      $pdf->Cell(97.9,6,"1.3.- VISIÓN",1,1,'C');
+
+      $pdf->SetFont('vera','',5);
+      $pdf->SetWidths(array(97.9,97.9));
+      $pdf->Row(array($mision,$vision));
+
+      $pdf->AddPage();
+
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,6,"1.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(97.9,6,"1.4.- PROYECTOS ESTRATÉGICOS",1,0,'C');
+      $pdf->Cell(97.9,6,"1.5.- PROYECTOS DE GESTIÓN INSTITUCIONAL",1,1,'C');
+
+      if($count_datos_proyectos_estrategicos>$count_datos_proyectos_gestion){
+          $max_count = $count_datos_proyectos_estrategicos;
+      }else{
+          $max_count = $count_datos_proyectos_gestion;
+      }
+
+      $pdf->SetFont('vera','',5);
+      for($i=0; $i < $max_count; $i++) {
+
+        $id=$i+1;
+        $ancho= array();
+        $registros= array();
+
+        if($count_datos_proyectos_estrategicos==0 && $i==0){
+          $ancho[]=97.9;
+              $registros[]="NO EXISTEN PROYECTOS REGISTRADOS";
+        }elseif($count_datos_proyectos_estrategicos>0){
+            if($i < $count_datos_proyectos_estrategicos){
+                $ancho[]=97.9;
+                $registros[]=$id."- ".$datos_proyectos_estrategicos[$i]['cpod01_proyectos']['proyectos'];
+            }else{
+                $ancho[]=97.9;
+                $registros[]="";
+            }
+        }else{
+          $ancho[]=97.9;
+            $registros[]="";
+        }
+
+        if($count_datos_proyectos_gestion==0 && $i==0){
+          $ancho[]=97.9;
+              $registros[]="NO EXISTEN PROYECTOS REGISTRADOS";
+        }elseif($count_datos_proyectos_gestion>0){
+            if($i < $count_datos_proyectos_gestion){
+                $ancho[]=97.9;
+                $registros[]=$id."- ".$datos_proyectos_gestion[$i]['cpod01_proyectos']['proyectos'];
+            }else{
+                $ancho[]=97.9;
+                $registros[]="";
+            }
+        }else{
+          $ancho[]=97.9;
+            $registros[]="";
+        }
+
+
+          $pdf->SetWidths($ancho);
+          $pdf->Row($registros);
+
+      } // fin for...
+
+
+      //REPORTE 2 
+      $pdf->AddPage('L');
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'2.-Estructura Orgánica de la Institución',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,7,"2.1.- Organigrama de: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),0,1,'L');
+      if(!empty($datos_organigrama['cpod03_organigrama']['fundamento_legal']) ){
+        
+        $url = "http://data-recargas.guarico.gob.ve/api/download-tree-image/".$cod_dep_img;
+        $img_folder = $this->themeWeb . IMAGES_URL . "organigramas_poai/".$cod_dep_img.".png";
+        $img_folder_2 = $this->themeWeb . IMAGES_URL . "organigramas_poai/".$cod_dep_img.".jpg";
+      file_put_contents($img_folder, file_get_contents($url));
+      $imagePng = imagecreatefrompng($img_folder);
+      $bg = imagecreatetruecolor(imagesx($imagePng), imagesy($imagePng));
+      imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+      imagealphablending($bg, TRUE);
+      imagecopy($bg, $imagePng, 0, 0, 0, 0, imagesx($imagePng), imagesy($imagePng));
+      imagedestroy($imagePng);
+      $quality = 50; // 0 = worst / smaller file, 100 = better / bigger file 
+      imagejpeg($bg, $img_folder_2, $quality);
+      imagedestroy($bg);
+        $imagen_sello_firma = "http://data-recargas.guarico.gob.ve/api/download-tree-image/".$cod_dep_img;  //$url.'organigrama_'.$ano."_".$cod_imagen.'.jpeg';
+        
+        // $pdf->Image($imagen_sello_firma, 10, 47, 260, 146);
+        $pdf->Image($img_folder_2, 10, 47, 260, 146);      
+        $pdf->SetXY(10,194);
+        $pdf->SetFont('vera','B',7);
+        $pdf->Cell(0,7,"2.2.- Fundamento Legal: ".$datos_organigrama['cpod03_organigrama']['fundamento_legal'],0,1);
+      }else{
+        $pdf->Cell(0,6,"NO SE HA GUARDADO EL ORGANIGRAMA",1,1,'L');        
+      }
+      
+
+      //REPORTE 3 
+      $pdf->AddPage();
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'3.-RECURSO HUMANO ACTUAL (Fijos y LN)',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,5,"3.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),'LTR',1,'L');
+      $pdf->Cell(25,3,"3.2.- TIPO DE",'TL',0,'C');
+      $pdf->Cell(61,3,"3.3.- DESCRIPCIÓN",'TL',0,'C');
+      $pdf->Cell(13,3,"3.4.-",'TL',0,'C');
+      $pdf->Cell(13,3,"3.5.-",'TL',0,'C');
+      $pdf->Cell(29,3,"3.6.- Nº DE",'TL',0,'C');
+      $pdf->Cell(25,3,"3.7.- SUELDO",'LT',0,'C');
+      $pdf->Cell(29.8,3,"3.8.- MONTO",'LTR',1,'C');
+
+      $pdf->Cell(25,3,"CARGO",'BL',0,'C');
+      $pdf->Cell(61,3,"DEL CARGO",'BL',0,'C');
+      $pdf->Cell(13,3," GRADO",'BL',0,'C');
+      $pdf->Cell(13,3," PASO",'BL',0,'C');
+      $pdf->Cell(29,3,"CARGOS",'BL',0,'C');
+      $pdf->Cell(25,3,"BÁSICO MENSUAL",'LB',0,'C');
+      $pdf->Cell(29.8,3,"ANUAL",'LBR',1,'C');
+
+      $pdf->SetFont('vera','',6);
+
+      if(count($datos)>0){
+        $pdf->SetWidths(array(25,61,13,13,29,25,29.8));
+        $sueldo_acumulado=0;
+        $anual_acumulado=0;
+        $cargos_acumulado=0;
+        foreach ($datos as $recurso_humano) {
+
+            switch ($recurso_humano['cpod02_recurso_humano']['situacion_laboral']) {
+                case '2':
+                    $situacion_laboral ='EMP';
+                    break;
+                case '3':
+                    $situacion_laboral ='LN';
+                    break;
+                case '5':
+                    $situacion_laboral ='OBR';
+                    break;
+            }
+
+            if($recurso_humano['cpod02_recurso_humano']['grado']==99){
+                $grado=99;
+                $paso='';
+                $situacion_laboral ='LN';
+            }else{                          
+                $grado=$cargos['cpod02_recurso_humano']['grado'];
+                $paso=$cargos['cpod02_recurso_humano']['paso'];
+            }
+            
+            $sueldo_acumulado +=$recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'];
+            $anual_acumulado +=(($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos']);
+            $cargos_acumulado +=$recurso_humano['cpod02_recurso_humano']['numero_cargos'];
+
+            $pdf->Row(array(
+                $situacion_laboral,        
+                $recurso_humano['cpod02_recurso_humano']['denominacion_cargo'],
+                $grado,
+                $paso,
+                $recurso_humano['cpod02_recurso_humano']['numero_cargos'],                        
+                number_format($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'],2)." Bs",
+                number_format((($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos']),2)." Bs"     
+            ));
+
+        }
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(25,3,"Total",'TLB',0,'L');
+        $pdf->Cell(87,3,"",'TLB',0,'C');
+        $pdf->Cell(29,3,$cargos_acumulado,'TLB',0,'R');
+        $pdf->Cell(25,3,number_format($sueldo_acumulado,2)." Bs",'LTB',0,'R');
+        $pdf->Cell(29.8,3,number_format($anual_acumulado,2)." Bs",'LTRB',1,'R');
+      }else{
+          $pdf->SetFont('vera','B',7);
+          $pdf->Cell(0,6,"NO POSEE NINGUN CARGO REGISTRADO",1,0,'C');
+      }
+
+      //REPORTE 3 - CONTRATADOS
+      $pdf->AddPage();
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'3.-RECURSO HUMANO ACTUAL (Contratados)',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,5,"3.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),'LTR',1,'L');
+      $pdf->Cell(25,3,"3.2.- TIPO DE",'TL',0,'C');
+      $pdf->Cell(87,3,"3.3.- DESCRIPCIÓN",'TL',0,'C');
+      $pdf->Cell(29,3,"3.4.- Nº TRABAJADORES",'TL',0,'C');
+      $pdf->Cell(25,3,"3.5.- SUELDO",'LT',0,'C');
+      $pdf->Cell(29.8,3,"3.5.- MONTO",'LTR',1,'C');
+
+      $pdf->Cell(25,3,"CONTRATO",'BL',0,'C');
+      $pdf->Cell(87,3,"DEL CARGO",'BL',0,'C');
+      $pdf->Cell(29,3,"CONTRATADOS",'BL',0,'C');
+      $pdf->Cell(25,3,"BÁSICO MENSUAL",'LB',0,'C');
+      $pdf->Cell(29.8,3,"ANUAL",'LBR',1,'C');
+
+      $pdf->SetFont('vera','',6);
+
+      if(count($datos_contratados)>0){
+        $pdf->SetWidths(array(25,87,29,25,29.8));
+        $sueldo_acumulado=0;
+        $anual_acumulado=0;
+        $cargos_acumulado=0;
+        foreach ($datos_contratados as $recurso_humano) {
+
+            switch ($recurso_humano['cpod02_recurso_humano']['situacion_laboral']) {
+                case '14':
+                $situacion_laboral ='CTTADO ADM';
+                break;
+                case '15':
+                $situacion_laboral ='CTTADO OBR';
+                break;
+                case '16':
+                $situacion_laboral ='HP';
+                break;
+            }
+
+            $sueldo_acumulado +=$recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'];
+            $anual_acumulado +=($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos'];
+
+            $denominacion= $recurso_humano['cpod02_recurso_humano']['denominacion_cargo'].' ('.$recurso_humano['cpod02_recurso_humano']['responsabilidades'].')';
+            $cargos_acumulado +=$recurso_humano['cpod02_recurso_humano']['numero_cargos'];
+            
+            $pdf->Row(array(
+                $situacion_laboral,        
+                $denominacion,
+                $recurso_humano['cpod02_recurso_humano']['numero_cargos'],
+                number_format($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'],2)." Bs",
+                number_format(($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos'],2)." Bs")
+            );
+
+        }
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(25,3,"Total",'TLB',0,'L');
+        $pdf->Cell(87,3,"",'TLB',0,'C');
+        $pdf->Cell(29,3,$cargos_acumulado,'TLB',0,'R');
+        $pdf->Cell(25,3,number_format($sueldo_acumulado,2)." Bs",'LTB',0,'R');
+        $pdf->Cell(29.8,3,number_format($anual_acumulado,2)." Bs",'LTRB',1,'R');
+      }else{
+          $pdf->SetFont('vera','B',7);
+          $pdf->Cell(0,6,"NO POSEE NINGUN CARGO REGISTRADO",1,0,'C');
+      }
+
+      //REPORTE 3 - JUBILADOS
+      $pdf->AddPage();
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'3.-RECURSO HUMANO ACTUAL (Jubilados y Pensionados)',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,5,"3.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),'LTR',1,'L');
+      $pdf->Cell(25,3,"3.2.- JUBILACIÓN/",'TL',0,'C');
+      $pdf->Cell(87,3,"3.3.- DESCRIPCIÓN",'TL',0,'C');
+      $pdf->Cell(29,3,"3.4.- Nº TRABAJADORES",'TL',0,'C');
+      $pdf->Cell(25,3,"3.5.- SUELDO",'LT',0,'C');
+      $pdf->Cell(29.8,3,"3.5.- MONTO",'LTR',1,'C');
+
+      $pdf->Cell(25,3,"PENSIÓN",'BL',0,'C');
+      $pdf->Cell(87,3,"DEL CARGO",'BL',0,'C');
+      $pdf->Cell(29,3,"JUB/PENS",'BL',0,'C');
+      $pdf->Cell(25,3,"BÁSICO MENSUAL",'LB',0,'C');
+      $pdf->Cell(29.8,3,"ANUAL",'LBR',1,'C');
+
+      $pdf->SetFont('vera','',6);
+
+      if(count($datos_pensionados)>0){
+        $pdf->SetWidths(array(25,87,29,25,29.8));
+        $sueldo_acumulado=0;
+        $anual_acumulado=0;
+        $cargos_acumulado=0;
+        foreach ($datos_pensionados as $recurso_humano) {
+
+            switch ($recurso_humano['cpod02_recurso_humano']['situacion_laboral']) {
+              case '6':
+                $situacion_laboral = 'JUB ADM';
+                break;
+              case '7':
+                $situacion_laboral = 'JUB OBR';
+                break;
+              case '8':
+                $situacion_laboral = 'JUB DOC';
+                break;
+              case '9':
+                $situacion_laboral = 'PENS OBR';
+                break;
+              case '10':
+                $situacion_laboral = 'PENS ADM';
+                break;
+              case '11':
+                $situacion_laboral = 'PENS SOB ADM';
+                break;
+              case '12':
+                $situacion_laboral = 'PENS SOB DOC';
+                break;
+              case '13':
+                $situacion_laboral = 'PENS SOB OBR';
+                break;
+            }
+
+            $sueldo_acumulado +=$recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'];
+            $anual_acumulado +=($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos'];
+            $cargos_acumulado +=$recurso_humano['cpod02_recurso_humano']['numero_cargos'];
+
+            $pdf->Row(array(
+                $situacion_laboral,        
+                $recurso_humano['cpod02_recurso_humano']['denominacion_cargo'],
+                $recurso_humano['cpod02_recurso_humano']['numero_cargos'],                        
+                number_format($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual'],2)." Bs",
+                number_format(($recurso_humano['cpod02_recurso_humano']['remuneracion_mensual']*12)*$recurso_humano['cpod02_recurso_humano']['numero_cargos'],2)." Bs"     
+            ));
+
+        }
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(25,3,"Total",'TLB',0,'L');
+        $pdf->Cell(87,3,"",'TLB',0,'C');
+        $pdf->Cell(29,3,$cargos_acumulado,'TLB',0,'R');
+        $pdf->Cell(25,3,number_format($sueldo_acumulado,2)." Bs",'LTB',0,'R');
+        $pdf->Cell(29.8,3,number_format($anual_acumulado,2)." Bs",'LTRB',1,'R');
+      }else{
+          $pdf->SetFont('vera','B',7);
+          $pdf->Cell(0,6,"NO POSEE NINGUN CARGO REGISTRADO",1,0,'C');
+      }
+
+      //REPORTE 4
+      $pdf->AddPage();
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'4.-MAPA DE PROBLEMAS A RESOLVER Y ÁREAS ESTRATÉGICAS A INTERVENIR,',1,1,'L');
+      $pdf->Cell(0,6,'EN RELACIÓN A LOS OBJETIVOS DE CADA PROYECTO A DESARROLLAR',1,1,'L');
+      $pdf->SetFont('vera','B',6);
+      $pdf->Cell(0,5,"4.1.- Dependencia u Organismo: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),'LTR',1,'L');
+      $pdf->SetFont('vera','B',5);
+      $pdf->Cell(97.9,5,"4.2.- PROBLEMAS A RESOLVER Y/O ÁREAS DE GESTIÓN INSTITUCIONAL A INTERVENIR POR",'LTR',0,'J');
+      $pdf->Cell(97.9,5,"4.3.- OBJETIVOS PROPUESTOS POR PROYECTOS DE GESTIÓN INSTITUCIONAL",'LTR',1,'J');
+
+      $pdf->Cell(97.9,5,"CADA PROYECTO ESTRATÉGICO O DE GESTIÓN INSTITUCIONAL A DESARROLLAR",'LBR',0,'J');
+      $pdf->Cell(97.9,5,"O ESTRATÉGICOS A DESARROLLAR",'LBR',1,'J');
+      if(count($datos_objetivos_r4)>0 && count($datos_problemas_r4)>0){
+        // CONTENIDO
+        $contador=0;
+        foreach ($datos_objetivos_r4 as $value_objetivo) {
+
+            $id=1;
+            $encontrado=false;
+
+            $contenido_problemas="";
+            foreach ($datos_problemas as $value_problema) {
+                if($value_objetivo['cpod04_objetivos']['numero_objetivo']==$value_problema['cpod04_problemas_areas_gestion']['numero_objetivo']){
+                    $contenido_problemas.="-. ".$value_problema['cpod04_problemas_areas_gestion']['problema_area_gestion']."\n";
+                    $encontrado=true;
+                }
+                $id++;
+            }
+
+            if(!$encontrado){
+                $contenido_problemas="NO EXISTE REGISTRO ASOCIADOS A ESTE OBJETIVO";
+            }
+
+            $problemas=$contenido_problemas;
+            $objetivos=$value_objetivo['cpod04_objetivos']['objetivo'];
+            $contador++;
+
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(97.9,97.9));
+            $pdf->Row(array($problemas,$objetivos));
+        }
+
+      }else{
+          $pdf->SetFont('vera','B',7);
+          $pdf->Cell(0,6,"DEBE CARGAR TODA LA INFORMACIÓN",1,0,'C');
+      }
+
+      //REPORTE 5
+      $id_proyecto="";
+      $tipo_proyecto="";
+      $total_proyecto=0.00;
+      $pagina=0;
+      $contador_pagina=0;
+      $total_propios=0.00;
+      $total_gobernacion=0.00;
+      $total_gobernacion_portada=0.00;
+      $den_situacion_actual="NO POSEE DATO REGISTRADO";
+      $den_supuestos="NO POSEE DATO REGISTRADO";
+
+      if(!isset($errorMessage)) {
+        foreach ($datos_metas_r5 as $metas) {
+
+            if($tipo_proyecto!=$metas['cpod05_control_metas']['tipo_proyecto'] || $id_proyecto!=$metas['cpod05_control_metas']['numero_proyecto']){
+
+                if($total_proyecto!=0.00){
+
+                    $pdf->SetFont('vera','B',6);
+                    $pdf->Cell(0,4,"5.11.- Asignación Presupuestaria en Bs.",'LTRB',1,'L');
+                    $pdf->SetWidths(array(48.9,48.9,48.9,49.1));
+                    $pdf->Row(array("5.11.1-Gobernación: \n".$sisap->Formato2($total_gobernacion)." Bs.","5.11.2.-OTRO ENTE:  \n","5.11.3.- Recursos Propios:  \n".$sisap->Formato2($total_propios)." Bs.","5.11.4.-Costo Total del Proyecto:  \n".$sisap->Formato2($total_proyecto)." Bs."));
+                    $pdf->Cell(97.8,4,"5.12.- Situación Actual: ",'LTRB',0,'L');
+                    $pdf->Cell(98,4,"5.13.- Supuestos",'LTRB',1,'L');
+                    $pdf->SetFont('vera','',6);
+                    $pdf->SetWidths(array(97.8,98));
+                    $pdf->Row(array($den_situacion_actual,$den_supuestos));
+                    $total_proyecto=0.00;
+                    $total_propios=0.00;
+                    $total_gobernacion=0.00;
+                    $den_situacion_actual="NO POSEE DATO REGISTRADO";
+                    $den_supuestos="NO POSEE DATO REGISTRADO";
+                }
+                $pdf->AddPage();
+                $tipo_proyecto=$metas['cpod05_control_metas']['tipo_proyecto'];
+                $id_proyecto=$metas['cpod05_control_metas']['numero_proyecto'];
+                $pagina++;
+            }
+
+            if($contador_pagina!=$pagina){
+                $pdf->cabezera($metas, $datos_proyectos_r5, $datos_objetivos_r5);
+                $contador_pagina++;
+            }
+
+           
+            $denominacion="";
+            (float)$total_trimestre = (float)$metas['cpod05_control_metas']['metas_fisicas_1er_trim'] + (float)$metas['cpod05_control_metas']['metas_fisicas_2do_trim']+ (float)$metas['cpod05_control_metas']['metas_fisicas_3er_trim']+ (float)$metas['cpod05_control_metas']['metas_fisicas_4to_trim'];
+
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(55,20,50,20,10,10,10,10,10.8));
+            $pdf->Row(array(
+                    $metas['cpod05_control_metas']['descripcion_meta'],
+                    $sisap->Formato2($metas['cpod05_control_metas']['costo_total_meta']),
+                    $metas['cpod05_control_metas']['actividad'],
+                    $metas['cpod05_control_metas']['indicador_resultados'],
+                    $metas['cpod05_control_metas']['metas_fisicas_1er_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_2do_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_3er_trim'],
+                    $metas['cpod05_control_metas']['metas_fisicas_4to_trim'],
+                    $sisap->Formato2($total_trimestre),
+
+            ));
+
+                foreach ($datos_situacion_actual_r5 as $situacion_actual) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$situacion_actual['cpod05_situacion_actual']['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$situacion_actual['cpod05_situacion_actual']['numero_proyecto']){
+                        $den_situacion_actual=$situacion_actual['cpod05_situacion_actual']['situacion_actual'];
+                        $den_supuestos=$situacion_actual['cpod05_situacion_actual']['supuestos'];
+                    }
+                }
+
+                foreach ($totales_propios_r5 as $montos_propios) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$montos_propios[0]['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$montos_propios[0]['numero_proyecto']){
+                        $total_propios=$montos_propios[0]['total'];
+                    }
+                }
+
+                foreach ($totales_gobernacion_r5 as $monto_gobernacion) {
+                    if($metas['cpod05_control_metas']['tipo_proyecto']==$monto_gobernacion[0]['tipo_proyecto'] && $metas['cpod05_control_metas']['numero_proyecto']==$monto_gobernacion[0]['numero_proyecto']){
+                        $total_gobernacion=$monto_gobernacion[0]['total'];
+                        $total_gobernacion_portada+=$monto_gobernacion[0]['total'];
+                    }
+                }
+
+            (float)$total_proyecto= (float)$total_proyecto + (float)$metas['cpod05_control_metas']['costo_total_meta'];
+           // echo $presupuesto['cpod06_vinculacion_presupuesto']['monto']."<br>";
+        }
+
+        //echo $total_proyecto;exit();
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(0,4,"5.11.- Asignación Presupuestaria en Bs.",'LTRB',1,'L');
+        $pdf->SetWidths(array(48.9,48.9,48.9,49.1));
+        $pdf->Row(array("5.11.1-Gobernación: \n".$sisap->Formato2($total_gobernacion)." Bs.","5.11.2.-OTRO ENTE:  \n0,00 BS.","5.11.3.- Recursos Propios:  \n".$sisap->Formato2($total_propios)." Bs.","5.11.4.-Costo Total del Proyecto:  \n".$sisap->Formato2($total_proyecto)." Bs."));
+        $pdf->Cell(97.8,4,"5.12.- Situación Actual",'LTRB',0,'L');
+        $pdf->Cell(98,4,"5.13.- Supuestos",'LTRB',1,'L');
+        $pdf->SetFont('vera','',6);
+        $pdf->SetWidths(array(97.8,98));
+        $pdf->Row(array($den_situacion_actual,$den_supuestos));
+
+      }else{
+          $pdf->AddPage();
+          $pdf->Cell(195.8,4,"FORMATO NO GENERADO POR FALTA INFORMACIÓN",'LTRB',1,'C');
+          $pdf->Cell(195.8,4,$errorMessage,'LTRB',1,'C');
+      }
+
+      //REPORTE 6
+      $id_proyecto="";
+      $tipo_proyecto="";
+      $total_proyecto=0.00;
+      $cod_partida="";
+      $total_partida=0.00;
+      $pagina=0;
+      $contador_pagina=0;
+      if(count($datos_presupuesto_r6)>0){
+        foreach ($datos_presupuesto_r6 as $presupuesto) {
+            $codpartida = $presupuesto['cpod06_vinculacion_presupuesto']['cod_partida'];
+            if($cod_partida!=='' && $cod_partida!==$codpartida){
+                $pdf->SetFont('vera','B',6);
+                $pdf->SetWidths(array(27,9,13,13,13,97,23.8));
+                $pdf->Row(array("Total partida:",$cod_partida,"","","","",$sisap->Formato2((float)$total_partida)));
+                $total_partida=0.00;
+                $cod_partida=$codpartida;
+            }
+
+            if($cod_partida==''){
+                $cod_partida=$codpartida;
+            }
+
+            if($tipo_proyecto!=$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'] || $id_proyecto!=$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto']){
+                if($total_proyecto!=0.00){
+                  $pdf->SetFont('vera','B',6);
+                    $pdf->SetWidths(array(9,9,9,9,13,13,13,97,23.8));
+                    $pdf->Row(array("","","","","","","","TOTAL: ",$sisap->Formato2((float)$total_proyecto)));
+                    $total_proyecto=0.00;
+                }
+                $pdf->AddPage();
+                $tipo_proyecto=$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'];
+                $id_proyecto=$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto'];
+                $pagina++;
+            }
+
+          if($contador_pagina!=$pagina){
+            $pdf->cabezera6($presupuesto, $datos_proyectos_r6);
+            $contador_pagina++;
+          }
+
+            //funcion que retorne la denominacion de la partida
+            foreach ($concepto_partidas_r6 as $concepto) {
+                $partida= substr($presupuesto['cpod06_vinculacion_presupuesto']['cod_partida'], -2);
+                if($partida==$concepto['cfpd01_sub_espec']['cod_partida'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_generica']==$concepto['cfpd01_sub_espec']['cod_generica'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica']==$concepto['cfpd01_sub_espec']['cod_especifica'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec']==$concepto['cfpd01_sub_espec']['cod_sub_espec']){
+                        $denominacion=$concepto['cfpd01_sub_espec']['descripcion'];
+                }
+                if($partida==11 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_generica']==11 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica']==4 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec']==0){
+                        $denominacion="COMPROMISOS PENDIENTES DE EJERCICIOS ANTERIORES";
+                }
+                if($partida==11 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_generica']==11 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica']==5 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec']==0){
+                        $denominacion="PRESTACIONES DE ANTIGÜEDAD ORIGINADAS POR LA APLICACIÓN DE LA LEY ORGÁNICA DEL TRABAJO";
+                }
+
+            }
+
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(9,9,9,9,13,13,13,97,23.8));
+            $pdf->Row(array($presupuesto['cpod06_vinculacion_presupuesto']['cod_sector'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_programa'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_activ_obra'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_partida'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_generica'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec'],$denominacion,$sisap->Formato2($presupuesto['cpod06_vinculacion_presupuesto']['monto'])));
+            (float)$total_proyecto= (float)$total_proyecto + (float)$presupuesto['cpod06_vinculacion_presupuesto']['monto'];
+            (float)$total_partida= (float)$total_partida + (float)$presupuesto['cpod06_vinculacion_presupuesto']['monto'];
+           // echo $presupuesto['cpod06_vinculacion_presupuesto']['monto']."<br>";
+        }
+
+        //echo $total_proyecto;exit();
+        $pdf->SetFont('vera','B',6);
+        $pdf->SetWidths(array(27,9,13,13,13,97,23.8));
+        $pdf->Row(array("Total partida:",$cod_partida,"","","","",$sisap->Formato2((float)$total_partida)));
+        $pdf->SetWidths(array(27,9,13,13,13,97,23.8));
+        $pdf->Row(array("TOTAL PRESUPUESTO: ","","","","","",$sisap->Formato2((float)$total_proyecto)));
+      }else{
+          $pdf->AddPage();
+          if($pdf->DefOrientation=='P'){
+              $pdf->SetFont('vera','B',7);
+              $pdf->Cell(0,6,'6.-VINCULACIÓN DEL PLAN PRESUPUESTARIO',1,1,'L');
+              $pdf->Cell(0,5,"6.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+              $pdf->Cell(195.8,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }else{
+              $pdf->SetFont('vera','B',7);
+              $pdf->Cell(0,6,'6.-VINCULACIÓN DEL PLAN PRESUPUESTARIO',1,1,'L');
+              $pdf->Cell(0,5,"6.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+              $pdf->Cell(259.4,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }
+      }
+
+      //REPORTE 7
+      $id_proyecto="";
+      $tipo_proyecto="";
+      $total_proyecto=0.00;
+      $pagina=0;
+      $contador_pagina=0;
+      if(count($datos_presupuesto_r7)>0){
+        foreach ($datos_presupuesto_r7 as $presupuesto) {
+
+            if($tipo_proyecto!=$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'] || $id_proyecto!=$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto']){
+                if($total_proyecto!=0.00){
+                  $pdf->SetFont('vera','B',6);
+                    $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+                    $pdf->Row(array("","","","","","","","TOTAL: ",$sisap->Formato2((float)$total_proyecto)));
+                    $total_proyecto=0.00;
+                }
+                $pdf->AddPage();
+                $tipo_proyecto=$presupuesto['cpod06_vinculacion_presupuesto']['tipo_proyecto'];
+                $id_proyecto=$presupuesto['cpod06_vinculacion_presupuesto']['numero_proyecto'];
+                $pagina++;
+            }
+
+          if($contador_pagina!=$pagina){
+            $pdf->cabezera7($presupuesto, $datos_proyectos_r7);
+            $contador_pagina++;
+          }
+
+             //funcion que retorne la denominacion de la partida
+            foreach ($concepto_partidas_r7 as $concepto) {
+                $partida= substr($presupuesto['cpod06_vinculacion_presupuesto']['cod_partida'], -2);
+                if($partida==$concepto['cfpd01_sub_espec']['cod_partida'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_generica']==$concepto['cfpd01_sub_espec']['cod_generica'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica']==$concepto['cfpd01_sub_espec']['cod_especifica'] 
+                    && $presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec']==$concepto['cfpd01_sub_espec']['cod_sub_espec']){
+                        $denominacion=$concepto['cfpd01_sub_espec']['descripcion'];
+                }
+            }
+            
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+            $pdf->Row(array($presupuesto['cpod06_vinculacion_presupuesto']['cod_sector'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_programa'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_activ_obra'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_partida'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_generica'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_especifica'],$presupuesto['cpod06_vinculacion_presupuesto']['cod_sub_espec'],$denominacion,$sisap->Formato2($presupuesto['cpod06_vinculacion_presupuesto']['monto'])));
+            (float)$total_proyecto= (float)$total_proyecto + (float)$presupuesto['cpod06_vinculacion_presupuesto']['monto'];
+           // echo $presupuesto['cpod06_vinculacion_presupuesto']['monto']."<br>";
+        }
+
+        //echo $total_proyecto;exit();
+        $pdf->SetFont('vera','B',6);
+        $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+        $pdf->Row(array("","","","","","","","TOTAL: ",$sisap->Formato2((float)$total_proyecto)));
+
+      }else{
+          $pdf->AddPage();
+          if($pdf->DefOrientation=='P'){
+              $pdf->SetFont('vera','B',7);
+              $pdf->Cell(0,6,'7.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Ingresos Propios',1,1,'L');
+              $pdf->Cell(0,5,"7.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+              $pdf->Cell(195.8,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }else{
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(0,6,'7.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Ingresos Propios',1,1,'L');
+            $pdf->Cell(0,5,"7.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+            $pdf->Cell(259.4,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }
+      }
+
+      //REPORTE 8
+      $id_proyecto="";
+      $tipo_proyecto="";
+      $total_proyecto=0.00;
+      $pagina=0;
+      $contador_pagina=0;
+      if(count($datos_presupuesto_r8)>0){
+        foreach ($datos_presupuesto_r8 as $presupuesto) {
+
+            if($tipo_proyecto!=$presupuesto['cpod06_distribucion_ingresos_propios']['tipo_proyecto'] || $id_proyecto!=$presupuesto['cpod06_distribucion_ingresos_propios']['numero_proyecto']){
+                if($total_proyecto!=0.00){
+                  $pdf->SetFont('vera','B',6);
+                    $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+                    $pdf->Row(array("","","","","","","","TOTAL: ",$sisap->Formato2((float)$total_proyecto)));
+                    $total_proyecto=0.00;
+                }
+                $pdf->AddPage();
+                $tipo_proyecto=$presupuesto['cpod06_distribucion_ingresos_propios']['tipo_proyecto'];
+                $id_proyecto=$presupuesto['cpod06_distribucion_ingresos_propios']['numero_proyecto'];
+                $pagina++;
+            }
+
+          if($contador_pagina!=$pagina){
+            $pdf->cabezera8($presupuesto, $datos_proyectos_r8);
+            $contador_pagina++;
+          }
+
+             //funcion que retorne la denominacion de la partida
+            foreach ($concepto_partidas_r8 as $concepto) {
+                $partida= substr($presupuesto['cpod06_distribucion_ingresos_propios']['cod_partida'], -2);
+                if($partida==$concepto['cfpd01_sub_espec']['cod_partida'] 
+                    && $presupuesto['cpod06_distribucion_ingresos_propios']['cod_generica']==$concepto['cfpd01_sub_espec']['cod_generica'] 
+                    && $presupuesto['cpod06_distribucion_ingresos_propios']['cod_especifica']==$concepto['cfpd01_sub_espec']['cod_especifica'] 
+                    && $presupuesto['cpod06_distribucion_ingresos_propios']['cod_sub_espec']==$concepto['cfpd01_sub_espec']['cod_sub_espec']){
+                        $denominacion=$concepto['cfpd01_sub_espec']['descripcion'];
+                }
+            }
+            
+            $pdf->SetFont('vera','',5);
+            $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+            $pdf->Row(array($presupuesto['cpod06_distribucion_ingresos_propios']['cod_sector'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_programa'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_activ_obra'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_partida'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_generica'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_especifica'],$presupuesto['cpod06_distribucion_ingresos_propios']['cod_sub_espec'],$denominacion,$sisap->Formato2($presupuesto['cpod06_distribucion_ingresos_propios']['monto'])));
+            (float)$total_proyecto= (float)$total_proyecto + (float)$presupuesto['cpod06_distribucion_ingresos_propios']['monto'];
+           // echo $presupuesto['cpod06_distribucion_ingresos_propios']['monto']."<br>";
+        }
+
+        //echo $total_proyecto;exit();
+        $pdf->SetFont('vera','B',6);
+        $pdf->SetWidths(array(10,10,10,10,14,14,14,90,23.8));
+        $pdf->Row(array("","","","","","","","TOTAL: ",$sisap->Formato2((float)$total_proyecto)));
+
+      }else{
+          $pdf->AddPage();
+          if($pdf->DefOrientation=='P'){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(0,6,'8.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Distribución Ingresos Propios',1,1,'L');
+            $pdf->Cell(0,5,"8.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+            $pdf->Cell(195.8,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }else{
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(0,6,'8.-VINCULACIÓN DEL PLAN PRESUPUESTARIO - Distribución Ingresos Propios',1,1,'L');
+            $pdf->Cell(0,5,"8.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+            $pdf->Cell(259.4,4,"NO POSEE PARTIDAS REGISTRADAS",'LTRB',1,'C');
+          }
+      }
+
+      //REPORTE 9
+      $pdf->AddPage();
+      $pdf->SetFont('vera','B',7);
+      $pdf->Cell(0,6,'9.-Conformación General del Gasto por Proyecto',1,1,'L');
+      $pdf->Cell(0,5,"9.1.- Unidad Ejecutora: ".str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),1,1,'L');
+      $pdf->SetWidths(array(105.8,30,30,30));
+      $pdf->Row(array("9.2.- Denominación del Proyecto:","9.3.- Monto en Bs. \n (Gobernación)","9.4.- Monto en Bs. \n(Otro Ente)","9.5.- Total del Proyecto en Bs."));
+
+      $id_proyecto="";
+      $tipo_proyecto="";
+      $total_proyecto=0.00;
+      $total_gobernacion=0.00;
+      $total_propios=0.00;
+      $pagina=0;
+      $contador_pagina=0;
+
+          foreach ($totales_proyectos_r9 as $proyecto) {
+
+              //funcion que retorne la denominacion de la partida
+              $pdf->SetFont('vera','',5);
+              $pdf->SetWidths(array(105.8,30,30,30));
+              $pdf->Row(array($proyecto[0]['proyectos'],$sisap->Formato2($proyecto[0]['gobernacion']),$sisap->Formato2($proyecto[0]['propios']),$sisap->Formato2($proyecto[0]['costo_total_proyecto'])));
+
+              (float)$total_gobernacion = (float)$total_gobernacion + (float)$proyecto[0]['gobernacion'];
+              (float)$total_propios = (float)$total_propios + (float)$proyecto[0]['propios'];
+              (float)$total_proyecto= (float)$total_proyecto + (float)$proyecto[0]['costo_total_proyecto'];
+             // echo $proyecto['cpod06_distribucion_ingresos_propios']['monto']."<br>";
+          }
+
+          //echo $total_proyecto;exit();
+          $pdf->SetFont('vera','B',6);
+          $pdf->SetWidths(array(105.8,30,30,30));
+          $pdf->Row(array("TOTAL DE PROYECTOS DEL AÑO ".$ano." EN Bs.",$sisap->Formato2((float)$total_gobernacion),$sisap->Formato2((float)$total_propios),$sisap->Formato2((float)$total_proyecto)));
+
+          $pdf->print_header = false;
+          $pdf->print_footer = false;
+          $pdf->AddPage();
+
+          $pdf->Ln(110);
+          $pdf->SetFont('vera','B',22);
+          $pdf->Cell(9.2,3,"",'',0);
+          $pdf->MultiCell(0,7,str_replace("(U.L.A)", "", $_SESSION['nombre_dependencia']),'','C');
+          $pdf->Ln(3);
+          //$pdf->SetY($varY+350);
+          $pdf->SetFont('vera','B',18);
+          $pdf->MultiCell(0,6,"(".$sisap->Formato2((float)$total_gobernacion)." Bs.)".$pdf->print_header,'','C');
+
+    }else{
+      $pdf->SetFont('vera','B',7);
+
+      $pdf->Cell(195.8,6,"Debe Registrar Toda la Información",1,0,'C');
+    }
+      
+
+
+      /*
+      */
+    $pdf->fpdfOutput('formato_poai_'.$ano.'_1', 'D');
+
+}
+?>

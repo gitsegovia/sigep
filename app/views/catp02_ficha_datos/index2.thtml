@@ -1,0 +1,2608 @@
+<?php
+if(isset($errorMessage)) {
+	echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+ $var_aux= rand();
+
+ $_SESSION["rand_expediente"] = $var_aux;
+?>
+
+<script language="JavaScript" type="text/javascript">
+
+	new initTabs('dhtmlgoodies_tabViewPrincipal<?= $_SESSION["rand_expediente"] ?>',Array(
+	'<span title="::FICHA CATASTRAL - Parte I:: DATOS GENERALES"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_1','style'=>'display:none;'))?>DATOS GENERALES</span>',
+	'<span title="::FICHA CATASTRAL - Parte II:: DATOS DEL OCUPANTE" onClick="activex_tabg_datos_ocupante();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_2','style'=>'display:none;'))?>DATOS DEL OCUPANTE</span>',
+	'<span title="::FICHA CATASTRAL - Parte III:: DATOS DEL TERRENO" onClick="activex_tabg_datos_terreno();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_3','style'=>'display:none;'))?>DATOS DEL TERRENO</span>',
+	'<span title="::FICHA CATASTRAL - Parte IV:: DATOS GENERALES DE LA CONSTRUCCI&Oacute;N" onClick="activex_tabg_datos_gen_const();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_4','style'=>'display:none;'))?>DATOS GENERALES DE LA CONSTRUCCI&Oacute;N</span>',
+	'<span title="::FICHA CATASTRAL - Parte V:: VALORACI&Oacute;N ECON&Oacute;MICA" onClick="activex_tabg_datos_reg_valor_emco();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_5','style'=>'display:none;'))?>VALORACI&Oacute;N ECON&Oacute;MICA</span>',
+	'<span title="::FICHA CATASTRAL - Parte VI:: LINDEROS Y COORDENADAS" onClick="activex_tabg_linderos_coord();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_6','style'=>'display:none;'))?>LINDEROS Y COORDENADAS</span>',
+	'<span title="::FICHA CATASTRAL - Parte VII:: CROQUIS" onClick="activex_tabg_croquis();"><?=$html->image('cancel.png',array('border'=>0,'id'=>'errorcatp_7','style'=>'display:none;'))?>CROQUIS</span>'),0,'100%',3000);
+
+</script>
+
+<style type="text/css">
+
+.highlighted {
+    outline:1px solid #F00; /* Firefox, Opera, Chrome, IE8+ */
+    *filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=-1, OffY=0,color=#FF0000) progid:DXImageTransform.Microsoft.dropshadow(OffX=1, OffY=0,color=#FF0000) progid:DXImageTransform.Microsoft.dropshadow(OffX=0, OffY=-1,color=#FF0000) progid:DXImageTransform.Microsoft.dropshadow(OffX=0, OffY=1,color=#FF0000); /* IE6, IE7 */
+}
+
+.input_catp{
+	width:100%;
+	border:1px;
+	padding-top:1px;
+	height: 23px;
+	margin-left:2px;
+	text-align:center;
+}
+.input_catpfd{
+	width:100%;
+	border:1px;
+	padding-top:1px;
+	height: 33px;
+	margin-left:2px;
+	text-align:left;
+}
+.input_catpdirec{
+	width:100%;
+	// background-color:#8b3a3a;
+	color:#cd5555;
+	font-style:italic;
+	font-family:Times New Roman, sans-serif;
+	border:1px;
+	padding-top:1px;
+	height: 33px;
+	margin-left:2px;
+	text-align:left;
+}
+.tabla_tdprincip {
+	border-top: 0px solid #000000;
+	border-bottom: 1px solid #000000;
+	border-left: 1px solid #000000;
+	border-right: 0px solid #003d4c;
+	font-family:Tahoma, Times New Roman, Arial, sans-serif;
+	font-weight:bold;
+	height: 35px;
+	padding-left: 1px;
+	padding-right: 3px;
+}
+.imtabla_tdtrf{
+	-webkit-border-radius: 0px;-moz-border-radius: 0px;-moz-box-shadow:0 0 22px #87cefa inset;-webkit-box-shadow:0 0 7px #87cefa;box-shadow:0 0 22px #87cefa inset;text-shadow: 1px 1px 1px #32cd32;
+   /* background-image:url('../../img/imtabtrd.jpg'); */
+}
+.tabla_ficha_catp  td {
+	border-top: 0px solid #000000;
+	border-bottom: 1px solid #000000;
+	border-left: 1px solid #000000;
+	border-right: 0px solid #003d4c;
+	font-family: sans-serif, Times New Roman, Tahoma, Arial;
+	height: 25px;
+	padding-left: 1px;
+	padding-right: 3px;
+}
+.tabla_ficha_catp2{
+	border-top: 1px solid #000000;
+	border-right: 1px solid #003d4c;
+
+}
+.tabla_ficha_catp3{
+	border-right: 1px solid #003d4c;
+}
+
+.td_catp_sub_titulo{
+	background-color:#424242;
+	color:#fff;
+}
+.input_catp_dos{
+	width:100%;
+	border:1px;
+	height: 32px;
+	padding-top:8px;
+	margin-left:2px;
+	text-align:center;
+}
+#cargar_variables_construccion, #cargar_filas_construccion{
+	overflow-y: scroll;
+	height:130px;
+}
+.input_porc_refac{
+    background: #FFFFFF url('../../img/porcentajes.png') no-repeat scroll center right;
+	padding: 1px 1px 0px 18px;
+	color:#990000;
+	font-weight:bold;
+}
+.input_porc_refac_2{
+    background: #FFFFFF url('../../img/porcentajes.png') no-repeat scroll center right;
+	padding: 1px 1px 0px 18px;
+}
+.capa_activa_divcatp{
+   visibility:visible;
+   -moz-opacity: 1;
+	opacity: 1;
+}
+.capa_inactiva_divcatp{
+   visibility:visible;
+   -moz-opacity: 0.35;
+	opacity: 0.35;
+}
+
+#capa_imag_cro{
+
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 20px;
+			font-style: normal;
+			line-height: normal;
+			font-weight: bold;
+			background-image:url('../../img/bg_pro_bar.jpg');
+			background-repeat: repeat-x;
+			background-color:transparent;
+			color: #339933;
+			background-color: #fffacd;
+			text-align: center;
+			white-space: normal;
+			height: auto;
+			width: 10%;
+			border: 1px dotted #8b1a1a;
+			text-transform:uppercase;
+   			/* padding:0 0 0 0;
+   			margin: 0 0 0 0;
+            position:absolute;
+            top:85%;
+            right:7%;
+            z-index:7000;
+   			-moz-opacity: 0.95;
+			opacity: 0.95; */
+}
+
+</style>
+
+<?php $modelo_form="catp02_ficha_datos"; ?>
+<?= $sisap->Tabla('',true,'FICHA CATASTRAL','','950');?>
+<?= $sisap->OpenTable("950")?>
+<form name='data[<?=$modelo_form?>]'  method = "post" id='registrofichaform' enctype="multipart/form-data">
+<div id="dhtmlgoodies_tabViewPrincipal<?= $_SESSION["rand_expediente"] ?>">
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_datos_generales">
+
+<!-- INICIO BLOQUE TAB UNO -->
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="10" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">A.- Datos Generales </td>
+  </tr>
+  <tr>
+    <td width="15%" align="center">N&uacute;mero <br />Ficha Catastral </td>
+    <td width="15%" align="center">N&uacute;mero <br />Inscripci&oacute;n Catastral </td>
+    <td width="15%" align="center">Fecha de <br />Inscripci&oacute;n </td>
+    <td width="15%" align="center">N&uacute;mero <br /> Control de Archivo </td>
+    <td width="10%" align="center">A&ntilde;o <br />Ordenanza </td>
+    <td width="15%" align="center">Fecha de Primera Visita</td>
+    <td width="15%" align="center">Fecha del Levantamiento</td>
+  </tr>
+  <tr>
+    <td align="center"><?=$html->input($modelo_form.'/numero_ficha',array('class'=>'input_catp','value'=>mascara($numero_ficha,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/numero_inscripcion',array('class'=>'input_catp','value'=>mascara($numero_inscripcion,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?$sisap->input_fecha($modelo_form,"fecha_inscripcion","fecha_inscripcion",date("d/m/Y"),array('url1'=>'/catp02_ficha_datos/colocar_fecha','update1'=>'funcionremt'));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/numero_archivo',array('class'=>'input_catp','value'=>mascara($numero_archivo,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center">
+    <?= $sisap->inputTagRemote($modelo_form.'/ano_ordenanza', array('url1'=>'/catp02_ficha_datos/escribir_ano_ordenanza', 'update1'=>'escribe_ano_ordenanza', 'id'=>'ano_ordenanza','maxlength'=>'4','class'=>'input_catp','value'=>$ano_actual,"onKeyPress"=>"return solonumeros_enteros(event);"));?><div id="escribe_ano_ordenanza"></div>
+    </td>
+    <td align="center"><?$sisap->input_fecha($modelo_form,"fecha_primera_visita","fecha_primera_visita",date("d/m/Y"));?></td>
+    <td align="center"><?$sisap->input_fecha($modelo_form,"fecha_levantamiento","fecha_levantamiento",date("d/m/Y"));?></td>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="9" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">C&oacute;digo Anterior </td>
+  </tr>
+  <tr>
+    <td  width="13%" align="center">Estado</td>
+    <td  width="13%" align="center">Municipio</td>
+    <td  width="14%" align="center">Parroquia</td>
+    <td  width="14%" align="center">Centro Poblado</td>
+    <td  width="10%" align="center">Manzana</td>
+    <td  width="10%" align="center">Parcela</td>
+    <td  width="10%" align="center">Bloque</td>
+    <td  width="8%" align="center">Piso</td>
+    <td  width="8%" align="center">Apto</td>
+  </tr>
+  <tr>
+    <td align="center" id="st_select_1"><?$sisap->selectTagRemote($modelo_form.'/cod_estado', $estado, array('value1'=>'otros'), $_SESSION["cod_estado"], array('onchange1'=>'/catp02_ficha_datos/select/municipio', 'update1'=>'st_select_2','onChange'=>'vacio','id'=>'select_1','class'=>'inputtext', 'disabled'=>'disabled', true), null, true);?></td>
+    <td align="center" id="st_select_2"><?$sisap->selectTagRemote($modelo_form.'/cod_municipio', $municipio, array('value1'=>'otros'), $_SESSION["cod_municipio"], array('onchange1'=>'/catp02_ficha_datos/select/parroquia', 'update1'=>'st_select_3','onChange'=>'vacio','id'=>'select_2','class'=>'inputtext', 'disabled'=>'disabled', true), null, true);?></td>
+    <td align="center" id="st_select_3"><?$sisap->selectTagRemote($modelo_form.'/cod_parroquia', $parroquia, array('value1'=>'otros'), null, array('onchange1'=>'/catp02_ficha_datos/select/sector', 'update1'=>'st_select_4','onchange2'=>'/catp02_ficha_datos/select2/valor_planta_tierra', 'update2'=>'st_valor_planta', 'onChange'=>'vacio','id'=>'select_3','class'=>'inputtext', true), null, true);?></td>
+    <td align="center" id="st_select_4"><?=$sisap->SelectVacio();?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_ant_manzana',array('class'=>'input_catp','onKeyPress'=>"javascript: return solonumeros(event);"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_ant_parcela',array('class'=>'input_catp','onKeyPress'=>"javascript: return solonumeros(event);"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_bloque',array('class'=>'input_catp','onKeyPress'=>"javascript: return solonumeros(event);"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_piso',array('class'=>'input_catp','onKeyPress'=>"javascript: return solonumeros(event);"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_apto',array('class'=>'input_catp','onKeyPress'=>"javascript: return solonumeros(event);"));?></td>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr background="/img/bg_pro_bar.jpg" style="height: 55px;">
+    <td colspan="27" align="center"><font size="4"><i><b>&Aacute;mbito:</b></i></font> <?= $html->radio($modelo_form.'/radio_ambito', array(1=>'<font color=#940000>Urbano</font>',2=>'<font color=#006400>Rural</font>'), '&nbsp;&nbsp;&nbsp;', array('value'=>1, 'onClick'=>"ver_documento('/catp02_ficha_datos/mostrar_amb/'+this.value,'id_man_ssect');", 'style'=>'font-size:19px;')); ?></td>
+  </tr>
+  <tr class="tabla_tdprincip">
+    <td colspan="27" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">B.- C&oacute;digo Catastral </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" width="10%">Edo<br />(Estado)</td>
+    <td colspan="2" align="center" width="10%">Mun<br />(Municipio)</td>
+    <td colspan="2" align="center" width="10%">Prr<br />(Parroquia)</td>
+    <td colspan="3" align="center" width="10%">&Aacute;mb<br />(&Aacute;mbito)</td>
+    <td colspan="3" align="center" width="10%">Sec<br />(Sector)</td>
+    <td colspan="3" align="center" width="10%" id="id_man_ssect">Man<br />(Manzana)</td>
+    <td colspan="3" align="center" width="10%">Par<br />(Parcela)</td>
+    <td colspan="3" align="center" width="10%">Sbp<br />(SubParcela)</td>
+    <td colspan="3" align="center" width="10%">Niv<br />(Nivel)</td>
+    <td colspan="3" align="center" width="10%">Und<br />(Unidad)</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" id="st_select2_1"><?$sisap->selectTagRemote($modelo_form.'/cod_estado_c', $estado ,array('value1'=>'otros'), $_SESSION["cod_estado"], array('onchange1'=>'/catp02_ficha_datos/select2/municipio', 'update1'=>'st_select2_2','onChange'=>'vacio','id'=>'select2_1','class'=>'inputtext', 'disabled'=>'disabled', 'onBlur'=>"picar_catp01('select2_1',2)", true), null, true);?></td>
+    <td colspan="2" align="center" id="st_select2_2"><?$sisap->selectTagRemote($modelo_form.'/cod_municipio_c', $municipio ,array('value1'=>'otros'), $_SESSION["cod_municipio"], array('onchange1'=>'/catp02_ficha_datos/select2/parroquia', 'update1'=>'st_select2_3','onChange'=>'vacio','id'=>'select2_2','class'=>'inputtext', 'disabled'=>'disabled', 'onBlur'=>"picar_catp01('select2_2',2)", true), null, true);?></td>
+    <td colspan="2" align="center" id="st_select2_3"><?$sisap->selectTagRemote($modelo_form.'/cod_parroquia_c', $parroquia ,array('value1'=>'otros'), null, array('onchange1'=>'/catp02_ficha_datos/select2/sector', 'update1'=>'funcionremt', 'onchange2'=>'/catp02_ficha_datos/select2/valor_planta_tierra', 'update2'=>'st_valor_planta','onChange'=>'vacio','id'=>'select2_3','class'=>'inputtext','onBlur'=>"picar_catp01('select2_3',2)" , true), null, true);?></td>
+    <td colspan="3" align="center" id="id_descrip_ur" style="color:#940000;font-weight:bold;">Urbano</td>
+    <td colspan="3" align="center" id="st_select2_4"><?=$html->input($modelo_form.'/cod_sector_c',array('class'=>'input_catp','id'=>'select2_4','onBlur'=>"picar_catp01('select2_4',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/cod_manzana',array('class'=>'input_catp','id'=>'cod_manzana','onBlur'=>"picar_catp01('cod_manzana',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/cod_parcela',array('class'=>'input_catp','id'=>'cod_parcela','onBlur'=>"picar_catp01('cod_parcela',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/cod_sub_parcela',array('class'=>'input_catp','id'=>'cod_sub_parcela','onBlur'=>"picar_catp01('cod_sub_parcela',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/cod_nivel',array('class'=>'input_catp','id'=>'cod_nivel','onBlur'=>"picar_catp01('cod_nivel',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/cod_unidad',array('class'=>'input_catp','id'=>'cod_unidad','onBlur'=>"picar_catp01('cod_unidad',3)",'maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);"));?></td>
+  </tr>
+  <tr>
+    <td align="center">
+<script language="JavaScript" type="text/javascript">
+	picar_catp01('select2_1',2);
+	picar_catp01('select2_2',2);
+</script>
+
+    <?=$html->input($modelo_form.'/cod_estado_c1',array('class'=>'input_catp','id'=>'select2_1_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_estado_c2',array('class'=>'input_catp','id'=>'select2_1_c2',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_municipio_c1',array('class'=>'input_catp','id'=>'select2_2_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_municipio_c2',array('class'=>'input_catp','id'=>'select2_2_c2',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_parroquia_c1',array('class'=>'input_catp','id'=>'select2_3_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parroquia_c2',array('class'=>'input_catp','id'=>'select2_3_c2',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c1',array('value'=>'U','class'=>'input_catp','id'=>'ambito_actual_c1','style'=>"font-size:13pt;font-weight:bold;color:#940000;","onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c2',array('value'=>'0','class'=>'input_catp','id'=>'ambito_actual_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c3',array('value'=>'1','class'=>'input_catp','id'=>'ambito_actual_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c1',array('class'=>'input_catp','id'=>'select2_4_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c2',array('class'=>'input_catp','id'=>'select2_4_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c3',array('class'=>'input_catp','id'=>'select2_4_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c1',array('class'=>'input_catp','id'=>'cod_manzana_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c2',array('class'=>'input_catp','id'=>'cod_manzana_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c3',array('class'=>'input_catp','id'=>'cod_manzana_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c1',array('class'=>'input_catp','id'=>'cod_parcela_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c2',array('class'=>'input_catp','id'=>'cod_parcela_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c3',array('class'=>'input_catp','id'=>'cod_parcela_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c1',array('class'=>'input_catp','id'=>'cod_sub_parcela_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c2',array('class'=>'input_catp','id'=>'cod_sub_parcela_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c3',array('class'=>'input_catp','id'=>'cod_sub_parcela_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c1',array('class'=>'input_catp','id'=>'cod_nivel_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c2',array('class'=>'input_catp','id'=>'cod_nivel_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c3',array('class'=>'input_catp','id'=>'cod_nivel_c3',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c1',array('class'=>'input_catp','id'=>'cod_unidad_c1',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c2',array('class'=>'input_catp','id'=>'cod_unidad_c2',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c3',array('class'=>'input_catp','id'=>'cod_unidad_c3',"onfocus"=>"this.blur()"));?></td>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="15" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">C.- Direcci&oacute;n de Inmueble </td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">Parroquia</td>
+    <td align="center">Ciudad</td>
+    <td align="center">Localidad</td>
+    <td align="center">Urb</td>
+    <td align="center">Conj.<br />Resid.</td>
+    <td align="center">Barrio</td>
+    <td align="center">Sector</td>
+    <td colspan="5" align="center">&nbsp;Nombre</td>
+  </tr>
+  <tr>
+    <td colspan="4"><?=$html->input($modelo_form.'/cparroquia',array('class'=>'input_catp','id'=>'cparroquia',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('2'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('5'=>''), '', array('value'=>'5'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble', array('6'=>''), '', array())?></td>
+    <td colspan="5"><?=$html->input($modelo_form.'/nombre',array('class'=>'input_catp', 'id'=>'id_nombren',"onfocus"=>"this.blur()"));?></td>
+  </tr>
+  <tr>
+    <td align="center" width="11%" class="tr_negro" style="font-size:16px;">FRENTE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleB', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_inm_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionren','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionren').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionren').setAttribute('class', 'input_catpdirec');}", "onChange"=>"document.getElementById('direccion_inmb').value=this.value;"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">ENTRE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleEntre', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_inm_entre_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionrene','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionrene').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionrene').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">Y</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+   <tr>
+   	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleY', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_inm_y_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionreney','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionreney').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionreney').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+    <td height="21" align="center">Edif.</td>
+    <td align="center">Apto</td>
+    <td align="center">Quinta</td>
+    <td align="center">Casa</td>
+    <td align="center">Rancho</td>
+    <td align="center">C.C.</td>
+    <td align="center">Local C. </td>
+    <td align="center">Ofic.</td>
+    <td align="center">Otro</td>
+    <td colspan="6" align="center" id="otrotip_viviend">Especifique <b>(Otro)</b></td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('1'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('2'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('3'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('4'=>''), '', array('value'=>'4','onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('5'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('6'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('7'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('8'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especife_otro\').value=\'\'; $(\'especife_otro\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmuebleX', array('9'=>''), '', array("onClick"=>"javascript:if(this.checked==true){document.getElementById('especife_otro').disabled=false; document.getElementById('especife_otro').focus(); setTimeout(fondoCampo('otrotip_viviend',2), 1000);}"))?></td>
+    <td colspan="6" align="center"><?=$html->input($modelo_form.'/tipo_vivienda',array('value'=>'','class'=>'input_catp','id'=>'especife_otro','disabled'=>'disabled'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center">Nombre </td>
+    <td colspan="3" align="center">N&uacute;mero C&iacute;vico </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center"><?=$html->input($modelo_form.'/dir_inm_nombre_inmueble',array('style'=>'text-align:left;','class'=>'input_catp'));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/dir_inm_nro_civico',array('class'=>'input_catp','maxlength'=>'30'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center">Tel&eacute;fonos</td>
+    <td colspan="12" align="center">Punto de Referencia </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center"><?=$html->input($modelo_form.'/dir_inm_telefonos',array('class'=>'input_catp'));?></td>
+    <td colspan="12" align="center"><?=$html->input($modelo_form.'/dir_inm_pto_ref',array('style'=>'text-align:left;','class'=>'input_catp'));?></td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="15" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">D.-CONDICI&Oacute;N DE OCUPACI&Oacute;N DEL INMUEBLE </td>
+  </tr>
+  <tr>
+    <td align="left" width="18%">Parcela Vacia <br>(Sin Construcci&oacute;n)</td>
+	<td align="center" width="5%"><?= $html->radio($modelo_form.'/condicion_ocup', array('1'=>''), '', array())?></td>
+    <td align="left" width="12%">DESOCUPADO</td>
+	<td align="center" width="5%"><?= $html->radio($modelo_form.'/condicion_ocup', array('2'=>''), '', array())?></td>
+    <td align="left" width="20%">OCUPADO PERMANENTE</td>
+	<td align="center" width="5%"><?= $html->radio($modelo_form.'/condicion_ocup', array('3'=>''), '', array())?></td>
+    <td align="left" width="30%">PARCELA ACT. DE EXTRACCI&Oacute;N <br>(ARENERA, MINA, ETC)</td>
+	<td align="center" width="5%"><?= $html->radio($modelo_form.'/condicion_ocup', array('4'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td align="left">PARCELA EN CONSTRUCCI&Oacute;N</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('5'=>''), '', array())?></td>
+    <td align="left">OCUPADO OCASIONAL</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('6'=>''), '', array())?></td>
+    <td align="left">OCUPADO PERMANENTE <br>(AUSENTE)</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('7'=>''), '', array())?></td>
+    <td align="left">PARCELA CON INSTALACIONES <br>(DIQUES, TANQUES, MUELLES, ETC)</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('8'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td align="left">PARCELA CONSTRUC. EN RUINAS</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('9'=>''), '', array())?></td>
+    <td align="left">OCUPADO VACACIONAL</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('10'=>''), '', array())?></td>
+    <td align="left">PARCELA AGR&Iacute;COLA / PECUARIA</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('11'=>''), '', array())?></td>
+    <td align="left">PARCELA CON LAGUNAS, ESTANQUES, MANANTIALES, ETC)</td>
+	<td align="center"><?= $html->radio($modelo_form.'/condicion_ocup', array('12'=>''), '', array())?></td>
+  </tr>
+</table>
+
+  <div id="funcionremt"></div>
+<!-- TERMINA BLOQUE TAB UNO -->
+	</div>
+	</div>
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_datos_ocupante" style="display:none;">
+	<!-- INICIO BLOQUE TAB DOS -->
+	     <table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="15" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">E.- Datos del Ocupante </td>
+  </tr>
+  <tr>
+    <td align="center">Personalidad </td>
+    <td colspan="3" align="center">C.I. O RIF </td>
+    <td colspan="12" align="center">Nombres y Apellidos / Raz&oacute;n Social </td>
+  </tr>
+    <tr>
+    <td align="left"><?= $html->radio($modelo_form.'/datos_ocupante_personalidad', array('1'=>'Natural', '2'=>'Juridica'), '<br>', array('value'=>'1','id'=>'datos_ocupante_personalidad',"onClick"=>"javascript:if(this.value=='2' && document.getElementById('datos_ocupante_ci_rif').value!=''){mascara_rif('datos_ocupante_ci_rif');}else if(this.value=='1' && document.getElementById('datos_ocupante_ci_rif').value!=''){document.getElementById('datos_ocupante_ci_rif').value = document.getElementById('datos_ocupante_ci_rif').value.replace(/-/g,'');}"))?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/datos_ocupante_ci_rif',array('class'=>'input_catp','id'=>'datos_ocupante_ci_rif','maxlength'=>'15', "onChange"=>"javascript:if(document.getElementById('datos_ocupante_personalidad_2').checked==true){mascara_rif('datos_ocupante_ci_rif');}",'onKeyUp'=>"this.value = this.value.replace(/[^A-ZÑa-zñ\-0-9]/, '');"));?></td>
+    <td colspan="12" align="center"><?=$html->input($modelo_form.'/datos_ocupante_nombre',array('style'=>'text-align:left;','class'=>'input_catp','id'=>'datos_ocupante_nombre'));?></td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">Ciudad</td>
+    <td align="center">Ciudad</td>
+    <td align="center">Localidad</td>
+    <td align="center">Urb</td>
+    <td align="center">Conj.<br />Resid.</td>
+    <td align="center">Barrio</td>
+    <td align="center">Sector</td>
+    <td colspan="5" align="center">&nbsp;Nombre</td>
+  </tr>
+  <tr>
+    <td colspan="4"><?=$html->input($modelo_form.'/cparroquia_ocp2',array('class'=>'input_catp','id'=>'cparroquiaren2'));?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('2'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('5'=>''), '', array('value'=>'5'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp2', array('6'=>''), '', array())?></td>
+    <td colspan="5"><?=$html->input($modelo_form.'/nombre_ocp2',array('class'=>'input_catp','id'=>'id_nombrenocp2'));?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">FRENTE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB2', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_descripcion2', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionren22','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionren22').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionren22').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">ENTRE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre2', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_entre_descripcion2', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionrene22','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionrene22').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionrene22').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">Y</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+   <tr>
+   	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY2', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_y_descripcion2', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionreney22','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionreney22').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionreney22').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+    <td height="21" align="center">Edif.</td>
+    <td align="center">Apto</td>
+    <td align="center">Quinta</td>
+    <td align="center">Casa</td>
+    <td align="center">Rancho</td>
+    <td align="center">C.C.</td>
+    <td align="center">Local C. </td>
+    <td align="center">Ofic.</td>
+    <td align="center">Otro</td>
+    <td colspan="6" align="center" id="otrotip_vivi2">Especifique <b>(Otro)</b></td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('1'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('2'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('3'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('4'=>''), '', array('value'=>'4','onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('5'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('6'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('7'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('8'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv2\').value=\'\'; $(\'especi_otro_tv2\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX2', array('9'=>''), '', array("onClick"=>"javascript:if(this.checked==true){document.getElementById('especi_otro_tv2').disabled=false; document.getElementById('especi_otro_tv2').focus(); setTimeout(fondoCampo('otrotip_vivi2',2), 1000);}"))?></td>
+    <td colspan="6" align="center"><?=$html->input($modelo_form.'/prop_tipo_vivienda2',array('value'=>'','class'=>'input_catp','id'=>'especi_otro_tv2','disabled'=>'disabled'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center">Nombre </td>
+    <td colspan="3" align="center">N&uacute;mero C&iacute;vico </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center"><?=$html->input($modelo_form.'/dir_prop_nombre_inmueble2',array('id'=>'dir_prop_nombre_inmueble2','style'=>'text-align:left;','class'=>'input_catp','maxlength'=>'100'));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/dir_prop_nro_civico2',array('id'=>'dir_prop_nro_civico2','class'=>'input_catp','maxlength'=>'30'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center">Tel&eacute;fonos</td>
+    <td colspan="12" align="center">Email </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center"><?=$html->input($modelo_form.'/dir_prop_telefonos2',array('id'=>'dir_prop_telefonos2','class'=>'input_catp','maxlength'=>'40'));?></td>
+    <td colspan="12" align="center"><?=$html->input($modelo_form.'/dir_prop_pto_ref2',array('value'=>'','style'=>'text-align:left;','id'=>'email_ocupa','class'=>'input_catp', "onChange"=>"validacom_email('email_ocupa');"));?></td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="15" align="left" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">F.- Datos del Propietario / Representante Legal / Administrador</td>
+  </tr>
+  <tr>
+    <td align="center">Personalidad </td>
+    <td colspan="3" align="center">C.I. O RIF </td>
+    <td colspan="12" align="center">Nombres y Apellidos / Raz&oacute;n Social </td>
+  </tr>
+  <tr>
+    <td align="left"><?= $html->radio($modelo_form.'/datos_ocupante_personalidad_p', array('1'=>'Natural', '2'=>'Juridica'), '<br>', array('value'=>'1','id'=>'datos_ocupante_personalidad_p', "onClick"=>"javascript:if(this.value=='2' && document.getElementById('datos_ocupante_ci_rif_p').value!=''){mascara_rif('datos_ocupante_ci_rif_p');}else if(this.value=='1' && document.getElementById('datos_ocupante_ci_rif_p').value!=''){document.getElementById('datos_ocupante_ci_rif_p').value = document.getElementById('datos_ocupante_ci_rif_p').value.replace(/-/g,'');}"))?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/datos_ocupante_ci_rif_p',array('class'=>'input_catp','id'=>'datos_ocupante_ci_rif_p','maxlength'=>'15', "onChange"=>"javascript:if(document.getElementById('datos_ocupante_personalidad_p').checked==true){mascara_rif('datos_ocupante_ci_rif_p');}", 'onKeyUp'=>"this.value = this.value.replace(/[^A-ZÑa-zñ\-0-9]/, '');"));?></td>
+    <td colspan="12" align="center"><?=$html->input($modelo_form.'/datos_ocupante_nombre_p',array('style'=>'text-align:left;','class'=>'input_catp','id'=>'datos_ocupante_nombre_p'));?></td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">Ciudad</td>
+    <td align="center">Ciudad</td>
+    <td align="center">Localidad</td>
+    <td align="center">Urb</td>
+    <td align="center">Conj.<br />Resid.</td>
+    <td align="center">Barrio</td>
+    <td align="center">Sector</td>
+    <td colspan="5" align="center">&nbsp;Nombre</td>
+  </tr>
+  <tr>
+    <td colspan="4"><?=$html->input($modelo_form.'/cparroquia_ocp',array('class'=>'input_catp','id'=>'cparroquiaren'));?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('2'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('5'=>''), '', array('value'=>'5'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_inmueble_ocp', array('6'=>''), '', array())?></td>
+    <td colspan="5"><?=$html->input($modelo_form.'/nombre_ocp',array('class'=>'input_catp','id'=>'id_nombrenocp'));?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">FRENTE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propB', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionren2','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionren2').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionren2').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">ENTRE</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+  <tr>
+  	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propEntre', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_entre_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionrene2','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionrene2').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionrene2').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+  	<td align="center" width="11%" class="tr_negro" style="font-size:16px;">Y</td>
+    <td align="center" width="6%">Av</td>
+    <td align="center" width="6%">Clle</td>
+    <td align="center" width="6%">Crr</td>
+    <td align="center" width="6%">Trav</td>
+    <td align="center" width="9%">Prol</td>
+    <td align="center" width="8%">Crrt</td>
+    <td align="center" width="6%">Cjn</td>
+    <td align="center" width="6%">Psje</td>
+    <td align="center" width="6%">Blv</td>
+    <td align="center" width="6%">Vda</td>
+    <td align="center" width="6%">Esc</td>
+    <td align="center" width="6%">Snd</td>
+    <td align="center" width="6%">Tcal</td>
+    <td align="center" width="6%">Cno</td>
+  </tr>
+   <tr>
+   	<td align="center">&nbsp;</td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('1'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('2'=>''), '', array('value'=>'2'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('3'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('4'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('5'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('6'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('7'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('8'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('9'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('10'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('11'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('12'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('13'=>''), '', array())?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propY', array('14'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="15"><?= $html->textarea($modelo_form.'/dir_prop_y_descripcion', array('','rows'=>'1', 'value'=>'ESPECIFIQUE...', 'id'=>'dir_inm_descripcionreney2','class'=>'input_catpdirec', "onfocus"=>"if(this.value=='ESPECIFIQUE...'){this.value=''; document.getElementById('dir_inm_descripcionreney2').setAttribute('class', 'input_catpfd');}", "onblur"=>"if(this.value==''){this.value='ESPECIFIQUE...'; document.getElementById('dir_inm_descripcionreney2').setAttribute('class', 'input_catpdirec');}"),  false) ?></td>
+  </tr>
+  <tr>
+    <td height="21" align="center">Edif.</td>
+    <td align="center">Apto</td>
+    <td align="center">Quinta</td>
+    <td align="center">Casa</td>
+    <td align="center">Rancho</td>
+    <td align="center">C.C.</td>
+    <td align="center">Local C. </td>
+    <td align="center">Ofic.</td>
+    <td align="center">Otro</td>
+    <td colspan="6" align="center" id="otrotip_vivi">Especifique <b>(Otro)</b></td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('1'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('2'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('3'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('4'=>''), '', array('value'=>'4','onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('5'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('6'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('7'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('8'=>''), '', array('onClick'=>'if(this.checked==true){$(\'especi_otro_tv\').value=\'\'; $(\'especi_otro_tv\').disabled=true;}'))?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/dir_propX', array('9'=>''), '', array("onClick"=>"javascript:if(this.checked==true){document.getElementById('especi_otro_tv').disabled=false; document.getElementById('especi_otro_tv').focus(); setTimeout(fondoCampo('otrotip_vivi',2), 1000);}"))?></td>
+    <td colspan="6" align="center"><?=$html->input($modelo_form.'/prop_tipo_vivienda',array('value'=>'','class'=>'input_catp','id'=>'especi_otro_tv','disabled'=>'disabled'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center">Nombre </td>
+    <td colspan="3" align="center">N&uacute;mero C&iacute;vico </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="12" align="center"><?=$html->input($modelo_form.'/dir_prop_nombre_inmueble',array('style'=>'text-align:left;','class'=>'input_catp','maxlength'=>'100'));?></td>
+    <td colspan="3" align="center"><?=$html->input($modelo_form.'/dir_prop_nro_civico',array('class'=>'input_catp','maxlength'=>'30'));?></td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center">Tel&eacute;fonos</td>
+    <td colspan="12" align="center">Email </td>
+  </tr>
+  <tr>
+    <td height="21" colspan="3" align="center"><?=$html->input($modelo_form.'/dir_prop_telefonos',array('class'=>'input_catp','maxlength'=>'40'));?></td>
+    <td colspan="12" align="center"><?=$html->input($modelo_form.'/dir_prop_pto_ref',array('value'=>'','id'=>'pto_refe2_k','style'=>'text-align:left;','class'=>'input_catp', "onChange"=>"validacom_email('pto_refe2_k');"));?></td>
+  </tr>
+</table>
+	     <!-- TERMANA BLOQUE TAB DOS -->
+	</div>
+	</div>
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_datos_terreno" style="display:none;">
+	<!-- INICIO BLOQUE TAB Tres -->
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="12" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">H.- Datos del Terreno </td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="2" align="center">1.- Topograf&iacute;a </td>
+    <td colspan="2" align="center">2.- Acceso </td>
+	<td colspan="2" align="center">3.- Forma </td>
+	<td colspan="2" align="center">5.- Entorno F&iacute;sico </td>
+    <td colspan="4" align="center">6.- Uso Actual </td>
+  </tr>
+  <tr>
+    <td width="13%">Plano</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('1'=>''), '', array())?></td>
+    <td width="18%">Calle Pavimentada </td>
+	<td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('1'=>''), '', array())?></td>
+    <td width="14%">Regular</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_forma_regular', array('1'=>''), '',array('onClick'=>'if(this.value==1){$(\'valoracion_ajuste_forma\').value=\'Regular\';}'));?></td>
+    <td width="13%">Zona Urbanizada </td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/tilde_entorno_zona', array('1'=>''), '', array())?></td>
+    <td width="18%">Residencial</td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_residencial','',array('value'=>1,'id'=>'tilde_uso_residencial'));?></td>
+    <td width="13%">Religioso</td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_religioso','',array('value'=>1,'id'=>'tilde_uso_religioso'));?></td>
+  </tr>
+  <tr>
+    <td>Sobre Nivel </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('2'=>''), '', array())?></td>
+    <td>Calle Engrazonada </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('2'=>''), '', array())?></td>
+    <td>Irregular</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_forma_regular', array('2'=>''), '',array('onClick'=>'if(this.value==2){$(\'valoracion_ajuste_forma\').value=\'Irregular\';}'));?></td>
+    <td>Zona No Urbanizada </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_entorno_zona', array('2'=>''), '', array())?></td>
+    <td>Comercial</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_comercial','',array('value'=>1,'id'=>'tilde_uso_comercial'));?></td>
+    <td>Sin Uso </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_sin_uso','',array('value'=>1,'id'=>'tilde_uso_sin_uso'));?></td>
+  </tr>
+  <tr>
+    <td>Bajo Nivel </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('3'=>''), '', array())?></td>
+    <td>Calle de Tierra </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('3'=>''), '', array())?></td>
+    <td>Muy Irregular</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_forma_regular', array('3'=>''), '',array('onClick'=>'if(this.value==3){$(\'valoracion_ajuste_forma\').value=\'Muy Irregular\';}'));?></td>
+    <td>Rio / Quebrada</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_entorno_zona', array('3'=>''), '', array())?></td>
+    <td>Industrial</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_industrial','',array('value'=>1,'id'=>'tilde_uso_industrial'));?></td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_otro','',array('value'=>1,'id'=>'tilde_uso_otro'));?></td>
+  </tr>
+  <tr>
+    <td>Corte</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('4'=>''), '', array())?></td>
+    <td>Escalera Pavimento </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('4'=>''), '', array())?></td>
+	<td colspan="2" align="center" style="font-size:13px;" class="tr_negro">4.- UBICACI&Oacute;N</td>
+    <td>Barranco / Talud </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_entorno_zona', array('4'=>''), '', array())?></td>
+    <td>Recreativo / Deportivo </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_recreativo','',array('value'=>1,'id'=>'tilde_uso_recreativo'));?></td>
+	<td colspan="2" align="center" style="font-size:13px;" class="tr_negro">11.- AFECT. LEGALES</td>
+  </tr>
+  <tr>
+    <td>Relleno</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('5'=>''), '', array())?></td>
+    <td>Escalera de Tierra </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('5'=>''), '', array())?></td>
+    <td>Convencional</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_ubica', array('1'=>''), '', array())?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_entorno_zona', array('5'=>''), '', array())?></td>
+    <td>Asistencia / Salud </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_asistencia','',array('value'=>1,'id'=>'tilde_uso_asistencia'));?></td>
+    <td>SERVIDUMBRE</td>
+    <td align="center"><?= $html->radio($modelo_form.'/radio_afect_leg', array('1'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Inclinado</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('6'=>''), '', array())?></td>
+    <td>PASO DE SERVIDUMBRE</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('6'=>''), '', array())?></td>
+    <td>Esquina</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_ubica', array('2'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>Educacional</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_educacional','',array('value'=>1,'id'=>'tilde_uso_educacional'));?></td>
+    <td>HIPOTECA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/radio_afect_leg', array('2'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Muy Inclinado</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('7'=>''), '', array())?></td>
+    <td>VEREDA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('7'=>''), '', array())?></td>
+    <td>Interior Manz. / Oculta</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_ubica', array('3'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>Tur&iacute;stico</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_turistico','',array('value'=>1,'id'=>'tilde_uso_turistico'));?></td>
+    <td>EXPROPIACI&Oacute;N</td>
+    <td align="center"><?= $html->radio($modelo_form.'/radio_afect_leg', array('3'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Irregular</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_topo', array('8'=>''), '', array())?></td>
+    <td>SENDERO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('8'=>''), '', array())?></td>
+    <td>INTERIOR MANZ. ACCED. ENTRE INM</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_ubica', array('4'=>''), '', array())?></td>
+    <td colspan="2">&nbsp;</td>
+    <td>Social / Cultural </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_social_cultural','',array('value'=>1,'id'=>'tilde_uso_social_cultural'));?></td>
+    <td>ABRAE</td>
+    <td align="center"><?= $html->radio($modelo_form.'/radio_afect_leg', array('4'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_acceso', array('9'=>''), '', array())?></td>
+    <td colspan="2">&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+    <td>Gubernamental / Institucional </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_uso_gubernamental','',array('value'=>1,'id'=>'tilde_uso_gubernamental'));?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/radio_afect_leg', array('5'=>''), '', array())?></td>
+  </tr>
+
+  <tr class="tr_negro">
+    <td colspan="2" align="center">7.- MEJORAS AL TERRENO</td>
+    <td colspan="2" align="center">8.- TENENCIA TERRENO</td>
+	<td colspan="2" align="center">9.- R&Eacute;GIMEN DE PROPIEDAD</td>
+	<td colspan="4" align="center">10.- SERVICIOS P&Uacute;BLICOS</td>
+    <td colspan="2" align="center">12.- NORMATIVA URB.</td>
+  </tr>
+  <tr>
+    <td>Muro de Contenci&oacute;n</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_muro_contencion','',array('value'=>1, 'id'=>'tilde_mejoras_muro_contencion'));?></td>
+    <td>Propiedad</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('1'=>''), '', array())?></td>
+    <td>Ejido</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('1'=>''), '', array())?></td>
+    <td>Acueducto</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_acueducto','',array('value'=>1,'id'=>'tilde_serv_acueducto'));?></td>
+    <td>Transporte</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_transporte','',array('value'=>1,'id'=>'tilde_serv_transporte'));?></td>
+	<td colspan="2" align="center">GACETA</td>
+  </tr>
+  <tr>
+    <td>Nivelaci&oacute;n</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_nivelacion','',array('value'=>1,'id'=>'tilde_mejoras_nivelacion'));?></td>
+    <td>ARRENDAMIENTO ALQUILADA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('2'=>''), '', array())?></td>
+    <td>Municipal Propio</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('2'=>''), '', array())?></td>
+    <td>Cloacas</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_cloacas','',array('value'=>1,'id'=>'tilde_serv_cloacas'));?></td>
+    <td>Tel&eacute;fono</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_telefono','',array('value'=>1,'id'=>'tilde_serv_telefono'));?></td>
+	<td colspan="2" align="center"><?=$html->input($modelo_form.'/normativa_gaceta',array('class'=>'input_catp','value'=>'','id'=>'normativa_gaceta','maxlength'=>'15','onKeyUp'=>"this.value = this.value.replace(/[^A-ZÑa-zñ\-0-9]/, '');"));?></td>
+  </tr>
+  <tr>
+    <td>Cercado</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_cercado','',array('value'=>1,'id'=>'tilde_mejoras_cercado'));?></td>
+    <td>Comodato</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('3'=>''), '', array())?></td>
+    <td>Nacional</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('3'=>''), '', array())?></td>
+    <td>Drenaje Artificial </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_drenaje_art','',array('value'=>1,'id'=>'tilde_serv_drenaje_art'));?></td>
+    <td>Cable TV </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_cable_tv','',array('value'=>1,'id'=>'tilde_serv_cable_tv'));?></td>
+  	<td colspan="2" align="center">RESOLUCI&Oacute;N</td>
+  </tr>
+  <tr>
+    <td>Pozo S&eacute;ptico </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_pozo_septico','',array('value'=>1,'id'=>'tilde_mejoras_pozo_septico'));?></td>
+    <td>Anticresis</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('4'=>''), '', array())?></td>
+    <td>Bald&iacute;o</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('4'=>''), '', array())?></td>
+    <td>Electricidad Residencial </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_elect_residencial','',array('value'=>1,'id'=>'tilde_serv_elect_residencial'));?></td>
+    <td>TV SATELITAL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_tvsate','',array('value'=>1,'id'=>'tilde_serv_tvsate'));?></td>
+	<td colspan="2" align="center"><?=$html->input($modelo_form.'/normativa_resolucion',array('class'=>'input_catp','value'=>'','id'=>'normativa_resolucion','maxlength'=>'15','onKeyUp'=>"this.value = this.value.replace(/[^A-ZÑa-zñ\-0-9]/, '');"));?></td>
+  </tr>
+  <tr>
+    <td>Lagunas Artificiales</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_lagunas_art','',array('value'=>1,'id'=>'tilde_mejoras_lagunas_art'));?></td>
+    <td>Enfiteusis</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('5'=>''), '', array())?></td>
+    <td>Estatal</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('5'=>''), '', array())?></td>
+    <td>Electricidad Industrial </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_elect_indus','',array('value'=>1,'id'=>'tilde_serv_elect_indus'));?></td>
+    <td>Correo y Tel&eacute;grafo </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_correo_telec','',array('value'=>1,'id'=>'tilde_serv_correo_telec'));?></td>
+  	<td colspan="2" align="center">FECHA</td>
+  </tr>
+  <tr>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_mejoras_otro','',array('value'=>1,'id'=>'tilde_mejoras_otro'));?></td>
+    <td>Usufructo</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('6'=>''), '', array())?></td>
+    <td>PRIVADO INDIVIDUAL</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('6'=>''), '', array())?></td>
+    <td>Alumbrado P&uacute;blico</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_alumbrado','',array('value'=>1,'id'=>'tilde_serv_alumbrado'));?></td>
+    <td>Gas Directo</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_gas','',array('value'=>1,'id'=>'tilde_serv_gas'));?></td>
+	<td colspan="2" align="center"><? $sisap->input_fecha($modelo_form,"normativa_fecha","normativa_fecha");?></td>
+  </tr>
+  <tr>
+  	<td colspan="2">&nbsp;</td>
+    <td>Derecho de Uso/Hab.</td>
+	<td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('7'=>''), '', array())?></td>
+    <td>Privado Condominio</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('7'=>''), '', array())?></td>
+    <td>Vialidad</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_vialidad','',array('value'=>1,'id'=>'tilde_serv_vialidad'));?></td>
+    <td>Aseo Urbano</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_aseo','',array('value'=>1,'id'=>'tilde_serv_aseo'));?></td>
+  	<td colspan="2" align="center" style="font-size:13px;" class="tr_negro">13.- UBICACI&Oacute;N ZONIFICACI&Oacute;N</td>
+  </tr>
+  <tr>
+  	<td colspan="2">&nbsp;</td>
+    <td>POSESI&Oacute;N CON TITULO/SIN TITULO</td>
+	<td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('8'=>''), '', array())?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_reg_prop', array('8'=>''), '', array())?></td>
+    <td>Pavimento</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_pavimento','',array('value'=>1,'id'=>'tilde_serv_pavimento'));?></td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_otro','',array('value'=>1,'id'=>'tilde_serv_otro'));?></td>
+  	<td colspan="2" rowspan="2"><?= $html->textarea($modelo_form.'/ubic_zonificacion', array('','rows'=>'2', 'value'=>'', 'id'=>'ubic_zonificacion', 'class'=>'inputtext'),  false) ?></td>
+  </tr>
+  <tr>
+  	<td colspan="2">&nbsp;</td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia', array('9'=>''), '', array())?></td>
+  	<td colspan="2">&nbsp;</td>
+    <td>Acera</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_serv_acera','',array('value'=>1,'id'=>'tilde_serv_acera'));?></td>
+  	<td colspan="2">&nbsp;</td>
+  </tr>
+</table>
+
+	<!-- TERMINA BLOQUE TAB TRES -->
+	</div>
+	</div>
+		<div class="dhtmlgoodies_aTab"><br><br>
+			<div id="tabg_datos_gen_const" style="display:none;">
+		<!-- INICIO BLOQUE TAB CUATRO -->
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="12" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">I.- Datos Generales de la Construcci&oacute;n </td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="4" align="center">1.- Tipo</td>
+    <td colspan="4" align="center">2.- Descripci&oacute;n de Uso  </td>
+    <td colspan="2" align="center">3.- Tenencia Construcci&oacute;n </td>
+	<td colspan="2" align="center">4.- R&eacute;gimen de Propiedad </td>
+  </tr>
+  <tr>
+    <td width="10%">Quinta</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('1'=>''), '', array())?></td>
+    <td width="10%">Apartamento</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('2'=>''), '', array())?></td>
+    <td width="10%">Unifamiliar</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('1'=>''), '', array())?></td>
+    <td width="10%">Mercado Libre </td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('2'=>''), '', array())?></td>
+    <td width="10%">Propiedad</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('1'=>''), '', array())?></td>
+    <td width="10%">Municipal Propio</td>
+    <td width="5%" align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('1'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Casa Quinta </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('3'=>''), '', array())?></td>
+    <td>Centro Comercial </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('4'=>''), '', array())?></td>
+    <td>Bifamiliar</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('3'=>''), '', array())?></td>
+    <td>Oficinas</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('4'=>''), '', array())?></td>
+    <td>Arrendamiento</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('2'=>''), '', array())?></td>
+    <td>Estatal</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('2'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Chalet </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('5'=>''), '', array())?></td>
+    <td>Local Comercial </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('6'=>''), '', array())?></td>
+    <td>Multifamiliar</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('5'=>''), '', array())?></td>
+    <td>Industrial</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('6'=>''), '', array())?></td>
+    <td>Comodato</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('3'=>''), '', array())?></td>
+    <td>Nacional</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('3'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Tonw House </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('7'=>''), '', array())?></td>
+    <td>Galp&oacute;n Simple</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('8'=>''), '', array())?></td>
+    <td>Comercio al Detal</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('7'=>''), '', array())?></td>
+    <td>Servicio</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('8'=>''), '', array())?></td>
+    <td>Anticresis</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('4'=>''), '', array())?></td>
+    <td>Privado Individual</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('4'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Casa Tradiccional</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('9'=>''), '', array())?></td>
+    <td>Galp&oacute;n Industrial</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('10'=>''), '', array())?></td>
+    <td>Comercio al Mayor </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('9'=>''), '', array())?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_desc_uso', array('10'=>''), '', array())?></td>
+    <td>Enfiteusis </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('5'=>''), '', array())?></td>
+    <td>Privado Condominio </td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('5'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Casa Convencional</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('11'=>''), '', array())?></td>
+    <td>Vaqueras / Cochineras</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('12'=>''), '', array())?></td>
+  	<td colspan="4" align="center" style="font-size:13px;" class="tr_negro">5.- DECLARACI&Oacute;N OCUPANTE</td>
+    <td>Usufructo</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('6'=>''), '', array())?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_regimen_prop', array('6'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>Casa Econ&oacute;mica</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('13'=>''), '', array())?></td>
+    <td>Barraca</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('14'=>''), '', array())?></td>
+	<td colspan="2">CANON MENSUAL ARRENDAMIENTO</td>
+	<td colspan="2" align="center"><?= $html->input($modelo_form.'/canon_mensual',array('value'=>"0,00", 'id'=>'canon_mensual', 'class'=>'input_catp', 'onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('canon_mensual');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td>Derecho de Uso / Habitaci&oacute;n</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('7'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>Rancho</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('15'=>''), '', array())?></td>
+    <td>Tanque</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('16'=>''), '', array())?></td>
+	<td colspan="2">FECHA CONTRATO</td>
+	<td colspan="2" align="center"><? $sisap->input_fecha($modelo_form,"fecha_contrato","fecha_contrato");?></td>
+    <td>POSESI&Oacute;N CON TIT/SIN T&Iacute;TULO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('8'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>Edificio</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('17'=>''), '', array())?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tipo', array('18'=>''), '', array())?></td>
+	<td colspan="2">INGRESO FAMILIAR MENSUAL</td>
+	<td colspan="2" align="center"><?= $html->input($modelo_form.'/ingreso_familiar',array('value'=>"0,00", 'id'=>'ingreso_familiar', 'class'=>'input_catp', 'onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('ingreso_familiar');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td>Otro</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_tenencia_cons', array('9'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="4" align="left" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">J.- Datos Estructurales de la Construcci&oacute;n</td>
+    <td colspan="6" align="left" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">K.- Cubierta </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" style="font-size:13px;" class="tr_negro">1.- Soporte </td>
+    <td colspan="2" align="center" style="font-size:13px;" class="tr_negro">2.- Techos </td>
+    <td colspan="4" align="center" style="font-size:13px;" class="tr_negro">3.- Externa </td>
+    <td colspan="2" align="center" style="font-size:13px;" class="tr_negro">4.- Interna </td>
+  </tr>
+  <tr>
+    <td width="15%">Concreto Armado</td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_concreto_armado','',array('value'=>1,'id'=>'tilde_soporte_concreto_armado'));?></td>
+    <td width="15%">Concreto Armado </td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_concreto_armado','',array('value'=>1,'id'=>'tilde_techo_concreto_armado'));?></td>
+    <td width="15%">Madera - Teja</td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_madera_teja','',array('value'=>1,'id'=>'tilde_cubierta_madera_teja'));?></td>
+    <td width="12%">Acerolit</td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_acerolit','',array('value'=>1,'id'=>'tilde_cubierta_acerolit'));?></td>
+    <td width="13%">MACHIHEMBRADO</td>
+    <td width="5%" align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_machi','',array('value'=>1,'id'=>'tilde_cubiertai_machi'));?></td>
+  </tr>
+  <tr>
+    <td>Met&aacute;lica</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_metalica','',array('value'=>1,'id'=>'tilde_soporte_metalica'));?></td>
+    <td>Met&aacute;lica</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_metalica','',array('value'=>1,'id'=>'tilde_techo_metalica'));?></td>
+    <td>Placa - Teja </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_placa_teja','',array('value'=>1,'id'=>'tilde_cubierta_placa_teja'));?></td>
+    <td>Palma</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_palma','',array('value'=>1,'id'=>'tilde_cubierta_palma'));?></td>
+    <td>PLAF&Oacute;N</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_plafon','',array('value'=>1,'id'=>'tilde_cubiertai_plafon'));?></td>
+  </tr>
+  <tr>
+    <td>Madera </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_madera','',array('value'=>1,'id'=>'tilde_soporte_madera'));?></td>
+    <td>Madera </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_madera','',array('value'=>1,'id'=>'tilde_techo_madera'));?></td>
+    <td>Ca&ntilde;a Brava - Teja</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_tejas_canabrava','',array('value'=>1,'id'=>'tilde_cubierta_tejas_canabrava'));?></td>
+    <td>Tabel&oacute;n</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_tabelon','',array('value'=>1,'id'=>'tilde_cubierta_tabelon'));?></td>
+    <td>CIELO RASO L&Aacute;MINAS</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_crl','',array('value'=>1,'id'=>'tilde_cubiertai_crl'));?></td>
+  </tr>
+  <tr>
+    <td>Paredes de Carga</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_paredes_carga','',array('value'=>1,'id'=>'tilde_soporte_paredes_carga'));?></td>
+    <td>Varas</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_varas','',array('value'=>1,'id'=>'tilde_techo_varas'));?></td>
+    <td>Platabanda</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_platabanda','',array('value'=>1,'id'=>'tilde_cubierta_platabanda'));?></td>
+    <td>Barro (Adobe)</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_barro','',array('value'=>1,'id'=>'tilde_cubierta_barro'));?></td>
+    <td>CIELO RASO ECON&Oacute;MICO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_cre','',array('value'=>1,'id'=>'tilde_cubiertai_cre'));?></td>
+  </tr>
+  <tr>
+    <td>Prefrabicado </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_prefrabicado','',array('value'=>1,'id'=>'tilde_soporte_prefrabicado'));?></td>
+    <td>Cerchas </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_cerchas','',array('value'=>1,'id'=>'tilde_techo_cerchas'));?></td>
+    <td>Asbesto </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_asbesto','',array('value'=>1,'id'=>'tilde_cubierta_asbesto'));?></td>
+    <td>RIPLE</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_riple','',array('value'=>1,'id'=>'tilde_cubierta_riple'));?></td>
+    <td>SIN CUBIERTA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_sinc','',array('value'=>1,'id'=>'tilde_cubiertai_sinc'));?></td>
+  </tr>
+  <tr>
+    <td>Machones</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_machones','',array('value'=>1,'id'=>'tilde_soporte_machones'));?></td>
+    <td>ARMAZ&Oacute;N LIVIANA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_al','',array('value'=>1,'id'=>'tilde_techo_al'));?></td>
+    <td>Aluminio</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_aluminio','',array('value'=>1,'id'=>'tilde_cubierta_aluminio'));?></td>
+    <td>CINDUTEJA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_cinduteja','',array('value'=>1,'id'=>'tilde_cubierta_cinduteja'));?></td>
+    <td>OTRO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubiertai_otro','',array('value'=>1,'id'=>'tilde_cubiertai_otro'));?></td>
+  </tr>
+  <tr>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_soporte_otro','',array('value'=>1,'id'=>'tilde_soporte_otro'));?></td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_techo_otro','',array('value'=>1,'id'=>'tilde_techo_otro'));?></td>
+    <td>Zinc</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_zinc','',array('value'=>1,'id'=>'tilde_cubierta_zinc'));?></td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_cubierta_otro','',array('value'=>1,'id'=>'tilde_cubierta_otro'));?></td>
+  	<td colspan="2">&nbsp;</td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="17" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">L.- Datos Complementarios de la Construcci&oacute;n </td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="6" align="center">1.- Paredes</td>
+    <td colspan="11" align="center">&nbsp;</td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="2" align="center">1.1. Tipo</td>
+    <td colspan="2" align="center">1.2. Acabado</td>
+    <td colspan="2" align="center">1.3. Pintura</td>
+    <td colspan="2" align="center">3.- Pisos</td>
+    <td align="center">4.- Ba&ntilde;os</td>
+    <td align="center">Nº</td>
+    <td align="center">5.- Ventanas</td>
+    <td align="center">Nº</td>
+    <td align="center">M</td>
+    <td align="center">V</td>
+    <td align="center">A</td>
+    <td align="center">H</td>
+    <td align="center">O</td>
+  </tr>
+  <tr>
+    <td width="10%">Bloque de Cemento</td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_bloque_cemento','',array('value'=>1,'id'=>'tilde_pared_tipo_bloque_cemento'));?></td>
+    <td width="10%">Friso Liso</td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_friso_liso','',array('value'=>1,'id'=>'tilde_pared_acabado_friso_liso'));?></td>
+    <td width="10%">Caucho</td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_caucho','',array('value'=>1,'id'=>'tilde_pintura_caucho'));?></td>
+    <td width="10%">Cer&aacute;mica</td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_ceramica','',array('value'=>1,'id'=>'tilde_piso_ceramica'));?></td>
+    <td width="10%">Ba&ntilde;era</td>
+	<td width="8%" align="center"><?=$html->input($modelo_form.'/numero_banera',array('class'=>'input_catp','value'=>'','id'=>'numero_banera','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="10%">Ventanal</td>
+	<td width="5%" align="center"><?=$html->input($modelo_form.'/numero_ventanal',array('class'=>'input_catp','value'=>'','id'=>'numero_ventanal','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/m_a1','',array('value'=>1,'id'=>'m_a1'));?></td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/v_a1','',array('value'=>1,'id'=>'v_a1'));?></td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/a_a1','',array('value'=>1,'id'=>'a_a1'));?></td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/h_a1','',array('value'=>1,'id'=>'h_a1'));?></td>
+    <td width="3%" align="center"><?=$html->checkbox($modelo_form.'/o_a1','',array('value'=>1,'id'=>'o_a1'));?></td>
+  </tr>
+  <tr>
+    <td>Bloque de Arcilla</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_bloque_arcilla','',array('value'=>1,'id'=>'tilde_pared_tipo_bloque_arcilla'));?></td>
+    <td>Friso R&uacute;stico</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_friso_rustico','',array('value'=>1,'id'=>'tilde_pared_acabado_friso_rustico'));?></td>
+    <td>&Oacute;LEO / ACEITE</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_oleo','',array('value'=>1,'id'=>'tilde_pintura_oleo'));?></td>
+    <td>Porcelanato</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_porcelanato','',array('value'=>1,'id'=>'tilde_piso_porcelanato'));?></td>
+    <td>WC</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_wc',array('class'=>'input_catp','value'=>'','id'=>'numero_wc','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>CELOSIA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_celosia',array('class'=>'input_catp','value'=>'','id'=>'numero_celosia','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a2','',array('value'=>1,'id'=>'m_a2'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a2','',array('value'=>1,'id'=>'v_a2'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a2','',array('value'=>1,'id'=>'a_a2'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a2','',array('value'=>1,'id'=>'h_a2'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a2','',array('value'=>1,'id'=>'o_a2'));?></td>
+  </tr>
+  <tr>
+    <td>Ladrillo</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_ladrillo','',array('value'=>1,'id'=>'tilde_pared_tipo_ladrillo'));?></td>
+    <td>OBRA LIMPIA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_ol','',array('value'=>1,'id'=>'tilde_pared_acabado_ol'));?></td>
+    <td>Pasta</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_pasta','',array('value'=>1,'id'=>'tilde_pintura_pasta'));?></td>
+    <td>Granito</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_granito','',array('value'=>1,'id'=>'tilde_piso_granito'));?></td>
+    <td>BIDET</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_bidet',array('class'=>'input_catp','value'=>'','id'=>'numero_bidet','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>CORREDERA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_corredera',array('class'=>'input_catp','value'=>'','id'=>'numero_corredera','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a3','',array('value'=>1,'id'=>'m_a3'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a3','',array('value'=>1,'id'=>'v_a3'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a3','',array('value'=>1,'id'=>'a_a3'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a3','',array('value'=>1,'id'=>'h_a3'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a3','',array('value'=>1,'id'=>'o_a3'));?></td>
+  </tr>
+  <tr>
+    <td>Adobe</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_adobe','',array('value'=>1,'id'=>'tilde_pared_tipo_adobe'));?></td>
+    <td>CER&Aacute;MICA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_c','',array('value'=>1,'id'=>'tilde_pared_acabado_c'));?></td>
+    <td>ASBESTINA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_asbestina','',array('value'=>1,'id'=>'tilde_pintura_asbestina'));?></td>
+    <td>PARQUET</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_parquet','',array('value'=>1,'id'=>'tilde_piso_parquet'));?></td>
+    <td>LAVAMANOS</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_lavamanos',array('class'=>'input_catp','value'=>'','id'=>'numero_lavamanos','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>BASCULANTE</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_basculante',array('class'=>'input_catp','value'=>'','id'=>'numero_basculante','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a4','',array('value'=>1,'id'=>'m_a4'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a4','',array('value'=>1,'id'=>'v_a4'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a4','',array('value'=>1,'id'=>'a_a4'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a4','',array('value'=>1,'id'=>'h_a4'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a4','',array('value'=>1,'id'=>'o_a4'));?></td>
+  </tr>
+  <tr>
+    <td>Tapia </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_tapia','',array('value'=>1,'id'=>'tilde_pared_tipo_tapia'));?></td>
+    <td>PORCELANATO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_porc','',array('value'=>1,'id'=>'tilde_pared_acabado_porc'));?></td>
+    <td>LECHADA / CAL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_lechada','',array('value'=>1,'id'=>'tilde_pintura_lechada'));?></td>
+    <td>M&Aacute;RMOL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_marmol','',array('value'=>1,'id'=>'tilde_piso_marmol'));?></td>
+    <td>DUCHA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_duchas',array('class'=>'input_catp','value'=>'','id'=>'numero_duchas','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>BATIENTE</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_batiente',array('class'=>'input_catp','value'=>'','id'=>'numero_batiente','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a5','',array('value'=>1,'id'=>'m_a5'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a5','',array('value'=>1,'id'=>'v_a5'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a5','',array('value'=>1,'id'=>'a_a5'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a5','',array('value'=>1,'id'=>'h_a5'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a5','',array('value'=>1,'id'=>'o_a5'));?></td>
+  </tr>
+  <tr>
+    <td>Bahareque</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_bahareque','',array('value'=>1,'id'=>'tilde_pared_tipo_bahareque'));?></td>
+    <td>CEMENTO BLANCO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_cemenb','',array('value'=>1,'id'=>'tilde_pared_acabado_cemenb'));?></td>
+    <td>SIN PINTURA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_sinpintura','',array('value'=>1,'id'=>'tilde_pintura_sinpintura'));?></td>
+    <td>VINIL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_vinil','',array('value'=>1,'id'=>'tilde_piso_vinil'));?></td>
+    <td>CER&Aacute;MICA 1ERA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_ceramica_uno',array('class'=>'input_catp','value'=>'0,00','id'=>'numero_ceramica_uno','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('numero_ceramica_uno');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td>PANOR&Aacute;MICA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_panoramica',array('class'=>'input_catp','value'=>'','id'=>'numero_panoramica','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a6','',array('value'=>1,'id'=>'m_a6'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a6','',array('value'=>1,'id'=>'v_a6'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a6','',array('value'=>1,'id'=>'a_a6'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a6','',array('value'=>1,'id'=>'h_a6'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a6','',array('value'=>1,'id'=>'o_a6'));?></td>
+  </tr>
+  <tr>
+    <td>Prefabricado</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_prefabricada','',array('value'=>1,'id'=>'tilde_pared_tipo_prefabricada'));?></td>
+    <td>PAPEL TAPIZ</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_papelt','',array('value'=>1,'id'=>'tilde_pared_acabado_papelt'));?></td>
+    <td>OTRO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pintura_otro','',array('value'=>1,'id'=>'tilde_pintura_otro'));?></td>
+    <td>MOSAICO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_mosaico','',array('value'=>1,'id'=>'tilde_piso_mosaico'));?></td>
+    <td>CER&Aacute;MICA 2DA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_ceramica_dos',array('class'=>'input_catp','value'=>'0,00','id'=>'numero_ceramica_dos','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('numero_ceramica_dos');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td align="center" style="font-size:13px;" class="tr_negro">6.- PUERTAS</td>
+	<td align="center" style="font-size:13px;" class="tr_negro">Nº</td>
+    <td align="center" style="font-size:13px;" class="tr_negro">M</td>
+    <td align="center" style="font-size:13px;" class="tr_negro">V</td>
+    <td align="center" style="font-size:13px;" class="tr_negro">A</td>
+    <td align="center" style="font-size:13px;" class="tr_negro">H</td>
+    <td align="center" style="font-size:13px;" class="tr_negro">O</td>
+  </tr>
+  <tr>
+    <td>Vidrio</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_vidrio','',array('value'=>1,'id'=>'tilde_pared_tipo_vidrio'));?></td>
+    <td>VIDRIO MOLIDO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_vidrio','',array('value'=>1,'id'=>'tilde_pared_acabado_vidrio'));?></td>
+    <td colspan="2" align="center" style="font-size:13px;" class="tr_negro">2.- INSTALAC. EL&Eacute;CTRICAS</td>
+    <td>Madera </td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_madera','',array('value'=>1,'id'=>'tilde_piso_madera'));?></td>
+    <td>OTRO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_bano_otro',array('class'=>'input_catp','value'=>'','id'=>'numero_bano_otro','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>ENTAMBORAD FINA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_entamborad',array('class'=>'input_catp','value'=>'','id'=>'numero_entamborad','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a7','',array('value'=>1,'id'=>'m_a7'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a7','',array('value'=>1,'id'=>'v_a7'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a7','',array('value'=>1,'id'=>'a_a7'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a7','',array('value'=>1,'id'=>'h_a7'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a7','',array('value'=>1,'id'=>'o_a7'));?></td>
+  </tr>
+  <tr>
+    <td>Madera Aserrada</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_madera_aserrada','',array('value'=>1,'id'=>'tilde_pared_tipo_madera_aserrada'));?></td>
+    <td>YESO / CAL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_yeso_cal','',array('value'=>1,'id'=>'tilde_pared_acabado_yeso_cal'));?></td>
+    <td>EMBUTIDAS</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_instalac_embutida','',array('value'=>1,'id'=>'tilde_instalac_embutida'));?></td>
+    <td align="left">Cemento Pulido</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_cemento_pulido','',array('value'=>1,'id'=>'tilde_piso_cemento_pulido'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>ENTAMBORAD ECON&Oacute;MICA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_entamborad_econ',array('class'=>'input_catp','value'=>'','id'=>'numero_entamborad_econ','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a8','',array('value'=>1,'id'=>'m_a8'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a8','',array('value'=>1,'id'=>'v_a8'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a8','',array('value'=>1,'id'=>'a_a8'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a8','',array('value'=>1,'id'=>'h_a8'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a8','',array('value'=>1,'id'=>'o_a8'));?></td>
+  </tr>
+  <tr>
+    <td>ZINC / LAT&Oacute;N</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_zinc_laton','',array('value'=>1,'id'=>'tilde_pared_tipo_zinc_laton'));?></td>
+    <td>BALDOSA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_baldosa','',array('value'=>1,'id'=>'tilde_pared_acabado_baldosa'));?></td>
+    <td>EXTERNA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_instalac_externa','',array('value'=>1,'id'=>'tilde_instalac_externa'));?></td>
+    <td>Cemento R&uacute;stico</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_cemento_rustico','',array('value'=>1,'id'=>'tilde_piso_cemento_rustico'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>MADERA CEPILLADA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_madera_cepillada',array('class'=>'input_catp','value'=>'','id'=>'numero_madera_cepillada','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a9','',array('value'=>1,'id'=>'m_a9'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a9','',array('value'=>1,'id'=>'v_a9'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a9','',array('value'=>1,'id'=>'a_a9'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a9','',array('value'=>1,'id'=>'h_a9'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a9','',array('value'=>1,'id'=>'o_a9'));?></td>
+  </tr>
+  <tr>
+    <td>CART&Oacute;N</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_carton','',array('value'=>1,'id'=>'tilde_pared_tipo_carton'));?></td>
+    <td>Sin Friso</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_sin_friso','',array('value'=>1,'id'=>'tilde_pared_acabado_sin_friso'));?></td>
+    <td>INDUSTRIAL</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_instalac_industrial','',array('value'=>1,'id'=>'tilde_instalac_industrial'));?></td>
+    <td>LADRILLO</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_ladrillo','',array('value'=>1,'id'=>'tilde_piso_ladrillo'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>MET&Aacute;LICAS</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_metalicas',array('class'=>'input_catp','value'=>'','id'=>'numero_metalicas','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a10','',array('value'=>1,'id'=>'m_a10'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a10','',array('value'=>1,'id'=>'v_a10'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a10','',array('value'=>1,'id'=>'a_a10'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a10','',array('value'=>1,'id'=>'h_a10'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a10','',array('value'=>1,'id'=>'o_a10'));?></td>
+  </tr>
+  <tr>
+    <td>Sin Paredes</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_sin_paredes','',array('value'=>1,'id'=>'tilde_pared_tipo_sin_paredes'));?></td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_acabado_otro','',array('value'=>1,'id'=>'tilde_pared_acabado_otro'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>TERRACOTA</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_terracota','',array('value'=>1,'id'=>'tilde_piso_terracota'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>DE SEGURIDAD</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_seguridad',array('class'=>'input_catp','value'=>'','id'=>'numero_seguridad','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a11','',array('value'=>1,'id'=>'m_a11'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a11','',array('value'=>1,'id'=>'v_a11'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a11','',array('value'=>1,'id'=>'a_a11'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a11','',array('value'=>1,'id'=>'h_a11'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a11','',array('value'=>1,'id'=>'o_a11'));?></td>
+  </tr>
+  <tr>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_pared_tipo_otro','',array('value'=>1,'id'=>'tilde_pared_tipo_otro'));?></td>
+	<td colspan="2">&nbsp;</td>
+	<td colspan="2">&nbsp;</td>
+    <td>SIN PISO (TIERRA)</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_sinpiso','',array('value'=>1,'id'=>'tilde_piso_sinpiso'));?></td>
+	<td colspan="2">&nbsp;</td>
+    <td>VIDRIO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_vidrio',array('class'=>'input_catp','value'=>'','id'=>'numero_vidrio','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a12','',array('value'=>1,'id'=>'m_a12'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a12','',array('value'=>1,'id'=>'v_a12'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a12','',array('value'=>1,'id'=>'a_a12'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a12','',array('value'=>1,'id'=>'h_a12'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a12','',array('value'=>1,'id'=>'o_a12'));?></td>
+  </tr>
+  <tr>
+	<td colspan="2">&nbsp;</td>
+	<td colspan="2">&nbsp;</td>
+	<td colspan="2">&nbsp;</td>
+    <td>Otro</td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/tilde_piso_otro','',array('value'=>1,'id'=>'tilde_piso_otro'));?></td>
+    <td colspan="2">&nbsp;</td>
+    <td>OTRO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_puertas_otro',array('class'=>'input_catp','value'=>'','id'=>'numero_puertas_otro','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/m_a13','',array('value'=>1,'id'=>'m_a13'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/v_a13','',array('value'=>1,'id'=>'v_a13'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/a_a13','',array('value'=>1,'id'=>'a_a13'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/h_a13','',array('value'=>1,'id'=>'h_a13'));?></td>
+    <td align="center"><?=$html->checkbox($modelo_form.'/o_a13','',array('value'=>1,'id'=>'o_a13'));?></td>
+  </tr>
+</table>
+
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tr_negro">
+    <td align="center">7.- AMBIENTES</td>
+    <td align="center">Nº</td>
+    <td align="center">8.- COMPLEMENTO</td>
+    <td align="center">Nº</td>
+    <td colspan="2" align="center"> 9.- ESTADO DE CONSERVACI&Oacute;N</td>
+    <td colspan="3" align="center">11.- INGENIER&Iacute;A MUNICIPAL</td>
+  </tr>
+  <tr>
+    <td width="15%">DORMITORIO HABITACI&Oacute;N</td>
+	<td width="5%" align="center"><?=$html->input($modelo_form.'/numero_dorm_hab',array('class'=>'input_catp','value'=>'','id'=>'numero_dorm_hab','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="15%">ASCENSOR</td>
+	<td width="5%" align="center"><?=$html->input($modelo_form.'/numero_ascensor',array('class'=>'input_catp','value'=>'','id'=>'numero_ascensor','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="15%">Excelente</td>
+    <td width="10%" align="center"><?= $html->radio($modelo_form.'/tilde_conserva', array('1'=>''), '',array('onClick'=>'if(this.value==1 && $(\'ano_construccion\').value!=\'\'){$(\'select_tipologia\').disabled=false; calcular_edad_efectiva(0);}else if($(\'ano_construccion\').value==\'\'){$(\'select_tipologia\').disabled=true; fun_msj(\'Debe ingresar el a&ntilde;o de construcci&oacute;n\');}else{$(\'select_tipologia\').disabled=true;}'))?></td>
+	<td width="15%">&nbsp;</td>
+	<td width="5%" align="center">Nº</td>
+	<td width="15%" align="center">Fecha</td>
+  </tr>
+  <tr>
+    <td>COMEDOR</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_comedor',array('class'=>'input_catp','value'=>'','id'=>'numero_comedor','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>AIRE ACONDICIONADO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_aire_acond',array('class'=>'input_catp','value'=>'','id'=>'numero_aire_acond','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>Bueno</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_conserva', array('2'=>''), '',array('onClick'=>'if(this.value==2 && $(\'ano_construccion\').value!=\'\'){$(\'select_tipologia\').disabled=false; calcular_edad_efectiva(0);}else if($(\'ano_construccion\').value==\'\'){$(\'select_tipologia\').disabled=true; fun_msj(\'Debe ingresar el a&ntilde;o de construcci&oacute;n\');}else{$(\'select_tipologia\').disabled=true;}'))?></td>
+	<td>CONSTRUCCI&Oacute;N</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_construccion',array('class'=>'input_catp','value'=>'','id'=>'numero_construccion','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);'));?></td>
+	<td align="center"><? $sisap->input_fecha($modelo_form,"fecha_ing_munc","fecha_ing_munc");?></td>
+  </tr>
+  <tr>
+    <td>SALA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_sala',array('class'=>'input_catp','value'=>'','id'=>'numero_sala','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>REJAS EN PUERTAS</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_rejas_puertas',array('class'=>'input_catp','value'=>'','id'=>'numero_rejas_puertas','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>Regular</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_conserva', array('3'=>''), '',array('onClick'=>'if(this.value==3 && $(\'ano_construccion\').value!=\'\'){$(\'select_tipologia\').disabled=false; calcular_edad_efectiva(0);}else if($(\'ano_construccion\').value==\'\'){$(\'select_tipologia\').disabled=true; fun_msj(\'Debe ingresar el a&ntilde;o de construcci&oacute;n\');}else{$(\'select_tipologia\').disabled=true;}'))?></td>
+	<td>HABITABILIDAD</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_habitabilidad',array('class'=>'input_catp','value'=>'','id'=>'numero_habitabilidad','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);'));?></td>
+	<td align="center"><? $sisap->input_fecha($modelo_form,"fecha_ing_munh","fecha_ing_munh");?></td>
+  </tr>
+  <tr>
+    <td>BA&Ntilde;O ECON&Oacute;MICO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_bano_econ',array('class'=>'input_catp','value'=>'','id'=>'numero_bano_econ','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>REJAS EN VENTANAS</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_rejas_vent',array('class'=>'input_catp','value'=>'','id'=>'numero_rejas_vent','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>Malo</td>
+    <td align="center"><?= $html->radio($modelo_form.'/tilde_conserva', array('4'=>''), '',array('onClick'=>'if(this.value==4 && $(\'ano_construccion\').value!=\'\'){$(\'select_tipologia\').disabled=false; calcular_edad_efectiva(0);}else if($(\'ano_construccion\').value==\'\'){$(\'select_tipologia\').disabled=true; fun_msj(\'Debe ingresar el a&ntilde;o de construcci&oacute;n\');}else{$(\'select_tipologia\').disabled=true;}'))?>
+	<td>DEMOLICI&Oacute;N</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_demolicion',array('class'=>'input_catp','value'=>'','id'=>'numero_demolicion','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);'));?></td>
+	<td align="center"><? $sisap->input_fecha($modelo_form,"fecha_ing_mund","fecha_ing_mund");?></td>
+  </tr>
+  <tr>
+    <td>BA&Ntilde;O LUJOSO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_bano_lujoso',array('class'=>'input_catp','value'=>'','id'=>'numero_bano_lujoso','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>CLOSET</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_closet',array('class'=>'input_catp','value'=>'','id'=>'numero_closet','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+	<td colspan="2" align="center" style="font-size:13px;" class="tr_negro">10.- OTROS DATOS</td>
+	<td colspan="3" align="center" style="font-size:13px;" class="tr_negro">12.- AFECTACIONES LEGALES</td>
+  </tr>
+  <tr>
+    <td>COCINA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_cocina',array('class'=>'input_catp','value'=>'','id'=>'numero_cocina','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>CER&Aacute;MICA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_ceramicas',array('class'=>'input_catp','value'=>'','id'=>'numero_ceramicas','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>A&ntilde;o Construcci&oacute;n</td>
+    <td align="center"><?=$html->input($modelo_form.'/ano_construccion',array('class'=>'input_catp','onChange'=>'calcular_edad_efectiva(0)','id'=>'ano_construccion','maxlength'=>'4',"onKeyPress"=>"return solonumeros_enteros(event);"));?></td>
+	<td>HIPOTECA</td>
+	<td>&nbsp;</td>
+	<td align="center"><?= $html->input($modelo_form.'/monto_hipoteca',array('value'=>"0,00", 'id'=>'monto_hipoteca', 'class'=>'input_catp', 'onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('monto_hipoteca');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td>&Aacute;REA DE SERVICIO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_area_serv',array('class'=>'input_catp','value'=>'','id'=>'numero_area_serv','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>PUERTA SANTA MARIA</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_puerta_stam',array('class'=>'input_catp','value'=>'','id'=>'numero_puerta_stam','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>A&ntilde;o Refacci&oacute;n</td>
+    <td align="center"><?=$html->input($modelo_form.'/ano_refraccion',array('value'=>'0','id'=>'anio_refaccion','class'=>'input_catp','maxlength'=>'4',"onChange"=>"recalcular_edad_efectiva(0);","onKeyPress"=>"return solonumeros_enteros(event);","onBlur"=>"javascript:if(this.value==''){this.value='0';}", "onFocus"=>"javascript:if(this.value=='0'){this.value='';}"));?></td>
+	<td>EXPROPIACI&Oacute;N</td>
+	<td>&nbsp;</td>
+	<td align="center"><?= $html->input($modelo_form.'/monto_expropiacion',array('value'=>"0,00", 'id'=>'monto_expropiacion', 'class'=>'input_catp', 'onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('monto_expropiacion');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr>
+    <td>ESTUDIO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_estudio',array('class'=>'input_catp','value'=>'','id'=>'numero_estudio','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>HIDRO NEUM&Aacute;TICO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_neumatico',array('class'=>'input_catp','value'=>'','id'=>'numero_neumatico','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>% Refacci&oacute;n </td>
+    <td><?=$html->input($modelo_form.'/porce_refraccion',array('value'=>$sisap->Formato2(0),'style'=>'text-align:left','class'=>'input_catp input_porc_refac','maxlength'=>'5',"onKeyPress"=>"return solonumeros_con_punto(event);","onChange"=>"moneda('porce_refraccion'); recalcular_edad_efectiva(0);","onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}",'id'=>'porce_refraccion'));?></td>
+	<td width="35%" colspan="3" align="center" style="font-size:13px;" class="tr_negro">13.- CATEGOR&Iacute;AS DE CONSTRUCCI&Oacute;N</td>
+  </tr>
+  <tr>
+    <td width="15%">GARAJE</td>
+	<td width="5%" align="center"><?=$html->input($modelo_form.'/numero_garaje',array('class'=>'input_catp','value'=>'','id'=>'numero_garaje','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="15%">JACUZZI</td>
+	<td width="5%" align="center"><?=$html->input($modelo_form.'/numero_jacuzzi',array('class'=>'input_catp','value'=>'','id'=>'numero_jacuzzi','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="15%">Edad Efectiva </td>
+    <td width="10%" align="center"><?=$html->input($modelo_form.'/edad_efectiva',array('class'=>'input_catp','id'=>'edad_efectiva','maxlength'=>'3',"onfocus"=>"this.blur();"));?></td>
+	<td width="9%" align="center">CATEGOR&Iacute;A</td>
+	<td width="13%" align="center">&Aacute;REA</td>
+	<td width="13%" align="center">PORCENTAJE (%)</td>
+  </tr>
+  <tr>
+    <td>ESTACIONAMIENTO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_estacionamiento',array('class'=>'input_catp','value'=>'','id'=>'numero_estacionamiento','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>CALENTADOR</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_calentador',array('class'=>'input_catp','value'=>'','id'=>'numero_calentador','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>Nº de Niveles</td>
+    <td align="center"><?=$html->input($modelo_form.'/nro_niveles',array('value'=>'1','class'=>'input_catp','id'=>'nume_niveles','maxlength'=>'2',"onKeyPress"=>"return solonumeros(event);","onBlur"=>"javascript:if(this.value==''){this.value='1';}", "onFocus"=>"javascript:if(this.value=='0'){this.value='';}"));?></td>
+	<td align="center">A</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_a',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_a','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_a'); tarea_xcategoria('porc_cc_a','area_cc_a');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_a','area_cc_a');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_a',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_a','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_a'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td>MALETERO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_maletero',array('class'=>'input_catp','value'=>'','id'=>'numero_maletero','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>PISCINA (CAP)</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_piscina',array('class'=>'input_catp','value'=>'','id'=>'numero_piscina','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>Nº de Edificaciones</td>
+    <td align="center"><?=$html->input($modelo_form.'/nro_edificaciones',array('value'=>'1','class'=>'input_catp','id'=>'nume_edificaciones','maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);","onBlur"=>"javascript:if(this.value==''){this.value='1';}", "onFocus"=>"javascript:if(this.value=='0'){this.value='';}"));?></td>
+	<td align="center">B</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_b',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_b','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_b'); tarea_xcategoria('porc_cc_b','area_cc_b');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_b','area_cc_b');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value=''}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_b',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_b','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_b'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td>S&Oacute;TANO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_sotano',array('class'=>'input_catp','value'=>'','id'=>'numero_sotano','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+	<td colspan="2" align="center"><?=$html->input($modelo_form.'/cant_ag_piscina',array('class'=>'input_catp','value'=>'0,000','id'=>'cant_ag_piscina','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,000';} precio_unitario('cant_ag_piscina');", "onFocus"=>"javascript:if(this.value=='0,000'){this.value='';}"));?></td>
+    <td>Nº de Familias</td>
+    <td align="center"><?=$html->input($modelo_form.'/nro_familias',array('value'=>'1','class'=>'input_catp','id'=>'nro_familias','maxlength'=>'3',"onKeyPress"=>"return solonumeros(event);","onBlur"=>"javascript:if(this.value==''){this.value='1';}", "onFocus"=>"javascript:if(this.value=='0'){this.value='';}"));?></td>
+	<td align="center">C</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_c',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_c','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_c'); tarea_xcategoria('porc_cc_c','area_cc_c');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_c','area_cc_c');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_c',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_c','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_c'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td>LETRINA / POZO S&Eacute;PTICO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_letrinap',array('class'=>'input_catp','value'=>'','id'=>'numero_letrinap','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>TANQUE (TIPO Y CAPACIDAD)</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_tanque_tc',array('class'=>'input_catp','value'=>'','id'=>'numero_tanque_tc','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td><b>&Aacute;REA TOTAL DEL TERRENO</b></td>
+    <td align="center"><?=$html->input($modelo_form.'/registro_area_terreno',array('value'=>"0,00", 'id'=>'ide_ater', 'class'=>'input_catp', 'onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>'calcular_val_terrrenom();', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center">D</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_d',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_d','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_d'); tarea_xcategoria('porc_cc_d','area_cc_d');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_d','area_cc_d');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_d',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_d','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_d'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td>OTRO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_otro_ambiente',array('class'=>'input_catp','value'=>'','id'=>'numero_otro_ambiente','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+	<td colspan="2" align="center"><?=$html->input($modelo_form.'/espec_capac_tanque_tc',array('class'=>'input_catp','value'=>'','id'=>'espec_capac_tanque_tc'));?></td>
+    <td colspan="2">&nbsp;</td>
+	<td align="center">E</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_e',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_e','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_e'); tarea_xcategoria('porc_cc_e','area_cc_e');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_e','area_cc_e');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_e',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_e','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_e'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+	<td colspan="2" align="center"><?=$html->input($modelo_form.'/capacidad_tanque_tc',array('class'=>'input_catp','value'=>'0,000','id'=>'capacidad_tanque_tc','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,000';} precio_unitario('capacidad_tanque_tc');", "onFocus"=>"javascript:if(this.value=='0,000'){this.value='';}"));?></td>
+	<td colspan="2">&nbsp;</td>
+	<td align="center">F</td>
+	<td align="center"><?=$html->input($modelo_form.'/area_cc_f',array('class'=>'input_catp','value'=>'0,00','id'=>'area_cc_f','maxlength'=>'8','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('area_cc_f'); tarea_xcategoria('porc_cc_f','area_cc_f');tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';tarea_xcategoria('porc_cc_f','area_cc_f');tporc_xcategoria();}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/porc_cc_f',array('class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'porc_cc_f','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>"moneda('porc_cc_f'); tporc_xcategoria();", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+    <td>OTRO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_otro_complemento',array('class'=>'input_catp','value'=>'','id'=>'numero_otro_complemento','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+	<td colspan="2">&nbsp;</td>
+	<td align="center"><b>TOTAL</b></td>
+	<td align="center"><?=$html->input($modelo_form.'/registro_area_construccion',array('value'=>"0,00", 'id'=>'ide_aconst', 'style'=>'background-color:#e0ffff;font-weight:bold;border: 1px dashed #CC0000;','class'=>'input_catp', 'readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onChange"=>'$(\'area_m2\').value=this.value; moneda(\'area_m2\'); calcular_fila_valor_actual();', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('ide_aconst');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';} this.blur();"));?></td>
+	<td align="center"><?=$html->input($modelo_form.'/total_porc_const',array('style'=>'background-color:#ffe1ff;color:#000000;border: 1px dashed #CC0000;','class'=>'input_catp input_porc_refac','value'=>'0,00','id'=>'total_porc_const','maxlength'=>'8','readonly'=>'readonly','onKeyPress'=>'return solonumeros_con_punto(event);', "onBlur"=>"javascript:if(this.value==''){this.value='0,00';} moneda('total_porc_const');", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';} this.blur();"));?></td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tabla_tdprincip">
+    <td colspan="14" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">M.- SERVICIOS DEL INMUEBLE </td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="2" align="center">1.- ABAST. AGUA</td>
+    <td colspan="2" align="center">2.- ELECTRIC.</td>
+    <td colspan="2" align="center">3.- ENERGIA P/COCINAR</td>
+    <td colspan="2" align="center">4.- TEL&Eacute;FONO</td>
+    <td colspan="2" align="center">5.- INTERNET</td>
+    <td colspan="2" align="center">6.- AGUAS SERVIDAS</td>
+    <td colspan="2" align="center">7.- ASEO URBANO</td>
+  </tr>
+  <tr>
+    <td width="13%">ACUEDUCTO TUBERIAS</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('1'=>''), '', array())?></td>
+    <td width="10%">MEDIDOR</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_electrico', array('1'=>''), '', array())?></td>
+    <td width="10%">GAS DIRECTO</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_energia', array('1'=>''), '', array())?></td>
+    <td width="10%">Nº DE LINEAS</td>
+	<td width="6%" align="center"><?=$html->input($modelo_form.'/numero_serv_inm_telef',array('class'=>'input_catp','value'=>'','id'=>'numero_serv_inm_telef','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td width="10%">V&Iacute;A TELEF&Oacute;NICA</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('1'=>''), '', array())?></td>
+    <td width="10%">WC A CLOACAS</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_agua_servida', array('1'=>''), '', array())?></td>
+    <td width="13%">DOMICILIARIO</td>
+    <td width="3%" align="center"><?= $html->radio($modelo_form.'/serv_inm_aseo_urbano', array('1'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>PILA P&Uacute;BLICA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('2'=>''), '', array())?></td>
+    <td>SERVICIO EL&Eacute;CTRICO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_electrico', array('2'=>''), '', array())?></td>
+    <td>BOMBONAS</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_energia', array('2'=>''), '', array())?></td>
+    <td>RESIDENCIAL</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_serv_inm_resid',array('class'=>'input_catp','value'=>'','id'=>'numero_serv_inm_resid','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>FIBRA OPTICA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('2'=>''), '', array())?></td>
+    <td>POZO S&Eacute;PTICO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_agua_servida', array('2'=>''), '', array())?></td>
+    <td>POR CONTAINER</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_aseo_urbano', array('2'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>CAMI&Oacute;N CISTERNA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('3'=>''), '', array())?></td>
+    <td>SIN SERVICIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_electrico', array('3'=>''), '', array())?></td>
+    <td>LE&Ntilde;A</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_energia', array('3'=>''), '', array())?></td>
+    <td>COMERCIAL</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_serv_inm_com',array('class'=>'input_catp','value'=>'','id'=>'numero_serv_inm_com','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>RESIDENCIAL</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('3'=>''), '', array())?></td>
+    <td>HOYO / LETRINA</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_agua_servida', array('3'=>''), '', array())?></td>
+    <td>POR BAJANTES</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_aseo_urbano', array('3'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>POZO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('4'=>''), '', array())?></td>
+	<td colspan="2" align="center" style="font-size:13px;"><b>SERIAL MEDIDOR</b></td>
+    <td>OTRO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_energia', array('4'=>''), '', array())?></td>
+    <td>OTRO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_serv_inm_otro',array('class'=>'input_catp','value'=>'','id'=>'numero_serv_inm_otro','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>COMERCIAL</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('4'=>''), '', array())?></td>
+    <td>AIRE LIBRE</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_agua_servida', array('4'=>''), '', array())?></td>
+    <td>SIN SERVICIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_aseo_urbano', array('4'=>''), '', array())?></td>
+  </tr>
+  <tr>
+    <td>DEL RIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('5'=>''), '', array())?></td>
+	<td colspan="2" rowspan="2"><?=$html->input($modelo_form.'/espec_electric',array('style'=>'font-weight:bold;border: 1px dashed #CC0000;','class'=>'input_catp_dos','value'=>'','id'=>'espec_electric','maxlength'=>'25'));?></td>
+    <td>SIN SERVICIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_energia', array('5'=>''), '', array())?></td>
+    <td>SIN SERVICIO</td>
+	<td align="center"><?=$html->input($modelo_form.'/numero_serv_inm_sinserv',array('class'=>'input_catp','value'=>'','id'=>'numero_serv_inm_sinserv','maxlength'=>'2','onKeyPress'=>'return solonumeros_enteros(event);', 'onChange'=>"ubibpc(this.id);", 'onmouseover'=>"ubicpc(this.id);", 'onmouseout'=>"ubixpc(this.id);"));?></td>
+    <td>OTRO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('5'=>''), '', array())?></td>
+    <td>OTRO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_agua_servida', array('5'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>SIN SERVICIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_abast_agua', array('6'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+	<td colspan="2">&nbsp;</td>
+    <td>SIN SERVICIO</td>
+    <td align="center"><?= $html->radio($modelo_form.'/serv_inm_internet', array('6'=>''), '', array())?></td>
+	<td colspan="2">&nbsp;</td>
+	<td colspan="2">&nbsp;</td>
+  </tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr align="center" bgcolor="#CDF2FF">
+
+<td width="16%" style="font-size:7pt;" NOWRAP>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr align="center" bgcolor="#b0b0b0">
+    <td colspan="5" style="font-size:8pt;text-shadow: 1px 1px 1px #ffffff;"><b>DISTRIBUCI&Oacute;N</b></td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td>D</td>
+    <td>ID</td>
+    <td>S</td>
+    <td>Q</td>
+    <td>O</td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td><?= $html->radio($modelo_form.'/serv_inm_abastag_dist', array('1'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_abastag_dist', array('2'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_abastag_dist', array('3'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_abastag_dist', array('4'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_abastag_dist', array('5'=>''), '', array())?></td>
+  </tr>
+</table>
+</td>
+
+	<td width="68%" style="font-size:7pt;" NOWRAP>
+    	<div style="overflow:hidden;height:90px;">
+		</div>
+    </td>
+
+<td width="16%" style="font-size:7pt;" NOWRAP>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr align="center" bgcolor="#b0b0b0">
+    <td colspan="4" style="font-size:8pt;text-shadow: 1px 1px 1px #ffffff;"><b>DIST. CONT.</b></td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td>D</td>
+    <td>3S</td>
+    <td>2S</td>
+    <td>1S</td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td><?= $html->radio($modelo_form.'/serv_inm_aseou_dist', array('1'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_aseou_dist', array('2'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_aseou_dist', array('3'=>''), '', array())?></td>
+    <td><?= $html->radio($modelo_form.'/serv_inm_aseou_dist', array('4'=>''), '', array())?></td>
+  </tr>
+</table>
+</td>
+
+  </tr>
+</table>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  <tr class="tabla_tdprincip">
+    <td colspan="8" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">N1.- POBLACI&Oacute;N ADULTA </td>
+  </tr>
+  <tr class="tr_negro">
+    <td width="6%" align="center">1.- Edad</td>
+    <td width="8%" align="center">2.- Sexo</td>
+    <td width="19%" align="center">3.- Nivel Educativo</td>
+    <td width="20%" align="center">4.- Profesi&oacute;n u Oficio</td>
+    <td width="19%" align="center">5.- Lugar de Trabajo</td>
+    <td width="20%" align="center">6.- Medio de Transporte</td>
+    <td colspan="2" width="8%" align="center">Agregar</td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->input($modelo_form.'/pob_adulta_edad',array('value'=>'','class'=>'inputtext','id'=>'pob_adulta_edad','style'=>'text-align:center;','maxlength'=>'3','onChange'=>"document.getElementById('boton_add_pa').disabled = false;",'onKeyPress'=>'return solonumeros_enteros(event);'));?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/pob_adulta_sexo', array('1'=>'F','2'=>'M'), '', array())?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_adulta_neduc', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_adulta_neduc', 'class'=>'inputtext'), false) ?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_adulta_oprof', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_adulta_oprof', 'class'=>'inputtext'), false) ?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_adulta_ltrab', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_adulta_ltrab', 'class'=>'inputtext'), false) ?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_adulta_trans', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_adulta_trans', 'class'=>'inputtext'), false) ?></td>
+    <td colspan="2" align="center"><?= $sisap->submitTagRemote('+', array('funcion'=>'plus_fpa', 'url1' => '/'.$modelo_form.'/filas_pobc_adulta', 'update1'=>'cargar_poblacion_adulta','id'=>'boton_add_pa','disabled'=>'')); ?></td>
+  </tr>
+  <tr class="tr_negro">
+    <td width="6%" align="center">1.- Edad</td>
+    <td width="8%" align="center">2.- Sexo</td>
+    <td width="19%" align="center">3.- Nivel Educativo</td>
+    <td width="20%" align="center">4.- Profesi&oacute;n u Oficio</td>
+    <td width="19%" align="center">5.- Lugar de Trabajo</td>
+    <td width="20%" align="center">6.- Medio de Transporte</td>
+    <td width="4%" align="center">M</td>
+    <td width="4%" align="center">E</td>
+  </tr>
+</table>
+
+<div id="cargar_poblacion_adulta" style="height:300px;overflow-y:scroll;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+<?php for($f=0;$f<11;$f++){ if($f%2==0){ $color="#CDF2FF"; }else{ $color="#DAEBFF"; } ?>
+  <tr bgcolor="<?=$color?>">
+    <td width="6%" align="center">&nbsp;</td>
+    <td width="8%" align="center">&nbsp;</td>
+    <td width="19%" align="center">&nbsp;</td>
+    <td width="20%" align="center">&nbsp;</td>
+    <td width="19%" align="center">&nbsp;</td>
+    <td width="20%" align="center">&nbsp;</td>
+    <td colspan="2" width="6%" align="center">&nbsp;</td>
+  </tr>
+<? } ?>
+</table>
+</div>
+
+<input type="hidden" value="0" id="inum_pa" readonly>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tabla_tdprincip">
+    <td colspan="8" align="center" style="background-color:#fffafa;color:#000000;font-size:18px;" class="imtabla_tdtrf">N2.- POBLACI&Oacute;N INFANTIL </td>
+  </tr>
+  <tr class="tr_negro">
+    <td width="6%" align="center">1.- Edad</td>
+    <td width="8%" align="center">2.- Sexo</td>
+    <td width="19%" align="center">3.- Nivel Educativo</td>
+    <td width="39%" align="center">4.- Lugar y Nombre de la Instituci&oacute;n</td>
+    <td width="20%" align="center">5.- Medio de Transporte</td>
+    <td colspan="2" width="8%" align="center">Agregar</td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->input($modelo_form.'/pob_infantil_edad',array('value'=>'','class'=>'inputtext','id'=>'pob_infantil_edad','style'=>'text-align:center;','maxlength'=>'3','onChange'=>"document.getElementById('boton_add_pi').disabled = false;",'onKeyPress'=>'return solonumeros_enteros(event);'));?></td>
+    <td align="center"><?= $html->radio($modelo_form.'/pob_infantil_sexo', array('1'=>'F','2'=>'M'), '', array())?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_infantil_neduc', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_infantil_neduc', 'class'=>'inputtext'), false) ?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_infantil_nomb_inst', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_infantil_nomb_inst', 'class'=>'inputtext'), false) ?></td>
+    <td align="center"><?= $html->textarea($modelo_form.'/pob_infantil_trans', array('','rows'=>'2', 'value'=>'', 'id'=>'pob_infantil_trans', 'class'=>'inputtext'), false) ?></td>
+    <td colspan="2" align="center"><?= $sisap->submitTagRemote('+', array('funcion'=>'plus_fpi', 'url1' => '/'.$modelo_form.'/filas_pobc_infantil', 'update1'=>'cargar_poblacion_infantil','id'=>'boton_add_pi','disabled'=>'')); ?></td>
+  </tr>
+  <tr class="tr_negro">
+    <td width="6%" align="center">1.- Edad</td>
+    <td width="8%" align="center">2.- Sexo</td>
+    <td width="19%" align="center">3.- Nivel Educativo</td>
+    <td width="39%" align="center">4.- Lugar y Nombre de la Instituci&oacute;n</td>
+    <td width="20%" align="center">5.- Medio de Transporte</td>
+    <td width="4%" align="center">M</td>
+    <td width="4%" align="center">E</td>
+  </tr>
+</table>
+
+<div id="cargar_poblacion_infantil" style="height:300px;overflow-y:scroll;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+<?php for($f=0;$f<11;$f++){ if($f%2==0){ $color="#CDF2FF"; }else{ $color="#DAEBFF"; } ?>
+  <tr bgcolor="<?=$color?>">
+    <td width="6%" align="center">&nbsp;</td>
+    <td width="8%" align="center">&nbsp;</td>
+    <td width="19%" align="center">&nbsp;</td>
+    <td width="39%" align="center">&nbsp;</td>
+    <td width="20%" align="center">&nbsp;</td>
+    <td colspan="2" width="6%" align="center">&nbsp;</td>
+  </tr>
+<? } ?>
+</table>
+</div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tr_negro">
+    <td align="center">Observaciones</td>
+  </tr>
+  <tr>
+    <td align="center"><?= $html->textarea($modelo_form.'/observaciones_poblac', array('','rows'=>'6', 'value'=>'', 'id' =>'observaciones_poblac','class'=>'inputtext'), false) ?></td>
+  </tr>
+</table>
+
+	<input type="hidden" name="ctrl_num_ne" value="0" id="ctrl_num_ne" readOnly />
+
+	<!-- TERMINA BLOQUE TAB Cuatro -->
+	</div>
+	</div>
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_datos_reg_valor_emco" style="display:none;">
+	<!-- INICIO BLOQUE TAB Quinto -->
+
+<div id="traer_depreciacion"></div>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="8" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">Valoraci&oacute;n Econ&oacute;mica </td>
+  </tr>
+  <tr>
+    <td colspan="8" align="center" style="height:31px;font-size:14pt;" class="tr_negro">1.- Terreno </td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="8" align="center">Planta de valores de la tierra </td>
+  </tr>
+  <tr>
+    <td width="11%" align="center">Selecci&oacute;n</td>
+    <td width="11%" align="center">C&oacute;digo</td>
+    <td width="58%" colspan="5" align="center">Denominaci&oacute;n</td>
+    <td width="20%" align="center">Valor Bs/m<sup>2</sup> </td>
+  </tr>
+  <tr>
+    <td id="st_valor_planta"><?=$sisap->SelectVacio();?></td>
+    <td id="td_datos_planta_valor"><?=$html->input($modelo_form.'/codigo_planta',array('class'=>'input_catp','id'=>'codigo_planta',"onfocus"=>"this.blur();"));?></td>
+    <td colspan="5"><?=$html->input($modelo_form.'/deno_planta',array('style'=>'text-align:left;','class'=>'input_catp','id'=>'deno_planta',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/monto_valor_planta',array('class'=>'input_catp','id'=>'valorm_planta',"onfocus"=>"this.blur();"));?></td>
+  </tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr>
+    <td colspan="3">&nbsp;</td>
+    <td colspan="2" align="center">Factor de Ajuste </td>
+    <td colspan="3">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="11%" align="center">&Aacute;rea (m<sup>2</sup>)</td>
+    <td width="11%" align="center">Valor Unitario (Bs/m<sup>2</sup>)</td>
+    <td width="30%" align="center">Sector</td>
+    <td width="10%" align="center">&Aacute;rea (m<sup>2</sup>)</td>
+    <td width="10%" align="center">Forma</td>
+    <td width="10%" align="center">Valor Ajustado (Bs/m<sup>2</sup>)</td>
+    <td width="18%" colspan="2" align="center">Monto Total del Terreno (Bs.)</td>
+  </tr>
+
+    <tr>
+    <td><?=$html->input($modelo_form.'/valoracion_area',array('class'=>'input_catp_dos','value'=>$sisap->Formato2(0),"onKeyPress"=>"return solonumeros_punto(event);","onChange"=>"moneda('monto');","onfocus"=>"this.blur();",'id'=>'valoracion_area','readonly'=>'readonly'));?></td>
+    <td><?=$html->input($modelo_form.'/valoracion_valor_unitario',array('class'=>'input_catp_dos','value'=>$sisap->Formato2(0),"onKeyPress"=>"return solonumeros_con_punto(event);","onChange"=>"monedapp('valoracion_valor_unitario',4);",'id'=>'valoracion_valor_unitario',"onfocus"=>"this.blur();"));?></td>
+    <td><?= $html->textarea($modelo_form.'/valoracion_sector', array('','rows'=>'1', 'value'=>'', 'id'=>'ide_valoracion_sector','class'=>'inputtext','readonly'=>'readonly'),  false) ?></td>
+    <td><?=$html->input($modelo_form.'/valoracion_ajuste_area',array('class'=>'input_catp_dos','value'=>'0,00',"onKeyPress"=>"return solonumeros_con_punto(event);","onChange"=>"'valoracion_ajuste_area'; document.getElementById('valoracion_valor_total').value = redondear(eval(this.value) * eval(document.getElementById('valoracion_valor_ajustado').value),2);  calcular_distribucion_imp();",'id'=>'valoracion_ajuste_area',"onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td><?=$html->input($modelo_form.'/valoracion_ajuste_forma',array('style'=>'text-align:left;','class'=>'input_catp_dos','value'=>'','id'=>'valoracion_ajuste_forma'));?></td>
+    <td><?=$html->input($modelo_form.'/valoracion_valor_ajustado',array('class'=>'input_catp_dos','value'=>'0,00',"onKeyPress"=>"return solonumeros_con_punto(event);","onChange"=>"'valoracion_valor_ajustado'; document.getElementById('valoracion_valor_total').value = redondear(eval(this.value) * eval(document.getElementById('valoracion_ajuste_area').value),2); calcular_distribucion_imp();",'id'=>'valoracion_valor_ajustado',"onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+
+    <td colspan="2"><?=$html->input($modelo_form.'/valoracion_valor_total',array('class'=>'input_catp_dos','value'=>$sisap->Formato2(0),"onKeyPress"=>"return solonumeros_con_punto(event);","onChange"=>"document.getElementById('calculo_terreno').value=this.value; moneda('valoracion_valor_total');",'id'=>'valoracion_valor_total','style'=>"font-weight:bold;background-color:#e0ffff;color:#840000;font-size:12pt;","onfocus"=>"this.blur();"));?></td>
+  </tr>
+
+</table>
+
+<div id="capa_ei_divcatp" class="">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  <tr>
+    <td colspan="7" align="center" style="height:31px;font-size:14pt;" class="tr_negro">2.- Construcci&oacute;n </td>
+  </tr>
+  <tr>
+    <td width="29%" align="center">Tipolog&iacute;a</td>
+    <td width="14%" align="center">&Aacute;rea (m<sup>2</sup>) </td>
+    <td width="14%" align="center">Valor (Bs/m<sup>2</sup>) </td>
+    <td width="14%" align="center">Valor de la Construcci&oacute;n (Bs) </td>
+    <td width="10%" align="center">%<br>Depreciaci&oacute;n </td>
+    <td width="13%" align="center">Valor Actual (Bs) </td>
+    <td width="6%" align="center">Agregar</td>
+  </tr>
+  <tr>
+    <td width="29%"><?$sisap->selectTagRemote($modelo_form.'/cod_tipologia', $tipologia ,array('value1'=>'otros'), null, array('onchange1'=>'/catp02_ficha_datos/mostrar_valorm2', 'update1'=>'tipologia_valor_m2','onchange2'=>'/catp02_ficha_datos/select3/vprincipal', 'update2'=>'st_select3_1','onChange'=>'vacio','id'=>'select_tipologia','class'=>'inputtext', true), null, true);?></td>
+    <td width="14%"><?=$html->input($modelo_form.'/area_m2',array('value'=>'0,00','class'=>'inputtext','id'=>'area_m2','style'=>'text-align:center;','onChange'=>'\'area_m2\'; calcular_fila_valor_actual();',"onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td width="14%" id="tipologia_valor_m2"><?=$html->input($modelo_form.'/valor_m2',array('value'=>'0,0000', 'class'=>'inputtext', 'id'=>'valor_m2','style'=>'text-align:center;',"onfocus"=>"this.blur();"));?></td>
+    <td width="14%"><?=$html->input($modelo_form.'/valor_construcci',array('value'=>'0,00','class'=>'inputtext','id'=>'valor_construcci','style'=>'text-align:center;','onChange'=>'\'valor_construcci\';',"onBlur"=>"javascript:if(this.value==''){this.value='0,00';}", "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}"));?></td>
+    <td width="10%"><?=$html->input($modelo_form.'/porc_depreciacion',array('value'=>'0,00','class'=>'inputtext input_porc_refac_2','id'=>'porc_depreciacion','style'=>'text-align:center;',"onfocus"=>"this.blur()"));?></td>
+    <td width="13%"><?=$html->input($modelo_form.'/valor_actual',array('value'=>'0,00','class'=>'inputtext','id'=>'valor_actual','style'=>'text-align:center;',"onfocus"=>"this.blur()"));?></td>
+    <td width="6%"><?= $sisap->submitTagRemote('+', array('funcion'=>'plus_selecction_tpg', 'url1' => '/'.$modelo_form.'/filas_tipo_construccion', 'update1'=>'cargar_filas_construccion','id'=>'plus2','disabled'=>'')); ?></td>
+  </tr>
+</table>
+
+   <div id="cargar_filas_construccion" style="overflow-y:auto;">
+   	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  		<tr bgcolor="#CDF2FF" align="center">
+    		<td width="29%">&nbsp;</td>
+    		<td width="14%">&nbsp;</td>
+    		<td width="14%">&nbsp;</td>
+    		<td width="14%">&nbsp;</td>
+    		<td width="10%">&nbsp;</td>
+    		<td width="13%">&nbsp;</td>
+    		<td width="6%">&nbsp;</td>
+  		</tr>
+  	</table>
+   </div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tr_negro">
+    <td colspan="11" align="center">Variables de la Construcci&oacute;n </td>
+  </tr>
+  <tr>
+	<td align="center">Tipolog&iacute;a</td>
+    <td colspan="2" align="center">Variable Principal </td>
+    <td colspan="2" align="center">Variable Primaria </td>
+    <td align="center">Variaci&oacute;n Monto (Bs/M<sup>2</sup>)</td>
+    <td width="5%" align="center">Agregar</td>
+  </tr>
+  <tr>
+    <td width="24%" id="carga_select_tpg"><?=$html->input($modelo_form.'/campo_tipologia_dos',array('value'=>'','type'=>'text','class'=>'input_catp','id'=>'campo_tipologia_dos',"onfocus"=>"this.blur();"));?></td>
+    <td width="5%" id="st_select3_1"><?=$sisap->SelectVacio();?></td>
+    <td width="24%" id="deno_select3_1"><?=$html->input($modelo_form.'/campo',array('class'=>'input_catp','id'=>'idcam_vprincipal',"onfocus"=>"this.blur();"));?></td>
+    <td width="5%" id="st_select3_2"><?=$sisap->SelectVacio();?></td>
+    <td width="23%" id="deno_select3_2"><?=$html->input($modelo_form.'/campo',array('class'=>'input_catp','id'=>'idcam_vprimaria',"onfocus"=>"this.blur();"));?></td>
+    <td width="14%" id="monto_select3_3"><?=$html->input($modelo_form.'/monto_vs',array('class'=>'input_catp','id'=>'monto_vs',"onfocus"=>"this.blur();"));?></td>
+    <td width="5%" align="center"><?= $sisap->submitTagRemote('+', array('url1' => '/'.$modelo_form.'/filas_variable_construccion', 'update1'=>'cargar_variables_construccion','id'=>'plus','disabled'=>'disabled')); ?></td>
+  </tr>
+</table>
+<div id="cargar_variables_construccion">
+   	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  		<tr bgcolor="#CDF2FF" align="center">
+    		<td width="24%">&nbsp;</td>
+    		<td width="5%">&nbsp;</td>
+    		<td width="23%">&nbsp;</td>
+    		<td width="5%">&nbsp;</td>
+    		<td width="23%">&nbsp;</td>
+    		<td width="14%">&nbsp;</td>
+    		<td width="6%">&nbsp;</td>
+  		</tr>
+  	</table>
+</div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr>
+    <td width="12%" align="center">&Aacute;rea Total </td>
+    <td width="14%" align="center">Promedio Valor<br>(Bs/M<sup>2</sup>) </td>
+    <td width="14%" align="center">Total Variaci&oacute;n (Bs/M<sup>2</sup>) </td>
+    <td width="14%" align="center">Total valor Ajustado (Bs/M<sup>2</sup>) </td>
+    <td width="14%" align="center">Monto Ajustado Construcci&oacute;n </td>
+    <td width="12%" align="center">%<br>Depreciaci&oacute;n </td>
+    <td width="20%" align="center">Monto Total de la Construcci&oacute;n</td>
+  </tr>
+  <tr>
+    <td><?=$html->input($modelo_form.'/area_total',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'area_total',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/c_valor_construccion',array('value'=>'0,0000','class'=>'input_catp_dos','id'=>'c_valor_construccion',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/d_valor_construccion',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'d_valor_construccion',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/monto_tota_variables_c',array('value'=>'0,0000','class'=>'input_catp_dos','id'=>'monto_tota_variables_c'));?></td>
+    <td><?=$html->input($modelo_form.'/d_valor_montoajust',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'d_valor_montoajust',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/d_valor_depreciac',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'d_valor_depreciac',"onfocus"=>"this.blur();"));?></td>
+    <td><?=$html->input($modelo_form.'/monto_total_de_construccion',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'monto_total_de_construccion','style'=>"font-weight:bold;background-color:#e0ffff;color:#840000;font-size:12pt;","onfocus"=>"this.blur();"));?></td>
+  </tr>
+ </table>
+</div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr>
+    <td colspan="6" width="80%" align="right" style="font-size:13pt;"><b>Monto Total del Inmueble (Terreno + Construcci&oacute;n):</b> </td>
+    <td colspan="2" width="20%"><?=$html->input($modelo_form.'/terreno_construccion',array('value'=>'0,00','class'=>'input_catp_dos','id'=>'idim_tc','style'=>"font-weight:bold;background-color:#ffe1ff;color:#840000;font-size:12pt;","onfocus"=>"this.blur();"));?></td>
+  </tr>
+  <tr>
+    <td colspan="8" align="center">Observaciones</td>
+  </tr>
+  <tr>
+    <td colspan="8" align="center"><?= $html->textarea($modelo_form.'/observaciones_ficha', array('','rows'=>'3', 'value'=>'', 'id' =>'observaciones_ficha','class'=>'inputtext'),  false) ?></td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="8" align="center">Distribuci&oacute;n del Impuesto Anual y Trimestral </td>
+  </tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr align="center" bgcolor="white">
+    <td width="80%" style="font-size:7pt;" NOWRAP>
+    <div style="overflow-y:scroll;height:125px;">
+    <div id="carga_dimp_anutrim">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr align="center" bgcolor="#CDF2FF">
+    <td width="10%" style="font-size:8pt;">&nbsp;</td>
+    <td width="4%" style="font-size:8pt;">&nbsp;</td>
+    <td width="10%" style="font-size:8pt;">&nbsp;</td>
+    <td width="12%" style="font-size:8pt;">&nbsp;</td>
+    <td width="12%" style="font-size:8pt;">&nbsp;</td>
+    <td width="8%" style="font-size:8pt;">&nbsp;</td>
+    <td width="10%" style="font-size:8pt;">&nbsp;</td>
+    <td width="10%" style="font-size:8pt;">&nbsp;</td>
+    <td width="10%" style="font-size:8pt;">&nbsp;</td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+  </tr>
+  <tr align="center" bgcolor="#CDF2FF">
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+  </tr>
+  <tr align="center" bgcolor="#CDF2FF">
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+    <td style="font-size:8pt;">&nbsp;</td>
+  </tr>
+</table>
+</div>
+</div>
+    </td>
+
+<td width="20%" style="font-size:7pt;" NOWRAP>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr align="center" bgcolor="#CDF2FF">
+    <td style="font-size:8pt;">Impuesto Anual Bs. </td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td><?=$html->input($modelo_form.'/impuesto_anual',array('value'=>'','class'=>'input_catp_dos','id'=>'impe_anual','style'=>"font-weight:bold;color:#840000;font-size:11pt;","onfocus"=>"this.blur();"));?></td>
+  </tr>
+  <tr align="center" bgcolor="#CDF2FF">
+    <td style="font-size:8pt;">Impuesto Trimestral Bs. </td>
+  </tr>
+  <tr align="center" bgcolor="#DAEBFF">
+    <td><?=$html->input($modelo_form.'/impuesto_trimestral',array('value'=>'','class'=>'input_catp_dos','id'=>'impe_trime','style'=>"font-weight:bold;color:#840000;font-size:11pt;","onfocus"=>"this.blur();"));?></td>
+  </tr>
+</table>
+</td>
+
+  </tr>
+</table>
+
+	<!-- TERMINA BLOQUE TAB Quinto -->
+	</div>
+	</div>
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_linderos_coord" style="display:none;">
+	<!-- INICIO BLOQUE TAB Sexto -->
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tabla_tdprincip">
+    <td colspan="10" align="left" style="background-color:#fffafa;color:#8b0000;font-size:18px;" class="imtabla_tdtrf">&Ntilde;.- Ubicaci&oacute;n de la Parcela </td>
+  </tr>
+  <tr>
+    <td width="25%" align="center">N&uacute;mero <br />Ficha Catastral </td>
+    <td width="25%" align="center">N&uacute;mero <br />Inscripci&oacute;n Catastral </td>
+    <td width="25%" align="center">Fecha de <br />Inscripci&oacute;n </td>
+    <td width="25%" align="center">N&uacute;mero <br /> Control de Archivo </td>
+    <td width="25%" align="center">A&ntilde;o <br />Ordenanza </td>
+  </tr>
+  <tr>
+    <td align="center"><?=$html->input($modelo_form.'/numero_ficha_m',array('class'=>'input_catp','value'=>mascara($numero_ficha,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/numero_inscripcion_m',array('class'=>'input_catp','value'=>mascara($numero_inscripcion,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?$sisap->input_fecha($modelo_form,"fecha_inscripcion_m","fecha_inscripcion_m",date("d/m/Y"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/numero_archivo_m',array('class'=>'input_catp','value'=>mascara($numero_archivo,6),"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/ano_ordenanza_m',array('value'=>$ano_actual,'class'=>'input_catp','id'=>'ano_ordenanza_m','maxlength'=>'4',"onKeyPress"=>"return solonumeros_enteros(event);","onfocus"=>"this.blur()"));?></td>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tr_negro">
+    <td colspan="27" align="center">2.- Datos de Ubicaci&oacute;n</td>
+  </tr>
+  <tr class="tabla_tdprincip">
+    <td colspan="27" align="center" style="background-color:#fffafa;color:#000000;font-size:12px;" class="imtabla_tdtrf">C&oacute;digo Catastral &Aacute;mbito <div id="id_descrip_ur_m"><font color="#940000"><b>Urbano</b></font></div> </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" width="10%">Edo<br />(Estado)</td>
+    <td colspan="2" align="center" width="10%">Mun<br />(Municipio)</td>
+    <td colspan="2" align="center" width="10%">Prr<br />(Parroquia)</td>
+    <td colspan="3" align="center" width="10%">&Aacute;mb<br />(&Aacute;mbito)</td>
+    <td colspan="3" align="center" width="10%">Sec<br />(Sector)</td>
+    <td colspan="3" align="center" width="10%" id="id_man_ssect_m">Man<br />(Manzana)</td>
+    <td colspan="3" align="center" width="10%">Par<br />(Parcela)</td>
+    <td colspan="3" align="center" width="10%">Sbp<br />(SubParcela)</td>
+    <td colspan="3" align="center" width="10%">Niv<br />(Nivel)</td>
+    <td colspan="3" align="center" width="10%">Und<br />(Unidad)</td>
+  </tr>
+  <tr>
+    <td align="center"><?=$html->input($modelo_form.'/cod_estado_c1_m',array('class'=>'input_catp','id'=>'select2_1_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_estado_c2_m',array('class'=>'input_catp','id'=>'select2_1_c2_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_municipio_c1_m',array('class'=>'input_catp','id'=>'select2_2_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_municipio_c2_m',array('class'=>'input_catp','id'=>'select2_2_c2_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_parroquia_c1_m',array('class'=>'input_catp','id'=>'select2_3_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parroquia_c2_m',array('class'=>'input_catp','id'=>'select2_3_c2_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c1_m',array('value'=>'U','class'=>'input_catp','id'=>'ambito_actual_c1_m','style'=>"font-size:13pt;font-weight:bold;color:#940000;","onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c2_m',array('value'=>'0','class'=>'input_catp','id'=>'ambito_actual_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/ambito_actual_c3_m',array('value'=>'1','class'=>'input_catp','id'=>'ambito_actual_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c1_m',array('class'=>'input_catp','id'=>'select2_4_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c2_m',array('class'=>'input_catp','id'=>'select2_4_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sector_c3_m',array('class'=>'input_catp','id'=>'select2_4_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c1_m',array('class'=>'input_catp','id'=>'cod_manzana_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c2_m',array('class'=>'input_catp','id'=>'cod_manzana_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_manzana_c3_m',array('class'=>'input_catp','id'=>'cod_manzana_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c1_m',array('class'=>'input_catp','id'=>'cod_parcela_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c2_m',array('class'=>'input_catp','id'=>'cod_parcela_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_parcela_c3_m',array('class'=>'input_catp','id'=>'cod_parcela_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c1_m',array('class'=>'input_catp','id'=>'cod_sub_parcela_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c2_m',array('class'=>'input_catp','id'=>'cod_sub_parcela_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_sub_parcela_c3_m',array('class'=>'input_catp','id'=>'cod_sub_parcela_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c1_m',array('class'=>'input_catp','id'=>'cod_nivel_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c2_m',array('class'=>'input_catp','id'=>'cod_nivel_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_nivel_c3_m',array('class'=>'input_catp','id'=>'cod_nivel_c3_m',"onfocus"=>"this.blur()"));?></td>
+
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c1_m',array('class'=>'input_catp','id'=>'cod_unidad_c1_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c2_m',array('class'=>'input_catp','id'=>'cod_unidad_c2_m',"onfocus"=>"this.blur()"));?></td>
+    <td align="center"><?=$html->input($modelo_form.'/cod_unidad_c3_m',array('class'=>'input_catp','id'=>'cod_unidad_c3_m',"onfocus"=>"this.blur()"));?></td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tr_negro">
+    <td colspan="4" align="center">Linderos Actuales </td>
+    <td colspan="2" align="center">3.- Situaci&oacute;n Relativa de la Parcela </td>
+  </tr>
+  <tr>
+    <td width="5%">Norte:</td>
+    <td width="68%" colspan="3"><?= $html->textarea($modelo_form.'/lindero_norte', array('','rows'=>'1', 'value'=>'','class'=>'inputtext','id'=>'lindero_norte'), false) ?></td>
+    <td width="27%" rowspan="4" colspan="2" align="center"><?= $html->textarea($modelo_form.'/situacion_relativa', array('','rows'=>'8', 'value'=>'', 'class'=>'inputtext','id'=>'situacion_relativa'), false) ?></td>
+  </tr>
+  <tr>
+    <td>Sur:</td>
+    <td colspan="3"><?= $html->textarea($modelo_form.'/lindero_sur', array('','rows'=>'1', 'value'=>'','class'=>'inputtext','id'=>'lindero_sur'), false) ?></td>
+  </tr>
+  <tr>
+    <td>Este:</td>
+    <td colspan="3"><?= $html->textarea($modelo_form.'/lindero_este', array('','rows'=>'1', 'value'=>'','class'=>'inputtext','id'=>'lindero_este'), false) ?></td>
+  </tr>
+  <tr>
+    <td>Oeste:</td>
+    <td colspan="3"><?= $html->textarea($modelo_form.'/lindero_oeste', array('','rows'=>'1', 'value'=>'','class'=>'inputtext','id'=>'lindero_oeste'), false) ?></td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr class="tr_negro">
+    <td colspan="6" align="center">Coordenadas UTM (REGVEN) </td>
+  </tr>
+  <tr>
+    <td width="33%" colspan="2" align="center">NORTE (m) </td>
+    <td width="33%" colspan="2" align="center">ESTE (m) </td>
+    <td width="34%" colspan="2" align="center">HUSO </td>
+  </tr>
+  <tr>
+    <td colspan="2"><?=$html->input($modelo_form.'/coordenada_norte',array('value'=>'','class'=>'input_catp','id'=>'coordenada_norte'));?></td>
+    <td colspan="2"><?=$html->input($modelo_form.'/coordenada_este',array('value'=>'','class'=>'input_catp','id'=>'coordenada_este'));?></td>
+    <td colspan="2"><?=$html->input($modelo_form.'/huso',array('value'=>'','class'=>'input_catp','id'=>'huso'));?></td>
+  </tr>
+  <tr class="tr_negro">
+    <td colspan="6" align="center">Observaciones</td>
+  </tr>
+  <tr>
+    <td colspan="6" align="center"><?= $html->textarea($modelo_form.'/observaciones_lind_coord', array('','rows'=>'5', 'value'=>'', 'class'=>'inputtext','id'=>'observaciones_lind_coord'),  false) ?></td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <tr>
+    <td colspan="2" align="center" class="tr_negro" style="font-size:10pt;">Elaborado por: </td>
+    <td colspan="2" align="center" class="tr_negro" style="font-size:10pt;">Revisado por: </td>
+  </tr>
+  <tr>
+    <td align="center" width="35%">Nombres y Apellidos</td>
+    <td align="center" width="15%">C&eacute;dula de<br>Identidad</td>
+    <td align="center" width="35%">Nombres y Apellidos</td>
+    <td align="center" width="15%">C&eacute;dula de<br>Identidad</td>
+  </tr>
+  <tr>
+    <td><?=$html->input($modelo_form.'/elaborado_nombre',array('value'=>'','class'=>'input_catp','id'=>'elaborado_nombre','style'=>"text-align:left;"));?></td>
+    <td><?=$html->input($modelo_form.'/elaborado_ci',array('value'=>'','class'=>'input_catp','id'=>'elaborado_ci','maxlength'=>'12',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td><?=$html->input($modelo_form.'/revisado_nombre',array('value'=>'','class'=>'input_catp','id'=>'revisado_nombre','style'=>"text-align:left;"));?></td>
+    <td><?=$html->input($modelo_form.'/revisado_ci',array('value'=>'','class'=>'input_catp','id'=>'revisado_ci','maxlength'=>'12',"onKeyPress"=>"return solonumeros(event);"));?></td>
+  </tr>
+</table>
+
+<!-- TERMINA BLOQUE TAB Sexto -->
+<br><br>
+	</div>
+	</div>
+
+	<div class="dhtmlgoodies_aTab"><br><br>
+		<div id="tabg_croquis" style="display:none;">
+	<!-- INICIO BLOQUE TAB Septimo -->
+
+<table width="100%" cellpadding="0" cellspacing="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tr_negro">
+    <td colspan="4" align="center">4.- Croquis de Levantamiento Parcelario </td>
+  </tr>
+  <tr>
+    <td align="center" width="10%">N&uacute;mero Catastral </td>
+    <td align="center" width="60%">Direcci&oacute;n del Inmueble</td>
+    <td align="center" width="12%">Fecha</td>
+    <td align="center" width="18%">Escala</td>
+  </tr>
+  <tr align="center">
+    <td><?=$html->input($modelo_form.'/numero_catastral',array('class'=>'input_catp_dos','value'=>mascara($numero_ficha,6),'id'=>'numero_catastral',"onfocus"=>"this.blur();"));?></td>
+    <td><?= $html->textarea($modelo_form.'/direccion_inmb', array('','rows'=>'1', 'value'=>'','id'=>'direccion_inmb','class'=>'inputtext','readonly'=>'readonly'), false) ?></td>
+    <td><?$sisap->input_fecha($modelo_form,"croquis_fecha","croquis_fecha",date("d/m/Y"));?></td>
+    <td><?=$html->input($modelo_form.'/croquis_escala',array('value'=>'','class'=>'input_catp_dos','id'=>'croquis_escala'));?></td>
+  </tr>
+  <tr>
+    <td colspan="6" align="center">
+        <div id="imagen_croquis" style="margin-left:auto;margin-right:auto;text-align:center;height:850px; width:100%; ">
+		  	<? if($numero_ficha!=""){
+		  		echo "<br><br>";
+		  		if(isset($verifica_img) && $verifica_img>0)
+					$sisap->modificar_imagen_croquis(21,$numero_ficha,'imagen_croquis');
+		  		else
+		  			$sisap->agregar_imagen_croquis(21,$numero_ficha,'imagen_croquis');
+		  		// $sisap->ver_miniatura_imagen_vg($numero_ficha,21);
+		  	}else{ ?>
+		  		<img src="/img/sin_foto.jpg"  border="0" height="146"  width="110">
+		  	<? } ?>
+		</div>
+  	</td>
+  </tr>
+</table>
+
+<? if($numero_ficha!=""){ ?>
+<center>
+	<div id="capa_imag_cro" style="display:none;" title=".::Modificar / Eliminar Imagen Croquis::."><? $sisap->modificar_imagen_croquis(21,$numero_ficha,'imagen_croquis'); ?>
+		<?php echo $ajax->link($html->image('salir_1.png',array('border'=>0)), null, array('url'=>'/cugp10_imagenes/eliminar_imagen/'.$numero_ficha.'/21', 'update'=>'imagen_croquis'),'Realmente desea eliminar la Imagen del Croquis?',false,true); ?>
+	</div>
+</center>
+<? } ?>
+
+<br>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp2">
+  <tr class="tr_negro">
+    <td colspan="6" align="center">Observaciones</td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center"><?= $html->textarea($modelo_form.'/croquis_observaciones', array('','rows'=>'5', 'value'=>'', 'id'=>'croquis_observaciones', 'class'=>'inputtext'),  false) ?></td>
+  </tr>
+  <tr>
+    <td align="center" style="font-size:8pt;">C&aacute;lculo del Terreno</td>
+    <td colspan="2" align="center" class="tr_negro" style="font-size:10pt;">Elaborado por: </td>
+    <td colspan="2" align="center" class="tr_negro" style="font-size:10pt;">Revisado por: </td>
+  </tr>
+  <tr>
+    <td align="center" width="20%"><?=$html->input($modelo_form.'/calculo_terreno',array('value'=>'0,00','class'=>'input_catp','id'=>'calculo_terreno',"onKeyPress"=>"return solonumeros_con_punto(event);","onfocus"=>"this.blur();"));?></td>
+    <td align="center" width="25%">Nombres y Apellidos</td>
+    <td align="center" width="15%">C&eacute;dula de<br>Identidad</td>
+    <td align="center" width="25%">Nombres y Apellidos</td>
+    <td align="center" width="15%">C&eacute;dula de<br>Identidad</td>
+  </tr>
+  <tr>
+    <td align="center" style="font-size:8pt;">C&aacute;lculo de Construcci&oacute;n<br>
+    	<?=$html->input($modelo_form.'/calculo_construccion',array('value'=>'0,00','class'=>'input_catp','id'=>'calculo_construccion',"onKeyPress"=>"return solonumeros_con_punto(event);","onfocus"=>"this.blur();"));?>
+    </td>
+    <td><?=$html->input($modelo_form.'/elaborado_nombre_c',array('value'=>'','id'=>'elaborado_nombre_c','class'=>'input_catp','style'=>"text-align:left;"));?></td>
+    <td><?=$html->input($modelo_form.'/elaborado_ci_c',array('value'=>'','id'=>'elaborado_ci_c','class'=>'input_catp','maxlength'=>'12',"onKeyPress"=>"return solonumeros(event);"));?></td>
+    <td><?=$html->input($modelo_form.'/revisado_nombre_c',array('value'=>'','id'=>'revisado_nombre_c','class'=>'input_catp','style'=>"text-align:left;"));?></td>
+    <td><?=$html->input($modelo_form.'/revisado_ci_c',array('value'=>'','id'=>'revisado_ci_c','class'=>'input_catp','maxlength'=>'12',"onKeyPress"=>"return solonumeros(event);"));?></td>
+  </tr>
+</table>
+<br><br>
+<!-- TERMINA BLOQUE TAB Septimo -->
+<br><br>
+	</div>
+	</div>
+</div>
+
+<br/><br/><br/><br/>
+<center>
+<?php
+	echo $sisap->imagen_ventana(array("value"=>"..", 'disabled'=>'disabled'),3,"Buscar Ficha Catastral", "/$modelo_form/buscar_datos_ficha/1", "750px", "370px");
+?>
+<?=$sisap->submitTagRemote('Guardar', array('funcion'=>'guardar_ficha_catastral', 'url1' => '/'.$modelo_form.'/guardar_ficha/0/'.$numero_ficha.'/'.$numero_inscripcion.'/'.$numero_archivo, 'update1'=>'principal','id'=>'guardar'));?>
+<?= $sisap->buttonTagRemote($modelo_form.'/modificar', array ('value'=>'Modificar', 'id'=>'modificar', 'disabled'=>'disabled'), array('url1' => '/'.$modelo_form.'/modificar_ficha/1/'.$numero_ficha.'/0', 'update1'=>'div_modifica'))?>
+<?= $sisap->buttonTagRemote($modelo_form.'/eliminar', array ('value'=>'Eliminar', 'disabled'=>'disabled'), array('url1' => '/'.$modelo_form.'/eliminar_ficha/'.$numero_ficha.'/0', 'update1'=>'principal')) ?>
+<?= $sisap->buttonTagRemote('/catp02_ficha_datos/', array ('type'=>'button', 'value'=>'Regresar'), array('url1' => '/catp02_ficha_datos/salir_catp02_ficha_datos/'.$numero_ficha.'/'.$numero_inscripcion.'/'.$numero_archivo, 'update1'=>'div_guardar','url2' => '/'.$modelo_form.'/index', 'update2'=>'principal'))?>
+</center>
+</form>
+<?= $sisap->buttonTagRemote('catp02_ficha_datos/principal', array ( 'value'=>'Salir'), array('url1' => '/catp02_ficha_datos/salir_catp02_ficha_datos/'.$numero_ficha.'/'.$numero_inscripcion.'/'.$numero_archivo, 'update1'=>'principal','url2'=>'/modulos/vacio','update2'=>'principal')); ?>
+<div id="div_guardar"></div>
+<?= $ajax->remoteTimer(array('url'=>'/'.$modelo_form.'/actualiza_session_catp01/','update'=>'UP_catp01','frequency'=>'300'));?>
+<div id="UP_catp01"></div>
+<?=$sisap->CloseTable()?>

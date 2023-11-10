@@ -1,0 +1,691 @@
+<?php
+
+
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+
+}elseif(isset($vista)){
+
+echo '<br>';
+	         if($vista=="1"){?>
+
+
+Año: <input name="data[cepp03_ordenpago][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+
+
+<?php }else  if($vista=="2"){?>
+
+Año: <input name="data[cepp03_ordenpago][ano]"  value="<?= $year?>" id="ano"  size="3"     maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número Desde:<input name="data[cepp03_ordenpago][numero_a]"  value="" id="numero_a"  size="4"    onKeyPress="return solonumeros(event);"  />
+Número Hasta:<input name="data[cepp03_ordenpago][numero_b]"  value="" id="numero_b"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php }else if($vista=="3"){ /* ?>
+
+
+Año: <input name="data[cepp03_ordenpago][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+Número:<input name="data[cepp03_ordenpago][numero_a]"  value="" id="numero_a"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+
+<?php  */ }//fin else
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+
+class fpdfview extends TCPDF{
+
+
+function Footer(){if(isset($_SESSION['FIN'])){$this->Cell(0,0,"",'B',1,'C');}}//fin footer
+
+
+function Header(){
+
+
+
+if(isset($_SESSION['FIN'])){
+
+
+		$this->image_escudo_sin_consolidado(7,11,14);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,5,"                   ".$_SESSION["entidad_federal"],'TRL',1);
+		$this->SetFont('vera','',6);
+		$this->Cell(5,3,"",'L',0);
+		$this->Cell(0,3,"                       ".$_SESSION['dependencia'],'R',1);//$_SESSION['titulo_a']
+		$this->Cell(172,3,"",'L',0);
+		   //$this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG','R',1);//-------------------------PAGINACION
+		   $this->Cell(0,3,"",'R',1);//-------------------------PAGINACION
+		   $this->Cell(5,3,"",'L',0);
+		   $this->Cell(167,3,'','',0);//$_SESSION['titulo_a']
+		   $this->Cell(0,3,'Fecha: '.date('d/m/Y'),'R',1);//-----------------------------FECHA
+		   $this->Cell(172,3,"",'L',0);
+		   $this->Cell(0,3,'Hora: '.date('h:i a'),'R',1);//-----------------------------HORA
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,8,"RELACIÓN DE ORDENES DE PAGOS EMITIDAS",'RLB',0,'C');
+		$this->Ln(10);
+		$this->SetFont('vera','B',6);
+		$this->Cell(10,4,"N#",'TRLB',0,'C');
+		$this->Cell(20,4,"FECHA",'TRLB',0,'C');
+		$this->Cell(20,4,"AÑO",'TRLB',0,'C');
+		$this->Cell(30,4,"NÚMERO ORDEN",'TRLB',0,'C');
+		$this->Cell(85,4,"BENEFICIARIO",'TRLB',0,'C');
+		$this->Cell(0,4,"MONTO",'TRLB',1,'C');
+
+}else{
+
+
+$ano_orden_pago              =    $_SESSION['ano_orden_pago'];
+$numero_orden_pago           =    $_SESSION['numero_orden_pago'];
+$ordenpago_tipopago          =    $_SESSION['ordenpago_tipopago'];
+$fecha_orden_pago            =    $_SESSION['fecha_orden_pago'];
+$ano_documento_origen        =    $_SESSION['ano_documento_origen'];
+$tipodocu_2                  =    $_SESSION['tipodocu_2'];
+$numero_documento_origen     =    $_SESSION['numero_documento_origen'];
+$fecha_documento             =    $_SESSION['fecha_documento'];
+$numero_documento_adjunto    =    $_SESSION['numero_documento_adjunto'];
+
+
+
+
+ }//fin if
+}//fin headre
+
+
+
+
+
+}//fin class
+
+
+
+
+ if(isset($ir)){ ?>
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"ORDENES DE PAGO (FORMATO PRE-IMPRESO) <br> <br>Usuario: ".$usuario,null,"950");?>
+
+
+ <form name='data[cfpp07]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/cepp03_ordenpago_pre_impreso/si'); ?>" onSubmit="return cscp04_ordencompra_servicio_bienes();">
+
+
+<?= $sisap->OpenTable("950")?>
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid">
+<tr class="tr_negro"><td colspan="2" class="td2center" height="22">Cola de Impresión</td></tr>
+<tr class="tr_negro">
+    <td class="td4" width="50" height="22">A&ntilde;o Orden Pago</td>
+    <td class="td4" width="50">Número Orden de Pago</td>
+</tr>
+<?php
+
+$i = 0;
+
+ if(isset($datos_cepd03_ordenpago_poremitir)){
+  if($datos_cepd03_ordenpago_poremitir!=null){
+    foreach($datos_cepd03_ordenpago_poremitir as $ve){
+
+    	if($i%2==0){ ?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $ve['cepd03_ordenpago_poremitir']['ano_orden_pago'] ?></td>
+    <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_poremitir']['numero_orden_pago']) ?></td>
+</tr>
+
+<?php }else{ ?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $ve['cepd03_ordenpago_poremitir']['ano_orden_pago'] ?></td>
+   <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_poremitir']['numero_orden_pago']) ?></td>
+</tr>
+
+<?php }//fine
+
+    	$i++;
+
+}//fin foreach
+
+
+if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+ <?php }else{ ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+</tr>
+<?php
+      }//fin
+   }//fin
+ }//fin
+?>
+</table>
+</div>
+
+
+  <?= $sisap->radioTagRemote('cepp03_ordenpago/radio', array('1'=>'Vaciar cola de impresión','2'=>'Por rango', '3'=>'Una especifica'), array('url1'=>'/reporte/cepp03_ordenpago_pre_impreso/vista', 'update1'=>'opcion', 'id'=>'cepp03_ordenpago_opcion'), NULL, null); ?>
+
+<div id="opcion"></div>
+
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+
+<?php }else{
+
+
+
+
+$orden = 0;
+
+if(isset($datos_cepd03_ordenpago_cuerpo)){
+
+foreach($datos_cepd03_ordenpago_cuerpo as $datos_cuerpo){$orden++;
+
+$ano_orden_pago[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+$numero_orden_pago[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+$tipo_orden_pago[$orden]                    =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['tipo_orden'];//tipo orden de pago
+$ano_documento_origen[$orden]               =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_documento_origen'];
+$numero_documento_origen[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+$numero_documento_adjunto[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_adjunto'];
+$beneficiario[$orden]                       =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+$rif[$orden]                                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+$autorizado[$orden]                         =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+$cedula_identidad[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cedula_identidad'];
+$monto_coniva[$orden]                       =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_coniva'];
+$cod_tipo_gasto[$orden]                 =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_pago'];
+$porcentaje_retencion_iva[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_retencion_iva'];
+$monto_retencion_iva[$orden]                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_iva'];
+$porcentaje_laboral[$orden]                 =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_laboral'];
+$monto_retencion_laboral[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_laboral'];
+$porcentaje_islr[$orden]                    =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_islr'];
+$monto_islr[$orden]                         =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_islr'];
+$porcentaje_fielcumplimiento[$orden]        =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_fielcumplimiento'];
+$monto_retencion_fielcumplimiento[$orden]   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_fielcumplimiento'];
+$monto_sustraendo[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_sustraendo'];
+$porcentaje_iva[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_iva'];
+$monto_iva[$orden]                          =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_iva'];
+$porcentaje_timbre_fiscal[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_timbre_fiscal'];
+$monto_timbre_fiscal[$orden]                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_timbre_fiscal'];
+$monto_descontar_impuesto[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_descontar_impuesto'];
+$porcentaje_impuesto_municipal[$orden]      =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_impuesto_municipal'];
+$monto_impuesto_municipal[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_impuesto_municipal'];
+$porcentaje_amortizacion[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_amortizacion'];
+$amortizacion_anticipo[$orden]              =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['amortizacion_anticipo'];
+$monto_orden_pago[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+$monto_neto_cobrar[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_neto_cobrar'];
+$concepto[$orden]                           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['concepto'];
+$ano_orden_pago[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+$numero_orden_pago[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+$ano_documento_origen[$orden]               =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_documento_origen'];
+$numero_documento_origen[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+$fecha_orden_pago[$orden]                   =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_orden_pago']);
+$fecha_documento[$orden]                    =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_documento']);
+$cod_frecuencia_pago[$orden]                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cod_frecuencia_pago'];
+$fecha_desde[$orden]                        =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_desde']);
+$fecha_hasta[$orden]                        =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_hasta']);
+$monto_parcial[$orden]                      =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_parcial'];
+
+
+
+
+
+
+$monto_descontar_impuesto2[$orden] = $monto_timbre_fiscal[$orden] + $monto_impuesto_municipal[$orden] + $monto_retencion_fielcumplimiento[$orden] + $monto_retencion_laboral[$orden];
+
+
+$i[$orden] = 0;
+
+
+  foreach($datos_cepd03_ordenpago_partidas as $x){
+		if($x['cepd03_ordenpago_partidas']['numero_orden_pago'] == $numero_orden_pago[$orden]){
+		    $i[$orden]++;
+			$ano_part[$orden][$i[$orden]]              = $x['cepd03_ordenpago_partidas']['ano'];
+			$cod_sector[$orden][$i[$orden]]       = $x['cepd03_ordenpago_partidas']['cod_sector'];
+			$cod_programa[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_programa'];
+			$cod_sub_prog[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_sub_prog'];
+			$cod_proyecto[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_proyecto'];
+			$cod_activ_obra[$orden][$i[$orden]]   = $x['cepd03_ordenpago_partidas']['cod_activ_obra'];
+			$cod_partida[$orden][$i[$orden]]      = $x['cepd03_ordenpago_partidas']['cod_partida'];
+			$cod_generica[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_generica'];
+			$cod_especifica[$orden][$i[$orden]]   = $x['cepd03_ordenpago_partidas']['cod_especifica'];
+			$cod_sub_espec[$orden][$i[$orden]]    = $x['cepd03_ordenpago_partidas']['cod_sub_espec'];
+			$cod_auxiliar[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_auxiliar'];
+			$monto[$orden][$i[$orden]]            = $x['cepd03_ordenpago_partidas']['monto'];
+		  }//fin if
+  }//fin for
+
+
+
+
+
+
+}//fin foreach
+
+
+
+
+
+
+
+
+
+
+for($h=1; $h<=$orden; $h++){
+////// I  //////
+
+//$i[$h] = $i[$h]-13;
+$i_pagina[$h] = $i[$h]/45;
+if(is_float($i_pagina[$h])){ $i_pagina[$h] = (intval($i_pagina[$h]) + 1); }
+
+if($i[$h]>13){$pagina_total[$h] = $i_pagina[$h]+1;}else{$pagina_total[$h] = $i_pagina[$h];}
+////// FIN  I  //////
+}//fin for
+
+
+
+
+}//fin if
+
+
+
+
+
+
+
+
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+
+$listo   = "no";
+$pagina  =  1;
+
+
+$_SESSION['ano_orden_pago']                   =    $ano_orden_pago[$aux_aux];
+$_SESSION['numero_orden_pago']                =    $sisap->mascara_ocho($numero_orden_pago[$aux_aux]);
+$_SESSION['ordenpago_tipopago']               =    $ordenpago_tipopago[$aux_aux][0]['cepd03_ordenpago_tipopago']['denominacion'];
+$_SESSION['fecha_orden_pago']                 =    $fecha_orden_pago[$aux_aux];
+$_SESSION['ano_documento_origen']             =    $ano_documento_origen[$aux_aux];
+$_SESSION['tipodocu_2']                       =    $tipodocu[$aux_aux][0]['cepd03_tipo_documento']['denominacion'];
+$_SESSION['numero_documento_origen']          =    $sisap->mascara_ocho($numero_documento_origen[$aux_aux]);
+$_SESSION['fecha_documento']                  =    $fecha_documento[$aux_aux];
+$_SESSION['numero_documento_adjunto']         =    $numero_documento_adjunto[$aux_aux];
+
+if($_SESSION['numero_documento_adjunto']=="0"){$_SESSION['numero_documento_adjunto']="";}
+
+
+
+$_SESSION['PAGINA_A_AUX'] = 1;
+$_SESSION['PAGINA_A'] = 1;
+
+
+
+$monto_relacion[$aux_aux] = 0;
+
+
+while($listo=="no"){
+
+
+$pdf->AddPage();
+
+
+
+$vara = "no";
+$varb = "no";
+
+
+//if($cod_tipo_gasto[$aux_aux]==2){$capital[$aux_aux]=1; $corriente[$aux_aux]=2; }else{$corriente[$aux_aux]=1; $capital[$aux_aux]=2;}
+
+
+if($corriente[$aux_aux]==1){$vara = "si";}//fin
+if($capital[$aux_aux]==1){$varb = "si";}//fin
+
+
+
+/*
+
+//------------------------------------------------------
+
+if($ordinario[$aux_aux]==1){
+	$pdf->SetFont('vera','BI',6);
+	$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+}else{
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+}
+
+if($coordinado[$aux_aux]==1){
+	$pdf->SetFont('vera','BI',6);
+	$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+}else{
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+}
+
+if($laee[$aux_aux]==1){
+	$pdf->SetFont('vera','BI',6);
+	$pdf->Cell(25,5,"LAEE",'RB',0,'C');
+}else{
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(25,5,"LAEE",'RB',0,'C');
+}
+
+if($fides[$aux_aux]==1){
+	$pdf->SetFont('vera','BI',6);
+	$pdf->Cell(25,5,"FIDES",'RB',0,'C');
+}else{
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(25,5,"FIDES",'RB',0,'C');
+}
+
+if($ingresosextra[$aux_aux]==1){
+	$pdf->SetFont('vera','BI',6);
+	$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+}else{
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+}
+
+//--------------------------------------------------------
+
+
+
+
+*/
+
+
+
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,9,"",'',1);//para hacer espacio
+$pdf->Cell(50.5,9,"",'',0,'C');
+$pdf->SetFont('vera','',10);
+
+if($tipo_orden_pago[$aux_aux]==1){
+	$pdf->Cell(26,8,"PERMANENTE",'',0,'C');
+}elseif($tipo_orden_pago[$aux_aux]==2){
+	$pdf->Cell(26,8,"ESPECIAL",'',0,'C');
+}
+
+$pdf->SetFont('vera','',10);
+$pdf->Cell(19,8,$sisap->mascara_ocho($numero_orden_pago[$aux_aux]),'',0,'C');
+$pdf->Cell(31,8,$fecha_orden_pago[$aux_aux],'',0,'C');
+$pdf->Cell(11,8,$sisap->mascara_ocho($numero_documento_origen[$aux_aux]),'',0,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(42,8,$tipodocu[$aux_aux][0]['cepd03_tipo_documento']['denominacion'],'',0,'R');
+$pdf->SetFont('vera','',10);
+$pdf->Cell(23,8,$fecha_documento[$aux_aux],'',1,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$varY = $varY-3;//subo 1 punto
+$pdf->SetXY($varX,$varY);//cargo XY
+
+
+if($vara=="si"){$pdf->Cell(27,3,"X",'',2,'R');}else{$pdf->Cell(27,3,"",'',2,'R');}
+if($varb=="si"){$pdf->Cell(27,3,"X",'',1,'R');}else{$pdf->Cell(27,3,"",'',1,'R');}
+
+
+
+
+$pdf->Ln(3);
+
+$pdf->Cell(30,7,"                      ".$beneficiario[$aux_aux],'',0,'L');
+$pdf->Cell(140,7,"",'',0,'L');
+
+
+if($rif[$aux_aux]=="0"){$rif[$aux_aux]="";}
+if($cedula_identidad[$aux_aux]=="0"){$cedula_identidad[$aux_aux]="";}
+
+$pdf->Cell(0,7,$rif[$aux_aux].$cedula_identidad[$aux_aux]."                ",'',1,'R');
+$pdf->Ln(9);
+
+
+switch($cod_frecuencia_pago[$orden]){
+
+case '1';{$frecuencia="Una sola vez";}break;
+case '2';{$frecuencia="Primera Quincena";}break;
+case '3';{$frecuencia="Segunda Quincena";}break;
+case '4';{$frecuencia="Mensual";}break;
+
+}//fin switch
+
+
+$pdf->Cell(7,8,"01",'',0,'C');
+$pdf->Cell(31,8,$fecha_desde[$orden],'',0,'C');
+$pdf->Cell(28,8,$fecha_hasta[$orden],'',0,'C');
+$pdf->Cell(44,8,$frecuencia,'',0,'C');
+$pdf->Cell(60,8,$sisap->Formato2($monto_orden_pago[$aux_aux]),'',0,'C');
+$pdf->Cell(0,8,$sisap->Formato2($monto_orden_pago[$aux_aux]),'',1,'R');
+$pdf->Ln(10);
+
+$pdf->Cell(1,40,"",'',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(203,4,$concepto[$aux_aux],'','L');//Concepto Orden de Pago
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,40,"",'',1);//margen derecho
+
+$pdf->Cell(0,9,"",'',1);//para hacer espacio
+
+
+
+
+
+///////////////////PARTIDAS///////////////////////////
+
+$total_bsf=0;
+
+
+$acepta_A="no";
+
+$pdf->SetFont('vera','',11);
+
+for($ii=$_SESSION['PAGINA_A_AUX']; $ii<=($_SESSION['PAGINA_A_AUX']+14); $ii++){
+
+if(isset($ano_part[$aux_aux][$ii])){
+	$pdf->Cell(10,4,$ano_part[$aux_aux][$ii],'',0,'C');
+	$pdf->Cell(13,4,$sisap->AddCero2($cod_sector[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(13,4,$sisap->AddCero2($cod_programa[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(13,4,$sisap->AddCero2($cod_sub_prog[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(12,4,$sisap->AddCero2($cod_proyecto[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(15,4,$sisap->AddCero2($cod_activ_obra[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(14,4,$sisap->AddCero2(substr($cod_partida[$aux_aux][$ii], -2), substr($cod_partida[$aux_aux][$ii], 0, 1 )),'',0,'C');
+	$pdf->Cell(11,4,$sisap->AddCero2($cod_generica[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(13,4,$sisap->AddCero2($cod_especifica[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(13,4,$sisap->AddCero2($cod_sub_espec[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(21,4,$sisap->AddCero2($cod_auxiliar[$aux_aux][$ii]),'',0,'C');
+	$pdf->Cell(0,4,$sisap->Formato2($monto[$aux_aux][$ii]),'',1,'R');
+	$total_bsf=$total_bsf+$monto[$aux_aux][$ii];
+	$acepta_A = "si";
+}else{
+      $pdf->Cell(10,4,"",'',0,'C');
+      $pdf->Cell(13,4,"",'',0,'C');
+      $pdf->Cell(13,4,"",'',0,'C');
+      $pdf->Cell(13,4,"",'',0,'C');
+      $pdf->Cell(12,4,"",'',0,'C');
+      $pdf->Cell(15,4,"",'',0,'C');
+      $pdf->Cell(14,4,"",'',0,'C');
+      $pdf->Cell(11,4,"",'',0,'C');
+      $pdf->Cell(13,4,"",'',0,'C');
+      $pdf->Cell(13,4,"",'',0,'C');
+      $pdf->Cell(21,4,"",'',0,'C');
+      $pdf->Cell(0,4," ",'',1,'C');
+}//fin else
+
+
+	$_SESSION['PAGINA_A'] = $ii;
+
+}//fin for
+
+
+///////////////////FIN ----- PARTIDAS///////////////////////////
+
+
+$monto_relacion[$aux_aux] += $total_bsf;
+
+
+
+
+$pdf->Cell(0,4,"",'',1);//para hacer espacio
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(1,4,"",'',0,'L');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+$pdf->MultiCell(160,4,"                                  ".$sisap->convertir($monto_orden_pago[$aux_aux])."...",'','L');
+	$varX=$varX+150;
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,4,$sisap->Formato2($monto_orden_pago[$aux_aux]),'',1,'R');// <-------- MONTO EN BOLIVARES
+$pdf->Cell(0,3,"",'',1,'L');
+
+$pdf->Cell(15,9,"",'',0,'C');
+$pdf->Cell(79,8,"",'',0,'');//-------------------BANCO AQUI
+$pdf->Cell(64,8,"",'',0,'R');//-------------------CUENTA
+$pdf->Cell(0,8,"",'',1,'R');//--------------------CHEQUE
+$pdf->Ln(5);
+
+$pdf->Cell(52,2,"",'',1,'L');//para hacer espacio
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(65,4,$sisap->Formato2($monto_orden_pago[$aux_aux]),"",0,'R');//-------------------------MONTO DE LA ORDEN
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Cell(65,4,$sisap->Formato2($monto_islr[$aux_aux]),"",0,'R');//-----------------------------I.S.L.R
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Cell(65,4,$sisap->Formato2($monto_retencion_iva[$aux_aux]),"",0,'R');//------------------------------RETENCION IVA
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Cell(65,4,$sisap->Formato2($monto_descontar_impuesto2[$aux_aux]),"",0,'R');//-------------------------OTRAS DEDUCCIONES
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Cell(65,4,$sisap->Formato2($monto_neto_cobrar[$aux_aux]),"",0,'R');//-------------------------MONTO NETO
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Ln(10);
+$pdf->Cell(47,25,"",'',0,'C');
+$pdf->Cell(46,25,"",'',0,'C');
+$pdf->Cell(52,25,"",'',0,'C');
+$pdf->Cell(0,25,"",'',0,'C');
+
+
+
+    if($_SESSION['PAGINA_A']<=$i[$aux_aux]){
+
+  	   $_SESSION['PAGINA_A_AUX'] = $_SESSION['PAGINA_A']+1;
+  	   $pagina++;
+  	   $aux_var_para_restar = 50;
+
+}else{ $listo="si";}
+
+
+
+}//---------------------------------------------FIN DEL WHILE LISTO
+
+
+
+
+
+}//fin for del for que hace cada orden de pago
+
+
+
+$_SESSION['FIN'] = "si";
+$monto_monto = 0;
+$cont=0;
+$pdf->AddPage();
+
+
+
+
+/*
+
+foreach($cugd06_oficios_poremitir_comun as $cugd06_oficios_poremitir_comun_aux){
+ for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+    if($ano_orden_pago[$aux_aux] == $cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['ano'] &&  $numero_orden_pago[$aux_aux] == $cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['numero'] &&  $cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['documento']=="4"){
+$pdf->Cell(20,4, $cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['ano'],'RL',0,'C');
+$pdf->Cell(30,4, $sisap->mascara_ocho($cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['numero']),'R',0,'C');
+$pdf->Cell(110,4,$cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['beneficiario'],'R',0,'L');
+$pdf->Cell(0,4,  $sisap->Formato2($cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['monto']),'R',1,'R');
+$monto_monto += $cugd06_oficios_poremitir_comun_aux['cugd06_oficios_poremitir_comun']['monto'];
+$cont++;
+  }//fin if
+}//fin for
+}//fin foreach   */
+
+$pdf->SetFont('vera','',7);
+for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+	    $pdf->Cell(10,4,                      $sisap->AddCero2($aux_aux),'RL',0,'C');
+	    $pdf->Cell(20,4,                      $fecha_orden_pago[$aux_aux],'RL',0,'C');
+		$pdf->Cell(20,4,                      $ano_orden_pago[$aux_aux],'RL',0,'C');
+		$pdf->Cell(30,4, $sisap->mascara_ocho($numero_orden_pago[$aux_aux]),'R',0,'C');
+		$pdf->Cell(85,4,                     $beneficiario[$aux_aux],'R',0,'L');
+		$pdf->Cell(0,4,  $sisap->Formato2(    $monto_relacion[$aux_aux]),'R',1,'R');
+		$monto_monto +=                       $monto_relacion[$aux_aux];
+		$cont++;
+}//fin for
+
+
+for($i=$cont; $i<=52; $i++){
+ $pdf->Cell(10,4, "",'RL',0,'C');
+ $pdf->Cell(20,4, "",'R',0,'C');
+ $pdf->Cell(20,4, "",'R',0,'C');
+ $pdf->Cell(30,4, "",'R',0,'C');
+ $pdf->Cell(85,4,"",'R',0,'L');
+ $pdf->Cell(0,4,  "",'R',1,'R');
+}//fin for
+
+
+$pdf->Cell(10,5, $sisap->AddCero2($cont),'TRL',0,'C');
+$pdf->Cell(150,5,"MONTO ".MONEDA2,'TRL',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($monto_monto),'TRL',1,'R');
+
+
+$pdf->OutPut('orden_de_pago','D');
+
+
+     }//fin del els que termina para  generar el pdf
+}//fin else
+
+
+
+?>
+

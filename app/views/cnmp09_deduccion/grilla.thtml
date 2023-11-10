@@ -1,0 +1,68 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+}
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+	<tr align="center" class="tr_negro">
+		<td width="10%">Código de<br> transacci&oacute;n</td>
+		<td width="80%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		<td width="10%" align="center">---</td>
+	</tr>
+<?
+
+
+if(isset($datos) && $datos!=""){
+	$i=0;
+	$j=0;
+//	print_r($deno_trans);
+	foreach($deno_trans as $x){
+		$deno[$j] = $x['cnmd03_transacciones']['denominacion'];
+		$codigo[$j] = $x['cnmd03_transacciones']['cod_transaccion'];
+		$j++;
+	}//print_r($datos);
+	foreach($datos as $x){
+		if($i%2==0){
+			$color="#cdf2ff";
+			}else{
+				$color="#daebff";
+			}
+			$id_fila = (int) rand()."_".$i;
+	        $fila = "fila_".$id_fila;
+		?>
+		<tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+		<?
+   		 echo "<td align='center'>".mascara_tres($x["cnmd09_asignacion_calcula_deduccion_2"]["codi_transaccion"])."</td>";
+  		 echo "<td>".denominacion($deno, $codigo,$x["cnmd09_asignacion_calcula_deduccion_2"]["codi_transaccion"])."</td>";
+    	 //echo "<td width='20%'></td></tr>";
+    	 ?>
+    	 <td align="center" width="20%"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp09_deduccion/eliminar_items/'.$x["cnmd09_asignacion_calcula_deduccion_2"]["cod_tipo_nomina"].'/'.$x["cnmd09_asignacion_calcula_deduccion_2"]["cod_transaccion"].'/'.$x["cnmd09_asignacion_calcula_deduccion_2"]["codi_transaccion"], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta transaccion de la Lista?',false,true) ?></td>
+    	                               <?//= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp09_deduccion/eliminar_item/', array('update'=>'del', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('tr_$i');"), "Realmente desea Eliminar esta actividad?", false, true); ?>
+    	 <?
+	  $i++;
+	  }
+}else{ ?>
+	<tr align="center" bgcolor="#cdf2ff">
+		<td width="10%" align="center">---</td>
+		<td width="80%" align="center">---</td>
+		<td width="10%" align="center">---</td>
+	</tr>
+ <? } ?>
+ </table>
+<div id="del"></div>

@@ -1,0 +1,165 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+	$_SESSION['da_pasoabc'] = 1;
+
+	if(isset($nota_ent)){$_SESSION['nota_entreg'] = $nota_ent;}else{$_SESSION['nota_entreg'] = '';}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+		$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,4,"",'RL',1,'C');
+		$this->SetFont('vera','BI',8);
+		$this->SetTextColor(110, 110, 110);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','B',6);
+        $this->SetTextColor(120, 150, 190);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'L');
+
+		$this->SetTextColor(0, 0, 0);
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+
+if($_SESSION['da_pasoabc']==1){
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,"ACTA DE RECEPCIÓN DE BIENES Y MATERIALES",'',1,'C');
+	$this->SetTextColor(120, 0, 0);
+	$this->Cell(0,5,"Nº ".mascara($_SESSION['nota_entreg'],8),'',1,'C');
+	$this->Cell(0,2,"",'',1,'C');
+	$this->SetFont('vera','BI',6.5);
+	$this->SetTextColor(0, 0, 0);
+	$this->MultiCell(0,5,"QUIÉN SUSCRIBE LA PRESENTE ACTA, HACE CONSTAR QUE RECIBE CONFORME LOS RENGLONES CONTENIDOS EN LA ORDEN DE COMPRA ANEXA.",'','C');
+	$this->Cell(0,3,"",'',1,'C');
+}
+
+// ---------------- **** CAMPOS **** -------------------
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(18,3,"CÓDIGO",'TL',0,'C');
+		$this->Cell(75,3,"",'TL',0,'C');
+		$this->Cell(35,3,"UNIDAD",'TL',0,'C');
+		$this->Cell(17,3,"",'TL',0,'C');
+		$this->Cell(23,3,"PRECIO",'TL',0,'C');
+		$this->Cell(0,3,"COSTO",'TLR',1,'C');
+
+		$this->Cell(18,3,"PRODUCTO",'LB',0,'C');
+		$this->Cell(75,3,"DENOMINACIÓN",'LB',0,'C');
+		$this->Cell(35,3,"MEDIDA",'LB',0,'C');
+		$this->Cell(17,3,"CANTIDAD",'LB',0,'C');
+		$this->Cell(23,3,"UNITARIO",'LB',0,'C');
+		$this->Cell(0,3,"TOTAL",'LBR',1,'C');
+	}
+
+	function Footer(){
+
+	}
+
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(8);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+$_SESSION['da_pasoabc'] = 2;
+
+	if(isset($datos_bm) && !empty($datos_bm)){
+		$cuenta_r = count($datos_bm);
+		foreach($datos_bm as $datos_im){
+			extract($datos_im["v_cscd05_ordencompra_nota_entrega_detalles"]);
+			$pdf->Cell(18,6.5,mascara_seis($codigo_prod_serv),'LR',0,'C');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->Cell(75,1,"",'',2,'C');
+		    $pdf->MultiCell(75,3,$descripcion,'','J');
+		    $varX = $varX+75;
+		    $pdf->SetXY($varX,$varY);
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->Cell(30,1,"",'L',2,'C');
+		    $pdf->MultiCell(35,5.5,$unidad_medida,'L','C');
+		    $varX = $varX+35;
+		    $pdf->SetXY($varX,$varY);
+			$pdf->Cell(17,6.5,$sisap->Formato2($cantidad),'L',0,'R');
+			$pdf->Cell(23,6.5,$sisap->Formato2($precio_unitario),'L',0,'R');
+			$pdf->Cell(0,6.5,$sisap->Formato2($costo_total),'LR',1,'R');
+			$pdf->Cell(0,0,"",'T',1,'C');
+		}
+
+		if($cuenta_r<5){
+			$im_hasta=15;
+		}else if($cuenta_r>=5 && $cuenta_r<=10){
+			$im_hasta=10;
+		}else if($cuenta_r>=10 && $cuenta_r<=15){
+			$im_hasta=5;
+		}else{
+			$im_hasta=2;
+		}
+
+			for($im=0;$im<=$im_hasta;$im++){
+				$pdf->Cell(18,6.5,"",'LB',0,'C');
+		    	$pdf->Cell(75,6.5,"",'LB',0,'R');
+		    	$pdf->Cell(35,6.5,"",'LB',0,'R');
+				$pdf->Cell(17,6.5,"",'LB',0,'R');
+				$pdf->Cell(23,6.5,"",'LB',0,'R');
+				$pdf->Cell(0,6.5,"",'LBR',1,'R');
+			}
+
+		if(isset($datos_bm2) && !empty($datos_bm2)){
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(0,5,"",'',1,'C');
+			$pdf->MultiCell(0,12,"OBSERVACIONES: ".$datos_bm2[0]['v_cscd05_ordencompra_nota_entrega']['observaciones'],'TRBL','J');
+
+			$pdf->Cell(100,3,"",'LR',0,'L');
+			$pdf->Cell(0,3,"",'LR',1,'L');
+
+			$pdf->Cell(100,8,"ORDEN DE COMPRA: ".mascara_seis($datos_bm2[0]['v_cscd05_ordencompra_nota_entrega']['numero_orden_compra']),'LR',0,'L');
+			$pdf->Cell(0,8,"NOMBRE: ______________________________________________________________",'LR',1,'R');
+			// $pdf->MultiCell(0,4,"NOMBRE: ".$datos_bm2[0]['v_cscd05_ordencompra_nota_entrega']['deno_rif'],'LR','J');
+			// $pdf->Cell(0,0,"",'',1,'C');
+
+			$pdf->Cell(100,8,"FECHA: ".$sisap->cambia_fecha($datos_bm2[0]['v_cscd05_ordencompra_nota_entrega']['fecha_orden_compra']),'LR',0,'L');
+			$pdf->Cell(0,8,"C.I. / RIF Nº: ______________________________________________________________",'LR',1,'R'); // $datos_bm2[0]['v_cscd05_ordencompra_nota_entrega']['rif']
+
+			$pdf->Cell(100,14,"",'LBR',0,'C');
+			$pdf->Cell(0,14,"FIRMA: ______________________________________________________________",'LBR',1,'R');
+		}
+	}else{
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->SetTextColor(120, 0, 0);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+	}
+
+	$pdf->Output('acta_bienes_materiales'.date("d-m-Y_h_ia").".pdf",'D');
+
+?>

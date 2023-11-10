@@ -1,0 +1,113 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<script>
+document.getElementById('save').disabled='';
+document.getElementById('dremote').innerHTML='';
+</script>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="16%">Pre Compromiso</td>
+    <td align="center" width="16%">Compromiso</td>
+    <td align="center" width="16%">Causado</td>
+    <td align="center" width="16%">Pagado</td>
+    <td align="center" width="8%">--</td>
+  </tr>
+<?php
+ if(isset($_SESSION ["codigos"])){
+  if($_SESSION ["codigos"]!=null){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+    foreach($_SESSION ["codigos"] as $codigos){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila2_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+<?
+$sw          = true;
+$suma_pagado = 0;
+   for($x=6;$x<=14;$x++){
+   	if($x>10){
+   		//echo $x;
+   		$id = $codigos['id'];
+   		$mt = $sisap->formato1($codigos[$x]);
+   		 echo "<td align=\"right\">".$codigos[$x]."</td>";
+   		 echo "<input type='hidden' id='monto2_$id' value='$mt' />";
+   		 if($codigos[$x] != "0,00" && $sw){
+   		 	$monto_total=$monto_total+$sisap->Formato1($codigos[$x]);
+   		 	$sw = false;
+   		 }
+
+   		 if($x==14){
+   		 	$suma_pagado += $codigos[$x];
+   		 }
+
+   	}else{
+   		 echo "<td align=\"center\">".$codigos[$x]."</td>";
+   	}
+}
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cfpp30_reintegro/eliminar_items/'.$codigos['id'], array('update'=>'ListaPresupuestaria2','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila2_$i');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+
+    	$i++;
+
+    }//fin foreach
+  }
+ }else{
+	$monto_total=0;
+	$color="#CDF2FF";
+ }
+//<tr><td colspan="11">&nbsp;</td><td align="right"><?=$sisap->Formato2($sisap->Formato($monto_total));</td><td>--</td></tr>
+?>
+<input type="hidden" value="<?= $suma_pagado ?>" id="pagado_grilla">
+<input name="data[cscp04_ordencompra][manual]" type="hidden" value="1" id="manual">
+<input name="data[cscp04_ordencompra][auto]" type="hidden" value="0" id="auto">
+<input name="data[cscp04_ordencompra][manual]" type="hidden" value="1" id="dremote">
+<input name="data[cscp04_ordencompra][total_manual]" type="hidden" value="<?=$monto_total?>" id="total_manual">
+<tr  bgcolor="<?=$color?>"><td colspan="8" align="right" class="textnegro"><b>Total:</b>&nbsp;</td><td align="right" class="textnegro"><b><div id="total2_manual"><?=$sisap->Formato2($monto_total);?></div></b></td><td>--</td></tr>
+</table>
+<div id="delete2"></div>
+<script>
+document.getElementById('comp_monto').readOnly=false;
+document.getElementById('pre_monto').readOnly=false;
+</script>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

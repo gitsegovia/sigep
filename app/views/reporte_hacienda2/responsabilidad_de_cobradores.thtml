@@ -1,0 +1,164 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Responsabilidad de Cobros'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda2/responsabilidad_de_cobradores/2/'); ?>" >
+	<table border="0">
+	<tr>
+	   <td>
+	      <?= $sisap->radioTagRemote("reporte_hacienda2/tipo_busqueda", array('1'=>'Todos los cobradores','2'=>'Uno en particular'), array('url1'=>'/reporte_hacienda2/ventana_cobradores_1/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+	      <input name="data[reporte_hacienda2][rif_ci]" type="hidden" id="rif_ci" />
+	      <div id="funcion"></div>
+	   </td>
+    </tr>
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+    </table>
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "Responsabilidad de Cobros", $_SESSION["COBRADOR"], $_SESSION["RESPONSABILIDAD"], array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(23,4,'','TRL',0,'C');
+		$this->Cell(25,4,'R.I.F','TR',0,'C');
+		$this->Cell(95,4,'Nombres y Apellidos','TR',0,'C');
+		$this->Cell(25,4,'Frecuencia','TR',0,'C');
+		$this->Cell(0,4,'Monto','TR',1,'C');
+
+		$this->Cell(23,3,'Personalidad','BRL',0,'C');
+		$this->Cell(25,3,'Cédula identidad','BR',0,'C');
+        $this->Cell(95,3,'Razón Social','BR',0,'C');
+        $this->Cell(25,3,'de pago','BR',0,'C');
+		$this->Cell(0,3,'a Cobrar','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+	$cobrador        = "";
+	$responsabilidad = "";
+	$_SESSION["COBRADOR"] = "";
+	$_SESSION["RESPONSABILIDAD"] = "";
+
+    for($i=0;$i<count($datos);$i++){
+
+    	if($cobrador!=$datos[$i][0]['rif_ci'] || $responsabilidad!=$datos[$i][0]['tipo_ingreso']){
+             $cobrador        = $datos[$i][0]['rif_ci'];
+             $responsabilidad = $datos[$i][0]['tipo_ingreso'];
+             $_SESSION["COBRADOR"] = "COBRADOR: ".$datos[$i][0]['nombre_razon'];
+
+                   if($datos[$i][0]['tipo_ingreso']==1){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: INDUSTRIA Y COMERCIO";
+             }else if($datos[$i][0]['tipo_ingreso']==2){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: VEHÍCULOS";
+             }else if($datos[$i][0]['tipo_ingreso']==3){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: PROPAGANDA COMERCIAL";
+             }else if($datos[$i][0]['tipo_ingreso']==4){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: INMUEBLES URBANOS";
+             }else if($datos[$i][0]['tipo_ingreso']==5){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: ASEO DOMICILIARIO";
+             }else if($datos[$i][0]['tipo_ingreso']==6){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: ARRENDAMIENTO DE TIERRA";
+             }else if($datos[$i][0]['tipo_ingreso']==7){ $_SESSION["RESPONSABILIDAD"] = "RESPONSABILIDAD: CRÉDITO DE VIVIENDAS";}
+
+
+             $pdf->AddPage();
+    	}
+
+    	 $pago            = 0;
+    	 $frecuencia_pago = "";
+
+                   if($datos[$i][0]['frecuencia_pago']==1){ $pago = 1;  $frecuencia_pago = "Mensual";
+             }else if($datos[$i][0]['frecuencia_pago']==2){ $pago = 2;  $frecuencia_pago = "Bimestral";
+             }else if($datos[$i][0]['frecuencia_pago']==3){ $pago = 3;  $frecuencia_pago = "Trimestral";
+             }else if($datos[$i][0]['frecuencia_pago']==4){ $pago = 6;  $frecuencia_pago = "Semestral";
+             }else if($datos[$i][0]['frecuencia_pago']==5){ $pago = 12; $frecuencia_pago = "Anual";}
+
+    	$monto_total = $pago * $datos[$i][0]['monto_mensual'];
+
+    	if($datos[$i][0]['personalidad_juridica']==1) $personalidad='Natural'; else $personalidad='Juridica';
+        $pdf->Cell(23,6, $personalidad,'RBL',0,'C');
+		$pdf->Cell(25,6, $datos[$i][0]['rif_cedula'],'RB',0,'C');
+		$pdf->Cell(95,6,$datos[$i][0]['razon_social_nombres'],'RB',0,'L');
+		$pdf->Cell(25,6, $frecuencia_pago,'RB',0,'C');
+		$pdf->Cell(0,6,  $sisap->Formato2($monto_total),'RB',1,'R');
+
+
+	}//fin for
+
+
+}else{
+	$_SESSION["COBRADOR"] = "";
+    $_SESSION["RESPONSABILIDAD"] = "";
+    $pdf->AddPage();
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+}
+
+$pdf->Output('Responsabilidad_Cobradores_'.date("d_m_Y_h"),'D');
+
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

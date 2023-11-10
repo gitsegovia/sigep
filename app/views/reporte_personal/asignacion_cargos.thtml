@@ -1,0 +1,295 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla_modulos("",true,'Conexión de asignaciones y transacciones',"","950","cnmp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_personal/asignacion_cargos/si'); ?>" >
+	<table border="0" align="center">
+	  <tr>
+	  <td align="right" width="15%">Tipo de Nómina:</td>
+	  <td align="lefth" width="15%"><?=  $sisap->selectTagRemote('cfpp97/cod_tipo_nomina', $cod_tipo_nomina !='' ? $cod_tipo_nomina : array(''=>''),  array('value1'=>'otros'),  '', array('id'=>'cod_tipo_nomina', 'onChange'=>'vacio','style'=>'width:40%',true), null, true); ?></td>
+	  </tr>
+	</table>
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$titulo_A="Conexión de asignaciones y transacciones";
+    	$titulo_B="Tipo de Nómina : ".$_SESSION['top_nomina1'];
+    	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"331", "Z"=>"12"));
+
+
+
+		$this->SetFont('vera','',7);
+		$this->Cell(35,6,'','TRBL',0,'C');
+		$this->Cell(20,6,'CÓDIGO','TRB',0,'C');
+		$this->Cell(0,6,'DENOMINACIÓN DE LA UBICACIÓN ADMINISTRATIVA','TRB',1,'C');
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(35,6,'UNIDAD EJECUTORA','RBL',0,'L');
+		$this->Cell(20,6,$_SESSION['top_cod_secretaria1'],'RB',0,'C');//--------[COD. SECRETARÍA]
+		$this->Cell(0,6,$_SESSION['deno_secretaria1'],'RB',1,'L');//---------[DENO. SECRETARÍA]
+
+		$this->Cell(35,6,'DIRECCIÓN','RBL',0,'L');
+		$this->Cell(20,6,$_SESSION['top_cod_direccion1'],'RB',0,'C');//--------[COD. DIRECCIÓN]
+		$this->Cell(0,6,$_SESSION['deno_direccion1'],'RB',1,'L');//---------[DENO. DIRECCIÓN]
+
+		$this->SetFont('vera','',7);
+		$this->Cell(35,6,'DIVISIÓN','RBL',0,'L');
+		$this->Cell(20,6,$_SESSION['top_cod_division1'],'RB',0,'C');//--------[COD. DIVISIÓN]
+		$this->Cell(0,6,$_SESSION['deno_division1'],'RB',1,'L');//---------[DENO. DIVISIÓN]
+
+		$this->Cell(35,6,'DEPARTAMENTO','RBL',0,'L');
+		$this->Cell(20,6,$_SESSION['top_cod_departamento1'],'RB',0,'C');//--------[COD. DEPARTAMENTO]
+		$this->Cell(0,6,$_SESSION['deno_departamento1'],'RB',1,'L');//---------[DENO. DEPARTAMENTO]
+
+		$this->Cell(35,6,'OFICINA','RBL',0,'L');
+		$this->Cell(20,6,$_SESSION['top_cod_oficina1'],'RB',0,'C');//--------[COD. OFICINA]
+		$this->Cell(0,6,$_SESSION['deno_oficina1'],'RB',1,'L');//---------[DENO. OFICINA]
+
+
+		////////////////////////////////////////////////////////////
+		$this->Cell(16,4,'Código','TLR',0,'C');
+		$this->Cell(50,4,'Denominación','TR',0,'C');
+		$this->Cell(17,4,'Deveng.','TR',0,'C');
+		$this->Cell(27,4,'','TR',0,'C');
+		$this->Cell(50,4,'','TR',0,'C');
+		$this->Cell(18,4,'Cédula de','TR',0,'C');
+		$this->Cell(45,4,'Código','TR',0,'C');
+		$this->Cell(11,4,'Cod','TR',0,'C');
+		$this->Cell(50,4,'Denominación de','TR',0,'C');
+		$this->Cell(0,4,'Código','TR',1,'C');
+
+
+		$this->Cell(16,3,'de Cargo','LRB',0,'C');
+		$this->Cell(50,3,'del Cargo','RB',0,'C');
+		$this->Cell(17,3,'Quince','RB',0,'C');
+		$this->Cell(27,3,'Compensaciones','RB',0,'C');
+		$this->Cell(50,3,'Apellidos y Nombres','RB',0,'C');
+		$this->Cell(18,3,'Identidad','RB',0,'C');
+		$this->Cell(45,3,'Presupuestario','RB',0,'C');
+		$this->Cell(11,3,'Trans','RB',0,'C');
+		$this->Cell(50,3,'Transacción','RB',0,'C');
+		$this->Cell(0,3,'Presupuestario','RB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+$_SESSION['top_nomina1']='';
+$_SESSION['top_cod_secretaria1']='';
+$_SESSION['top_cod_direccion1']='';
+$_SESSION['top_cod_division1']='';
+$_SESSION['top_cod_departamento1']='';
+$_SESSION['top_cod_oficina1']='';
+
+$_SESSION['deno_secretaria1']='';
+$_SESSION['deno_direccion1']='';
+$_SESSION['deno_division1']='';
+$_SESSION['deno_departamento1']='';
+$_SESSION['deno_oficina1']='';
+
+$pdf->SetFont('vera','',7);
+$concatena=rand().rand().rand();
+$cedula=rand().rand().rand();
+
+$total_cargos=0;
+$total_deven=0;
+$total_compensaciones=0;
+if($datos!=null){
+//pr($datos);
+	for($i=0;$i<count($datos);$i++){
+		$_SESSION['top_nomina1']=$datos[$i][0]['deno_nomina'];
+
+		$_SESSION['top_cod_secretaria1']=mascara($datos[$i][0]['cod_secretaria'],2);
+		$_SESSION['top_cod_direccion1']=mascara($datos[$i][0]['cod_direccion'],2);
+		$_SESSION['top_cod_division1']=mascara($datos[$i][0]['cod_division'],2);
+		$_SESSION['top_cod_departamento1']=mascara($datos[$i][0]['cod_departamento'],2);
+		$_SESSION['top_cod_oficina1']=mascara($datos[$i][0]['cod_oficina'],2);
+
+		$_SESSION['deno_secretaria1']=$datos[$i][0]['deno_cod_secretaria'];
+		$_SESSION['deno_direccion1']=$datos[$i][0]['deno_cod_direccion'];
+		$_SESSION['deno_division1']=$datos[$i][0]['deno_cod_division'];
+		$_SESSION['deno_departamento1']=$datos[$i][0]['deno_cod_departamento'];
+		$_SESSION['deno_oficina1']=$datos[$i][0]['deno_cod_oficina'];
+
+		$concatena1=$datos[$i][0]['cod_dir_superior'].$datos[$i][0]['cod_coordinacion'].$datos[$i][0]['cod_secretaria'].$datos[$i][0]['cod_direccion'].$datos[$i][0]['cod_division'].$datos[$i][0]['cod_departamento'].$datos[$i][0]['cod_oficina'];
+
+		$partida_transaccion=$datos[$i][0]['ano']."-".$datos[$i][0]['cod_proy_accion']."-".$datos[$i][0]['cod_accion_espec']."-".mascara($datos[$i][0]['cod_accion_espec_activ'],2)."-".$datos[$i][0]['cod_partida']."-".mascara($datos[$i][0]['cod_generica'],2)."-".mascara($datos[$i][0]['cod_especifica'],2)."-".mascara($datos[$i][0]['cod_sub_espec'],2)."-".mascara($datos[$i][0]['cod_auxiliar'],4);
+		if($concatena!=$concatena1){
+			if($i!=0){
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(68,7,'Cargos :'.$total_cargos,'LRB',0,'L');
+				$pdf->Cell(17,7,$sisap->Formato2($total_deven),'BR',0,'R');
+				$pdf->Cell(27,7,$sisap->Formato2($total_compensaciones),'BR',0,'R');
+				$pdf->Cell(0,7,'','BR',1,'L');
+				$pdf->SetFont('vera','',7);
+			}
+			$total_cargos=0;
+			$total_deven=0;
+			$total_compensaciones=0;
+			$pdf->AddPage();
+			$concatena=$concatena1;
+		}
+
+
+		$cedula1=$datos[$i][0]['cedula'];
+		if($cedula!=$cedula1){
+			$cedula=$cedula1;
+
+			$total_cargos++;
+			$total_deven+=$datos[$i][0]['sueldo'];
+			$total_compensaciones+=$datos[$i][0]['compensaciones'];
+
+			$pdf->Cell(16,7,mascara($datos[$i][0]['cod_cargo'],2),'LR',0,'C');
+
+	//		$pdf->Cell(52,7,$datos[$i][0]['deno_cargo'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,$datos[$i][0]['deno_cargo'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(17,7,$sisap->Formato2($datos[$i][0]['sueldo']),'LR',0,'R');
+			$pdf->Cell(27,7,$sisap->Formato2($datos[$i][0]['compensaciones']),'R',0,'R');
+
+	//		$pdf->Cell(50,7,$datos[$i][0]['nombre_completo'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,$datos[$i][0]['nombre_completo'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(18,7,$datos[$i][0]['cedula'],'LR',0,'C');
+			$pdf->Cell(45,7,$datos[$i][0]['partidas_ficha'],'R',0,'C');
+			$pdf->Cell(11,7,mascara($datos[$i][0]['cod_transaccion'],3),'R',0,'C');
+
+	//		$pdf->Cell(50,7,$datos[$i][0]['denominacion_transaccion'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,$datos[$i][0]['denominacion_transaccion'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(0,7,$partida_transaccion,'LR',1,'C');
+
+			$pdf->Cell(0,0,'','T',1,'C');
+		}else{
+			$pdf->Cell(16,7,'','LR',0,'C');
+
+	//		$pdf->Cell(52,7,$datos[$i][0]['deno_cargo'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,'','','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(17,7,'','LR',0,'R');
+			$pdf->Cell(27,7,'','R',0,'R');
+
+	//		$pdf->Cell(50,7,$datos[$i][0]['nombre_completo'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,'','','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(18,7,'','LR',0,'C');
+			$pdf->Cell(45,7,'','R',0,'C');
+			$pdf->Cell(11,7,mascara($datos[$i][0]['cod_transaccion'],3),'R',0,'C');
+
+	//		$pdf->Cell(50,7,$datos[$i][0]['denominacion_transaccion'],'BR',0,'L');
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(50,1,'','',2,'C');
+			$pdf->MultiCell(50,3,$datos[$i][0]['denominacion_transaccion'],'','J');
+			$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(0,7,$partida_transaccion,'LR',1,'C');
+
+			$pdf->Cell(0,0,'','T',1,'C');
+		}
+
+
+	}
+
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(68,7,'Cargos :'.$total_cargos,'LRB',0,'L');
+			$pdf->Cell(17,7,$sisap->Formato2($total_deven),'BR',0,'R');
+			$pdf->Cell(27,7,$sisap->Formato2($total_compensaciones),'BR',0,'R');
+			$pdf->Cell(0,7,'','BR',1,'L');
+			$pdf->SetFont('vera','',7);
+
+
+
+
+
+
+
+
+
+}else{
+	$pdf->AddPage();
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(16,7,'','BLR',0,'C');
+	$pdf->Cell(50,7,'','BR',0,'C');
+	$pdf->Cell(17,7,'','BR',0,'C');
+	$pdf->Cell(27,7,'','BR',0,'C');
+	$pdf->Cell(50,7,'','BR',0,'C');
+	$pdf->Cell(18,7,'','BR',0,'C');
+	$pdf->Cell(45,7,'','BR',0,'C');
+	$pdf->Cell(11,7,'','BR',0,'C');
+	$pdf->Cell(50,7,'','BR',0,'C');
+	$pdf->Cell(0,7,'','BR',1,'C');
+
+}
+
+
+
+
+
+$pdf->Output('Asignacion_Cargos'."_".date('d-m-Y').'.pdf','D');
+
+}
+?>

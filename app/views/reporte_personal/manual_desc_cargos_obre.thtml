@@ -1,0 +1,194 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla_modulos($session->read('entidad_federal'),true,"MANUAL DESCRIPTIVO DE CARGOS DE OBREROS","","950","cnmp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[catd02_ficha_datos]'  method = "post" action="<?php echo  $html->url('/reporte_personal/manual_desc_cargos_obre/si'); ?>" >
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/catp02_ficha_datos/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$titulo_A="MANUAL DESCRIPTIVO DE CARGOS DE OBREROS";
+    	$titulo_B="";
+    	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"190", "Z"=>"12"));
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+if(!empty($datos)){
+$conca = 0;
+	foreach($datos as $rowdatos){
+
+	$pdf->AddPage();
+		if($conca!=$rowdatos[0]['cod_ramo'].$rowdatos[0]['cod_grupo'].$rowdatos[0]['cod_serie']){
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(45,5,'RAMOS - TIPO DE PERSONAL','TRBL',0,'L');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(20,5,$rowdatos[0]['cod_ramo'],'TRB',0,'C');
+			$pdf->Cell(0,5,$rowdatos[0]['denominacion_ramo'],'TRB',1,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(45,5,'GRUPOS - ÁREA OCUPACIONAL','RBL',0,'L');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(20,5,$rowdatos[0]['cod_grupo'],'RB',0,'C');
+			$pdf->Cell(0,5,$rowdatos[0]['denominacion_grupo'],'RB',1,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(45,5,'SERIES - CLASIFICACIÓN','RBL',0,'L');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(20,5,$rowdatos[0]['cod_serie'],'RB',0,'C');
+			$pdf->Cell(0,5,$rowdatos[0]['denominacion_serie'],'RB',1,'L');
+			$conca = $rowdatos[0]['cod_ramo'].$rowdatos[0]['cod_grupo'].$rowdatos[0]['cod_serie'];
+		}
+
+			$pdf->Ln(8);
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(20,5,'PUESTO','TRL',0,'C');
+			$pdf->Cell(170,5,'DENOMINACIÓN DEL PUESTO','TR',0,'C');
+			$pdf->Cell(0,5,'GRADO','TR',1,'C');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(20,5,$rowdatos[0]['cod_puesto'],'TRBL',0,'C');
+			$pdf->Cell(170,5,$rowdatos[0]['titulo_puesto'],'TRB',0,'L');
+			$pdf->Cell(0,5,$sisap->zero($rowdatos[0]['grado']),'TRB',1,'C');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(96,5,'LABOR GENERAL','TRBL',0,'C');
+			$pdf->Cell(0,5,'LABORES ESPECÍFICAS','TRB',1,'C');
+
+			$pdf->SetFont('vera','',6);
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(100,0,'','L',2,'C');
+			$pdf->Cell(1,60,'','L',0,'C');
+			$pdf->MultiCell(96,3,$rowdatos[0]['labor_general'],'','J');
+			$varX = $varX+96;
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(0,1,"",'',2,'C');
+		$pdf->MultiCell(0,3,$rowdatos[0]['labor_especifica'],'','L');
+		$varX = $varX+0;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,60,'','RL',1);
+		$pdf->Cell(0,0,'','T',1,'C');
+
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(96,5,'NIVEL EDUCATIVO Y CONOCIMIENTOS REQUERIDOS','RBL',0,'C');
+			$pdf->Cell(0,5,'EXPERIENCIA','B',1,'C');
+			$pdf->SetFont('vera','',6);
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(100,0,'','L',2,'C');
+			$pdf->Cell(1,50,'','L',0,'C');
+			$pdf->MultiCell(96,3,$rowdatos[0]['nivel_educativo_conocimiento'],'','J');
+			$varX = $varX+96;
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(0,1,"",'',2,'C');
+		$pdf->MultiCell(0,3,$rowdatos[0]['experiencia'],'','L');
+		$varX = $varX+0;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,50,'','RL',1);
+		$pdf->Cell(0,0,'','T',1,'C');
+
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(96,5,'LICENCIAS Y/O CERTIFICADOS','RBL',0,'C');
+			$pdf->Cell(0,5,'HABILIDADES Y/O DESTREZAS','B',1,'C');
+			$pdf->SetFont('vera','',6);
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(100,0,'','L',2,'C');
+			$pdf->Cell(1,40,'','L',0,'C');
+			$pdf->MultiCell(96,3,$rowdatos[0]['licencias_certificados'],'','J');
+			$varX = $varX+96;
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(0,1,"",'',2,'C');
+		$pdf->MultiCell(0,3,$rowdatos[0]['habilidades_destrezas'],'','L');
+		$varX = $varX+0;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,40,'','RL',1);
+		$pdf->Cell(0,0,'','T',1,'C');
+
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(96,5,'CONDICIONES FISÍCAS','RBL',0,'C');
+			$pdf->Cell(0,5,'CONDICIONES AMBIENTALES Y DE RIESGOS','B',1,'C');
+			$pdf->SetFont('vera','',6);
+
+			$varX = $pdf->GetX();//asigno X
+			$varY = $pdf->GetY();//asigno Y
+			$pdf->Cell(100,0,'','L',2,'C');
+			$pdf->Cell(1,30,'','L',0,'C');
+			$pdf->MultiCell(96,3,$rowdatos[0]['condiciones_fisicas'],'','J');
+			$varX = $varX+96;
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(0,1,"",'',2,'C');
+		$pdf->MultiCell(0,3,$rowdatos[0]['condiciones_ambientales'],'','L');
+		$varX = $varX;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,30,'','RL',1);
+		$pdf->Cell(0,0,'','T',1,'C');
+
+	} // fin foreach
+
+
+
+}else{
+
+		$pdf->AddPage();
+		$pdf->SetFont('vera','B',12);
+		$pdf->Cell(0,8,'No se encontrarón datos','',1,'C');
+
+}
+
+
+$pdf->Output('Registro_Asignacion_Cargos'."_".date('d-m-Y').'.pdf','D');
+
+}
+
+?>

@@ -1,0 +1,230 @@
+<?php      if($opcion==1){ ?>
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"DISTRIBUCIÓN Y EJECUCIÓN DE LOS RECURSOS","","950");?>
+
+<?= $sisap->OpenTable("950")?>
+	<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_juan2/distribucion_ejecucion_de_recursos/pdf'); ?>" >
+				<table border="0">
+					  <tr>
+					        <td width='800px' align="center">Año: <input name="data[reporte_juan2][ano_recurso]"  value="<?= $year_inicio; ?>"  id="ano_recurso" size="4"  style="text-align:center;"  maxlength="4" onKeyPress="return solonumeros(event);" ></td>
+					  </tr>
+
+					  <tr>
+					        <td width='800px' id="tipo_recurso"  align="center"> <br><br>
+					           <?= $sisap->radioTagRemote("reporte_juan2/tipo_recurso", array('1'=>'Ordinario', '2'=>'Coordinado', '3'=>'F.C.I.', '4'=>'MPPS', '5'=>'Ingresos extraordinarios', '6'=>'Ingresos propios', '7'=>'Todo'), array('id'=>'tipo_recurso'), null, $opc=7); ?>
+					        </td>
+					 </tr>
+
+				     <tr>
+				       <td  align="center">
+				    		 <?= $html->submit('Generar') ?>
+				     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+				       </td>
+				     </tr>
+			     </table>
+	</form>
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+        $this->top_reporte($titulo_A = "DISTRIBUCIÓN Y EJECUCIÓN DE LOS RECURSOS EJERCICIO FISCAL ".$_SESSION["ano_recurso"], $_SESSION["tipo_recurso"], null, array("Y"=>"12", "X"=>"14", "Z"=>"12"), array("Y"=>"17", "X"=>"250"));
+
+                $this->SetFont('vera','B',8);
+
+                $this->Cell(186,5,'PRESUPUESTO AJUSTADO DE LA INSTITUCIÓN','TRBL',0,'R');
+				$this->Cell(0,5,$_SESSION["presupuesto_ajustado_institucion"],'TRB',1,'R');
+
+
+				$this->SetFont('vera','B',6);
+				$this->Cell(13,4,'','TRL',0,'C');
+				$this->Cell(75,4,'','TR',0,'C');
+				$this->Cell(40,4,'PRESUPUESTO','RT',0,'C');
+				$this->Cell(18,4,'','RT',0,'C');
+				$this->Cell(35,4,'MONTO','RT',0,'C');
+				$this->Cell(18,4,'','RT',0,'C');
+				$this->Cell(14,4,'%','RT',0,'C');
+				$this->Cell(35,4,'','RT',0,'C');
+				$this->Cell(0,4,'','TR',1,'C');
+
+
+				$this->Cell(13,3,'CÓDIGO','RBL',0,'C');
+				$this->Cell(75,3,'DEPENDENCIA','RBL',0,'C');
+		        $this->Cell(40,3,'AJUSTADO','RB',0,'C');
+		        $this->Cell(18,3,'%','RB',0,'C');
+		        $this->Cell(35,3,'EJECUTADO','RB',0,'C');
+		        $this->Cell(18,3,'%','RB',0,'C');
+		        $this->Cell(14,3,'MEDIA','RB',0,'C');
+		        $this->Cell(35,3,'DISPONIBILIDAD','RB',0,'C');
+				$this->Cell(0,3,'%','RB',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$_SESSION["ano_recurso"]                      = $ano_recurso;
+$_SESSION["presupuesto_ajustado_institucion"] = 0;
+
+foreach($datos1 as $ve1){
+   $_SESSION["presupuesto_ajustado_institucion"] = $sisap->Formato2($ve1[0]["presupuesto_ajustado_institucion"]);
+               $presupuesto_ajustado_institucion = $ve1[0]["presupuesto_ajustado_institucion"];
+}//fin foreach
+
+$_SESSION["tipo_recurso"] = $tipo_recurso;
+
+$pdf->AddPage();
+
+
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+
+$porcentaje_a = 0;
+$porcentaje_b = 0;
+$porcentaje_c = 0;
+
+
+
+
+if($datos2!=null){
+$P_total=0;
+foreach($datos2 as $ve2){
+
+	                                            $long=strlen($ve2[0]["denominacion_dep"]);
+
+													if($long<=45){//echo "a";
+														$height=5;
+													}else if($long>45 && $long<=90){//echo "b";
+														$height=7;
+													}else if($long>90 && $long<=135){//echo "c";
+														$height=14;
+													}else if($long>135 && $long<=170){//echo "d";
+														$height=16;
+													}else if($long>170 && $long<=205){//echo "e";
+														$height=19;
+													}else if($long>170 && $long<=240) {//echo "f";
+														$height=22;
+													}else if($long>240 && $long<=280) {//echo "g";
+														$height=24;
+													}else if($long>280 && $long<=315) {//echo "h";
+														$height=26;
+													}else{//echo "i";
+														$height=28;
+													}
+						    $total_a += $ve2[0]["presupuesto_ajustado"];
+							$total_b += $ve2[0]["monto_ejecutado"];
+							$total_c += $ve2[0]["disponibilidad"];
+
+
+							if($ve2[0]["presupuesto_ajustado"]!=0){
+								$porcentaje_a += ($ve2[0]["presupuesto_ajustado"]/$presupuesto_ajustado_institucion) * 100;
+								$porcentaje_b += ($ve2[0]["monto_ejecutado"]/$ve2[0]["presupuesto_ajustado"]) * 100;
+								$porcentaje_c += ($ve2[0]["disponibilidad"]/$ve2[0]["presupuesto_ajustado"]) * 100;
+
+								$porcentaje_a_aux = ($ve2[0]["presupuesto_ajustado"]/$presupuesto_ajustado_institucion) * 100;
+								$porcentaje_b_aux = ($ve2[0]["monto_ejecutado"]/$ve2[0]["presupuesto_ajustado"]) * 100;
+								$porcentaje_c_aux = ($ve2[0]["disponibilidad"]/$ve2[0]["presupuesto_ajustado"]) * 100;
+							}//fin if
+
+				$pdf->SetFont('vera','',6);
+
+                $pdf->Cell(13,$height,mascara($ve2[0]["cod_dep"],4),'RBL',0,'C');
+	                $varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$pdf->Cell(75,1,"",'',2,'C');
+					$pdf->MultiCell(74,3,$ve2[0]["denominacion_dep"],'','L');//---[DENOMINACION DEL PUESTO]
+					$varX = $varX+75;
+					$pdf->SetXY($varX,$varY);
+		        $pdf->Cell(40,$height,$sisap->Formato2($ve2[0]["presupuesto_ajustado"]),'LRB',0,'R');
+		        $pdf->Cell(18,$height,$sisap->Formato2($porcentaje_a_aux),'RB',0,'C');
+		        $pdf->Cell(35,$height,$sisap->Formato2($ve2[0]["monto_ejecutado"]),'RB',0,'R');
+		        $pdf->Cell(18,$height,$sisap->Formato2($porcentaje_b_aux),'RB',0,'C');
+
+					$A=$ve2[0]["presupuesto_ajustado"];
+					$M= date("m");
+					$P=((($A/12)*$M)/$A) * 100;
+			        $pdf->Cell(14,$height,$sisap->Formato2($P),'RB',0,'C');
+
+			        $P_total += $P;
+
+		        $pdf->Cell(35,$height,$sisap->Formato2($ve2[0]["disponibilidad"]),'RB',0,'R');
+				$pdf->Cell(0,$height,$sisap->Formato2($porcentaje_c_aux),'RB',1,'C');
+
+
+				$pdf->Cell(0,0,'','T',1);
+
+
+
+
+
+}//fin foreach
+
+
+
+                            $porcentaje_a = ($total_a/$presupuesto_ajustado_institucion) * 100;
+							$porcentaje_b = ($total_b/$total_a) * 100;
+							$porcentaje_c = ($total_c/$total_a) * 100;
+
+
+                $pdf->SetFont('vera','B',6);
+                $pdf->Cell(88,$height,"TOTALES",'RBL',0,'R');
+		        $pdf->Cell(40,$height,$sisap->Formato2($total_a),'LRB',0,'R');
+		        $pdf->Cell(18,$height,$sisap->Formato2($porcentaje_a),'RB',0,'C');
+		        $pdf->Cell(35,$height,$sisap->Formato2($total_b),'RB',0,'R');
+		        $pdf->Cell(18,$height,$sisap->Formato2($porcentaje_b),'RB',0,'C');
+
+		        $pdf->Cell(49,$height,$sisap->Formato2($total_c),'RB',0,'R');
+				$pdf->Cell(0,$height,$sisap->Formato2($porcentaje_c),'RB',1,'C');
+}
+
+
+
+ $pdf->Output('distribucion_ejecucion_de_recursos'.date("d-m-Y_h").".pdf",'D');
+
+
+ }//fin else ?>

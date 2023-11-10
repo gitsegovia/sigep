@@ -1,0 +1,153 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('TIPOS DE PROPAGANDA'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shp300_tipo_propaganda/2'); ?>" >
+			<table border="0" >
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = 'TIPOS DE PROPAGANDA', null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(25,4,'','TRL',0,'C');
+		$this->Cell(90,4,'','TR',0,'C');
+		$this->Cell(35,4,'','TR',0,'C');
+		$this->Cell(20,4,'Unidad','TR',0,'C');
+		$this->Cell(0,4,'Monto','TR',1,'C');
+
+		$this->Cell(25,2,'Código','RLB',0,'C');
+		$this->Cell(90,2,'Denominación','RB',0,'C');
+		$this->Cell(35,2,'Articulo','RB',0,'C');
+		$this->Cell(20,2,'Medida','RB',0,'C');
+		$this->Cell(0,2,'por unidad','RB',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+	for($i=0;$i<count($datos);$i++){
+
+		if($datos[$i][0]['tipo_unidad']==1){
+			$unidad='UNIDAD';
+		}else{
+			$unidad='METROS';
+		}
+
+		$pdf->Cell(25,6,mascara2($datos[$i][0]['cod_tipo']),'RL',0,'C');
+//		$pdf->Cell(120,6,$datos[$i][0]['denominacion'],'RB',0,'L');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(90,1,"",'',2,'C');
+			$pdf->MultiCell(89,2,$datos[$i][0]['denominacion'],'','L');// Razón social
+			$varX = $varX+90;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(35,6,$datos[$i][0]['articulo'],'RL',0,'L');
+		$pdf->Cell(20,6,$unidad,'R',0,'C');
+		$pdf->Cell(0,6,$sisap->Formato2($datos[$i][0]['monto']),'R',1,'R');
+		$pdf->Cell(0,0,'','T',1,'C');
+
+	}
+
+
+}else{
+
+		$pdf->Cell(25,6,'','RL',0,'C');
+//		$pdf->Cell(120,6,$datos[$i][0]['denominacion'],'RB',0,'L');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(90,1,"",'',2,'C');
+			$pdf->MultiCell(89,2,'','','L');// Razón social
+			$varX = $varX+90;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(35,6,'','RL',0,'C');
+		$pdf->Cell(20,6,'','R',0,'C');
+		$pdf->Cell(0,6,'','RL',1,'C');
+		$pdf->Cell(0,0,'','T',1,'C');
+
+
+}
+
+$pdf->Output('tipos_propaganda_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

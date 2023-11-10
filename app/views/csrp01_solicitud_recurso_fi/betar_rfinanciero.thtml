@@ -1,0 +1,68 @@
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);}
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"BETAR RECURSOS FINANCIEROS DE DEPENDENCIAS","","950"); ?>
+
+<form name='data[csrp01_solicitud_recurso_fi]' method = "post" id='form'>
+<?= $sisap->OpenTable("950"); ?>
+
+<?php
+	if(!empty($datos_brf)){
+?>
+<div style="height:400px;overflow-y:auto;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr align="center" class="tr_negro" id="fila1_<?=$i?>">
+    <td width="10%">C&oacute;digo</td>
+    <td width="70%">Denominaci&oacute;n Dependencia</td>
+    <td width="10%">No<br>Betado</td>
+    <td width="10%">Betado</td>
+  </tr>
+
+<?php
+	$i = 0;
+	foreach($datos_brf as $rdatos_brf){
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+
+
+?>
+
+  <tr bgcolor="<?=$color?>" class="textNegro2" id="fila_<?=$i?>">
+    <td align="center"><?= mascara_tres($rdatos_brf['arrd05']['cod_dep']) ?></td>
+    <td align="left"><?= $rdatos_brf['arrd05']['denominacion'] ?></td>
+
+<?php
+	if($rdatos_brf['arrd05']['betar_ingresos'] == 1){
+?>
+    <td align="center"><?=$html->checkbox('csrp01_solicitud_recurso_fi/betar1_'.$rdatos_brf['arrd05']['cod_dep'],'',array('value'=>2,'checked'=>$rdatos_brf['arrd05']['betar_ingresos']==1?1:null,'id'=>'betar1_'.$rdatos_brf['arrd05']['cod_dep'],'onclick'=>"ver_documento('/csrp01_solicitud_recurso_fi/guardar_betar_rfi/".$rdatos_brf['arrd05']['cod_dep']."/'+this.value, 'beta_recursofi');")); ?></td>
+    <td align="center"><?=$html->checkbox('csrp01_solicitud_recurso_fi/betar2_'.$rdatos_brf['arrd05']['cod_dep'],'',array('disabled'=>'disabled', 'value'=>1,'checked'=>$rdatos_brf['arrd05']['betar_ingresos']==2?1:null,'id'=>'betar2_'.$rdatos_brf['arrd05']['cod_dep'],'onclick'=>"ver_documento('/csrp01_solicitud_recurso_fi/guardar_betar_rfi/".$rdatos_brf['arrd05']['cod_dep']."/'+this.value, 'beta_recursofi');")); ?></td>
+  </tr>
+
+<?php }else{ ?>
+    <td align="center"><?=$html->checkbox('csrp01_solicitud_recurso_fi/betar1_'.$rdatos_brf['arrd05']['cod_dep'],'',array('disabled'=>'disabled', 'value'=>2,'checked'=>$rdatos_brf['arrd05']['betar_ingresos']==1?1:null,'id'=>'betar1_'.$rdatos_brf['arrd05']['cod_dep'],'onclick'=>"ver_documento('/csrp01_solicitud_recurso_fi/guardar_betar_rfi/".$rdatos_brf['arrd05']['cod_dep']."/'+this.value, 'beta_recursofi');")); ?></td>
+    <td align="center"><?=$html->checkbox('csrp01_solicitud_recurso_fi/betar2_'.$rdatos_brf['arrd05']['cod_dep'],'',array('value'=>1,'checked'=>$rdatos_brf['arrd05']['betar_ingresos']==2?1:null,'id'=>'betar2_'.$rdatos_brf['arrd05']['cod_dep'],'onclick'=>"ver_documento('/csrp01_solicitud_recurso_fi/guardar_betar_rfi/".$rdatos_brf['arrd05']['cod_dep']."/'+this.value, 'beta_recursofi');")); ?></td>
+  </tr>
+<?php } ?>
+
+<?php
+	$i++;
+} ?>
+
+</table>
+</div>
+<br><br>
+
+<?php } ?>
+
+<div id="beta_recursofi"></div>
+
+<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso_fi/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+<?= $sisap->CloseTable(); ?>
+</form>

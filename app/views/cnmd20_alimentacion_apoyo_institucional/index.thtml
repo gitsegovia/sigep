@@ -1,0 +1,133 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$modelo_form="cnmd20_alimentacion_apoyo_institucional";
+$color="";
+
+if($consulta){
+	$readonly='readonly';
+}else{
+	$readonly='';
+}
+
+?>
+
+
+
+<?php
+  $sisap->Tabla('', true, "LISTADO DE APOYO INSTITUCIONAL - (MÓDULO DE COMIDA)", '', "950");
+?>
+
+<?php $sisap->OpenTable("950"); ?>
+
+<?php if($activo_guardar){ ?>
+	<form name='data[cnmd20_alimentacion_apoyo_institucional]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="10%">Numero de Cedula</td>
+				<td width="20%"><?= $html->input($modelo_form.'/cedula_identidad',array('id'=>'cedula_identidad', 'class'=>'inputtext', 'style'=>'text-align:right','maxlength'=>'8'));?>
+				</td>
+				<td colspan="2"></td>
+			</tr>
+			<tr>
+				<td width="15%">Primer Nombre</td>
+				<td width="35%"><?= $html->input($modelo_form.'/primer_nombre', array('id'=>'primer_nombre','class'=>'inputtext', $readonly=>$readonly)) ?></td>
+				<td width="15%">Segundo Nombre</td>
+				<td><?= $html->input($modelo_form.'/segundo_nombre', array('id'=>'segundo_nombre','class'=>'inputtext', $readonly=>$readonly)) ?></td>
+			</tr>
+			<tr>
+				<td width="15%">Primer Apellido</td>
+				<td width="35%"><?= $html->input($modelo_form.'/primer_apellido', array('id'=>'primer_apellido','class'=>'inputtext', $readonly=>$readonly)) ?></td>
+				<td width="15%">Segundo Apellido</td>
+				<td><?= $html->input($modelo_form.'/segundo_apellido', array('id'=>'segundo_apellido','class'=>'inputtext', $readonly=>$readonly)) ?></td>
+			</tr>
+			<tr>
+				<td width="15%">Función dentro de la institución</td>
+				<td colspan="3"><?= $html->textarea($modelo_form.'/funcion', array('id'=>'funcion','rows'=>'2',  'cols' => '40', 'class'=>'inputtext', $readonly=>$readonly),  false) ?></td>
+			</tr>
+			<tr>
+				<td colspan="4" align="center">
+					<?= $sisap->submitTagRemote('Guardar Personal', array('funcion'=>'valida_cnmd20_alimentacion_apoyo_institucional','url1' => '/cnmd20_alimentacion_apoyo_institucional/guardar/', 'update1'=>'principal')); ?>
+				</td>
+			</tr>
+		</table>
+	</form>
+<?php } ?>
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="7" align="center">PERSONAL REGISTRADO PARA APOYO INSTITUCIONAL:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="5%" align="center">#</td>
+				<td width="10%" align="center">Cedula identidad</td>
+				<td width="30%" align="center">Nombre completo</td>
+				<td width="45%" align="center">Función dentro de la institución</td>
+				<td width="10%" align="center">Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $cargos){
+						
+     				$param = $cargos[0]['cedula_identidad'];
+
+						if($color=="#DAEBFF"){
+	    				$color="#CDF2FF";
+		    		}else{
+			    		$color="#DAEBFF";
+			    	}
+
+					?>
+
+					<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+						<td width="5%" align="center"><?= $id ?></td>
+						<td width="10%" align="center"><?= $cargos[0]['cedula_identidad'] ?></td>
+						<td width="30%" align="center"><?= $cargos[0]['nombre_completo'] ?></td>
+						<td width="45%" align="center"><?= $cargos[0]['funcion'] ?></td>
+						<td width="10%" align="center">
+					    <?if($_SESSION["Modulo"]=='0'){?>
+						    <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmd20_alimentacion_apoyo_institucional/eliminar/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+							<?}?>
+						</td>
+					</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				}else{ // fin datos
+				 ?>
+					<tr>
+						<td  colspan="7" align="center">NO EXISTEN APOYOS REGISTRADOS</td>
+					</tr>
+			 	 <?
+				} 
+			?>
+		</table>
+	</div>
+<?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>
+<script>
+	$('cedula_identidad').value='';
+	$('primer_nombre').value='';
+	$('segundo_nombre').value='';
+	$('primer_apellido').value='';
+	$('segundo_apellido').value='';
+	$('funcion').value='';
+</script>

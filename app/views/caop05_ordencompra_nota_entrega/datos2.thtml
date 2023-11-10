@@ -1,0 +1,183 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+$i=0;
+
+?>
+
+
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" border="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro" align="center">
+    <td>Código<br>Prod.</td>
+    <td>Unidad<br>Medida</td>
+    <td>Cantidad</td>
+    <td>Descripción de los Bienes o Servicios</td>
+    <td>Precio Unitario</td>
+    <td>Total</td>
+    <td></td>
+  </tr>
+<?php
+
+ 	$i=0;
+ 	$total=0;
+
+ if(isset($lista_cscd03_cotizacion_cuerpo_entregado)){
+  if($lista_cscd03_cotizacion_cuerpo_entregado!=null){
+
+    foreach($lista_cscd03_cotizacion_cuerpo_entregado as $ve){
+    	//print_r($ve);
+
+    	if($i%2==0){
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" align="center">
+    <td height="22"><input name="data[cscp03_registro_cotizacion][<?= "codigo_prod_serv_".$i ?>]" type="text" id="<?= "codigo_prod_serv_".$i ?>" size="4" readonly value="<?= $ve['codigo_prod_serv']?>" style="text-align:center"/></td>
+    <td>
+    	<input name="data[cscp03_registro_cotizacion][<?= "und_medida_".$i ?>]" type="text" id="<?= "cod_medida_".$i ?>" value="<?= deno_unidad2($unidades, $ve['cod_medida'])?>" readonly style="text-align:center" size="6"/>
+    	<input type="hidden" name="data[cscp03_registro_cotizacion][<?= "cod_medida_".$i ?>]" type="text" id="<?= "cod_medida_".$i ?>" value="<?= $ve['cod_medida']?>" readonly style="text-align:center" size="6"/>
+    </td>
+    <td>
+    	<input type="text" name="data[caop05_ordencompra_notaentrega][cantidad_<?=$i?>]" value="<?= $ve['cantidad']?>"  size="6" id="<?= "cantidad2_".$i ?>" style="text-align:center" onBlur="valida_cantidades_por_entregar();valida_cantidades_entregadas();  cscp03_cotizacion_cuerpo_cargar_monto_id2('<?= "cantidad2_".$i ?>', '<?= "precio2_".$i ?>', '<?= "monto_".$i ?>');"/>
+    	<input type="hidden" value="<?= $ve['cantidad']?>" id="<?= "cantidadorig_".$i ?>"/>
+    	</td>
+    <td><textarea name="data[cscp03_registro_cotizacion][<?= "descripcion_".$i ?>]"  rows="1" cols="35" wrap="off" id="<?= "descripcion_".$i ?>" readonly><?= $ve['descripcion']?></textarea></td>
+    <td><input type="text" name="data[cscp03_registro_cotizacion][<?= "precio_".$i ?>]" id="<?= "precio2_".$i ?>" readonly value="<?= $sisap->Formato_3_out($ve['precio_unitario'])?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  " style="text-align:right"/></td>
+    <td style="padding-right:5px; text-align:right" id="<?= "monto_".$i ?>" ><?php $var_aux=$ve['cantidad'] * $ve['precio_unitario']; echo $sisap->Formato2($var_aux); $total +=$ve['cantidad'] * $ve['precio_unitario']; ?></td>
+    <td>----------</td>
+</tr>
+<?
+   }else{
+?>
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" align="center">
+    <td height="22"><input name="data[cscp03_registro_cotizacion][<?= "codigo_prod_serv_".$i ?>]" type="text" id="<?= "codigo_prod_serv_".$i ?>" readonly size="4" value="<?= $ve['codigo_prod_serv']?>" style="text-align:center"/></td>
+    <td>
+    	<input name="data[cscp03_registro_cotizacion][<?= "und_medida_".$i ?>]" type="text" id="<?= "cod_medida_".$i ?>" value="<?= deno_unidad2($unidades, $ve['cod_medida'])?>" readonly style="text-align:center" size="6"/>
+    	<input type="hidden" name="data[cscp03_registro_cotizacion][<?= "cod_medida_".$i ?>]" type="text" id="<?= "cod_medida_".$i ?>" value="<?= $ve['cod_medida']?>" readonly style="text-align:center" size="6"/>
+    </td>
+    <td>
+    	<input type="text" name="data[caop05_ordencompra_notaentrega][cantidad_<?=$i?>]" value="<?= $ve['cantidad']?>"  size="6" id="<?= "cantidad2_".$i ?>" style="text-align:center"  onBlur="valida_cantidades_por_entregar();valida_cantidades_entregadas(); cscp03_cotizacion_cuerpo_cargar_monto_id2('<?= "cantidad2_".$i ?>', '<?= "precio2_".$i ?>', '<?= "monto_".$i ?>');" />
+    	<input type="hidden" value="<?= $ve['cantidad']?>" id="<?= "cantidadorig_".$i ?>"/>
+    </td>
+    <td><textarea name="data[cscp03_registro_cotizacion][<?= "descripcion_".$i ?>]"  rows="1" cols="35" wrap="off" id="<?= "descripcion_".$i ?>" readonly><?= $ve['descripcion']?></textarea></td>
+    <td><input type="text" name="data[cscp03_registro_cotizacion][<?= "precio_".$i ?>]" id="<?= "precio2_".$i ?>" readonly value="<?= $sisap->Formato_3_out($ve['precio_unitario'])?>" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  " style="text-align:right"/></td>
+    <td style="padding-right:5px; text-align:right" id="<?= "monto_".$i ?>" ><?php $var_aux=$ve['cantidad'] * $ve['precio_unitario']; echo $sisap->Formato2($var_aux); $total +=$ve['cantidad'] * $ve['precio_unitario']; ?></td>
+    <td>----------</td>
+</tr>
+    		<?
+
+    	}//
+    	$i++;
+
+    	$total = $sisap->Formato2($total);
+    	$total = $sisap->Formato1($total);
+
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--------------------</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#DAEBFF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right"  height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right"  id="TOTALINGRESOS2"><?= $sisap->Formato2($total)?></td>
+    <td>--</td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--------------------</td>
+    <td>--</td>
+</tr>
+<tr bgcolor="#CDF2FF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS2"><?= $sisap->Formato2($total)?></td>
+    <td>--</td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--------------------</td>
+    <td>----------</td>
+</tr>
+<tr bgcolor="#CDF2FF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS2"><?= $sisap->Formato2($total)?></td>
+    <td>--</td>
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" align="center">
+    <td height="22"  width="2">--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td>--------------------</td>
+    <td>----------</td>
+</tr>
+<tr bgcolor="#CDF2FF" align="center">
+    <td colspan="5" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right"  id="TOTALINGRESOS2"><?= $sisap->Formato2($total)?></td>
+    <td>--</td>
+</tr>
+        <?
+ }
+
+ //$i--;
+
+?>
+<input type="hidden" name="data[cscp03_registro_cotizacion][cuenta_i12]" id="cuenta_ii12" value="<?= $i ?>" />
+<input type="hidden" name="data[cscp03_registro_cotizacion][cuenta_i]" id="cuenta_ii" value="<?= $i ?>" />
+<script>
+valida_cantidades_entregadas();
+</script>
+
+</table>
+</div>
+
+
+
+
+
+

@@ -1,0 +1,172 @@
+<?php
+if(isset($permiso) && $permiso==true){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$titulo = "RELACIÓN DE VISITANTES";
+       	$this->top_reporte2(array($titulo), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+    }
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMargin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+$pdf->Ln(3);
+
+if(isset($visitant)){
+// Comienza 1. Datos Personales:
+$pdf->SetLeftMargin(28);
+$pdf->SetRightMargin(28);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(7,4,"1.",'',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(35,4,"DATOS PERSONALES:",'B',0,'L');
+$pdf->Cell(0,4,"",'',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,4,"NOMBRES Y APELLIDOS:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(80,4,$visitant['cdvd01_datos_personales']['nombres_apellidos'],'B',0,'L');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(6,4," C.I.:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,4,$visitant['cdvd01_datos_personales']['cedula_identidad'],'B',0,'L');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(9,4," SEXO:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,4,$visitant['cdvd01_datos_personales']['sexo']==1 ? 'MASCULINO' : 'FEMENINO','B',1,'L');
+$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(16,4,"TELÉFONOS:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,4,$visitant['cdvd01_datos_personales']['telefonos'],'B',0,'L');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(15,4,"DIRECCIÓN:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->MultiCell(94,4,$visitant['cdvd01_datos_personales']['direccion'],'B','L');
+$pdf->Ln(7);
+
+// Comienza 2. Representante de la Empresa:
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(7,4,"2.",'',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(55,4,"REPRESENTANTE DE LA EMPRESA:",'B',0,'L');
+$pdf->Cell(0,4,"",'',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(9,4,"R.I.F.:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,4,$visitant['cdvd01_datos_personales']['rif'],'B',0,'L');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(21,4," RAZÓN SOCIAL:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(115,4,$visitant['cdvd01_datos_personales']['razon_social'],'B',1,'L');
+$pdf->Ln(7);
+}
+
+// Comienza 3. Historial de Visitas:
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(7,4,"3.",'',0,'L');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(37,4,"HISTORIAL DE VISITAS:",'B',0,'L');
+$pdf->Cell(0,4,"",'',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetLeftMargin(10);
+$pdf->SetRightMargin(10);
+$pdf->Cell(0,1,"",'',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(14,6,"FECHA",'TRBL',0,'C');
+$pdf->Cell(12,6,"HORA",'TRB',0,'C');
+$pdf->Cell(30,6,"DIRECCIÓN SUPERIOR",'TRB',0,'C');
+$pdf->Cell(30,6,"COORDINACIÓN",'TRB',0,'C');
+$pdf->Cell(34,6,"SECRETARÍA",'TRB',0,'C');
+$pdf->Cell(34,6,"DIRECCIÓN",'TRB',0,'C');
+$pdf->Cell(42,6,"OBSERVACIONES",'TRB',1,'C');
+$pdf->SetFont('vera','',6);
+if(isset($dato_vitem)){
+	foreach($dato_vitem as $datovisi){
+		$pdf->Cell(14,20,$sisap->cambia_fecha($datovisi[0]['fecha_registro']),'TL',0,'C');
+		$pdf->Cell(12,20,$datovisi[0]['hora'],'TLR',0,'C');
+  // DENOMINACION DIREC. SUP.
+	$pdf->Cell(30,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(30,2,$datovisi[0]['dirsuperior'],0,'L');
+	$varX =$varX+30;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+  // DENOMINACION COORD.
+	$pdf->Cell(1,20,"",'L',0,'C');
+	$pdf->Cell(30,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(30,2,$datovisi[0]['coordinacion'],0,'L');
+	$varX =$varX+29;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+  // DENOMINACION SECRET.
+	$pdf->Cell(1,20,"",'L',0,'C');
+	$pdf->Cell(34,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(34,2,$datovisi[0]['secretaria'],0,'L');
+	$varX =$varX+33;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+  // DENOMINACION DIREC.
+	$pdf->Cell(1,20,"",'L',0,'C');
+	$pdf->Cell(34,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(34,2,$datovisi[0]['direccion'],0,'L');
+	$varX =$varX+33;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+  // OBSERVACIONES
+	$pdf->Cell(1,20,"",'L',0,'C');
+	$pdf->Cell(0,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(42,2,$datovisi[0]['observaciones'],0,'L');
+	$varX =$varX+41;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->Cell(0,20,"",'L',1,'L');
+	$pdf->Cell(0,0,"",'B',1,'L');
+	}
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(154,6,"TOTAL VISITAS",'RBL',0,'R');
+	$pdf->Cell(0,6,count($dato_vitem),'RB',1,'L');
+}else{
+	for($a=0;$a<8;$a++){
+		$pdf->Cell(14,10,"",'TRBL',0,'C');
+		$pdf->Cell(12,10,"",'TRB',0,'C');
+		$pdf->Cell(30,10,"",'TRB',0,'C');
+		$pdf->Cell(30,10,"",'TRB',0,'C');
+		$pdf->Cell(34,10,"",'TRB',0,'C');
+		$pdf->Cell(34,10,"",'TRB',0,'C');
+		$pdf->Cell(42,10,"",'TRB',1,'C');
+	}
+}
+$pdf->Output('Reporte_visita_'.date('d-m-Y').'.pdf','D');
+}
+?>

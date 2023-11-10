@@ -1,0 +1,214 @@
+<?php
+if($tipo=='html'){
+?>
+<?= $sisap->Tabla('',true,'RELACIÓN DE INGRESOS - RESUMIDO','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[reporte_hacienda]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_hacienda/relacion_ingresos_resumido/pdf'); ?>" onSubmit="return document.getElementById('lista_ano').value!=''?true:false;">
+
+
+<? /*
+  <table border="0" width="180" align="center">
+    <tr>
+      <td align="right"><b>AÑO:</b></td><td id="ano"><?$sisap->selectTagRemote('reporte_hacienda/ano', isset($ano)?$ano:array(date('Y')=>date('Y')) ,array('value1'=>'otros'), $ano_arranque, array('onchange1'=>'/reporte_hacienda/select_ano_mes_dia/mes', 'update1'=>'mes','onchange2'=>'/reporte_hacienda/select_ano_mes_dia/dia', 'update2'=>'dia','onChange'=>'vacio','id'=>'lista_ano','style'=>'width:100%;'  , true), null, true);?></td>
+    </tr>
+    <tr>
+      <td align="right"><b>MES:</b></td><td id="mes"><?$sisap->selectTagRemote('reporte_hacienda/mes', isset($mes)?$mes:array() ,array('value1'=>'otros'), null, array('onchange1'=>'/reporte_hacienda/select_ano_mes_dia/dia/'.$ano_arranque, 'update1'=>'dia','onChange'=>'vacio','id'=>'lista_mes','style'=>'width:100%;'  , true), null, true);?></td>
+    </tr>
+    <tr>
+      <td align="right"><b>DÍA:</b></td><td id="dia"><?$sisap->selectTagRemote('reporte_hacienda/dia', isset($dia)?$dia:array() ,array('value1'=>'otros'), null, array('onchange1'=>'/reporte_hacienda/select_ano_mes_dia/none', 'update1'=>'none','onChange'=>'vacio','id'=>'lista_dia','style'=>'width:100%;'  , true), null, true);?></td>
+    </tr>
+  </table>
+
+*/ ?>
+
+                   <table width="300" cellspacing="0" cellpadding="0">
+						<tr><td align="center">&nbsp;</td></tr>
+						<tr><td align="center">&nbsp;&nbsp;<b>Fecha Desde:</b>&nbsp;&nbsp;
+						        <?$sisap->input_fecha("reporte_hacienda","fecha_desde","fecha_desde", null);?>
+							</td>
+						    <td align="center">&nbsp;&nbsp;<b>Fecha Hasta:</b>&nbsp;&nbsp;
+								<?$sisap->input_fecha("reporte_hacienda","fecha_hasta","fecha_hasta", null);?>
+							</td>
+						</tr>
+						<tr><td align="center">&nbsp;</td></tr>
+					</table>
+
+<div id="none"></div>
+
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<br><br>
+</form>
+<?=$sisap->CloseTable()?>
+<?
+}else if($tipo=='pdf'){
+
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE INGRESOS - RESUMIDO";
+	$titulo_B = $_SESSION['sub_titulo_reporte'];// ;
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"190"));
+    }
+}//fin clase
+   $meses=array('1'=>'enero','2'=>'febrero','3'=>'marzo','4'=>'abril','5'=>'mayo','6'=>'junio','7'=>'julio','8'=>'agosto','9'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
+   if($opcion==1){
+   	  $_SESSION['sub_titulo_reporte'] = "Año: ".$data['ano'];
+   }else if($opcion==2){
+   	  $_SESSION['sub_titulo_reporte'] = "Mes: ".$meses[$data['mes']]." Año: ".$data['ano'];
+   }else if($opcion==3){
+   	  $_SESSION['sub_titulo_reporte'] = "Día: ".mascara($data['dia'],2)." Mes: ".$meses[$data['mes']]." Año: ".$data['ano'];
+    }else if($opcion==4){
+   	  $_SESSION['sub_titulo_reporte'] = "DESDE: ".$_SESSION['fecha_reporte_desde']."  HASTA: ".$_SESSION['fecha_reporte_hasta'];
+   }else{
+   	   $_SESSION['sub_titulo_reporte'] = "";
+   }
+
+
+	$pdf = new fpdfview('P','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(5);
+	$pdf->SetRightMargin(5);
+	$pdf->SetAutoPageBreak(true, 5);
+	$pdf->AddPage();
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(25,3,'Código','TRL',0,'C');
+	$pdf->Cell(155,3,'','TR',0,'C');
+	$pdf->Cell(0,3,'','TR',1,'C');
+
+	$pdf->Cell(25,3,'Ingreso','RLB',0,'C');
+	$pdf->Cell(155,3,'Denominación de ingreso','RB',0,'C');
+	$pdf->Cell(0,3,'TOTAL','RB',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	if(count($datos)>0){
+
+		   function altura_deno ($denominacion) {
+
+	        $c = strlen($denominacion);
+
+	        if($c<=100){
+            	$alturad = 5;
+            }else if($c>100 && $c<=199){
+            	$alturad = 9;
+            }else if($c>199){
+            	$alturad = 12;
+            }
+
+            return $alturad;
+
+			}//fin funcion altura_deno
+
+		  $totales=0;
+		  $t_cantidad_depositos=0;
+	      $t_monto_depositos=0;
+	      $t_cantidad_notas_credito=0;
+	      $t_monto_notas_credito=0;
+	      $t_cantidad_cheques=0;
+	      $t_monto_cheques=0;
+	      $t_cantidad_pagos_efectivo=0;
+	      $t_monto_pagos_efectivo=0;
+	      $monto_descuento_aux = 0;
+       foreach($datos as $rs){
+      	  extract($rs[0]);
+       	  $alturah=(int) altura_deno($denominacion_ingreso.$conc);
+
+       	  $codigo = $cod_partida.".".mascara($cod_generica,2).".".mascara($cod_especifica,2).".".mascara($cod_sub_espec,2).".".mascara($cod_auxiliar,4);
+          $total = ($deuda_vigente + $deuda_anterior + $monto_recargo + $monto_multa + $monto_intereses)-$monto_descuento;
+       	  $pdf->Cell(25,$alturah,$codigo,'RL',0,'C');//Código
+
+		  $varX = $pdf->GetX();
+		  $varY = $pdf->GetY();
+		  $pdf->Cell(75,1,"",'',2,'C');
+		  $pdf->MultiCell(155,3,$denominacion_ingreso.$conc,'','J');
+		  $varX = $varX+155;
+		  $pdf->SetXY($varX,$varY);
+		  $pdf->Cell(0,$alturah,$sisap->Formato2($total),'RL',1,'R');//TOTAL
+		  $pdf->Cell(0,0,"",'T',1,'C');
+
+		  $totales +=$total;
+		  $t_cantidad_depositos+=$cantidad_depositos;
+	      $t_monto_depositos+=$monto_depositos;
+	      $t_cantidad_notas_credito+=$cantidad_notas_credito;
+	      $t_monto_notas_credito+=$monto_notas_credito;
+	      $t_cantidad_cheques+=$cantidad_cheques;
+	      $t_monto_cheques+=$monto_cheques;
+	      $t_cantidad_pagos_efectivo+=isset($cantidad_pagos_efectivo)?$cantidad_pagos_efectivo:$cantidad_pagos_efectiv;
+	      $t_monto_pagos_efectivo+=$monto_pagos_efectivo;
+	      $monto_descuento_aux +=$monto_descuento;
+
+       }
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(180,5,'TOTALES','LTRB',0,'R');
+	$pdf->Cell(0,5,$sisap->Formato2($totales),'TRBL',1,'R');
+	$pdf->SetFont('vera','',6);
+
+	$pdf->Ln(7);
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,5,'DISTRIBUCIÓN DE LA ENTREGA','TRL',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(44,5,'DEPOSITOS','TRBL',0,'C');
+	$pdf->Cell(44,5,'NOTAS DE CRÉDITOS','TRB',0,'C');
+	$pdf->Cell(44,5,'CHEQUES','TRB',0,'C');
+	$pdf->Cell(44,5,'EFECTIVO','TRB',0,'C');
+    $pdf->Cell(0,5,'DESCUENTO','TR',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(22,5,'Cantidad','TRBL',0,'C');
+	$pdf->Cell(22,5,'Monto','TRBL',0,'C');
+
+	$pdf->Cell(22,5,'Cantidad','TRBL',0,'C');
+	$pdf->Cell(22,5,'Monto','TRBL',0,'C');
+
+	$pdf->Cell(22,5,'Cantidad','TRBL',0,'C');
+	$pdf->Cell(22,5,'Monto','TRBL',0,'C');
+
+	$pdf->Cell(22,5,'Cantidad','TRBL',0,'C');
+	$pdf->Cell(22,5,'Monto','TRBL',0,'C');
+
+	$pdf->Cell(0,5,'Monto','TR',1,'C');
+
+	//-------------------------------------------------------
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(22,5,$t_cantidad_depositos,'TRBL',0,'C');//CANTIDAD DEPOSITOS
+	$pdf->Cell(22,5,$sisap->Formato2($t_monto_depositos),'TRBL',0,'R');//MONTO DEPOSITOS
+
+	$pdf->Cell(22,5,$t_cantidad_notas_credito,'TRBL',0,'C');//CANTIDAD NOTAS DE CRÉDITOS
+	$pdf->Cell(22,5,$sisap->Formato2($t_monto_notas_credito),'TRBL',0,'R');//MONTO NOTAS DE CRÉDITOS
+
+	$pdf->Cell(22,5,$t_cantidad_cheques,'TRBL',0,'C');//CANTIDAD CHEQUES
+	$pdf->Cell(22,5,$sisap->Formato2($t_monto_cheques),'TRBL',0,'R');//MONTO CHEQUES
+
+	$pdf->Cell(22,5,$t_cantidad_pagos_efectivo,'TRBL',0,'C');//CANTIDAD EFECTIVO
+	$pdf->Cell(22,5,$sisap->Formato2($t_monto_pagos_efectivo),'TRBL',0,'R');//CANTIDAD EFECTIVO
+
+	$pdf->Cell(0,5,$sisap->Formato2($monto_descuento_aux),'TRBL',1,'R');//MONTO EFECTIVO
+
+   }else{
+        $pdf->Cell(0,5,'NO EXISTEN DATOS','TRL',1,'R');//TOTAL
+	}
+
+	$pdf->Output('relacion_ingresos_resumido_'.date("dmY-hi").'.pdf','D');
+}//fin es pdf
+
+?>

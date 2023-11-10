@@ -1,0 +1,134 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+$j=0;
+	foreach($ayu as $x){
+		$deno[$j] = $x['casd01_tipo_ayuda']['denominacion'];
+		$codigo[$j] = $x['casd01_tipo_ayuda']['cod_tipo_ayuda'];
+		$j++;
+	}
+?>
+
+
+<form name='data[casp01]'  method = "post" id='registroasignacion'>
+<div id="contenido">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr class="tr_negro">
+			<td align="center" colspan="2" >AYUDAS</td>
+		</tr>
+		<tr align="center">
+			<td width="25%">Cédula</td>
+			<td width="80%">Apellidos y Nombres</td>
+		</tr>
+
+		<tr>
+			<td align="center"><?= $sisap->inputTagRemote('casp01/cedula', array('value'=>$dato[0][0]['cedula_identidad'],'url1'=>'/casp01_ayudas/busqueda_cedula/', 'update1'=>'tab_ayuda','id'=>'cedula','readonly'=>'readonly','style'=>'width:75%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+			<td align="center" id="nombres"><?= $html->input('casp01/apellido_nombre', $htmlAttributes = array('value'=>$dato[0][0]['apellidos_nombres'],'style'=>'width:98%','id'=>'ape_nom','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		</tr>
+	</table>
+
+<div id="capita">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="15%">Número de Evaluación</td>
+			<td width="15%">Número de Ayuda</td>
+			<td width="55%">Contenido de la Evaluación</td>
+			<td width="15%">Fecha Ayuda</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->selectTagRemote('casp01/num_evaluacion',$evaluacion,  array('value1'=>'otros'),'', array('onchange1'=>'/casp01_ayudas/contenido_eva/'.$dato[0][0]['cedula_identidad'], 'update1'=>'capita','onChange'=>'vacio', 'id'=>'num_eva',''=>'' , true), null, true);?></td>
+			<td width="15%"><?= $html->input('casp01/numero_ayuda', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'numero_ayuda','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_evaluacion', array('value'=>'','id'=>'concepto_evaluacion', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+			<td width="15%"><?= $sisap->input_fecha('casp01','fecha_ayuda','fecha_ayuda',date("d/m/Y"));?></td>
+		</tr>
+
+	</table>
+	<br>
+
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr><td>CONSULTAR PRODUCTO EN ALMACEN <?= $sisap->imagen_ventana(array("value"=>"..","id"=>"segunda_ventana"),1,"Buscar producto", "/casp01_ayudas/buscar_consulta_producto_1/1", "950px", "450px" ); ?></td></tr>
+	</table>
+
+    <br>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr class="tr_negro" align="center"><td>DETALLES DE LA AYUDA</td></tr>
+	</table>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="10%">Cantidad</td>
+			<td width="40%">Descripción</td>
+			<td width="15%">Precio Unitario</td>
+			<td width="15%">Costo Total</td>
+			<td width="15%">Disponibilidad Ayuda</td>
+			<td width="5%">Acción</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->inputTagRemote('casp01/cantidad', array('value'=>'','url1'=>'/casp01_ayudas/calculos_detalles/cantidad', 'update1'=>'vacio','id'=>'cantidad','style'=>'width:98%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly','onBlur'=>"javascript:if(this.value==''){this.value='0,000';}  precio_unitario('cantidad');"),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+			<td width="15%"><?= $html->textarea('casp01/descripcion', array('value'=>'','id'=>'descripcion', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+			<td align="center"><?= $sisap->inputTagRemote('casp01/precio', array('value'=>'','url1'=>'/casp01_ayudas/calculos_detalles/precio', 'update1'=>'vacio','id'=>'precio','style'=>'width:98%;text-align:center','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('precio');",'readonly'=>'readonly'),  $optionAttr = null,  $showEmpty = true, $return = false) ?></td>
+			<td align="center"><?= $html->input('casp01/costo', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'costo','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->input('casp01/disponibilidad', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:right','id'=>'disponibilidad','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'disabled','url1' => '/casp01_ayudas/agregar_grilla/normal', 'update1'=>'carga_grilla')); ?></td>
+		</tr>
+
+	</table>
+</div>
+
+<? if($_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){ ?>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" width="20%">Desea emitir el acta de entrega?<?= $sisap->radioTagRemote("casp01/radio_formato", array('1'=>'Si','2'=>'No'), array('id'=>'acta_entrega','disabled'=>''), null); ?></td>
+	</tr>
+</table>
+
+<? }else{?>
+<input type="hidden" name="data[casp01][acta_entrega]" id="acta_entrega" value="2"/>
+
+<?}?>
+
+
+	<br>
+	<div id="carga_grilla"  style="height:150px; overflow:auto;"></div>
+
+
+
+<div id="vacio"></div>
+<br>
+
+
+	<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'funcion_emitir_ayuda_acta_entrega','id'=>'save','disabled'=>'disabled','url1' => '/casp01_ayudas/guardar/'.$dato[0][0]['cedula_identidad'], 'update1'=>'tab_ayuda')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/modificar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/casp01_ayudas/modificar/', 'update1'=>'tab_ayuda' ))?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/eliminar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/casp01_ayudas/eliminar/', 'update1'=>'tab_ayuda' ))?>&nbsp;
+	<?= $sisap->submitTagRemote('Consultar', array('disabled'=>'disabled','id'=>'consultar','url1' => '/casp01_atencion_social/consulta', 'update1'=>'tab_ayuda')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'tab_ayuda'))?>
+
+
+</div>
+
+</form>
+<script language="JavaScript" type="text/javascript">
+  $('disponibilidad').value='';
+</script>
+

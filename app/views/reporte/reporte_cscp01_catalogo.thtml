@@ -1,0 +1,134 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+
+$_SESSION['titulo_a'] = '';
+
+function unidades($unidad, $cod_medida){
+	foreach($unidad as $x){
+		$medida = $x['cscd01_unidad_medida']['cod_medida'];
+		$denominacion = $x['cscd01_unidad_medida']['denominacion'];
+		if($cod_medida == $medida){
+			return $denominacion;
+		}
+	}
+
+
+}
+
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-8);
+    	//Select Arial italic 8
+	$this->SetFont('vera','B',6);
+    	//Print current and total page numbers
+   	 $this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+
+
+		$this->top_reporte("CATÁLOGO DE PRODUCTOS Y SERVICIOS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"12"),null, false);
+
+
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,5,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(15,5,"CÓDIGO",'TR',0,'C');
+		$this->Cell(85,5,"",'TR',0,'C');
+		$this->Cell(20,5,"UNIDAD",'TR',0,'C');
+		$this->Cell(22,5,"",'TR',0,'C');
+		$this->Cell(22,5,"",'TR',0,'C');
+		$this->Cell(0,5,"",'TR',1,'C');
+
+		$this->Cell(15,5,"SNC",'RLB',0,'C');
+		$this->Cell(15,5,"SISTEMA",'RB',0,'C');
+		$this->Cell(85,5,"DENOMINACIÓN",'RB',0,'C');
+		$this->Cell(20,5,"MEDIDA",'RB',0,'C');
+		$this->Cell(22,5,"PARTIDA",'RB',0,'C');
+		$this->Cell(22,5,"EXENTO I.V.A",'RB',0,'C');
+		$this->Cell(0,5,"ALÍCUOTA",'RB',1,'C');
+	}//fin funtion
+}//fin clase
+
+
+
+/**
+* Aqui se inicializa la clase fpdfview la cual extiende de TCPDF
+* a la variable a usar para el generar el Documento PDF sera -- $pdf->
+*/
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+
+foreach($catalogo as $row){
+	$cod_snc     = $row['cscd01_catalogo']['cod_snc'];
+	$cod_sistema = $row['cscd01_catalogo']['codigo_prod_serv'];
+	$denominacion = $row['cscd01_catalogo']['denominacion'];
+	$cod_partida = $row['cscd01_catalogo']['cod_partida'];
+	$cod_generica = $row['cscd01_catalogo']['cod_generica'];
+	$cod_especifica = $row['cscd01_catalogo']['cod_especifica'];
+	$cod_sub_espec = $row['cscd01_catalogo']['cod_sub_espec'];
+	$cod_auxiliar = $row['cscd01_catalogo']['cod_auxiliar'];
+	$partida = $sisap->zero($cod_partida).'.'.$sisap->zero($cod_generica).'.'.$sisap->zero($cod_especifica).'.'.$sisap->zero($cod_sub_espec).'.'.$sisap->zero($cod_auxiliar);
+	$exento_iva = $row['cscd01_catalogo']['exento_iva'];
+	$alicuota_iva = $row['cscd01_catalogo']['alicuota_iva'];
+	$cod_medida = $row['cscd01_catalogo']['cod_medida'];
+	if($exento_iva==1){
+		$exento_iva='SI';
+	}else{
+		$exento_iva='NO';
+	}
+	$expr = unidades($unidad, $cod_medida);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(15,8,$cod_snc,'TRL',0,'C');//-------------[CODIGO]
+$pdf->Cell(15,8,$cod_sistema,'TRL',0,'C');//-------------[CODIGO SISTEMA]
+
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+$pdf->Cell(85,1,"",'T',2);
+	$pdf->MultiCell(84,3,$denominacion,'','L');//--------------[DENOMINACION]
+	$varX = $varX+85;
+	$pdf->SetXY($varX,$varY);
+//$pdf->Cell(0,10,"",'RB',1);
+$pdf->Cell(20,8,$expr,'TRL',0,'C');//-----------------[UNIDAD]
+$pdf->Cell(22,8,$partida,'TR',0,'C');//------------[PARTIDA]
+$pdf->Cell(22,8,$exento_iva,'TR',0,'C');//----------------------[EXENTO IVA]
+$pdf->Cell(0,8,$alicuota_iva,'TR',1,'C');//-----------------------[ALICUOTA]
+$pdf->Cell(0,0,"",'T',1,'C');
+}//fin for
+
+$pdf->Cell(0,0,"",'T',1);
+// Colocamos el nobre al documento y lo enviamos al navegador
+// $pdf->Output('requerimientos_especiales_'.date("d-m-Y"),'D');
+$pdf->Output("CATALOGO_".date("d-m-Y_h"),'D');
+?>

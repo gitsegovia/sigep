@@ -1,0 +1,251 @@
+ <?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+$incluye_iva = $_SESSION['incluye_iva'];
+?>
+
+
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" CLASS="TR_NEGRO tablacompromiso tablacompromiso3">
+  <tr>
+    <td class="td4" width="50">A&ntilde;o</td>
+    <td class="td4" width="50">Sector</td>
+    <td class="td4" width="50">Prog</td>
+    <td class="td4" width="50">Sub<br>Prog</td>
+    <td class="td4" width="50">Proy</td>
+    <td class="td4" width="90">Actividad<br> u Obra</td>
+    <td class="td4" width="50">Partida</td>
+    <td class="td4" width="50">Gener</td>
+    <td class="td4" width="50">Espec</td>
+    <td class="td4" width="50">Sub<br>Espec</td>
+    <td class="td4" width="90">Auxiliar</td>
+    <td class="td4"  width="120">Monto actual</td>
+    <td class="td4"  width="130">Monto anticipo</td>
+  </tr>
+<?php
+
+ 	$i=0;
+ 	$total=0;
+ 	$incluye_iva = 2;/////////////////esta variable esta seteada del controlador pero se coloco el valor 2 para que nno monte la partida del iva
+    $iva = "no";
+
+ if(isset($datos_orden_compra_partidas)){
+  if($datos_orden_compra_partidas!=null){
+  	$acu_monto_actual = 0;
+    foreach($datos_orden_compra_partidas as $ve){
+
+
+
+
+
+
+$partidas_aux  = $ve['cobd01_contratoobras_partidas']['cod_sector'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_programa'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_sub_prog'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_proyecto'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_activ_obra'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_partida'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_generica'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_especifica'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_sub_espec'];
+$partidas_aux .= $ve['cobd01_contratoobras_partidas']['cod_auxiliar'];
+
+
+
+
+
+
+
+
+
+$concate = $sisap->AddCero2(substr($ve['cobd01_contratoobras_partidas']['cod_partida'], -2), substr($ve['cobd01_contratoobras_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sub_espec']);
+
+    	if($i%2==0){ 		// onclick="new Effect.Highlight(this);"
+
+    	      if(($concate!="4.03.18.01.00" &&  $incluye_iva== 2) || ($concate!="4.03.18.01.00" &&  $incluye_iva== 1) || ($concate=="4.03.18.01.00" &&  $incluye_iva== 1)){
+
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $ve['cobd01_contratoobras_partidas']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cobd01_contratoobras_partidas']['cod_partida'], -2), substr($ve['cobd01_contratoobras_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cobd01_contratoobras_partidas']['cod_auxiliar']) ?></td>
+    <?php
+    	$monto_actual = (($ve['cobd01_contratoobras_partidas']['monto'] + $ve['cobd01_contratoobras_partidas']['aumento']) - ($ve['cobd01_contratoobras_partidas']['disminucion'] + $ve['cobd01_contratoobras_partidas']['cancelacion'] + $ve['cobd01_contratoobras_partidas']['amortizacion'] + $ve['cobd01_contratoobras_partidas']['retencion_laboral'] + $ve['cobd01_contratoobras_partidas']['retencion_fielcumplimiento']));
+    	$acu_monto_actual +=$monto_actual;
+    ?>
+    <td class="td2" style="padding-right:5px; text-align:right"  >
+       <?= $sisap->Formato2($monto_actual) ?></td>
+       <input  id="<?= "monto_actual_".$i ?>" type="hidden" value="<?= $sisap->Formato2($monto_actual) ?>" />
+    </td>
+
+    <td class="td2center" height="22"  width="2">
+<input name="data[cobp01_registro_anticipo_contratoobras][<?= "anticipo_".$i ?>]" class='inputtext'  disabled style="text-align:right"  type="text" size="15"  id="<?= "anticipo_".$i ?>" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('<?= "anticipo_".$i ?>'); cscp04_registro_anticipo_ordencompra_cargar_monto_id_editar_2('<?= "anticipo_".$i ?>');"/>
+ <?php echo '<input name="data[partidas][partidas_'.$i.']"  type="hidden" value="'.$partidas_aux.'"/>'; ?>
+    </td>
+</tr>
+<?
+
+            }else{$i--; if($concate=="4.03.18.01.00"){ $iva = "si";}}
+
+   }else{
+//echo 'concate es: '.$concate.' && incluye_iva == '.$incluye_iva;
+   	if(($concate!="4.03.18.01.00" &&  $incluye_iva== 2) || ($concate!="4.03.18.01.00" &&  $incluye_iva== 1) || ($concate=="4.03.18.01.00" &&  $incluye_iva== 1)){
+?>
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $ve['cobd01_contratoobras_partidas']['ano'] ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sector']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_programa']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sub_prog']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_proyecto']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_activ_obra']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2(substr($ve['cobd01_contratoobras_partidas']['cod_partida'], -2), substr($ve['cobd01_contratoobras_partidas']['cod_partida'], 0, 1 )) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_generica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_especifica']) ?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cobd01_contratoobras_partidas']['cod_sub_espec']) ?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cobd01_contratoobras_partidas']['cod_auxiliar']) ?></td>
+    <?php
+		$monto_actual = (($ve['cobd01_contratoobras_partidas']['monto'] + $ve['cobd01_contratoobras_partidas']['aumento']) - ($ve['cobd01_contratoobras_partidas']['disminucion'] + $ve['cobd01_contratoobras_partidas']['cancelacion'] + $ve['cobd01_contratoobras_partidas']['amortizacion'] + $ve['cobd01_contratoobras_partidas']['retencion_laboral'] + $ve['cobd01_contratoobras_partidas']['retencion_fielcumplimiento']));
+    	$acu_monto_actual +=$monto_actual;
+    ?>
+    <td class="td2" style="padding-right:5px; text-align:right"  >
+       <?= $sisap->Formato2($monto_actual) ?></td>
+       <input type="hidden" id="<?= "monto_actual_".$i ?>" value="<?= $sisap->Formato2($monto_actual) ?>" />
+    </td>
+    <td class="td2center" height="22"  width="2">
+      <input name="data[cobp01_registro_anticipo_contratoobras][<?= "anticipo_".$i ?>]" class='inputtext'  disabled style="text-align:right"  type="text" size="15"  id="<?= "anticipo_".$i ?>" value="0,00"  onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('<?= "anticipo_".$i ?>'); cscp04_registro_anticipo_ordencompra_cargar_monto_id_editar_2('<?= "anticipo_".$i ?>');"/>
+    <?php echo '<input name="data[partidas][partidas_'.$i.']"  type="hidden" value="'.$partidas_aux.'"/>'; ?>
+    </td>
+</tr>
+    		<?
+
+   	}else{$i--; if($concate=="4.03.18.01.00"){ $iva = "si";}}
+
+    	}//
+
+    	$i++; $total += $ve['cobd01_contratoobras_partidas']['monto'];
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center" style="padding-right:5px; text-align:right"><b><?= $sisap->Formato2($acu_monto_actual)?></b></td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center" style="padding-right:5px; text-align:right"><b><?= $sisap->Formato2($acu_monto_actual)?></b></td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center><b>--</b></center></td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center><b>--</b></center></td>
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">---------</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="12" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><center>--</center></td>
+</tr>
+        <?
+ }
+
+ $i--;
+
+?>
+
+
+<input type="hidden" name="data[cobp01_registro_anticipo_contratoobras][cuenta_iii]" id="dice_iva" value="<?= $iva ?>" />
+<input type="hidden" name="data[cobp01_registro_anticipo_contratoobras][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+<input type="hidden" name="data[cobp01_registro_anticipo_contratoobras][cuenta_iiii]" id="monto_actual_griya" value="<?= $sisap->Formato2($acu_monto_actual) ?>" />
+
+</table>
+</div>
+
+
+
+
+

@@ -1,0 +1,169 @@
+<?php
+set_time_limit(0);
+vendor ('Writer');
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('Hoja 1');
+$worksheet->setInputEncoding('utf-8');
+$worksheet->setColumn(0, 0, 30, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(1, 1, 50, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(2, 11, 20, $format = null, $hidden = 0, $level = 0);
+$nombre='balance_ejecucion_';
+
+    $var_filas[0]=array(""=>elimina_acentos($entidad_federal));
+   	$var_filas[1]=array(""=>up(elimina_acentos($titulo_a)));
+   	$var_filas[2]=array(""=>'PRESUPUESTO: '.$ANO);
+   	$var_filas[3]=array(" ");
+   	$var_filas[4]=array(" ");
+   	$var_filas[5]=array(" ");
+   	$fila_celda=6;
+	$totaltotal=0;
+//-------------------------------------------------------
+		$totales['asignacion_anual']=0;
+		$totales['aumento']=0;
+		$totales['disminucion']=0;
+		$totales['total_asignacion']=0;
+		$totales['compromiso']=0;
+		$totales['pre_compromiso']=0;
+		$totales['causado']=0;
+		$totales['pagado']=0;
+		$totales['deuda']=0;
+		$totales['disponibilidad']=0;
+		  $titulo_x[1]='Total ';
+		  $titulo_x[2]='Total Sector ';
+		  $titulo_x[3]='Total Programa ';
+		  $titulo_x[4]='Total Sub-Programa ';
+		  $titulo_x[5]='Total Actividad ';
+            $entrada=0;
+            $cod_sector=0;
+            $cod_programa=0;
+            $cod_sub_prog=0;
+            $cod_proyecto=0;
+            $cod_activ_obra=0;
+
+/*********+*/
+    $cols[0]="CODIGOS";
+    $cols[1]="DENOMINACION";
+    $cols[2]="ASIGNACION";
+    $cols[3]="AUMENTO";
+    $cols[4]="DISMINUCION";
+    $cols[5]="TOTAL ASIGNACION";
+    $cols[6]="PRE-COMPROMISO";
+    $cols[7]="COMPROMISO";
+    $cols[8]="CAUSADO";
+    $cols[9]="PAGADO";
+    $cols[10]="DEUDA";
+    $cols[11]="DISPONIBILIDAD";
+    $cols[12] = 1;
+    $var_filas[$fila_celda]=$cols;/**/
+    //$fila_celda++;
+
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd[$modelo]['cod_sector'];
+		$var2[2]=$vcfpd[$modelo]['cod_programa'];
+		$var2[3]=$vcfpd[$modelo]['cod_sub_prog'];
+		$var2[4]=$vcfpd[$modelo]['cod_proyecto'];
+		$var2[5]=$vcfpd[$modelo]['cod_activ_obra'];
+		$var2[6]=$vcfpd[$modelo]['cod_partida'];
+		$var2[7]=$vcfpd[$modelo]['cod_generica'];
+		$var2[8]=$vcfpd[$modelo]['cod_especifica'];
+		$var2[9]=$vcfpd[$modelo]['cod_sub_espec'];
+		$var2[10]=$vcfpd[$modelo]['cod_auxiliar'];
+		$var2[11]=$vcfpd[$modelo]['asignacion_anual'];
+        $var2["aumento"]=           $vcfpd[$modelo]['aumento'];
+        $var2["disminucion"]=       $vcfpd[$modelo]['disminucion'];
+        $var2["total_asignacion"]=  $vcfpd[$modelo]['total_asignacion'];
+        $var2["pre_compromiso"]=    $vcfpd[$modelo]['pre_compromiso'];
+        $var2["compromiso"]=        $vcfpd[$modelo]['compromiso_anual'];
+        $var2["causado"]=           $vcfpd[$modelo]['causado_anual'];
+        $var2["pagado"]=            $vcfpd[$modelo]['pagado_anual'];
+        $var2["deuda"]=             $vcfpd[$modelo]['deuda'];
+        $var2["disponibilidad"]=    $vcfpd[$modelo]['disponibilidad'];
+		if($var2[10]!=0){
+            $var2[12]=$vcfpd[$modelo]["deno_auxiliar"];
+		}else{
+			$var2[12]=$vcfpd[$modelo]["deno_sub_espec"];
+		}
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+
+
+          	  	     //if($var[1]==$var2[1] && $var[2]==$var2[2] && $var[3]==$var2[3] && $var[4]==$var2[4] && $var[5]==$var2[5]){
+						    $cod_sector=$var2[1];
+				            $cod_programa=$var2[2];
+				            $cod_sub_prog=$var2[3];
+				            $cod_proyecto=$var2[4];
+				            $cod_activ_obra=$var2[5];
+                            $fila_celda++;
+                            $cols[0]=''.mascara($cod_sector,2).'.'.mascara($cod_programa,2).'.'.mascara($cod_sub_prog,2).'.'.mascara($cod_proyecto,2).'.'.mascara($cod_activ_obra,2).'.'.$var2[6].'.'.$var2[7].'.'.$var2[8].'.'.$var2[9].'.'.mascara($var2[10],4)." ";
+						    $cols[1]= up(elimina_acentos($var2[12]));
+						    $cols[2]=$sisap->Formato2($var2[11]);
+						    $cols[3]=$sisap->Formato2($var2["aumento"]);
+						    $cols[4]=$sisap->Formato2($var2["disminucion"]);
+						    $cols[5]=$sisap->Formato2($var2["total_asignacion"]);
+						    $cols[6]=$sisap->Formato2($var2["pre_compromiso"]);
+						    $cols[7]=$sisap->Formato2($var2["compromiso"]);
+						    $cols[8]=$sisap->Formato2($var2["causado"]);
+						    $cols[9]=$sisap->Formato2($var2["pagado"]);
+						    $cols[10]=$sisap->Formato2($var2["deuda"]);
+						    $cols[11]=$sisap->Formato2($var2["disponibilidad"]);
+						    $cols[12] = 0;
+						    $var_filas[$fila_celda]=$cols;
+
+								$totales['asignacion_anual']+=$var2[11];
+								$totales['aumento']+=$var2["aumento"];
+								$totales['disminucion']+=$var2["disminucion"];
+								$totales['total_asignacion']+=$var2["total_asignacion"];
+								$totales['pre_compromiso']+=$var2["pre_compromiso"];
+								$totales['compromiso']+=$var2["compromiso"];
+								$totales['causado']+=$var2["causado"];
+								$totales['pagado']+=$var2["pagado"];
+								$totales['deuda']+=$var2["deuda"];
+								$totales['disponibilidad']+=$var2["disponibilidad"];
+
+
+							//$fila_celda++;
+
+				   //}
+
+
+	}//fin foreach cfpd05
+
+
+//--}//fin foreach distintos_sectores
+        /**/
+                            $fila_celda++;
+                            $cols[0]='';
+						    $cols[1]= 'TOTALES: ';//$titulo_x[$lx];
+						    $cols[2]=$sisap->Formato2($totales['asignacion_anual']);
+						    $cols[3]=$sisap->Formato2($totales['aumento']);
+						    $cols[4]=$sisap->Formato2($totales['disminucion']);
+						    $cols[5]=$sisap->Formato2($totales['total_asignacion']);
+						    $cols[6]=$sisap->Formato2($totales['pre_compromiso']);
+						    $cols[7]=$sisap->Formato2($totales['compromiso']);
+						    $cols[8]=$sisap->Formato2($totales['causado']);
+						    $cols[9]=$sisap->Formato2($totales['pagado']);
+						    $cols[10]=$sisap->Formato2($totales['deuda']);
+						    $cols[11]=$sisap->Formato2($totales['disponibilidad']);
+						    $var_filas[$fila_celda]=$cols;
+$var_date=date('His').'_'.rand();
+$archivo = $nombre.'_'.$var_date.'.xls';
+//$another_format3 =& $workbook->addFormat();
+//$another_format3->setBold(1);
+foreach($var_filas as $key => $value) {
+  $i = 0;
+    foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      //$excel->write($sheet1, $key+1, $i, $fieldvalue);
+      	$worksheet->writeString($key+1, $i, $fieldvalue);
+      $i++;
+  }
+
+}
+$workbook->send($archivo);
+$workbook->close();
+
+
+
+?>

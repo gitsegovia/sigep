@@ -1,0 +1,16 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: v_cscd02_relacion.php
+ * Fecha de creacion: 05/05/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+  class v_cscd02_solicitud_encabezado extends AppModel{
+	var $name = 'v_cscd02_solicitud_encabezado';
+        var $useTable = 'v_cscd02_solicitud_encabezado';
+	
+}
+?>

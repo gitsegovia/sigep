@@ -1,0 +1,72 @@
+<?php
+
+if(empty($datos)){ $errorMessage="NO existen datos";}
+
+if(isset($errorMessage)) {
+echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+echo $sisap->mensajes_correcto($Message_existe);
+}
+
+?>
+
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+	<tr>
+		<th width="10%">C&oacute;digo entidad</th>
+		<th width="10%">C&oacute;digo sucursal<th>
+		<th width="20%">Cuenta bancaria</th>
+		<th width="45%">Concepto Manejo</th>
+		<th width="8%">Status</th>
+		<th width="7%">Ver</th>
+	</tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+	<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		<?php
+			if(!empty($datos)){
+				foreach($datos as $d){
+					$cod_entidad_bancaria = $d['v_cuentas_bancarias']['cod_entidad_bancaria'];
+					$cod_sucursal = $d['v_cuentas_bancarias']['cod_sucursal'];
+					$cuenta_bancaria = $d['v_cuentas_bancarias']['cuenta_bancaria'];
+					$concepto_manejo = $d['v_cuentas_bancarias']['concepto_manejo'];
+
+					if ($d['v_cuentas_bancarias']['status_actividad'] == 1) {
+						$color="#20AF34";
+						$status="";
+					}else{
+						$color="#DF0D29";
+						$status="";
+					}
+					?>
+					<tr class="row">
+						<td class="" width="10%" height="22" align="center"><?php echo mascara($cod_entidad_bancaria, 4); ?></td>
+						<td class="" width="10%" height="22" align="center"><?php echo mascara($cod_sucursal, 4); ?></td>
+						<td class="" width="20%" height="22" align="center"><?php echo $cuenta_bancaria; ?></td>
+						<td class="" width="45%" height="22"><?php echo $concepto_manejo ?></td>
+						<td class="" width="7%" height="22" align="center" bgcolor="<?php echo $color; ?>"><?php echo $status; ?></td>
+						<td class="" width="5%" height="22" align="center">
+							<?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/cstp02_activar_cuentas_bancarias/ver/'.$cod_entidad_bancaria.'/'.$cod_sucursal.'/'.$cuenta_bancaria, array('update'=>'capa_vacia','title'=>'ver'),'',false,true); ?>
+						</td>
+					</tr>
+	  			<?php
+				}
+
+			}else{
+			?>
+
+			<tr class="row<?php echo $color; ?>">
+				<td class="" width="10%" height="22" align="center">--</td>
+				<td class="" width="10%" align="center">--</td>
+				<td class="" width="20%" align="center">--</td>
+				<td class="" width="45%">--</td>
+				<td class="" width="7%" align="center">--</td>
+				<td class="" width="7%" align="center">--</td>
+			</tr>
+
+<?php } ?>
+	</table>
+</div>
+
+<?$sisap->link_paginacion_ventanas('/cstp02_activar_cuentas_bancarias/buscar/'.$pista, 'grilla_busqueda', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>

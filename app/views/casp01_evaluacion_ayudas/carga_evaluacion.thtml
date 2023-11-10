@@ -1,0 +1,181 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+$j=0;
+	foreach($ayu as $x){
+		$deno[$j] = $x['casd01_tipo_ayuda']['denominacion'];
+		$codigo[$j] = $x['casd01_tipo_ayuda']['cod_tipo_ayuda'];
+		$j++;
+	}
+
+if(isset($dato3)){
+?>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="20%">Ocación-Tipo</td>
+			<td width="15%">Fecha Solicitud</td>
+			<td width="53%">Ayuda Solicitada</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->selectTagRemote('casp01/tipo_ayuda', $ayudas,  array('value1'=>'otros'),$dato1[0][0]['numero_ocacion'], array('onchange1'=>'/casp01_evaluacion_ayudas/carga_evaluacion/'.$dato1[0][0]['cedula_identidad'], 'update1'=>'carga','onChange'=>'vacio', 'id'=>'tipo_ayuda',''=>'' , true), null, true);?></td>
+				<td id='carga_fecha'><?= $html->input('casp01/fecha', $htmlAttributes = array('value'=>$sisap->cambia_fecha($dato1[0][0]['fecha_solicitud']),'style'=>'width:98%;text-align:center','id'=>'fecha','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+				<td align="center" id='carga_concepto'><?= $html->textarea('casp01/concepto_ayuda', array('value'=>$dato1[0][0]['ayuda_solicitada'],'id'=>'concepto_ayuda', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+		</tr>
+
+	</table>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="15%">Número de Evaluación</td>
+			<td width="15%">Fecha</td>
+			<td width="45%">Contenido de la Evaluación</td>
+			<td width="10%">Aprobación</td>
+			<td width="15%">Monto Aprobado</td>
+		</tr>
+		<tr align="center" id="carga_modifica">
+			<td><?= $html->input('casp01/num_evaluacion', $htmlAttributes = array('value'=>$sisap->zero($dato3[0][0]['numero_documento_evaluacion']),'style'=>'width:98%;text-align:center','id'=>'num_evaluacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td><?= $html->input('casp01/fecha_evaluacion', $htmlAttributes = array('value'=>$sisap->cambia_fecha($dato3[0][0]['fecha_evaluacion']),'style'=>'width:100%;text-align:center','id'=>'fecha_evaluacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_evaluacion', array('value'=>$dato3[0][0]['evaluacion'],'id'=>'concepto_evaluacion', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+			<td align="center"><?= $html->radio('casp01/aprobacion', array('1'=>'Si', '2'=>'No'),'<br>', array('value'=>$dato3[0][0]['aprobado'],'id'=>'aprobacion','disabled'=>'disabled'))?></td>
+			<td><?= $html->input('casp01/monto_evaluacion', $htmlAttributes = array('value'=>$sisap->Formato2($dato3[0][0]['monto_aprobado']),'style'=>'width:98%;text-align:right','id'=>'monto_evaluacion','class'=>'inputtext','readonly'=>'readonly',"onChange"=>"moneda('monto');"), false); ?></td>
+		</tr>
+
+	</table>
+
+
+
+<br>
+
+
+	<?= $sisap->submitTagRemote('Guardar', array('id'=>'guardar','disabled'=>'disabled','url1' => '/casp01_evaluacion_ayudas/guardar/'.$cedula, 'update1'=>'carga')); ?>&nbsp;
+	<? if($dato3[0][0]['numero_documento_ayuda']!=null){ ?>
+		<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/modificar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/casp01_evaluacion_ayudas/modificar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+		<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/eliminar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/casp01_evaluacion_ayudas/eliminar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+	<? }else{ ?>
+		<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/modificar', array (''=>'', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/casp01_evaluacion_ayudas/modificar/'.$cedula.'/'.$dato1[0][0]['numero_ocacion'].'/'.$dato3[0][0]['numero_documento_evaluacion'], 'update1'=>'carga' ))?>&nbsp;
+		<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/eliminar', array (''=>'', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/casp01_evaluacion_ayudas/eliminar/'.$cedula.'/'.$dato1[0][0]['numero_ocacion'].'/'.$dato3[0][0]['numero_documento_evaluacion'], 'update1'=>'carga' ))?>&nbsp;
+	<? } ?>
+	<?= $sisap->submitTagRemote('Consultar', array('disabled'=>'disabled','id'=>'consultar','url1' => '/casp01_evaluacion_ayudas/consulta', 'update1'=>'tab_evaluacion')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'tab_evaluacion'))?>
+
+
+
+<? }else if(isset($dato1) && $dato1!=''){ ?>
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="20%">Ocación-Tipo</td>
+			<td width="15%">Fecha Solicitud</td>
+			<td width="53%">Ayuda Solicitada</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->selectTagRemote('casp01/tipo_ayuda', $ayudas,  array('value1'=>'otros'),$dato1[0][0]['numero_ocacion'], array('onchange1'=>'/casp01_evaluacion_ayudas/carga_evaluacion/'.$dato1[0][0]['cedula_identidad'], 'update1'=>'carga','onChange'=>'vacio', 'id'=>'tipo_ayuda',''=>'' , true), null, true);?></td>
+				<td  id='carga_fecha'><?= $html->input('casp01/fecha', $htmlAttributes = array('value'=>$sisap->cambia_fecha($dato1[0][0]['fecha_solicitud']),'style'=>'width:98%;text-align:center','id'=>'fecha','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+				<td align="center" id='carga_concepto'><?= $html->textarea('casp01/concepto_ayuda', array('value'=>$dato1[0][0]['ayuda_solicitada'],'id'=>'concepto_ayuda', 'size'=>'55','style'=>'width:98%','row'=>'5','readonly'=>'readonly'))?></td>
+		</tr>
+
+	</table>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="15%">Número de Evaluación</td>
+			<td width="15%">Fecha</td>
+			<td width="45%">Contenido de la Evaluación</td>
+			<td width="10%">Aprobación</td>
+			<td width="15%">Monto Aprobado</td>
+		</tr>
+		<tr align="center">
+			<td><?= $html->input('casp01/num_evaluacion', $htmlAttributes = array('value'=>$sisap->zero($num_eva),'style'=>'width:98%;text-align:center','id'=>'num_evaluacion','onKeyPress'=>'return solonumeros(event);','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td><?= $sisap->input_fecha('casp01','fecha_evaluacion','fecha_evaluacion',date("d/m/Y"));?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_evaluacion', array('value'=>'','id'=>'concepto_evaluacion', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+			<td align="center"><?= $sisap->radioTagRemote('casp01/aprobacion', array('1'=>'Si', '2'=>'No'), array('url1'=>'/casp01_evaluacion_ayudas/veri/', 'update1'=>'vacio','value'=>'','disabled'=>'','id'=>'aprobacion'),'<br>',$opc='1');?></td>
+			<td><?= $html->input('casp01/monto_evaluacion', $htmlAttributes = array('value'=>$sisap->Formato2(0),'style'=>'width:98%;text-align:right','id'=>'monto_evaluacion','class'=>'inputtext','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('monto_evaluacion');"), false); ?></td>
+		</tr>
+
+	</table>
+
+
+<br>
+
+
+	<?= $sisap->submitTagRemote('Guardar', array('id'=>'guardar','disabled'=>'','url1' => '/casp01_evaluacion_ayudas/guardar/'.$cedula, 'update1'=>'carga')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/modificar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/casp01_evaluacion_ayudas/modificar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/eliminar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/casp01_evaluacion_ayudas/eliminar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+	<?= $sisap->submitTagRemote('Consultar', array('disabled'=>'disabled','id'=>'consultar','url1' => '/casp01_evaluacion_ayudas/consulta', 'update1'=>'tab_evaluacion')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'tab_evaluacion'))?>
+
+
+
+
+
+<? }else if(isset($dato1) && $dato1==''){ ?>
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="20%">Ocación-Tipo</td>
+			<td width="15%">Fecha Solicitud</td>
+			<td width="53%">Ayuda Solicitada</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $sisap->selectTagRemote('casp01/tipo_ayuda',$ayudas,  array('value1'=>'otros'),'', array('onchange1'=>'/casp01_evaluacion_ayudas/carga_evaluacion/'.$cedula, 'update1'=>'carga','onChange'=>'vacio', 'id'=>'tipo_ayuda',''=>'' , true), null, true);?></td>
+			<td ><?= $html->input('casp01/fecha', $htmlAttributes = array('value'=>'','style'=>'width:86%','id'=>'fecha','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_ayuda', array('value'=>'','id'=>'concepto_ayuda', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+		</tr>
+
+	</table>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td width="15%">Número de Evaluación</td>
+			<td width="15%">Fecha</td>
+			<td width="45%">Contenido de la Evaluación</td>
+			<td width="10%">Aprobación</td>
+			<td width="15%">Monto Aprobado</td>
+		</tr>
+
+		<tr align="center">
+			<td><?= $html->input('casp01/num_evaluacion', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'num_evaluacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td><?= $sisap->input_fecha('casp01','fecha_evaluacion','fecha_evaluacion',date("d/m/Y"));?></td>
+			<td align="center"><?= $html->textarea('casp01/concepto_evaluacion', array('value'=>'','id'=>'concepto_evaluacion', 'size'=>'55','style'=>'width:98%','row'=>'5'))?></td>
+			<td align="center"><?= $html->radio('casp01/aprobacion', array('1'=>'Si', '2'=>'No'),'<br>', array('value'=>'1','id'=>'aprobacion'))?></td>
+			<td><?= $html->input('casp01/monto_evaluacion', $htmlAttributes = array('value'=>$sisap->Formato2(0),'style'=>'width:98%;text-align:right','id'=>'monto_evaluacion','class'=>'inputtext','readonly'=>'readonly',"onChange"=>"moneda('monto');"), false); ?></td>
+		</tr>
+
+	</table>
+
+<br>
+
+	<?= $sisap->submitTagRemote('Guardar', array('id'=>'guardar','disabled'=>'disabled','url1' => '/casp01_evaluacion_ayudas/guardar/'.$cedula, 'update1'=>'carga')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/modificar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/casp01_evaluacion_ayudas/modificar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+	<?= $sisap->buttonTagRemote('/ccfp01_subcuenta/eliminar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/casp01_evaluacion_ayudas/eliminar/', 'update1'=>'tab_evaluacion' ))?>&nbsp;
+	<?= $sisap->submitTagRemote('Consultar', array('disabled'=>'disabled','id'=>'consultar','url1' => '/casp01_evaluacion_ayudas/consulta', 'update1'=>'tab_evaluacion')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'tab_evaluacion'))?>
+
+
+
+<? } ?>
+<div id="vacio"></div>

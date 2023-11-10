@@ -1,0 +1,147 @@
+<?php
+
+if(isset($var) && $var=="si"){
+
+?>
+<?= $sisap->Tabla('',true,' PLANTA DE VALORES DE LA TIERRA','','950');?>
+<?= $sisap->OpenTable("950")?>
+<br />
+<form name="data[catp02_reporte_ficha_datos]" method="post" id='form' action="<?php echo $html->url('/catp02_reporte_ficha_datos/planta_valores_tierra/no'); ?>">
+<table width="5%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="80%" align="right"><b>A&ntilde;o:&nbsp;</td>
+	<td width="20%" align="center"><input type="text" name="data[catp02_reporte_ficha_datos][ano_ordenanza]" id="ano_ordenanza" class"inputtext" size="6" value="<?=$anio_ej!=null?$anio_ej:date('Y')?>" maxlength="4" onKeyPress="return solonumeros(event);" style="text-align:center" /></td>
+  </tr>
+</table>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar'));?>
+<?= $sisap->buttonTagRemote('/catp02_reporte_ficha_datos/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable();?>
+
+<?php
+
+	}else if(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+
+	$_SESSION['ano_ordenanza_report'] = $ano_ordenanza;
+
+class fpdfview extends TCPDF{
+
+	   function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+
+	    $this->top_reporte("PLANTA DE VALORES DE LA TIERRA","AÑO: ".$_SESSION['ano_pvt'], null, array("Y"=>"11", "X"=>"15", "Z"=>"12"), array("Y"=>"18", "X"=>"186"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(30,3,"",'TLR',0,'C');
+		$this->Cell(8,3,"",'TR',0,'C');
+		$this->Cell(46,3,"",'TR',0,'C');
+		$this->Cell(15,3,"",'TR',0,'C');
+		$this->Cell(10,3,"",'TR',0,'C');
+		$this->Cell(14,3,"",'TR',0,'C');
+		$this->Cell(16,3,"",'TR',0,'C');
+		$this->Cell(20,3,"VALOR",'TR',0,'C');
+		$this->Cell(24,3,"VALOR",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(30,3,"",'RL',0,'C');
+		$this->Cell(8,3,"",'R',0,'C');
+		$this->Cell(46,3,"",'R',0,'C');
+		$this->Cell(15,3,"Nº DE",'R',0,'C');
+		$this->Cell(10,3,"",'R',0,'C');
+		$this->Cell(14,3,"VALOR",'R',0,'C');
+		$this->Cell(16,3,"",'R',0,'C');
+		$this->Cell(20,3,"VENTA",'R',0,'C');
+		$this->Cell(24,3,"ARRENDAMIENTO",'R',0,'C');
+		$this->Cell(0,3,"",'R',1,'C');
+
+		$this->Cell(30,3,"PARROQUIA",'RLB',0,'C');
+		$this->Cell(8,3,"ÁREA",'RB',0,'C');
+		$this->Cell(46,3,"SECTOR O ZONA",'RB',0,'C');
+		$this->Cell(15,3,"VARIABLES",'RB',0,'C');
+		$this->Cell(10,3,"PLUS",'RB',0,'C');
+		$this->Cell(14,3,"(U.T./M2)",'RB',0,'C');
+		$this->Cell(16,3,"VALOR U.T.",'RB',0,'C');
+		$this->Cell(20,3,"(BS./M2)",'RB',0,'C');
+		$this->Cell(24,3,"(BS./M2)",'RB',0,'C');
+		$this->Cell(0,3,"PARCELAS",'RB',1,'C');
+
+}
+}
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+if(isset($datos) && !empty($datos)){
+
+	$cod_prr = "";
+	foreach($datos as $datos_row){
+		if($cod_prr!=$datos_row['v_catd02_valor_tierra']['cod_parroquia']){
+			$cod_par = $datos_row['v_catd02_valor_tierra']['cod_parroquia'];
+			$deno_par = $datos_row['v_catd02_valor_tierra']['denominacion'];
+		}else{
+			$cod_par = "";
+			$deno_par = "";
+		}
+
+		$pdf->SetFont('vera','B',7);
+		//$pdf->Cell(15,6,$cod_par!="" ? mascara($cod_par,2) : $cod_par,'RL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(30,1,"",'RL',2,'C');
+		$pdf->MultiCell(30,3,$deno_par,'RL','J');
+		$pdf->Cell(30,4,"",'RL',0,'C');
+		$varX = $varX+30;
+		$pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(8,8,mascara($datos_row['v_catd02_valor_tierra']['cod_zona'],3),'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(46,1,"",'L',2,'C');
+		$pdf->MultiCell(46,3,$datos_row['v_catd02_valor_tierra']['denominacion_zona'],'L','J');
+		$varX = $varX+46;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(15,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['numero_variable']),'L',0,'C');
+		$pdf->Cell(10,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['plus']),'L',0,'C');
+		$pdf->Cell(14,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['valor_ut_m2']),'L',0,'C');
+		$pdf->Cell(16,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['valor_ut']),'L',0,'C');
+		$pdf->Cell(20,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['valor_m2']),'L',0,'C');
+		$pdf->Cell(24,8,$sisap->Formato2($datos_row['v_catd02_valor_tierra']['valor_arrend_m2']),'L',0,'C');
+		$pdf->Cell(0,8,$datos_row['v_catd02_valor_tierra']['parcelas'],'RL',1,'C');
+		$cod_prr = $datos_row['v_catd02_valor_tierra']['cod_parroquia'];
+		$pdf->Cell(0,0,"",'T',1,'C');
+	} // fin foreach
+}else{
+	$pdf->SetFont('vera','B',12);
+	$pdf->Ln(8);
+	$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS CON AÑO ORDENANZA: ".$ano_ordenanza,'',1,'C');
+}
+
+	$pdf->Output('planta_de_valores_tierra_'.date('d-m-Y').'.pdf','D');
+
+}
+?>
+
+
+
+
+

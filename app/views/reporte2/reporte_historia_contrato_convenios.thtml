@@ -1,0 +1,762 @@
+<?php
+/*
+ * Creado el 01/08/2008 a las 07:12:36 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($pase) && $pase=='no'){// muestra el formulario
+ if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+ if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"HISTORIA DE CONTRATOS O CONVENIOS",null,"950");?>
+<form name='data[form_historia_contrato]' method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_historia_contrato_convenios/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+
+<table width="270" cellspacing="0" cellpadding="0">
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center"><b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="data[form_historia_contrato][ano]" id="ano" size="7" value="<?=$ano?>" maxlength="4" onKeyPress="return solonumeros(event);" style="text-align:center" /></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center"><?= $sisap->radioTagRemote("form_historia_contrato/estilo_reporte", array('1'=>'Todo', '2'=>'Un contrato especifico'), array('url1'=>'/reporte2/buscar_contrato_convenio_especifico', 'update1'=>'td-contrato', 'disabled'=>'enabled', 'id'=>'estilo_reporte'), null, 1);?></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-contrato">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+</table>
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+<?php
+}elseif(isset($pase) && $pase=='si'){// muestra el reporte
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		/*
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(14,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"HISTORIA DE CONTRATOS Y CONVENIOS",'RLB',1,'C');
+		$this->Ln(3);
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 18;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+    	*/
+    	$titulo_A = "HISTORIA DE CONTRATOS O CONVENIOS";
+		$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+	}
+}//fin de la clase PDF
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+/*
+* Todo de aqui para abajo es el cuerpo del reporte.
+*/
+if(isset($estilo_reporte) && $estilo_reporte==1){// Se imprimen todos los contratos
+
+	for($y=0; $y<count($datos_contrato_cuerpo); $y++){
+		$pdf->AddPage();
+		//$datos_contrato_cuerpo[$y][0][0]['numero_contrato_obra'];
+
+		// ******* Inicializacion de variables ************
+		$cod_presupuestario="";
+		$monto_actual_contrato = ($datos_contrato_cuerpo[$y][0][0]['monto_original_contrato']+$datos_contrato_cuerpo[$y][0][0]['aumento'])-$datos_contrato_cuerpo[$y][0][0]['disminucion'];
+		$saldo_anticipo = $datos_contrato_cuerpo[$y][0][0]['monto_anticipo'] - $datos_contrato_cuerpo[$y][0][0]['monto_amortizacion'];
+		$saldo_contrato = $monto_actual_contrato - ($datos_contrato_cuerpo[$y][0][0]['monto_anticipo'] + $datos_contrato_cuerpo[$y][0][0]['monto_amortizacion'] + $datos_contrato_cuerpo[$y][0][0]['monto_retencion_laboral'] + $datos_contrato_cuerpo[$y][0][0]['monto_retencion_fielcumplimiento']);
+
+		//*************************************************
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(37,5,"NÚMERO CONTRATO",'TRL',0,'C');
+		$pdf->Cell(37,5,"FECHA CONTRATO",'TR',0,'C');
+		$pdf->Cell(37,5,"FECHA INICIO",'TR',0,'C');
+		$pdf->Cell(37,5,"FECHA TERMINACION",'TR',0,'C');
+		$pdf->Cell(0,5,"FORMA DE PAGO",'TR',1,'C');
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(37,6,$datos_contrato_cuerpo[$y][0][0]['numero_contrato_servicio'],'TLRB',0,'C');
+		$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[$y][0][0]['fecha_contrato_servicio']),'TRB',0,'C');
+		$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[$y][0][0]['fecha_inicio_contrato']),'TRB',0,'C');
+		$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[$y][0][0]['fecha_terminacion_contrato']),'TRB',0,'C');
+		$pdf->Cell(0,6,"MEDIANTE VALUACIONES",'TRB',1,'C');
+
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(50,4,"",'TRL',0,'C');
+		$pdf->Cell(48,4,"",'TR',0,'C');
+		$pdf->Cell(50,4,"",'TR',0,'C');
+		$pdf->Cell(0,4,"MONTO",'TR',1,'C');
+
+		$pdf->Cell(50,3,"MONTO CONTRATO",'RL',0,'C');
+		$pdf->Cell(48,3,"AUMENTO",'R',0,'C');
+		$pdf->Cell(50,3,"DISMINUCION",'R',0,'C');
+		$pdf->Cell(0,3,"ACTUAL CONTRATO",'R',1,'C');
+
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(50,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_original_contrato']),'TRBL',0,'R');
+		$pdf->Cell(48,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['aumento']),'TRB',0,'R');
+		$pdf->Cell(50,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['disminucion']),'TRB',0,'R');
+		$pdf->Cell(0,6,$sisap->Formato2($monto_actual_contrato),'TRB',1,'R');
+
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(37,4,"MONTO RETENIDO",'TRL',0,'C');
+		$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+		$pdf->Cell(37,4,"",'TR',0,'C');
+		$pdf->Cell(37,4,"",'TR',0,'C');
+		$pdf->Cell(0,4,"",'TR',1,'C');
+
+		$pdf->Cell(37,3,"LABORAL",'RL',0,'C');
+		$pdf->Cell(37,3,"FIEL CUMPLIMIENTO",'R',0,'C');
+		$pdf->Cell(37,3,"MONTO DEL ANTICIPO",'R',0,'C');
+		$pdf->Cell(37,3,"MONTO AMORTIZADO",'R',0,'C');
+		$pdf->Cell(0,3,"SALDO DEL ANTICIPO",'R',1,'C');
+
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_retencion_laboral']),'TRL',0,'R');//-----------[Monto retenido laboral]
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_retencion_fielcumplimiento']),'TR',0,'R');//---[Monto retenido fiel cumplimiento]
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_anticipo']),'TR',0,'R');//---------------------[Monto del anticipo]
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_amortizacion']),'TR',0,'R');//-----------------[Monto amortizado]
+		$pdf->Cell(0,6,$sisap->Formato2($saldo_anticipo),'TR',1,'R');//----------------------[$saldo_anticipo]
+
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(37,4,"",'TRL',0,'C');
+		$pdf->Cell(37,4,"",'TR',0,'C');
+		$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+		$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+		$pdf->Cell(0,4,"MONTO RETENIDO",'TR',1,'C');
+
+		$pdf->Cell(37,3,"MONTO CANCELADO",'RL',0,'C');
+		$pdf->Cell(37,3,"SALDO CONTRATO",'R',0,'C');
+		$pdf->Cell(37,3,"I.V.A.",'R',0,'C');
+		$pdf->Cell(37,3,"I.S.L.R.",'R',0,'C');
+		$pdf->Cell(0,3,"TIMBRE FISCAL",'R',1,'C');
+
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_cancelado']),'TRL',0,'R');
+		$pdf->Cell(37,6,$sisap->Formato2($saldo_contrato),'TR',0,'R');//-------[Saldo_contrato]
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_retencion_iva']),'TR',0,'R');//---[Monto retenido I.V.A.]
+		$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_islr']),'TR',0,'R');//------------[Monto retenido I.S.R.L]
+		$pdf->Cell(0,6,$sisap->Formato2($datos_contrato_cuerpo[$y][0][0]['monto_timbre_fiscal']),'TR',1,'R');//----[Monto retenido Timbre Fiscal]
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(148,4,"CONCEPTO DE CONTRATO O CONVENIO",'TRL',0,'C');
+		$pdf->Cell(0,4,"CÓDIGO PRESUPUESTARIO",'TR',1,'C');
+
+		$pdf->Cell(1,17,"",'TL',0,'C');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->SetFont('vera','',6);
+		    $pdf->Cell(147,1,"",'T',2,'C');
+		    $pdf->MultiCell(146,3,$datos_contrato_cuerpo[$y][0][0]['concepto'],'','L');//-------[concepto]
+		    $varX = $varX+147;
+		    $pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,17,"",'TL',0,'C');
+		    $pdf->Cell(47,1,"",'T',2,'C');
+		    for($par=0; $par<count($partidas_contrato[$y]); $par++){
+	    	$cod_presupuestario .= $sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_sector'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_programa'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_sub_prog'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_proyecto'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_activ_obra'])."-".$partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_partida']."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_generica'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_especifica'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_sub_espec'])."-".$sisap->AddCero2($partidas_contrato[$y][$par]['cepd02_contratoservicio_partidas']['cod_auxiliar'])."\n";
+	    	}
+		    $pdf->MultiCell(47,3,$cod_presupuestario,'','C');//-------[codigo presupuestario]
+		    $varX = $varX+47;
+		    $pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,17,"",'TR',1,'C');
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(37,5,"RIF",'TRBL',0,'C');
+		$pdf->Cell(0,5,"BENEFICIARIO / PROVEEDOR / RAZÓN SOCIAL",'TRB',1,'C');
+
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(37,6,$datos_contrato_cuerpo[$y][0][0]['rif'],'RBL',0,'C');
+		$pdf->Cell(0,6,$datos_contrato_cuerpo[$y][0][0]['beneficiario'],'RB',1,'L');
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(0,5,"A N T I C I P O S",'TRLB',1,'C');
+
+		$pdf->Cell(15,5,"NÚMERO",'BRL',0,'C');
+		$pdf->Cell(15,5,"FECHA",'BR',0,'C');
+		$pdf->Cell(20,5,"MONTO",'BR',0,'C');
+		$pdf->Cell(40,5,"CONCEPTO",'BR',0,'C');
+		$pdf->Cell(10,5,"AÑO",'BR',0,'C');
+		$pdf->Cell(18,5,"NÚMERO",'BR',0,'C');
+		$pdf->Cell(15,5,"FECHA",'BR',0,'C');
+		$pdf->Cell(10,5,"AÑO",'BR',0,'C');
+		$pdf->Cell(20,5,"BANCO",'BR',0,'C');
+		$pdf->Cell(16,5,"CHEQUE",'BR',0,'C');
+		$pdf->Cell(0,5,"FECHA",'BR',1,'C');
+
+
+	for($anti=0;$anti<count($datos_anticipos_cuerpo[$y]);$anti++){
+
+		$total_char= strlen($datos_anticipos_cuerpo[$y][$anti][0]['observaciones']);
+		if($total_char<280){
+			$height = 17;
+		}elseif($total_char>280 && $total_char<350){
+			$height = 26;
+		}elseif($total_char>350 && $total_char<450){
+			$height = 37;
+		}elseif($total_char>450){
+			$height = 42;
+		}
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(15,$height,$datos_anticipos_cuerpo[$y][$anti][0]['numero_anticipo'],'TRL',0,'C');
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$y][$anti][0]['fecha_anticipo']),'TR',0,'C');
+		$pdf->Cell(20,$height,$sisap->Formato2($datos_anticipos_cuerpo[$y][$anti][0]['monto_anticipo']),'TR',0,'R');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->SetFont('vera','',5);
+		    $pdf->Cell(40,1,"",'T',2,'C');
+		    $pdf->MultiCell(40,2,$datos_anticipos_cuerpo[$y][$anti][0]['observaciones'],'','L');//---[observaciones_anticipo]
+		    $varX = $varX+40;
+		    $pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		if($datos_anticipos_cuerpo[$y][$anti][0]['ano_orden_pago']=="" || $datos_anticipos_cuerpo[$y][$anti][0]['ano_orden_pago']==0){// No hay orden de pago
+			$pdf->Cell(10,$height,"",'TRL',0,'C');
+			$pdf->Cell(18,$height,"",'TR',0,'C');
+			$pdf->Cell(15,$height,"",'TR',0,'C');
+			$pdf->Cell(10,$height,"",'TR',0,'C');
+			$pdf->Cell(20,$height,"",'TR',0,'C');
+			$pdf->Cell(16,$height,"",'TR',0,'C');
+			$pdf->Cell(0,$height,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,$height,$datos_anticipos_cuerpo[$y][$anti][0]['ano_orden_pago'],'TRL',0,'C');
+			$pdf->Cell(18,$height,$sisap->mascara_ocho($datos_anticipos_cuerpo[$y][$anti][0]['numero_orden_pago']),'TR',0,'C');
+			$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$y][$anti][0]['fecha_orden_pago']),'TR',0,'C');
+			if($datos_anticipos_cuerpo[$y][$anti][0]['ano_movimiento']=="" || $datos_anticipos_cuerpo[$y][$anti][0]['ano_movimiento']==0){// No tiene cheque
+				$pdf->Cell(10,$height,"",'TR',0,'C');
+				$pdf->Cell(20,$height,"",'TR',0,'C');
+				$pdf->Cell(16,$height,"",'TR',0,'C');
+				$pdf->Cell(0,$height,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}else{
+				$pdf->Cell(10,$height,$datos_anticipos_cuerpo[$y][$anti][0]['ano_movimiento'],'TR',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->SetFont('vera','',5);
+			    $pdf->Cell(20,6,"",'T',2,'C');
+			    $pdf->MultiCell(20,2,$banco[$datos_anticipos_cuerpo[$y][$anti][0]['cod_entidad_bancaria']],'','L');
+			    $varX = $varX+20;
+			    $pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(16,$height,$sisap->mascara_ocho($datos_anticipos_cuerpo[$y][$anti][0]['numero_cheque']),'TRL',0,'C');
+				$pdf->Cell(0,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$y][$anti][0]['fecha_cheque']),'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}
+		}
+	}
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,"V A L U A C I O N E S",'TRLB',1,'C');
+
+	$pdf->Cell(15,5,"NÚMERO",'BRL',0,'C');
+	$pdf->Cell(15,5,"FECHA",'BR',0,'C');
+	$pdf->Cell(20,5,"MONTO",'BR',0,'C');
+	$pdf->Cell(40,5,"CONCEPTO",'BR',0,'C');
+	$pdf->Cell(10,5,"AÑO",'BR',0,'C');
+	$pdf->Cell(18,5,"NÚMERO",'BR',0,'C');
+	$pdf->Cell(15,5,"FECHA",'BR',0,'C');
+	$pdf->Cell(10,5,"AÑO",'BR',0,'C');
+	$pdf->Cell(20,5,"BANCO",'BR',0,'C');
+	$pdf->Cell(16,5,"CHEQUE",'BR',0,'C');
+	$pdf->Cell(0,5,"FECHA",'BR',1,'C');
+
+	for($valu=0;$valu<count($datos_valuacion_cuerpo[$y]);$valu++){
+
+		$total_char= strlen($datos_valuacion_cuerpo[$y][$valu][0]['concepto']);
+		if($total_char<280){
+			$height = 17;
+		}elseif($total_char>280 && $total_char<350){
+			$height = 26;
+		}elseif($total_char>350 && $total_char<450){
+			$height = 37;
+		}elseif($total_char>450){
+			$height = 42;
+		}
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(15,$height,$datos_valuacion_cuerpo[$y][$valu][0]['numero_valuacion'],'TRL',0,'C');
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$y][$valu][0]['fecha_valuacion']),'TR',0,'C');
+		$pdf->Cell(20,$height,$sisap->Formato2($datos_valuacion_cuerpo[$y][$valu][0]['monto_neto_cobrar']),'TR',0,'R');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->SetFont('vera','',5);
+		    $pdf->Cell(40,1,"",'T',2,'C');
+		    $pdf->MultiCell(40,2,$datos_valuacion_cuerpo[$y][$valu][0]['concepto'],'','L');
+		    $varX = $varX+40;
+		    $pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		if($datos_valuacion_cuerpo[$y][$valu][0]['ano_orden_pago']=="" || $datos_valuacion_cuerpo[$y][$valu][0]['ano_orden_pago']==0){// No hay orden de pago
+			$pdf->Cell(10,$height,"",'TRL',0,'C');
+			$pdf->Cell(18,$height,"",'TR',0,'C');
+			$pdf->Cell(15,$height,"",'TR',0,'C');
+			$pdf->Cell(10,$height,"",'TR',0,'C');
+			$pdf->Cell(20,$height,"",'TR',0,'C');
+			$pdf->Cell(16,$height,"",'TR',0,'C');
+			$pdf->Cell(0,$height,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,$height,$datos_valuacion_cuerpo[$y][$valu][0]['ano_orden_pago'],'TRL',0,'C');
+			$pdf->Cell(18,$height,$sisap->mascara_ocho($datos_valuacion_cuerpo[$y][$valu][0]['numero_orden_pago']),'TR',0,'C');
+			$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$y][$valu][0]['fecha_orden_pago']),'TR',0,'C');
+			if($datos_valuacion_cuerpo[$y][$valu][0]['ano_movimiento']=="" || $datos_valuacion_cuerpo[$y][$valu][0]['ano_movimiento']==0){// No tiene cheque
+				$pdf->Cell(10,$height,"",'TR',0,'C');
+				$pdf->Cell(20,$height,"",'TR',0,'C');
+				$pdf->Cell(16,$height,"",'TR',0,'C');
+				$pdf->Cell(0,$height,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}else{
+				$pdf->Cell(10,$height,$datos_valuacion_cuerpo[$y][$valu][0]['ano_movimiento'],'TR',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->SetFont('vera','',5);
+			    $pdf->Cell(20,6,"",'T',2,'C');
+			    $pdf->MultiCell(20,2,$banco[$datos_valuacion_cuerpo[$y][$valu][0]['cod_entidad_bancaria']],'','L');
+			    $varX = $varX+20;
+			    $pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(16,$height,$sisap->mascara_ocho($datos_valuacion_cuerpo[$y][$valu][0]['numero_cheque']),'TRL',0,'C');
+				$pdf->Cell(0,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$y][$valu][0]['fecha_cheque']),'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}
+		}
+	}
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,"R E T E N C I O N E S",'TRLB',1,'C');
+
+	$pdf->Cell(15,5,"NÚMERO",'RBL',0,'C');
+	$pdf->Cell(15,5,"FECHA",'RB',0,'C');
+	$pdf->Cell(20,5,"MONTO",'RB',0,'C');
+	$pdf->Cell(40,5,"TIPO RETENCIÓN",'RB',0,'C');
+	$pdf->Cell(10,5,"AÑO",'RB',0,'C');
+	$pdf->Cell(18,5,"NÚMERO",'RB',0,'C');
+	$pdf->Cell(15,5,"FECHA",'RB',0,'C');
+	$pdf->Cell(10,5,"AÑO",'RB',0,'C');
+	$pdf->Cell(20,5,"BANCO",'RB',0,'C');
+	$pdf->Cell(16,5,"CHEQUE",'RB',0,'C');
+	$pdf->Cell(0,5,"FECHA",'RB',1,'C');
+
+	for($rete=0;$rete<count($datos_retencion_cuerpo[$y]);$rete++){
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,6,$datos_retencion_cuerpo[$y][$rete][0]['numero_retencion'],'TRL',0,'C');
+	$pdf->Cell(15,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$y][$rete][0]['fecha_retencion']),'TR',0,'C');
+	$pdf->Cell(20,6,$sisap->Formato2($datos_retencion_cuerpo[$y][$rete][0]['monto_retencion']),'TR',0,'R');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',7);
+	    $pdf->Cell(40,2,"",'T',2,'C');
+	    $pdf->MultiCell(40,2,$datos_retencion_cuerpo[$y][$rete][0]['tipo_retencion'] == 1 ? "Laboral" : "Fiel cumplimiento",'','c');
+	    $varX = $varX+40;
+	    $pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		if($datos_retencion_cuerpo[$y][$rete][0]['ano_orden_pago']=="" || $datos_retencion_cuerpo[$y][$rete][0]['ano_orden_pago']==0){// No hay orden de pago
+			$pdf->Cell(10,6,"",'TRL',0,'C');
+			$pdf->Cell(18,6,"",'TR',0,'C');
+			$pdf->Cell(15,6,"",'TR',0,'C');
+			$pdf->Cell(10,6,"",'TR',0,'C');
+			$pdf->Cell(20,6,"",'TR',0,'C');
+			$pdf->Cell(16,6,"",'TR',0,'C');
+			$pdf->Cell(0,6,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,6,$datos_retencion_cuerpo[$y][$rete][0]['ano_orden_pago'],'TRL',0,'C');
+			$pdf->Cell(18,6,$sisap->mascara_ocho($datos_retencion_cuerpo[$y][$rete][0]['numero_orden_pago']),'TR',0,'C');
+			$pdf->Cell(15,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$y][$rete][0]['fecha_orden_pago']),'TR',0,'C');
+			if($datos_retencion_cuerpo[$y][$rete][0]['ano_movimiento']=="" || $datos_retencion_cuerpo[$y][$rete][0]['ano_movimiento']==0){// No tiene cheque
+				$pdf->Cell(10,6,"",'TR',0,'C');
+				$pdf->Cell(20,6,"",'TR',0,'C');
+				$pdf->Cell(16,6,"",'TR',0,'C');
+				$pdf->Cell(0,6,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}else{
+				$pdf->Cell(10,6,$datos_retencion_cuerpo[$y][$rete][0]['ano_movimiento'],'TR',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->SetFont('vera','',5);
+			    $pdf->Cell(20,1,"",'T',2,'C');
+			    $pdf->MultiCell(20,2,$banco[$datos_retencion_cuerpo[$y][$rete][0]['cod_entidad_bancaria']],'','L');
+			    $varX = $varX+20;
+			    $pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(16,6,$sisap->mascara_ocho($datos_retencion_cuerpo[$y][$rete][0]['numero_cheque']),'TRL',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$y][$rete][0]['fecha_cheque']),'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}
+		}
+	}
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+
+//******************************************************************************************
+}elseif(isset($estilo_reporte) && $estilo_reporte==2){// Se imprime un contrato especifico.
+//******************************************************************************************
+
+
+// ******* Inicializacion de variables ************
+$cod_presupuestario="";
+$monto_actual_contrato = ($datos_contrato_cuerpo[0][0]['monto_original_contrato']+$datos_contrato_cuerpo[0][0]['aumento'])-$datos_contrato_cuerpo[0][0]['disminucion'];
+$saldo_anticipo = $datos_contrato_cuerpo[0][0]['monto_anticipo'] - $datos_contrato_cuerpo[0][0]['monto_amortizacion'];
+$saldo_contrato = $monto_actual_contrato - ($datos_contrato_cuerpo[0][0]['monto_anticipo'] + $datos_contrato_cuerpo[0][0]['monto_amortizacion'] + $datos_contrato_cuerpo[0][0]['monto_retencion_laboral'] + $datos_contrato_cuerpo[0][0]['monto_retencion_fielcumplimiento']);
+
+//*************************************************
+
+	$pdf->AddPage();
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(37,5,"NÚMERO CONTRATO",'TRL',0,'C');
+	$pdf->Cell(37,5,"FECHA CONTRATO",'TR',0,'C');
+	$pdf->Cell(37,5,"FECHA INICIO",'TR',0,'C');
+	$pdf->Cell(37,5,"FECHA TERMINACION",'TR',0,'C');
+	$pdf->Cell(0,5,"FORMA DE PAGO",'TR',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(37,6,$datos_contrato_cuerpo[0][0]['numero_contrato_servicio'],'TLRB',0,'C');
+	$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[0][0]['fecha_contrato_servicio']),'TRB',0,'C');
+	$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[0][0]['fecha_inicio_contrato']),'TRB',0,'C');
+	$pdf->Cell(37,6,$sisap->cambia_fecha($datos_contrato_cuerpo[0][0]['fecha_terminacion_contrato']),'TRB',0,'C');
+	$pdf->Cell(0,6,"MEDIANTE VALUACIONES",'TRB',1,'C');
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(50,4,"",'TRL',0,'C');
+	$pdf->Cell(48,4,"",'TR',0,'C');
+	$pdf->Cell(50,4,"",'TR',0,'C');
+	$pdf->Cell(0,4,"MONTO",'TR',1,'C');
+
+	$pdf->Cell(50,3,"MONTO CONTRATO",'RL',0,'C');
+	$pdf->Cell(48,3,"AUMENTO",'R',0,'C');
+	$pdf->Cell(50,3,"DISMINUCION",'R',0,'C');
+	$pdf->Cell(0,3,"ACTUAL CONTRATO",'R',1,'C');
+
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(50,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_original_contrato']),'TRBL',0,'R');
+	$pdf->Cell(48,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['aumento']),'TRB',0,'R');
+	$pdf->Cell(50,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['disminucion']),'TRB',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($monto_actual_contrato),'TRB',1,'R');
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(37,4,"MONTO RETENIDO",'TRL',0,'C');
+	$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+	$pdf->Cell(37,4,"",'TR',0,'C');
+	$pdf->Cell(37,4,"",'TR',0,'C');
+	$pdf->Cell(0,4,"",'TR',1,'C');
+
+	$pdf->Cell(37,3,"LABORAL",'RL',0,'C');
+	$pdf->Cell(37,3,"FIEL CUMPLIMIENTO",'R',0,'C');
+	$pdf->Cell(37,3,"MONTO DEL ANTICIPO",'R',0,'C');
+	$pdf->Cell(37,3,"MONTO AMORTIZADO",'R',0,'C');
+	$pdf->Cell(0,3,"SALDO DEL ANTICIPO",'R',1,'C');
+
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_retencion_laboral']),'TRL',0,'R');//-----------[Monto retenido laboral]
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_retencion_fielcumplimiento']),'TR',0,'R');//---[Monto retenido fiel cumplimiento]
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_anticipo']),'TR',0,'R');//---------------------[Monto del anticipo]
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_amortizacion']),'TR',0,'R');//-----------------[Monto amortizado]
+	$pdf->Cell(0,6,$sisap->Formato2($saldo_anticipo),'TR',1,'R');//----------------------[$saldo_anticipo]
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(37,4,"",'TRL',0,'C');
+	$pdf->Cell(37,4,"",'TR',0,'C');
+	$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+	$pdf->Cell(37,4,"MONTO RETENIDO",'TR',0,'C');
+	$pdf->Cell(0,4,"MONTO RETENIDO",'TR',1,'C');
+
+	$pdf->Cell(37,3,"MONTO CANCELADO",'RL',0,'C');
+	$pdf->Cell(37,3,"SALDO CONTRATO",'R',0,'C');
+	$pdf->Cell(37,3,"I.V.A.",'R',0,'C');
+	$pdf->Cell(37,3,"I.S.L.R.",'R',0,'C');
+	$pdf->Cell(0,3,"TIMBRE FISCAL",'R',1,'C');
+
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_cancelado']),'TRL',0,'R');
+	$pdf->Cell(37,6,$sisap->Formato2($saldo_contrato),'TR',0,'R');//-------[Saldo_contrato]
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_retencion_iva']),'TR',0,'R');//---[Monto retenido I.V.A.]
+	$pdf->Cell(37,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_islr']),'TR',0,'R');//------------[Monto retenido I.S.R.L]
+	$pdf->Cell(0,6,$sisap->Formato2($datos_contrato_cuerpo[0][0]['monto_timbre_fiscal']),'TR',1,'R');//----[Monto retenido Timbre Fiscal]
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(148,4,"CONCEPTO DE CONTRATO O CONVENIO",'TRL',0,'C');
+	$pdf->Cell(0,4,"CÓDIGO PRESUPUESTARIO",'TR',1,'C');
+
+	$pdf->Cell(1,34,"",'TL',0,'C');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',6);
+	    $pdf->Cell(147,1,"",'T',2,'C');
+	    $pdf->MultiCell(146,3,$datos_contrato_cuerpo[0][0]['concepto'],'','L');//-------[concepto]
+	    $varX = $varX+147;
+	    $pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,34,"",'TL',0,'C');
+	    $pdf->Cell(47,1,"",'T',2,'C');
+
+	    foreach($partidas_contrato as $p){
+    		$cod_presupuestario .= $sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_sector'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_programa'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_sub_prog'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_proyecto'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_activ_obra'])."-".$p['cepd02_contratoservicio_partidas']['cod_partida']."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_generica'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_especifica'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_sub_espec'])."-".$sisap->AddCero2($p['cepd02_contratoservicio_partidas']['cod_auxiliar'])."\n";
+    	}
+	    $pdf->MultiCell(47,3,$cod_presupuestario,'','C');//-------[codigo presupuestario]
+	    $varX = $varX+47;
+	    $pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,34,"",'TR',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(37,5,"RIF",'TRBL',0,'C');
+	$pdf->Cell(0,5,"BENEFICIARIO / PROVEEDOR / RAZÓN SOCIAL",'TRB',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(37,6,$datos_contrato_cuerpo[0][0]['rif'],'RBL',0,'C');
+	$pdf->Cell(0,6,$datos_contrato_cuerpo[0][0]['beneficiario'],'RB',1,'L');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,"A N T I C I P O S",'TRLB',1,'C');
+
+	$pdf->Cell(15,5,"NÚMERO",'RL',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(20,5,"MONTO",'R',0,'C');
+	$pdf->Cell(40,5,"CONCEPTO",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'R',0,'C');
+	$pdf->Cell(18,5,"NÚMERO",'R',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'R',0,'C');
+	$pdf->Cell(20,5,"BANCO",'R',0,'C');
+	$pdf->Cell(16,5,"CHEQUE",'R',0,'C');
+	$pdf->Cell(0,5,"FECHA",'R',1,'C');
+
+
+	for($i=0;$i<count($datos_anticipos_cuerpo);$i++){
+
+		$total_char= strlen($datos_anticipos_cuerpo[$i][0]['observaciones']);
+		if($total_char<280){
+			$height = 17;
+		}elseif($total_char>280 && $total_char<350){
+			$height = 26;
+		}elseif($total_char>350 && $total_char<450){
+			$height = 37;
+		}elseif($total_char>450){
+			$height = 42;
+		}
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(15,$height,$datos_anticipos_cuerpo[$i][0]['numero_anticipo'],'TRL',0,'C');
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$i][0]['fecha_anticipo']),'TR',0,'C');
+		$pdf->Cell(20,$height,$sisap->Formato2($datos_anticipos_cuerpo[$i][0]['monto_anticipo']),'TR',0,'R');
+		    $varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->SetFont('vera','',5);
+		    $pdf->Cell(40,1,"",'T',2,'C');
+		    $pdf->MultiCell(40,2,$datos_anticipos_cuerpo[$i][0]['observaciones'],'','L');//---[observaciones_anticipo]
+		    $varX = $varX+40;
+		    $pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		if($datos_anticipos_cuerpo[$i][0]['ano_orden_pago']=="" || $datos_anticipos_cuerpo[$i][0]['ano_orden_pago']==0){// No hay orden de pago
+			$pdf->Cell(10,$height,"",'TRL',0,'C');
+			$pdf->Cell(18,$height,"",'TR',0,'C');
+			$pdf->Cell(15,$height,"",'TR',0,'C');
+			$pdf->Cell(10,$height,"",'TR',0,'C');
+			$pdf->Cell(20,$height,"",'TR',0,'C');
+			$pdf->Cell(16,$height,"",'TR',0,'C');
+			$pdf->Cell(0,$height,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,$height,$datos_anticipos_cuerpo[$i][0]['ano_orden_pago'],'TRL',0,'C');
+			$pdf->Cell(18,$height,$sisap->mascara_ocho($datos_anticipos_cuerpo[$i][0]['numero_orden_pago']),'TR',0,'C');
+			$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$i][0]['fecha_orden_pago']),'TR',0,'C');
+			if($datos_anticipos_cuerpo[$i][0]['ano_movimiento']=="" || $datos_anticipos_cuerpo[$i][0]['ano_movimiento']==0){// No tiene cheque
+				$pdf->Cell(10,$height,"",'TR',0,'C');
+				$pdf->Cell(20,$height,"",'TR',0,'C');
+				$pdf->Cell(16,$height,"",'TR',0,'C');
+				$pdf->Cell(0,$height,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}else{
+				$pdf->Cell(10,$height,$datos_anticipos_cuerpo[$i][0]['ano_movimiento'],'TR',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->SetFont('vera','',5);
+			    $pdf->Cell(20,6,"",'T',2,'C');
+			    $pdf->MultiCell(20,2,$banco[$datos_anticipos_cuerpo[$i][0]['cod_entidad_bancaria']],'','L');
+			    $varX = $varX+20;
+			    $pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(16,$height,$sisap->mascara_ocho($datos_anticipos_cuerpo[$i][0]['numero_cheque']),'TRL',0,'C');
+				$pdf->Cell(0,$height,$sisap->cambia_fecha($datos_anticipos_cuerpo[$i][0]['fecha_cheque']),'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}
+		}
+	}
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,"V A L U A C I O N E S",'TRLB',1,'C');
+
+	$pdf->Cell(15,5,"NÚMERO",'RL',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(20,5,"MONTO",'R',0,'C');
+	$pdf->Cell(40,5,"CONCEPTO",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'R',0,'C');
+	$pdf->Cell(18,5,"NÚMERO",'R',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'R',0,'C');
+	$pdf->Cell(20,5,"BANCO",'R',0,'C');
+	$pdf->Cell(16,5,"CHEQUE",'R',0,'C');
+	$pdf->Cell(0,5,"FECHA",'R',1,'C');
+
+for($i=0;$i<count($datos_valuacion_cuerpo);$i++){
+
+    $height = 24;
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,$height,$datos_valuacion_cuerpo[$i][0]['numero_valuacion'],'TRL',0,'C');
+	$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$i][0]['fecha_valuacion']),'TR',0,'C');
+	$pdf->Cell(20,$height,$sisap->Formato2($datos_valuacion_cuerpo[$i][0]['monto_neto_cobrar']),'TR',0,'R');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',5);
+	    $pdf->Cell(40,1,"",'T',2,'C');
+	    $pdf->MultiCell(40,2,$datos_valuacion_cuerpo[$i][0]['concepto'],'','L');
+	    $varX = $varX+40;
+	    $pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','',7);
+	if($datos_valuacion_cuerpo[$i][0]['ano_orden_pago']=="" || $datos_valuacion_cuerpo[$i][0]['ano_orden_pago']==0){// No hay orden de pago
+		$pdf->Cell(10,$height,"",'TRL',0,'C');
+		$pdf->Cell(18,$height,"",'TR',0,'C');
+		$pdf->Cell(15,$height,"",'TR',0,'C');
+		$pdf->Cell(10,$height,"",'TR',0,'C');
+		$pdf->Cell(20,$height,"",'TR',0,'C');
+		$pdf->Cell(16,$height,"",'TR',0,'C');
+		$pdf->Cell(0,$height,"",'TR',1,'C');
+		$pdf->Cell(0,0,"",'T',1);
+	}else{
+		$pdf->Cell(10,$height,$datos_valuacion_cuerpo[$i][0]['ano_orden_pago'],'TRL',0,'C');
+		$pdf->Cell(18,$height,$sisap->mascara_ocho($datos_valuacion_cuerpo[$i][0]['numero_orden_pago']),'TR',0,'C');
+		$pdf->Cell(15,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$i][0]['fecha_orden_pago']),'TR',0,'C');
+		if($datos_valuacion_cuerpo[$i][0]['ano_movimiento']=="" || $datos_valuacion_cuerpo[$i][0]['ano_movimiento']==0){// No tiene cheque
+			$pdf->Cell(10,$height,"",'TR',0,'C');
+			$pdf->Cell(20,$height,"",'TR',0,'C');
+			$pdf->Cell(16,$height,"",'TR',0,'C');
+			$pdf->Cell(0,$height,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,$height,$datos_valuacion_cuerpo[$i][0]['ano_movimiento'],'TR',0,'C');
+			$varX = $pdf->GetX();
+		    $varY = $pdf->GetY();
+		    $pdf->SetFont('vera','',5);
+		    $pdf->Cell(20,6,"",'T',2,'C');
+		    $pdf->MultiCell(20,2,$banco[$datos_valuacion_cuerpo[$i][0]['cod_entidad_bancaria']],'','L');
+		    $varX = $varX+20;
+		    $pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(16,$height,$sisap->mascara_ocho($datos_valuacion_cuerpo[$i][0]['numero_cheque']),'TRL',0,'C');
+			$pdf->Cell(0,$height,$sisap->cambia_fecha($datos_valuacion_cuerpo[$i][0]['fecha_cheque']),'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}
+	}
+}
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,"R E T E N C I O N E S",'TRLB',1,'C');
+
+	$pdf->Cell(15,5,"NÚMERO",'RL',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(20,5,"MONTO",'R',0,'C');
+	$pdf->Cell(40,5,"TIPO RETENCIÓN",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'RL',0,'C');
+	$pdf->Cell(18,5,"NÚMERO",'R',0,'C');
+	$pdf->Cell(15,5,"FECHA",'R',0,'C');
+	$pdf->Cell(10,5,"AÑO",'R',0,'C');
+	$pdf->Cell(20,5,"BANCO",'RL',0,'C');
+	$pdf->Cell(16,5,"CHEQUE",'R',0,'C');
+	$pdf->Cell(0,5,"FECHA",'R',1,'C');
+
+	for($i=0;$i<count($datos_retencion_cuerpo);$i++){
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,6,$datos_retencion_cuerpo[$i][0]['numero_retencion'],'TRL',0,'C');
+	$pdf->Cell(15,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$i][0]['fecha_retencion']),'TR',0,'C');
+	$pdf->Cell(20,6,$sisap->Formato2($datos_retencion_cuerpo[$i][0]['monto_retencion']),'TR',0,'R');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',7);
+	    $pdf->Cell(40,2,"",'T',2,'C');
+	    $pdf->MultiCell(40,2,$datos_retencion_cuerpo[$i][0]['tipo_retencion'] == 1 ? "Laboral" : "Fiel cumplimiento",'','c');
+	    $varX = $varX+40;
+	    $pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		if($datos_retencion_cuerpo[$i][0]['ano_orden_pago']=="" || $datos_retencion_cuerpo[$i][0]['ano_orden_pago']==0){// No hay orden de pago
+			$pdf->Cell(10,6,"",'TRL',0,'C');
+			$pdf->Cell(18,6,"",'TR',0,'C');
+			$pdf->Cell(15,6,"",'TR',0,'C');
+			$pdf->Cell(10,6,"",'TR',0,'C');
+			$pdf->Cell(20,6,"",'TR',0,'C');
+			$pdf->Cell(16,6,"",'TR',0,'C');
+			$pdf->Cell(0,6,"",'TR',1,'C');
+			$pdf->Cell(0,0,"",'T',1);
+		}else{
+			$pdf->Cell(10,6,$datos_retencion_cuerpo[$i][0]['ano_orden_pago'],'TRL',0,'C');
+			$pdf->Cell(18,6,$sisap->mascara_ocho($datos_retencion_cuerpo[$i][0]['numero_orden_pago']),'TR',0,'C');
+			$pdf->Cell(15,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$i][0]['fecha_orden_pago']),'TR',0,'C');
+			if($datos_retencion_cuerpo[$i][0]['ano_movimiento']=="" || $datos_retencion_cuerpo[$i][0]['ano_movimiento']==0){// No tiene cheque
+				$pdf->Cell(10,6,"",'TR',0,'C');
+				$pdf->Cell(20,6,"",'TR',0,'C');
+				$pdf->Cell(16,6,"",'TR',0,'C');
+				$pdf->Cell(0,6,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}else{
+				$pdf->Cell(10,6,$datos_retencion_cuerpo[$i][0]['ano_movimiento'],'TR',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->SetFont('vera','',5);
+			    $pdf->Cell(20,1,"",'T',2,'C');
+			    $pdf->MultiCell(20,2,$banco[$datos_retencion_cuerpo[$i][0]['cod_entidad_bancaria']],'','L');
+			    $varX = $varX+20;
+			    $pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(16,6,$sisap->mascara_ocho($datos_retencion_cuerpo[$i][0]['numero_cheque']),'TRL',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos_retencion_cuerpo[$i][0]['fecha_cheque']),'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+			}
+		}
+	}
+	$pdf->Cell(0,0,"",'T',1);
+
+}//fin else contrato especifico
+
+
+
+
+$pdf->Output('historia_contratos_o_convenios_'.date("d-m-y_h:sa").".pdf",'D');
+}//fin else
+?>

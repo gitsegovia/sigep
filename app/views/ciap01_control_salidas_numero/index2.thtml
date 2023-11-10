@@ -1,0 +1,218 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+/*
+ * Created on 01/02/2008
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+?>
+
+<?$sisap->Tabla_modulos("",true,'NÚMERO CONTROL DE SALIDAS DE LOS PRODUCTOS','','950',"ciap");?>
+<?$sisap->OpenTable('950');?>
+<form name="data[<?=$modelo;?>]" method="post">
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+		<tr align="center">
+			<td width="15%">Código</td>
+			<td width="85%">Denominación del Almacén</td>
+		</tr>
+		<tr>
+			<td id="catalogo3">
+				<?= $sisap->selectTagRemote($modelo.'/cod_almacen',$almacenes,  array('value1'=>'otros'),$almacen, array('onchange1'=>'/ciap01_control_salidas_numero/denominacion/', 'update1'=>'carga_deno5','onchange2'=>'/ciap01_control_salidas_numero/index2/', 'update2'=>'principal','id'=>'select_1' , true), null, true);?>
+			</td>
+			<td align="center" id="carga_deno5"><?= $html->input('a/denominacion1', $htmlAttributes = array('value'=>$deno_almacen,'style'=>'width:100%','id'=>'denominacion5','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		</tr>
+
+	</table>
+<? if($datosFILAS!=null){ ?>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+    <tr>
+      <td>A&ntilde;o</td>
+      <td>Ultimo</td>
+      <td>Crear desde</td>
+      <td>Crear hasta</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><input type="text" name="data[<?=$modelo;?>][ano]" value="<?=$year;?>" maxlength="4" class="inputtext" onKeyPress="return solonumeros(event);"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][ultimo]" value="<?=$ultimo_input;?>" maxlength="40" class="inputtext" readonly="readonly"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][crear_desde]" value="<?=$crear_desde;?>" maxlength="40" id="crear_desde" class="inputtext" readonly="readonly"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][crear_hasta]" value="" maxlength="10" class="inputtext"  id="crear_hasta" onKeyPress="return solonumeros(event);"/></td>
+      <td><?=$sisap->submitTagRemote('Crear', array('funcion'=>'verifica_crear_hasta_almacen','url1' => '/ciap01_control_salidas_numero/guardar', 'update1'=>'principal'));?></td>
+    </tr>
+  </table>
+
+ <? }else{ ?>
+
+ <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+    <tr>
+      <td>A&ntilde;o</td>
+      <td>Ultimo</td>
+      <td>Crear desde</td>
+      <td>Crear hasta</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><input type="text" name="data[<?=$modelo;?>][ano]" value="<?=$year;?>" maxlength="4" class="inputtext" onKeyPress="return solonumeros(event);"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][ultimo]" value="<?=$ultimo_input;?>" maxlength="40" class="inputtext" readonly="readonly"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][crear_desde]" value="<?=$crear_desde;?>" maxlength="40" id="crear_desde" class="inputtext" readonly="readonly"/></td>
+      <td><input type="text" name="data[<?=$modelo;?>][crear_hasta]" value="" maxlength="10" class="inputtext"  id="crear_hasta" onKeyPress="return solonumeros(event);"/></td>
+      <td><?=$sisap->submitTagRemote('Crear', array('funcion'=>'verifica_crear_hasta_almacen','url1' => '/ciap01_control_salidas_numero/guardar', 'update1'=>'principal'));?></td>
+    </tr>
+  </table>
+ <? } ?>
+  </form>
+<?$sisap->CloseTable();
+  $sisap->OpenTable('950');
+  ?>
+  <div id="div_consulta">
+<div id="NumerosSolicitudes" class="Lista">
+<?
+if(isset($datosFILAS)){
+?>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+     <tr class="tr_negro">
+      <td align="center">Número</td>
+      <td align="center">Sin Utilizar</td>
+      <td align="center">Seleccionado</td>
+      <td align="center">Emitido</td>
+      <td align="center">Anulado</td>
+      <td align="center">Congelado</td>
+      <td align="center">Cong/Descong</td>
+    </tr>
+<?
+$i=0;
+if($datosFILAS!=null){
+ foreach($datosFILAS as $filas){
+ 	$situacion=$filas[$modelo]["situacion"];
+ 	$mostrar_situacion=$filas[$modelo]["situacion"];
+ 	$s1=$situacion==1?1:null;
+ 	$s2=$situacion==2?2:null;
+ 	$s3=$situacion==3?3:null;
+ 	$s4=$situacion==4?4:null;
+ 	$codigo=$filas[$modelo]["numero_orden_salida"];
+ 	$ano=$filas[$modelo]["ano_orden_salida"];
+ 	 $codigo_almacen=$filas[$modelo]["cod_almacen_salida"];
+ 	if($situacion==3 || $situacion==4){
+        $d1="disabled";
+        $d2="disabled";
+        $d3="disabled";
+        $d4="disabled";
+ 	}else if($situacion==2){
+ 		$d1="";
+        $d2="";
+        $d3="disabled";
+        $d4="disabled";
+ 	}else if($situacion==1){
+ 		$d1="";
+        $d2="";
+        $d3="disabled";
+        $d4="disabled";
+ 	}
+ 	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+switch($mostrar_situacion){
+	case '1':
+?>
+     <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+      <td><?=$filas[$modelo]["numero_orden_salida"];?></td>
+	  <td align="center"><font color="000"><b>X</b></font></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td><a href="javascript:ver_documento('/ciap01_control_salidas_numero/cambiar_situacion_celdacompleta/<?=$codigo_almacen?>/<?=$codigo?>/<?=$ano?>/<?=$i?>/3','fila_<?=$i?>');"><?=$html->image('tick.png',array('border'=>'0','title'=>'Congelar numero comprobante'))?></a>Congelar</td>
+    </tr>
+<?php
+	break;
+
+	case '2':
+?>
+<tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+      <td><?=$filas[$modelo]["numero_orden_salida"];?></td>
+      <td>&nbsp;</td>
+      <td><?= $sisap->radioTagRemote("ciap01_control_salidas_numero/situacion_".$codigo, array('1'=>''), array('url1'=>'/ciap01_control_salidas_numero/cambiar_situacion_celdacompleta/'.$codigo_almacen.'/'.$codigo.'/'.$ano.'/'.$i.'/5', 'update1'=>'fila_'.$i,'id'=>'situacion1_'.$codigo,'disabled'=>$d1), null, $s1);?></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+<?php
+	break;
+
+	case '3':
+?>
+<tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+      <td><?=$filas[$modelo]["numero_orden_salida"];?></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td align="center"><font color="000"><b>X</b></font></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+<?php
+	break;
+
+	case '4':
+?>
+<tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+      <td><?=$filas[$modelo]["numero_orden_salida"];?></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td align="center"><font color="000"><b>X</b></font></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+<?php
+	break;
+
+	case '5':
+?>
+<tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+      <td><?=$filas[$modelo]["numero_orden_salida"];?></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td align="center"><font color="000"><b>X</b></font></td>
+      <td><a href="javascript:ver_documento('/ciap01_control_salidas_numero/cambiar_situacion_celdacompleta/<?=$codigo_almacen?>/<?=$codigo?>/<?=$ano?>/<?=$i?>/4','fila_<?=$i?>');"><?=$html->image('tick.png',array('border'=>'0','title'=>'Congelar numero comprobante'))?></a>Descong.</td>
+    </tr>
+<?php
+}//fin del switche
+?>
+<?$i++;}}?>
+</table>
+</div>
+
+  <? $sisap->link_paginacion_ventanas('/ciap01_control_salidas_numero/consulta', 'div_consulta', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+<br />
+<?= $sisap->buttonTagRemote($modelo.'/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/ciap01_control_salidas_numero/consulta/1', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote($modelo.'/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/ciap01_control_salidas_numero/consulta/'.$anterior.'', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote($modelo.'/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/ciap01_control_salidas_numero/consulta/'.$siguiente.'', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote($modelo.'/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/ciap01_control_salidas_numero/consulta/'.$ultimo.'', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote($modelo.'/salir', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<div id="guardar"></div>
+<br>
+<br>
+</div>
+<?
+}
+$sisap->CloseTable();
+
+?>

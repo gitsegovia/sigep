@@ -1,0 +1,162 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Relación de Cobradores'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd200_relacion_cobradores/2/'); ?>" >
+			<table border="0" >
+
+			<tr>
+			   <td>
+			     ORDENADO POR:
+			     <?= $sisap->radioTagRemote("reporte3/ordenado", array('1'=>'Alfabético','2'=>'Rif/ci'), array('url1'=>'/reporte_hacienda/funcion/', 'update1'=>'funcion', 'id'=>'tipo_ordenado'), null, $opc=1); ?>
+			   </td>
+		    </tr>
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "Relación de Cobradores", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(23,4,'','TRL',0,'C');
+		$this->Cell(25,4,'R.I.F','TR',0,'C');
+		$this->Cell(73,4,'Nombres y Apellidos','TR',0,'C');
+		$this->Cell(25,4,'Fecha','TR',0,'C');
+		$this->Cell(25,4,'Recursos','TR',0,'C');
+		$this->Cell(0,4,'Condición','TR',1,'C');
+
+		$this->Cell(23,3,'Personalidad','BRL',0,'C');
+		$this->Cell(25,3,'Cédula identidad','BR',0,'C');
+        $this->Cell(73,3,'Razón Social','BR',0,'C');
+        $this->Cell(25,3,'Ingreso','BR',0,'C');
+        $this->Cell(25,3,'Para el cobro','BR',0,'C');
+		$this->Cell(0,3,'de actividad','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+	for($i=0;$i<count($datos);$i++){
+
+		if($datos[$i][0]['personalidad']==1) $personalidad='Natural'; else $personalidad='Juridica';
+		/////////////////////
+		if($datos[$i][0]['recurso_cobro']==1){
+			 $recurso_cobro='Ninguno';
+		}else if($datos[$i][0]['recurso_cobro']==2){
+			 $recurso_cobro='Bicicleta';
+		}else if($datos[$i][0]['recurso_cobro']==3){
+			 $recurso_cobro='Moto';
+		}else{
+			 $recurso_cobro='Vehículo';
+		}
+		////////////////////
+		if($datos[$i][0]['condicion_actividad']==1) $condicion_actividad='Activo'; else $condicion_actividad='Retirado';
+
+
+		$pdf->Cell(23,6,$personalidad,'RBL',0,'C');
+		$pdf->Cell(25,6,$datos[$i][0]['rif_ci'],'RBL',0,'C');
+
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(73,1,'','T',2,'C');
+	    $pdf->MultiCell(73,2,$datos[$i][0]['nombre_razon'],'','L');
+	    $varX = $varX+73;
+	    $pdf->SetXY($varX,$varY);
+
+	    $pdf->Cell(25,6,$sisap->cambia_fecha($datos[$i][0]['fecha_ingreso']),'RBL',0,'C');
+		$pdf->Cell(25,6,$recurso_cobro,'RB',0,'C');
+		$pdf->Cell(0,6,$condicion_actividad,'RB',1,'C');
+
+
+	}
+		$pdf->Cell(0,0,'','T',1,'C');
+
+}else{
+	$pdf->Cell(23,6,'','RBL',0,'C');
+	$pdf->Cell(25,6,'','RB',0,'C');
+	$pdf->Cell(73,6,' ','RB',0,'C');
+    $pdf->Cell(25,6,'','RB',0,'C');
+    $pdf->Cell(25,6,'','RB',0,'C');
+	$pdf->Cell(0,6,'','RB',1,'C');
+}
+
+$pdf->Output('Relacion_Cobradores_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

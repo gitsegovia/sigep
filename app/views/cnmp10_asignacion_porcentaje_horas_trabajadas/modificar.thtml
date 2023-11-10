@@ -1,0 +1,86 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+foreach($opciones as $row){
+	$frecuencia = $row['cnmd10_individual_porcentaje_horas']['cod_frecuencia'];
+	$condicion = $row['cnmd10_individual_porcentaje_horas']['cod_condicion'];
+	$escenario = $row['cnmd10_individual_porcentaje_horas']['activar_frecuencia_eventual'];
+	$tipo_trans= $row['cnmd10_individual_porcentaje_horas']['codi_tipo_transaccion'];
+	$codi_trans= $row['cnmd10_individual_porcentaje_horas']['codi_transaccion'];
+	$porcentaje= $sisap->Formato2($row['cnmd10_individual_porcentaje_horas']['porcentaje']);
+
+
+}
+?>
+<script language="JavaScript" type="text/javascript">
+  document.getElementById('porcentaje').value='<?=$porcentaje?>';
+</script>
+<!--//////////////////////////////////////////////-->
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+	<tr>
+		<td align="center" width="25%">Frecuencia</td>
+		<td align="center" width="25%">Condici&oacute;n</td>
+		<td align="center" width="50%">Activa escenario con frecuencia eventual?</td>
+	</tr>
+<tr>
+	<td align="center">
+		<?= $html->radio('cnmp10_asignacion_porcentaje_horas_trabajadas/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'value'=>$frecuencia,'disabled'=>'disabled'), $return = false); ?>
+	</td>
+	<td align="center">
+		<? if($condicion==1){ ?>
+			<?= $html->radio('cnmp10_asignacion_porcentaje_horas_trabajadas/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),null, $htmlAttributes = array('id'=>'condicion', 'value'=>$condicion, 'onChange'=>'condicion_show();'), $return = false); ?>
+		<? }else{ ?>
+			<?= $html->radio('cnmp10_asignacion_porcentaje_horas_trabajadas/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),null, $htmlAttributes = array('id'=>'condicion', 'value'=>$condicion, 'onChange'=>'condicion_show();'), $return = false); ?>
+		<? } ?>
+	</td>
+	<td align="center">
+		<? if($frecuencia==1){?>
+			<?= $html->radio('cnmp10_asignacion_porcentaje_horas_trabajadas/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>$escenario, 'disabled'=>'disabled', 'id'=>'escenario'), $return = false); ?>
+		<? }else{ ?>
+			<?= $html->radio('cnmp10_asignacion_porcentaje_horas_trabajadas/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>$escenario, 'id'=>'escenario'), $return = false); ?>
+		<?
+			} ?>
+	</td>
+</tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+<tr>
+	<td align="center" width="40%">Tipo de transacci&oacute;n</td>
+	<td align="center" width="10%">---</td>
+	<td align="center" width="10%">Código</td>
+	<td align="center" width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+</tr>
+
+<tr>
+	<?if($condicion==1){ ?>
+	<td align="center">
+			<?= $sisap->radioTagRemote('cnmp10_asignacion_porcentaje_horas_trabajadas/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_asignacion_porcentaje_horas_trabajadas/select_trans/radio/', 'update1'=>'carga_radio','disabled'=>'disabled','id'=>'tipo_trans'),null,$tipo_trans);?>
+		</td>
+
+		<td align="center" id="carga_radio">
+		<select></select>
+
+		</td>
+	<td id="showcod_trans2"><input name="data[cnmp10_comunes_bolivares_asig][codi_trans]"  value="" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+		<td id="show_deno_trans2"><input name="data[cnmp10_comunes_bolivares_asig][denomi_trans]"  value="" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+
+	<?}else{ ?>
+		<td align="center">
+			<?= $sisap->radioTagRemote('cnmp10_asignacion_porcentaje_horas_trabajadas/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_asignacion_porcentaje_horas_trabajadas/select_trans/radio/', 'update1'=>'carga_radio','id'=>'tipo_trans'),null,$tipo_trans);?>
+		</td>
+	<td align="center" id="carga_radio">
+		<?= $sisap->selectTagRemote('cnmp10_asignacion_porcentaje_horas_trabajadas/select4', $optionElements= isset($transaccion)?$transaccion:array(),  $extra_opciones = array(), $selected = $codi_trans, $selectAttr = array('onchange1'=>'/cnmp10_asignacion_porcentaje_horas_trabajadas/codi_trans', 'update1'=>'showcod_trans2', 'onchange2'=>'/cnmp10_asignacion_porcentaje_horas_trabajadas/denomi_trans', 'update2'=>'show_deno_trans2', 'id'=>'select_4'),  $optionAttr = null,  $showEmpty = true, $return = false) ?>
+	</td>
+	<td id="showcod_trans2"><input name="data[cnmp10_comunes_bolivares_asig][codi_trans]"  value="<?=mascara_tres($codi_trans) ?>" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+		<td id="show_deno_trans2"><input name="data[cnmp10_comunes_bolivares_asig][denomi_trans]"  value="<?=$denominacion ?>" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+
+	<? } ?>
+</tr>
+</table>
+<!--//////////////////////////////////////////////-->
+

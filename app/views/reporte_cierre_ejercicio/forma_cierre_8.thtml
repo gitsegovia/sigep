@@ -1,0 +1,164 @@
+<?php if($opcion==1){ ?>
+<?= $sisap->Tabla(null,true,"REINTEGRO A LA DIRECCIÓN ESTADAL DE TESORERÍA",NULL,"750");?>
+<form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_cierre_ejercicio/forma_cierre_8/2'); ?>">
+	<?= $sisap->OpenTable("750")?>
+
+    <?= $sisap->radio_consolidado('datos/consolidacion', null, '', true)  ?>
+
+	<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+		<tr>
+		    <td align="center">
+		          EJERCICIO PRESUPUESTARIO:<?=$html->selectTag('datos/ano',$anos,$ano_ejecucion,array('id'=>'ano_ejecucion', "style"=>"width:70px"))?>
+		    </td>
+		</tr>
+		<tr>
+			<td align="center" width="100%">
+				<font color="red"><h4>NOTA: USAR PAPEL OFICIO PARA ESTE REPORTE.</h4></font>
+			</td>
+	    </tr>
+	</table>
+	<?= $html->submit('Generar'); ?>
+	<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+	<?=$sisap->CloseTable()?>
+</form>
+<?php }else if($opcion==2){
+
+foreach($dependencia as $ven){
+	$deno_dep[$ven['cugd02_dependencia']['cod_dependencia']] = $ven['cugd02_dependencia']['denominacion'];
+}
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+	function Header(){
+	    $titulo_A = "REINTEGRO A LA DIRECCIÓN ESTADAL DE TESORERÍA";
+        $this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"13", "Z"=>"13"), array("Y"=>"15", "X"=>"320"));
+
+        $this->SetFont('vera','B',5);
+		$this->Cell(90,4,"FECHA DEL DEPÓSITO A LA CUENTA",'LRTB',0,'C');
+		$this->Cell(90,4,"N° DE CUENTA",'RTB',0,'C');
+		$this->Cell(60,4,"RECURSO",'RTB',0,'C');
+		$this->Cell(0,4,"MONTO DISPONIBLE",'RTB',1, 'C');
+
+    }
+
+    function Footer(){
+		$this->setY(-60);
+        $this->Cell(0,7,"FIRMAS AUTORIZADAS",'',1,'L');
+
+        $varX = $this->GetX();//asigno X
+		$varY = $this->GetY();//asigno Y
+        $this->Cell(220,2,"",'',2,'C');
+		$this->MultiCell(219,3,"Nosotros, los abajo firmantes  en el carácter de (Director, Secretario, Presidente) y Administrador: Certificamos que la Información Suministrada reune los requisitos de exactitud, veracidad, oportunidad y corresponden con los registros y soportes que reposan en esta dependencia.",'','J');
+		$varX = $varX+220;//le sumo a X 170 del Cell debido a que lo capture antes.
+		$this->SetXY($varX,$varY);// cargo XY
+        $this->Cell(0,1,'','',1,'C');
+
+        $this->Ln(20);
+
+		$this->Cell(60,5,'','',0,'C');
+	    $this->Cell(60,5,'JEFE DE LA UNIDAD ADMINISTRADORA','T',0,'C');
+	    $this->Cell(100,5,'','',0,'C');
+	    $this->Cell(60,5,'MÁXIMA AUTORIDAD O DELEGADO','T',0,'C');
+	    $this->Cell(0,5,'','',1,'C');
+    }
+}//fin clases
+
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 20);
+
+
+
+if(isset($datos)){
+
+if($consolidacion==2){$pdf->AddPage();}
+
+$total1 = 0;
+$total2 = 0;
+
+$total1_aux = 0;
+$total2_aux = 0;
+
+$contar = 0;
+								$consolidacion_aux_dep=0;
+								foreach($datos as $ve){
+									if($consolidacion==1){
+										if($consolidacion_aux_dep!=$ve["v_reintegro_cuenta_bancaria"]["cod_dep"]){
+								           $contar                 = 1;
+								           $consolidacion_aux_dep  = $ve["v_reintegro_cuenta_bancaria"]["cod_dep"];
+								           if($total1!=0){
+									           	$pdf->SetFont('vera','B',5);
+												$pdf->Cell(240,5,'TOTAL','LRB',0,'R');
+												$pdf->Cell(0,5,  $sisap->Formato2($total1),'BR',1,'R');
+												$total1 = 0;
+												$total2 = 0;
+								           }
+								           $pdf->AddPage();
+								           $pdf->SetFont('vera','B',8);
+								           $pdf->Cell(0,8,$deno_dep[$consolidacion_aux_dep],'TBLR',1,'C');
+								           $pdf->SetFont('vera','',5);
+										}
+									}
+									if($contar>13){
+										$contar=0;
+								        $pdf->AddPage();
+									}
+								    $pdf->Cell(90,8,cambiar_formato_fecha($ve["v_reintegro_cuenta_bancaria"]["fecha_reintegro"]),'BRL',0,'C');
+								    $pdf->Cell(90,8,$ve["v_reintegro_cuenta_bancaria"]["cuenta_bancaria"],'BR', 0,'C');
+								    if($ve["v_reintegro_cuenta_bancaria"]["tipo_recurso"]==1){
+                                            $ve["v_reintegro_cuenta_bancaria"]["tipo_recurso"] = "Uso de la Institución";
+								    }else{
+                                            $ve["v_reintegro_cuenta_bancaria"]["tipo_recurso"] = "Fondos de Terceros";
+								    }
+								    $pdf->Cell(60,8,$ve["v_reintegro_cuenta_bancaria"]["tipo_recurso"],'BTR',0,'C');
+								    $pdf->Cell(0,8, $sisap->Formato2($ve["v_reintegro_cuenta_bancaria"]["disponibilidad_libro"]),'BTR',1,'R');
+
+								    $total1     +=  $ve["v_reintegro_cuenta_bancaria"]["disponibilidad_libro"];
+								    $total1_aux +=  $ve["v_reintegro_cuenta_bancaria"]["disponibilidad_libro"];
+								}
+
+								$contar++;
+
+
+
+								$pdf->SetFont('vera','B',5);
+								$pdf->Cell(240,5,'TOTAL','LRB',0,'R');
+								$pdf->Cell(0,5,  $sisap->Formato2($total1),'BR',1,'R');
+
+								if($consolidacion==1){
+								    $pdf->SetFont('vera','B',5);
+									$pdf->Cell(240,5,'TOTAL GENERAL','LRB',0,'R');
+									$pdf->Cell(0,5,  $sisap->Formato2($total1_aux),'BR',1,'R');
+								}
+
+
+
+ }else{
+
+                       	        $pdf->AddPage();
+                                $pdf->Ln(20);
+                       	        $pdf->SetFont('vera','B',14);
+								$pdf->Cell(0,0,"NO EXISTEN DATOS",'',1,'C');
+								$pdf->SetFont('vera','B',5);
+
+}//fin else
+
+
+$pdf->OutPut('formato_cierre_ejecicio_reintegro_tesoreria_'.date("d-m-Y"),'D');
+
+
+}?>

@@ -1,0 +1,166 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"RELACIÓN DE CONTRIBUYENTES DE VEHÍCULOS","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/shd200_relacion_contribuyente_vehiculos/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+<br />
+<b>ORDENADO POR:</b><?= $html->radio('reporte_hacienda/ordenamiento', array('1'=>'Alfab&eacute;tico', '2'=>'RIF / C.I'), null, array('value'=>'1')); ?>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES DE VEHÍCULOS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(16,3,"",'TRL',0,'C');
+$pdf->Cell(43,3,"",'TR',0,'C');
+$pdf->Cell(14,3,"",'TR',0,'C');
+$pdf->Cell(18,3,"Marca",'TR',0,'L');
+$pdf->Cell(18,3,"Clase",'TR',0,'L');
+$pdf->Cell(30,3,"",'TR',0,'L');
+$pdf->Cell(17,3,"",'TR',0,'C');
+$pdf->Cell(18,3,"",'TR',0,'C');
+$pdf->Cell(40,3,"",'TR',0,'C');
+$pdf->Cell(17,3,"",'TR',0,'C');
+$pdf->Cell(19,3,"",'TR',0,'C');
+$pdf->Cell(0,3,"",'TR',1,'C');
+
+$pdf->Cell(16,3,"",'RL',0,'C');
+$pdf->Cell(43,3,"Nombres y Apellidos",'R',0,'C');
+$pdf->Cell(14,3,"Placa",'R',0,'C');
+$pdf->Cell(18,3,"Modelo",'R',0,'L');
+$pdf->Cell(18,3,"Tipo",'R',0,'L');
+$pdf->Cell(30,3,"Serial Carrocería",'R',0,'L');
+$pdf->Cell(17,3,"Año",'R',0,'C');
+$pdf->Cell(18,3,"Valor",'R',0,'C');
+$pdf->Cell(40,3,"",'R',0,'C');
+$pdf->Cell(17,3,"Frecuencia",'R',0,'C');
+$pdf->Cell(19,3,"Monto a",'R',0,'C');
+$pdf->Cell(0,3,"Monto",'R',1,'C');
+
+$pdf->Cell(16,3,"RIF/C.I.",'RBL',0,'C');
+$pdf->Cell(43,3,"Razón social",'RB',0,'C');
+$pdf->Cell(14,3,"Vehiculo",'RB',0,'C');
+$pdf->Cell(18,3,"Color",'RB',0,'L');
+$pdf->Cell(18,3,"Uso",'RB',0,'L');
+$pdf->Cell(30,3,"Serial Motor",'RB',0,'L');
+$pdf->Cell(17,3,"Adquisición",'RB',0,'C');
+$pdf->Cell(18,3,"Vehiculo",'RB',0,'C');
+$pdf->Cell(40,3,"Clasificación automotríz",'RB',0,'C');
+$pdf->Cell(17,3,"de pago",'RB',0,'C');
+$pdf->Cell(19,3,"cancelar",'RB',0,'C');
+$pdf->Cell(0,3,"deuda",'RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+for($i=0; $i<$cant_registros; $i++){
+	$pdf->Cell(16,10,$datos[$i][0]['rif_cedula'],'RL',0,'C');// RIF/C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(43,1,"",'',2,'C');
+		$pdf->MultiCell(42,2,$datos[$i][0]['nombre_razon'],'','L');// Razón Social
+		$varX = $varX+43;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(14,10,$datos[$i][0]['placa_vehiculo'],'RL',0,'C');// Placa Vehiculo
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(17,1,"",'',2,'C');
+		$pdf->MultiCell(16,2,$datos[$i][0]['deno_marca'].' '.
+							 $datos[$i][0]['deno_modelo'].' '.
+						     $datos[$i][0]['deno_color'],' ','L');// Marca Modelo Color
+		$varX = $varX+17;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,10,'','R',0,'L');// Color
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(17,1,"",'',2,'C');
+		$pdf->MultiCell(16,2,$datos[$i][0]['deno_clase'].' '.
+							 $datos[$i][0]['deno_tipo'].' '.
+							 $datos[$i][0]['deno_uso'],'','L');// Clase Tipo Uso
+		$varX = $varX+17;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,10,'','R',0,'L');// Color
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(30,1,"",'',2,'C');
+		$pdf->MultiCell(29,2,$datos[$i][0]['serial_carroceria'].' '.
+							 $datos[$i][0]['serial_motor'],'','L');// serial_carroceria - serial_motor
+		$varX = $varX+30;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(17,10,$datos[$i][0]['ano_adquisicion'],'RL',0,'C');// Ano Adquisición
+	$pdf->Cell(18,10,$sisap->Formato2($datos[$i][0]['valor_vehiculo']),'R',0,'R');// Valor Vehiculo
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(40,1,"",'',2,'C');
+		$pdf->MultiCell(39,2,$datos[$i][0]['deno_clasificacion'],'','L');// Clasificación automotríz
+		$varX = $varX+40;
+		$pdf->SetXY($varX,$varY);
+
+	if($datos[$i][0]['frecuencia_pago']==1){
+		$pdf->Cell(17,10,"Mensual",'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'] * 1;
+	}elseif($datos[$i][0]['frecuencia_pago']==2){
+		$pdf->Cell(17,10,"Bimestral",'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'] * 2;
+	}elseif($datos[$i][0]['frecuencia_pago']==3){
+		$pdf->Cell(17,10,"Trimestral",'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'] * 3;
+	}elseif($datos[$i][0]['frecuencia_pago']==4){
+		$pdf->Cell(17,10,"Semestral",'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'] * 6;
+	}elseif($datos[$i][0]['frecuencia_pago']==5){
+		$pdf->Cell(17,10,"Anual",'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'] * 12;
+	}else{
+		$pdf->Cell(17,10,$datos[$i][0]['frecuencia_pago'],'RL',0,'C');// Frecuencia de pago
+		$total_pagar= $datos[$i][0]['monto_mensual'];
+	}
+	//$pdf->Cell(18,10,$datos[$i][0]['frecuencia_pago'],'RL',0,'C');// Frecuencia de pago
+	$pdf->Cell(19,10,$sisap->Formato2($total_pagar),'R',0,'R');// Monto a cancelar
+	$pdf->Cell(0,10,$sisap->Formato2($datos[$i][0]['deuda_vigente']),'R',1,'R');// Monto deuda
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+
+$pdf->Output('relacion_contribuyentes_vehiculos_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

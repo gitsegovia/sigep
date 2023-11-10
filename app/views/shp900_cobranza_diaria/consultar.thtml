@@ -1,0 +1,353 @@
+<?php
+if(isset($exito))	$sisap->mensajes_correcto($exito);
+if(isset($error))	$sisap->mensajes_error($error);
+
+if(isset($datos) && count($datos)>0){
+
+extract($datos[0]['v_cobranza_diaria']);
+$cod_entidad_deposito     = $cod_entidad_deposito == 0 ?'':mascara($cod_entidad_deposito,2);
+$cod_entidad_credito      = $cod_entidad_credito == 0 ?'':mascara($cod_entidad_credito,2);
+$cod_entidad_cheque       = $cod_entidad_cheque == 0 ?'':mascara($cod_entidad_cheque,2);
+$cod_sucursal_deposito    = $cod_sucursal_deposito == 0 ?'':mascara($cod_sucursal_deposito,2);
+$cod_sucursal_credito     = $cod_sucursal_credito == 0 ?'':mascara($cod_sucursal_credito,2);
+$cod_sucursal_cheque      = $cod_sucursal_cheque == 0 ?'':mascara($cod_sucursal_cheque,2);
+$cuenta_bancaria_deposito = $cuenta_bancaria_deposito == 0 ?'':$cuenta_bancaria_deposito;
+$cuenta_bancaria_credito  = $cuenta_bancaria_credito == 0 ?'':$cuenta_bancaria_credito;
+$cuenta_bancaria_cheque   = $cuenta_bancaria_cheque == 0 ?'':$cuenta_bancaria_cheque;
+$numero_deposito          = $numero_deposito == 0 ?'':$numero_deposito;
+$numero_nota_credito      = $numero_nota_credito == 0 ?'':$numero_nota_credito;
+$numero_cheque            = $numero_cheque == 0 ?'':$numero_cheque;
+$monto_deposito           = $monto_deposito == 0.00 ?'':$sisap->Formato2($monto_deposito);
+$monto_nota_credito       = $monto_nota_credito == 0.00 ?'':$sisap->Formato2($monto_nota_credito);
+$monto_cheque             = $monto_cheque == 0.00 ?'':$sisap->Formato2($monto_cheque);
+$fecha_deposito           = $fecha_deposito == '1900-01-01' ?'':cambiar_formato_fecha($fecha_deposito);
+$fecha_nota_credito       = $fecha_nota_credito == '1900-01-01' ?'':cambiar_formato_fecha($fecha_nota_credito);
+$fecha_cheque             = $fecha_cheque == '1900-01-01' ?'':cambiar_formato_fecha($fecha_cheque);
+$fecha_anulacion          = $fecha_anulacion == '1900-01-01' ?'':cambiar_formato_fecha($fecha_anulacion);
+$fecha_registro           = cambiar_formato_fecha($fecha_registro);
+$username_anulacion       = $username_anulacion == '0' ? '':$username_anulacion;
+$ano_anulacion       = $ano_anulacion == 0 ? '':$ano_anulacion;
+$numero_anulacion       = $numero_anulacion == 0 ? '':$numero_anulacion;
+$Total = ($deuda_vigente+$deuda_anterior+$monto_recargo+$monto_multa+$monto_intereses)-$monto_descuento;
+if($nacionalidad==2){
+			$nacionalidad='EXTRANJERA';
+ 		}else if($nacionalidad==1){
+			$nacionalidad='VENEZOLANA';
+		}
+?>
+<?$modelo="data[shp900_cobranza_diaria]";?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"Otros Ingresos","","950");?>
+<?= $sisap->OpenTable("950")?>
+<form name="<?=$modelo.""?>" method = "post" id="form">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2">
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+			  <tr>
+				<td width="23%"  align="center">R.I.F. <br/> Cédula Identidad</td>
+				<td width="77%" align="center">Nombres y Apellidos / Razón social</td>
+			  </tr>
+			  <tr>
+				<td align='center'>
+				<?= $sisap->inputTagRemote('shp900_cobranza_diaria/rif_constribuyente', array('value'=>$rif_cedula,'id'=>'rif_constribuyente','readonly'=>'readonly', 'size'=>'15','style'=>'text-align:center'))?>
+				</td>
+				<td><input type="text" name="" value="<?=$razon_social_nombres?>" maxlength="100" class="inputtext" readonly id='deno_rif'/></td>
+			  </tr>
+		</table>
+	</td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" id="rif_constribuyente_2">
+		<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+			<tr>
+    			<td colspan="3" align="center">DIRECCIÓN</td>
+    			<td colspan="2" align="center">DATOS COMPLEMENTARIOS</td>
+    		</tr>
+    		<tr>
+    			<td width="15%">País</td>
+    			<td width="8%"><input type="text" name="" value="<?=mascara($cod_pais,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td width="40%"><input type="text" name="" value="<?=$deno_pais;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td width="17%">Fecha inscripción</td>
+    			<td width="20%"><input type="text" name="" value="<?=cambiar_formato_fecha($fecha_inscripcion);?>" maxlength="100"  class="inputtext" readonly/></td>
+    		</tr>
+    		<tr>
+    			<td>Estado</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_estado,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_estado;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td>Teléfonos fijos</td>
+    			<td><input type="text" name="" value="<?=$telefonos_fijos;?>" maxlength="100" class="inputtext" readonly/></td>
+    		</tr>
+    		<tr>
+    			<td>Municipio</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_municipio,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_municipio;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td>Teléfonos celulares</td>
+    			<td><input type="text" name="" value="<?=$telefonos_celulares;?>" maxlength="100" class="inputtext" readonly/></td>
+    		</tr>
+    		<tr>
+    			<td>Parroquia</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_parroquia,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_parroquia;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td>Correo electrónico</td>
+    			<td><input type="text" name="" value="<?=$correo_electronico;?>" maxlength="100" class="inputtext" readonly/></td>
+    		</tr>
+    		<tr>
+    			<td>Centro poblado</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_centro_poblado,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_centro;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td>Nacionalidad</td>
+    			<td><input type="text" name="" value="<?=$nacionalidad;?>" maxlength="100" class="inputtext" readonly/></td>
+    		</tr>
+    		<tr>
+    			<td>Calle o Avenida</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_calle_avenida,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_vialidad;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td colspan="2" align="center">Estado civil</td>
+    		</tr>
+    		<tr>
+    			<td>Vereda / Edificio</td>
+    			<td><input type="text" name="" value="<?=mascara($cod_vereda_edificio,2);?>" maxlength="100" class="inputtext"  readonly="readonly" style="text-align:center;"/></td>
+    			<td><input type="text" name="" value="<?=$deno_vereda;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td colspan="2"><?= $html->radio('shp900_cobranza_diaria/estado_civil', array('1'=>'Soltero','2'=>'Casado','3'=>'Divorciado','4'=>'Viudo','5'=>'Otros'),null, array('value'=>$estado_civil,'disabled' => "disabled"))?></td>
+    		</tr>
+    		<tr>
+    			<td colspan="2">Número casa / local</td>
+    			<td><input type="text" name="" value="<?=$numero_vivienda_local;?>" maxlength="100" class="inputtext" readonly/></td>
+    			<td colspan="2" align="center">Profesión</td>
+    		</tr>
+    		<tr>
+    			<td colspan="3">&nbsp;</td>
+    			<td colspan="2"><input type="text" name="" value="<?=$deno_profesion;?>" maxlength="100" class="inputtext" readonly/></td>
+    		</tr>
+    	</table>
+	</td>
+</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr  align="center">
+		<td width="150">Código Ingreso</td>
+		<td>Denominación del ingreso</td>
+		<td width="50">Año</td>
+		<td width="80">Número<br/>Comprobante</td>
+		<td width="50">Fecha<br/>Comprobante</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<input type="text" name="<?=$modelo."[cod_ingreso]"?>" id="cod_ingreso" value="<?=$cod_partida.'.'.mascara($cod_generica,2).'.'.mascara($cod_especifica,2).'.'.mascara($cod_sub_espec,2).'.'.mascara($cod_auxiliar,4)?>" readonly="readonly" style="width:100%;text-align:center;"/>
+		</td>
+		<td><input type="text" name="<?=$modelo."[denominacion]"?>" id="denominacion_ingreso" value="<?=$denominacion_ingreso?>" readonly="readonly" style="width:100%;"/></td>
+		<td><input type="text" name="<?=$modelo."[ano_comprobante]"?>" id="ano_comprobante" value="<?=$ano_comprobante?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td><input type="text" name="<?=$modelo."[numero_comprobante]"?>" id="numero_comprobante"value="<?=mascara($numero_comprobante,8)?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+	    <td><?$sisap->input_fecha('shp900_cobranza_diaria','fecha_comprobante','fecha_comprobante',cambiar_formato_fecha($fecha_comprobante))?></td>
+	</tr>
+	</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr align="center">
+		<td width="150">&nbsp;</td>
+		<td width="150">RIF / Cédula</td>
+		<td>Nombres y Apellidos / Razón social (RECAUDADOR)</td>
+	</tr>
+	<tr>
+		<td><?$sisap->selectTagRemote('shp900_cobranza_diaria/rif_ci_cobrador',array() ,array('value1'=>'otros'), null, array('onchange1'=>'/shp900_cobranza_diaria/cargar_cobrador', 'update1'=>'cargar_cobrador','onChange'=>'vacio','id'=>'lista_cobradores','style'=>'width:100%;','readonly'=>'readonly'  , true), null, true);?></td>
+		<td><input type="text" name="" id="rif_ci_cobrador" value="<?=$rif_ci_cobrador?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td><input type="text" name="" id="denominacion_cobrador" value="<?=$nombre_razon?>" readonly="readonly" style="width:100%;"/></td>
+	</tr>
+	<tr align="center">
+		<td colspan="3"><b>CONCEPTO COBRO</b></td>
+	</tr>
+	<tr>
+		<td colspan="3"><textarea name="<?=$modelo."[concepto_comprobante]"?>" id="concepto_cobro" rows="5" style="width:100%;"><?=$concepto_comprobante?></textarea></td>
+	</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr align="center">
+		<td colspan="9"><b>DISTRIBUCIÓN DE LA DEUDA</b></td>
+	</tr>
+	<tr align="center">
+	    <td width="14%" colspan="2">Deuda Bs.</td>
+		<td width="14%">Vigente Bs.</td>
+		<td width="14%">Recargo Bs.</td>
+		<td width="14%" colspan="2">Multa Bs.</td>
+		<td width="14%">Intereses Bs.</td>
+		<td width="14%">Descuento Bs.</td>
+		<td width="16%">Total</td>
+	</tr>
+	<tr>
+	    <td colspan="2">
+			<input type="text" name="<?=$modelo."[deuda_anterior]"?>" id="deuda_bs" value="<?=$sisap->Formato2($deuda_anterior)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td>
+			<input type="text" name="<?=$modelo."[deuda_vigente]"?>" id="vigente_bs" value="<?=$sisap->Formato2($deuda_vigente)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td>
+			<input type="text" name="<?=$modelo."[monto_recargo]"?>" id="recargo_bs" value="<?=$sisap->Formato2($monto_recargo)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td colspan="2">
+			<input type="text" name="<?=$modelo."[monto_multa]"?>" id="multa_bs" value="<?=$sisap->Formato2($monto_multa)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td>
+			<input type="text" name="<?=$modelo."[monto_intereses]"?>" id="intereses_bs" value="<?=$sisap->Formato2($monto_intereses)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td>
+			<input type="text" name="<?=$modelo."[monto_descuento]"?>" id="descuento_bs" value="<?=$sisap->Formato2($monto_descuento)?>"  style="width:100%;text-align:center;" readonly="readonly"/>
+		</td>
+		<td>
+			<input type="text" name="<?=$modelo."[total]"?>" id="total" value="<?=$sisap->Formato2($Total)?>" readonly="readonly" style="width:100%;text-align:center;"/>
+		</td>
+	</tr>
+	<tr align="center">
+		<td colspan="9"><b>DISTRIBUCIÓN DE PAGO</b></td>
+	</tr>
+	<tr align="center">
+		<td colspan="9"><b>DEPOSITO</b></td>
+	</tr>
+	<tr align="center">
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="2">Entidad bancaria</td>
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="3">Sucursal</td>
+	</tr>
+	<tr>
+		<td><?$sisap->selectTagRemote('shp900_cobranza_diaria/select_entidad', isset($lista_entidad_bancaria)?$lista_entidad_bancaria:array() ,array('value1'=>'otros'), null, array('onchange1'=>'/shp900_cobranza_diaria/cargar_sucursal/1', 'update1'=>'sucursal1','onChange'=>'vacio','id'=>'lista1','style'=>'width:100%;','readonly'=>'si'  , true), null, true);?></td>
+		<td><input type="text" name="<?=$modelo."[cod_entidad1]"?>" id="cod_entidad1" value="<?=$cod_entidad_deposito?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="" id="denominacion_entidad1" value="<?=$banco_deposito?>" readonly="readonly" style="width:100%;"/></td>
+		<td id="sucursal1"><select style="width:100%;"><option>&nbsp;</option></select></td>
+		<td><input type="text" name="<?=$modelo."[cod_sucursal1]"?>" id="cod_sucursal1" value="<?=$cod_sucursal_deposito?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="" id="denominacion_sucursal1" value="<?=$sucursal_deposito?>" readonly="readonly" style="width:100%;"/></td>
+	</tr>
+	<tr align="center">
+		<td colspan="3">Cuenta bancaria</td>
+		<td colspan="3">Número deposito</td>
+		<td colspan="2">Monto</td>
+		<td>Fecha</td>
+	</tr>
+	<tr align="center">
+		<td colspan="3" id="cuenta1"><input type="text" name="<?=$modelo."[numero_cuenta1]"?>" id="numero_cuenta1" value="<?=$cuenta_bancaria_deposito?>" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="<?=$modelo."[numero_deposito]"?>" id="numero_deposito" value="<?=$numero_deposito?>"  style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="<?=$modelo."[monto_deposito]"?>" id="monto_deposito" value="<?=$monto_deposito?>" onChange="moneda('monto_deposito');distribuir_montos();" onKeyPress="return solonumeros_con_punto(event);" style="width:100%;text-align:center;"  readonly="readonly"/></td>
+		<td><?$sisap->input_fecha('shp900_cobranza_diaria','fecha_deposito','fecha_deposito',$fecha_deposito)?></td>
+	</tr>
+	<tr align="center"><td colspan="9"><b>NOTA DE CRÉDITO</b></td></tr>
+	<tr align="center">
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="2">Entidad bancaria</td>
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="3">Sucursal</td>
+	</tr>
+	<tr>
+		<td><?$sisap->selectTagRemote('shp900_cobranza_diaria/select_entidad2', isset($lista_entidad_bancaria)?$lista_entidad_bancaria:array() ,array('value1'=>'otros'), null, array('onchange1'=>'/shp900_cobranza_diaria/cargar_sucursal/2', 'update1'=>'sucursal2','onChange'=>'vacio','id'=>'lista2','style'=>'width:100%;','readonly'=>'si'  , true), null, true);?></td>
+		<td><input type="text" name="<?=$modelo."[cod_entidad2]"?>" id="cod_entidad2" value="<?=$cod_entidad_credito?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="" id="denominacion_entidad2" value="<?=$banco_nota_credito?>" readonly="readonly" style="width:100%;"/></td>
+		<td id="sucursal2"><select style="width:100%;"><option>&nbsp;</option></select></td>
+		<td><input type="text" name="<?=$modelo."[cod_sucursal2]"?>" id="cod_sucursal2" value="<?=$cod_sucursal_credito?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="" id="denominacion_sucursal2" value="<?=$sucursal_nota_credito?>" readonly="readonly" style="width:100%;"/></td>
+	</tr>
+	<tr align="center">
+		<td colspan="3">Cuenta bancaria</td>
+		<td colspan="3">Número nota de crédito</td>
+		<td colspan="2">Monto</td>
+		<td>Fecha</td>
+	</tr>
+	<tr align="center">
+		<td colspan="3" id="cuenta2"><input type="text" name="<?=$modelo."[numero_cuenta2]"?>" id="numero_cuenta2" value="<?=$cuenta_bancaria_credito?>" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="<?=$modelo."[numero_nota_credito]"?>" id="numero_nota_credito" value="<?=$numero_nota_credito?>"  style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="<?=$modelo."[monto_nota_credito]"?>" id="monto_nota_credito" value="<?=$monto_nota_credito?>" onChange="moneda('monto_nota_credito');distribuir_montos();" onKeyPress="return solonumeros_con_punto(event);" style="width:100%;text-align:center;"  readonly="readonly"/></td>
+		<td><?$sisap->input_fecha('shp900_cobranza_diaria','fecha_nota_credito','fecha_nota_credito',$fecha_nota_credito)?></td>
+	</tr>
+	<tr align="center"><td colspan="9"><b>CHEQUE</b></td></tr>
+	<tr align="center">
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="2">Entidad bancaria</td>
+		<td>&nbsp;</td>
+		<td>Código</td>
+		<td colspan="3">Sucursal</td>
+	</tr>
+	<tr>
+		<td><?$sisap->selectTagRemote('shp900_cobranza_diaria/select_entidad3', isset($lista_entidad_bancaria)?$lista_entidad_bancaria:array() ,array('value1'=>'otros'), null, array('onchange1'=>'/shp900_cobranza_diaria/cargar_sucursal/3', 'update1'=>'sucursal3','onChange'=>'vacio','id'=>'lista3','style'=>'width:100%;','readonly'=>'si'  , true), null, true);?></td>
+		<td><input type="text" name="<?=$modelo."[cod_entidad3]"?>" id="cod_entidad3" value="<?=$cod_entidad_cheque?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="" id="denominacion_entidad3" value="<?=$banco_cheque?>" readonly="readonly" style="width:100%;"/></td>
+		<td id="sucursal3"><select style="width:100%;"><option>&nbsp;</option></select></td>
+		<td><input type="text" name="<?=$modelo."[cod_sucursal3]"?>" id="cod_sucursal3" value="<?=$cod_sucursal_cheque?>" readonly="readonly" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="" id="denominacion_sucursal3" value="<?=$sucursal_cheque?>" readonly="readonly" style="width:100%;"/></td>
+	</tr>
+	<tr align="center">
+		<td colspan="3">Cuenta bancaria</td>
+		<td colspan="3">Número cheque</td>
+		<td colspan="2">Monto</td>
+		<td>Fecha</td>
+	</tr>
+	<tr align="center">
+		<td colspan="3" id="cuenta3"><input type="text" name="<?=$modelo."[numero_cuenta3]"?>" id="numero_cuenta3" value="<?=$cuenta_bancaria_cheque?>" style="width:100%;text-align:center;"/></td>
+		<td colspan="3"><input type="text" name="<?=$modelo."[numero_cheque]"?>" id="numero_cheque" value="<?=$numero_cheque?>"  style="width:100%;text-align:center;"/></td>
+		<td colspan="2"><input type="text" name="<?=$modelo."[monto_cheque]"?>" id="monto_cheque" value="<?=$monto_cheque?>" onChange="moneda('monto_cheque');distribuir_montos();" onKeyPress="return solonumeros_con_punto(event);" style="width:100%;text-align:center;"  readonly="readonly"/></td>
+		<td><?$sisap->input_fecha('shp900_cobranza_diaria','fecha_cheque','fecha_cheque',$fecha_cheque)?></td>
+	</tr>
+</table>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+	<tr align="center">
+		<td width="25%">Monto deposito</td>
+		<td width="25%">Monto nota de crédito</td>
+		<td width="25%">Monto de cheque</td>
+		<td width="25%">Efectivo</td>
+	</tr>
+	<tr align="center">
+		<td><input type="text" name="<?=$modelo."[monto_deposito_t]"?>" id="monto_deposito_t" value="<?=$monto_deposito?>" style="width:100%;text-align:center;" readonly="readonly"/></td>
+		<td><input type="text" name="<?=$modelo."[monto_nota_credito_t]"?>" id="monto_nota_credito_t" value="<?=$monto_nota_credito?>"  style="width:100%;text-align:center;" readonly="readonly"/></td>
+		<td><input type="text" name="<?=$modelo."[monto_cheque_t]"?>" id="monto_cheque_t" value="<?=$monto_cheque?>"  style="width:100%;text-align:center;" readonly="readonly"/></td>
+		<td><input type="text" name="<?=$modelo."[monto_efectivo]"?>" id="efectivo_t" value="<?=$sisap->Formato2($monto_efectivo)?>"  style="width:100%;text-align:center;" readonly="readonly"/></td>
+	</tr>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+	<tr align="center">
+		<td>Condici&oacute;n del documento</td>
+		<td width="150">Fecha de Registro</td>
+		<td>Operador</td>
+		<td width="150">Fecha Anulaci&oacute;n</td>
+		<td>Operador</td>
+	</tr>
+	<tr align="center">
+		<td>
+            <?= $html->radio($modelo.'/condicion_actividad',array("1"=>"Activa", "2"=>"Anulada"),null,array("value"=>$condicion_documento, 'disabled'=>'disabled'), $return = false); ?>
+		</td>
+		<td><input type="text" value="<?=$fecha_registro?>" style="text-align:center;width:100%;" readonly="readonly"></td>
+		<td><input type="text" value="<?=$username_registro?>" style="text-align:center;width:100%;" readonly="readonly"></td>
+	    <td><input type="text" value="<?=$fecha_anulacion?>" style="text-align:center;width:100%;" readonly="readonly"></td>
+		<td><input type="text" value="<?=$username_anulacion?>" style="text-align:center;width:100%;" readonly="readonly"></td>
+	</tr>
+</table>
+
+<?= $sisap->buttonTagRemote('salir/salir', array ('type'=>'button', 'value'=>'Salir','id'=>'bt_salir_prog'), array('url1' => '/modulos/vacio', 'update1'=>'principal','id'=>'bt_salir_prog'));?>
+<?
+if($condicion_documento==1){
+    echo $sisap->buttonTagRemote('shp900_cobranza_diaria/eliminar', array ( 'value'=>'Eliminar'), array('url1' => '/shp900_cobranza_diaria/eliminar/'.$ano_comprobante.'/'.$numero_comprobante.'/'.$pagina, 'update1'=>'principal'));
+}else{
+	echo $sisap->buttonTagRemote('shp900_cobranza_diaria/eliminar', array ( 'value'=>'Eliminar','disabled'=>'disabled'), array('url1' => '/shp900_cobranza_diaria/eliminar/'.$ano_comprobante.'/'.$numero_comprobante.'/'.$pagina, 'update1'=>'principal'));
+}
+
+
+ ?>
+ <?= $sisap->imagen_ventana(array("value"=>"buscar", "id"=>"buscar_ventana_2"),3,"Buscar otros ingresos", "/shp900_cobranza_diaria/buscar_recibo/1", "700px", "400px" ); ?>
+<?= $sisap->buttonTagRemote('shp900_cobranza_diaria/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/shp900_cobranza_diaria/consultar/'.'/'.$anterior.'', 'update1'=>'principal')) ?>
+<?= $sisap->buttonTagRemote('shp900_cobranza_diaria/siguiente', array ( 'value'=>'Siguiente' ,'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/shp900_cobranza_diaria/consultar/'.$siguiente.'', 'update1'=>'principal')) ?>
+</form>
+<?= $sisap->CloseTable()?>
+
+<?}else{?>
+	<script language="JavaScript" type="text/javascript">
+      ver_documento('/shp900_cobranza_diaria/','principal');
+    </script>
+<?}?>
+<form name="data[planilla]" method = "post" id="form" action="/shp900_cobranza_diaria/planilla">
+<input type="hidden" name="data[planilla][ano_comprobante]" id="ano_comprobantep"value="<?=$ano_comprobante?>"/>
+<input type="hidden" name="data[planilla][numero_comprobante]" id="numero_comprobantep"value="<?=$numero_comprobante?>"/>
+<input type="hidden" name="data[planilla][rif]" id="rif"value="<?=$rif_cedula?>"/>
+<?php echo $html->submit('Generar',array('id'=>'bt_generar_planilla'));?>
+</form>

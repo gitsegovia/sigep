@@ -1,0 +1,107 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<script language="JavaScript" type="text/javascript">
+  document.getElementById('bt_guardar').disabled='';
+  $('monto').value='';
+</script>
+
+<table  width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2" id="grid">
+<tr class="tr_negro">
+            <td align="center"  width="4%">Sect</td>
+            <td align="center"  width="4%">Prog</td>
+            <td align="center"  width="4%">Sub<br>Prog</td>
+            <td align="center"  width="5%">Proy</td>
+            <td align="center"  width="5%">Activ<br>Obra</td>
+            <td align="center"  width="6%">Part</td>
+            <td align="center"  width="4%">Gen</td>
+            <td align="center"  width="4%">Esp</td>
+            <td align="center"  width="4%">Sub<br>Esp</td>
+            <td align="center"  width="7%">Aux</td>
+            <td align="center"  width="43%">Monto</td>
+            <td align="center"  width="7%">Acci&oacute;n</td>
+  </tr>
+ <?php
+ if(isset($datacfpd05)){
+
+
+ if($datacfpd05!=null){
+ 	$i=0;
+ 	$total=0;
+    foreach($datacfpd05 as $ve){
+
+    	$codigos=$ve['cfpd05_requerimiento']['cod_sector']."/".$ve['cfpd05_requerimiento']['cod_programa']."/".$ve['cfpd05_requerimiento']['cod_sub_prog']."/".$ve['cfpd05_requerimiento']['cod_proyecto']."/".$ve['cfpd05_requerimiento']['cod_activ_obra']."/".$ve['cfpd05_requerimiento']['cod_partida']."/".$ve['cfpd05_requerimiento']['cod_generica']."/".$ve['cfpd05_requerimiento']['cod_especifica']."/".$ve['cfpd05_requerimiento']['cod_sub_espec']."/".$ve['cfpd05_requerimiento']['cod_auxiliar']."/".$ve['cfpd05_requerimiento']['ano'];
+    	if($i%2==0)$class="tr_grid_c1";
+    	else$class="tr_grid_c2";
+?>
+  <tr class="<?=$class?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);"  height="25">
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_sector'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_programa'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_sub_prog'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_proyecto'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_activ_obra'])?></td>
+    <td class="td2center"><?= $ve['cfpd05_requerimiento']['cod_partida']?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_generica'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_especifica'])?></td>
+    <td class="td2center"><?= $sisap->AddCero2($ve['cfpd05_requerimiento']['cod_sub_espec'])?></td>
+    <td class="td2center"><?= $sisap->mascara_cuatro($ve['cfpd05_requerimiento']['cod_auxiliar'])?></td>
+    <td class="td2" style="padding-right:5px; text-align:right" id="<?= "editar_monto_".$i ?>"><?= $sisap->Formato2($ve['cfpd05_requerimiento']['asignacion_anual'])?></td>
+    	 <td class="td3center">
+    	 <?if($ve['cfpd05_requerimiento']['ano']<=$_SESSION['ANO_EJECUCION'] ){
+          echo $html->image('delete_disabled.png',array('border'=>0));
+          }else{?>
+          <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cfpp05_requerimiento/eliminar/'.$codigos, array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar esta distribucion de gastos?',false,true) ?>
+          <?}?>
+          <?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cfpp05_requerimiento/campo_monto/'.$codigos.'/editar_monto_'.$i, array('update'=>'editar_monto_'.$i,'title'=>'Modificar Monto'),null,false,true) ?></td>
+
+
+  </tr>
+<?
+    $total=$total + (double) $ve['cfpd05_requerimiento']['asignacion_anual'];
+    	$i++;
+
+    }//fin foreach
+
+     ?>
+   <tr class="<?=$class?>">
+    <td class="td2center" height="22">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+   <td class="td2center">--</td>
+    <td class="td3center">--</td>
+  </tr>
+  <tr bgcolor="#DAEBFF" class="textNegro2"><td colspan="10" style="padding-right:5px; text-align:right" class="td2" height="22">TOTAL <?=MONEDA2?>: </td><td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><?= $sisap->Formato2($total)?></td><td class="td3center">&nbsp;&nbsp;</td></tr>
+<tr bgcolor="#CDF2FF" class="textNegro2"><td colspan="10" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL DISTRIBUCION <?=MONEDA2?>: </td><td  style="padding-right:5px; text-align:right" class="td2" id="TOTALDISTRIBUCION"><?= $sisap->Formato2($TOTALDISTRIBUCION)?></td><td class="td3center">&nbsp;&nbsp;</td></tr>
+     <?
+
+}//fin if
+ }//fin
+
+?>
+</table>
+
+ <? $sisap->link_paginacion_ventanas('/cfpp05_requerimiento/guardar/', 'ListaGastos', $TotalPaginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+
+<?= $sisap->buttonTagRemote('cfpp05/primero', array ( 'value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cfpp05_requerimiento/guardar/1', 'update1'=>'ListaGastos')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cfpp05_requerimiento/guardar/'.$anterior.'', 'update1'=>'ListaGastos')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cfpp05_requerimiento/guardar/'.$siguiente.'', 'update1'=>'ListaGastos')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/ultimo', array ( 'value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cfpp05_requerimiento/guardar/'.$ultimo.'', 'update1'=>'ListaGastos')) ?>
+
+<? //$sisap->link_paginacion('/cfpp05_requerimiento/guardar','ListaGastos',$TotalPaginas,$pagina_actual);
+?>
+<br>
+<div id="del"></div>
+
+

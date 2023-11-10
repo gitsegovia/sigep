@@ -1,0 +1,146 @@
+<?php
+/**
+ * Este element imprime un input para cargar img con ajax, y se le deben pasar las siguientes variables
+ * id = define el ID de los elemento para que el JS trabaje correctamente
+ * primera_declaracion = TRUE | FALSE esto importa las librerias y style css, solo se hace en el primer llamado
+ * url = URL que recibe la informacion de la imagen
+ * load_img = URL de la imagen existente.
+ * img_existe = si existe una imagen mostramos load_img
+ * title_img = titulo para la ventana de la imagen
+ */
+?>
+<div class="img_upload">
+    <img src="<?php echo ($img_existe)?$load_img.'?u='.uniqid():$html->url('/img/sin_foto.jpg',true); ?>" id="imag_load_<?php echo $id;?>"
+         class="show_imagen_load"
+         data-title ='<?php echo $title_img; ?>'
+         />
+</div>
+<div class="wrapper-file-input" style="display: none;">
+    <span class="fake-file-input">Adjuntar</span>
+    <?php //echo $html->input('Imagen/imagen', array('label'=>false, 'div'=>false, 'id' => $id, 'type' => 'file', 'accept'=>'image/*','class'=>'file-input','disabled'=>true)); ?>
+    <input id='<?php echo $id;?>' type="file" name="imagen" accept='image/*' class='file-input' disabled='disabled'>
+</div>
+
+
+<?php
+if($primera_declaracion){
+?>
+
+
+<style type="text/css">
+    .show_imagen_load{
+        cursor: pointer;
+    }
+    .img_upload{
+        position: relative;
+        margin: auto;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        width: 110px;
+        height: 146px;
+        border: 1px solid #000;
+    }
+    .img_upload img{
+        width: 100%;
+        height: 100%;
+    }
+    .wrapper-file-input {
+    position: relative;
+    overflow: hidden;
+    height: auto;
+    width: 112px;
+    margin: auto;
+    margin-bottom: 5px;
+    }
+    .fake-file-input {
+    background: url('<?php echo $html->url('/img/bg-btn.png',true)?>') bottom repeat-x;
+    padding: 5px;
+    border: 1px solid #aaa;
+    color: #222;
+    font-size: 11px;
+    font-weight: normal;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    display: block;
+    width: 100px;
+    text-align: center;
+
+    }
+    .wrapper-file-input input[type="file"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    border: solid transparent;
+    border-width: 0 0 100px 200px;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    cursor: pointer;
+    }
+</style>
+<script type="text/javascript">
+    jQuery('img.show_imagen_load').on('click',function (e){
+        Element.show('mini_loading');
+        var win = new Window({className: "mac_os_x",
+                            width:'400px',
+                            height:'300px',
+                            zIndex: 40000,
+                            resizable: '',
+                            title: jQuery(this).attr('data-title'),
+                            draggable:true,
+                            wiredDrag: true,
+                            hideEffect:Element.hide,
+                            showEffect:Element.show,
+                            maximizable: '',
+                            minimizable: '',
+                            closable: 1});
+                            
+        win.getContent().update("");
+        jQuery('div.mac_os_x_content').html('<img src="'+jQuery(this).attr('src')+'?u='+Math.random()+'" style="width:400px;height:400px;"/>');
+        win.showCenter();
+        Element.hide('mini_loading');
+    });
+</script>
+
+<?php
+}
+?>
+
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+jQuery.ajaxSetup ({
+        // Disable caching of AJAX responses
+        cache: false
+    });
+jQuery('#<?php echo $id; ?>').fileupload({
+            url: '<?php echo $url; ?>?u='+Math.random(),
+            dataType: 'json',
+            done: function(e, data) {
+                //console.log(e);
+                //console.log(data);
+                Element.hide('mini_loading');
+            },
+            start: function (){
+                Element.show('mini_loading');
+            },
+            success:function (result, textStatus, jqXHR){
+                //console.log(result);
+                //Completado verificamos que la imagen haya sido cargada
+                if(result.completed){//si es 1
+                    jQuery('#imag_load_<?php echo $id;?>').attr('src','<?php echo $load_img;?>?u='+Math.random());
+                    //jQuery('#imag_load_<?php echo $id;?>').addClass('show_imagen_load');
+                }
+            },
+            complete:function (result, textStatus, jqXHR) {
+              Element.hide('mini_loading');   
+            },
+            error:function (jqXHR, textStatus, errorThrown){}
+        });
+
+
+        
+        
+});
+</script>

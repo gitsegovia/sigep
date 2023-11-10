@@ -1,0 +1,118 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$color="";
+
+?>
+
+<?$sisap->Tabla_modulos("",true,"OBJETIVOS PROPUESTOS","","950","cpop")?>
+<?$sisap->OpenTable("950");?>
+
+	<form name='data[cpod04_objetivos]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="35%">EJERCICIO A FORMULAR</td>
+				<td><?= $sisap->inputTagRemote('cpod04_objetivos/ano', array('url'=>'/cpop04_objetivos/index/'.$this->data['cpod04_objetivos']['ano'],'update'=>'principal','size'=>'4', 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$ano));?></td>
+			</tr>
+			<tr>
+				<td>TIPO DEL PROYECTO</td>
+				<td>
+					<?= $sisap->radioTagRemote('cpod04_objetivos/tipo_proyecto', array('GESTION'=>'GESTIÓN'), array('url1'=>'/cpop04_objetivos/proyectos/'.$ano, 'update1' =>'select_proyecto'), null, $datos_objetivo['cpod04_objetivos']['tipo_proyecto']); ?>
+				</td>
+			</tr>
+			<tr>
+				<td>PROYECTO</td>
+				<td>
+					<div id="select_proyecto">
+						<?=	$sisap->selectTagRemote('cpod04_objetivos/numero_proyecto', $vector!=null?$vector:array(), array(), $datos_objetivo['cpod04_objetivos']['numero_proyecto'], array('id' =>'numero_proyecto', 'onChange' => 'vacio'));?>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>OBJETIVO</td>
+				<td>
+					<?= $html->textarea('cpod04_objetivos/objetivo', array('id'=>'objetivo','rows'=>'2',  'cols' => '40', 'class'=>'inputtext', 'value'=>$datos_objetivo['cpod04_objetivos']['objetivo']),  false); ?>
+					<?= $html->input('cpod04_objetivos/numero_objetivo', array('id'=>'numero_objetivo', 'value'=>$datos_objetivo['cpod04_objetivos']['numero_objetivo'], 'readonly'=>'readonly', 'type'=>'hidden')); ?>
+				</td>
+			</tr>
+			<!-- tr>
+				<td>FECHA DE CREACI&Oacute;N</td>
+				<td> < ? = // $sisap->input_fecha("cpyp01_proy_accion","fecha","fecha", date('d/m/Y'), array()); ?></td>
+			</tr -->
+			<tr>
+        		<? if(!$consulta){?>
+				<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Actualizar Objetivo', array('funcion'=>'valida_cpop04_objetivos','url1' => '/cpop04_objetivos/guardar/', 'update1'=>'principal')); ?></td>
+				<?}?>
+			</tr>
+		</table>
+	</form>
+
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="5" align="left">OBJETIVOS REGISTRADOS PARA ESTE EJERCICIO PRESUPUESTARIO:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="10%" align="center">C&oacute;digo</td>
+				<td width="10%" align="center">Tipo de Proyecto</td>
+				<td width="35%" align="center">Proyecto</td>
+				<td width="35%" align="center">Objetivo</td>
+				<td width="10%" align="center">Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $objetivos){
+        				$param = $objetivos[0]['numero_objetivo']."/".$objetivos[0]['ano'];
+
+						if($color=="#DAEBFF"){
+		    				$color="#CDF2FF";
+			    		}else{
+				    		$color="#DAEBFF";
+				    	}
+					?>
+
+						<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							<td width="10%" align="center"><?= $id ?></td>
+							<td width="10%" align="left"><?= $objetivos[0]['tipo_proyecto'] ?></td>
+							<td width="35%" align="left"><?= $objetivos[0]['proyectos'] ?></td>
+							<td width="35%" align="left"><?= $objetivos[0]['objetivo'] ?></td>
+							<td width="10%" align="center">
+						        <?if(!$consulta){?>
+							        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop04_objetivos/eliminar/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpop04_objetivos/editar/'.$param, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+								<?}?>
+							</td>
+						</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				}else{ // fin datos
+				 ?>
+					<tr>
+						<td  colspan="7" align="center">NO EXISTEN OBJETIVOS REGISTRADOS EN ESTE AÑO</td>
+					</tr>
+			 	 <?
+				} 
+			?>
+		</table>
+	</div>
+<?= $sisap->buttonTagRemote('cpop04_objetivos/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>

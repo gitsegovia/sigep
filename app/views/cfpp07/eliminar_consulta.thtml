@@ -1,0 +1,691 @@
+<?php $d=$session->read('SScoddep');
+
+if($consolidado=='si'){?>
+
+<form name='data[cfpp07]'  method = "post" id='form'> <?php
+
+
+if($d==1){ ?>
+CONSOLIDADO POR:<br>
+<?= $html->radio('cfpp07/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), '<br>', array())?>
+<br><br>
+<?php
+
+}//fin $d
+echo $sisap->submitTagRemote('Ir', array('funcion'=>'valida_cfpp07_ano', 'url1' => '/cfpp07/consulta/'.$ejercicio,'update1'=>'registro_de_auxiliares'));
+echo ' ';
+echo $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/cfpp07/', 'update1'=>'principal'));
+
+
+?> </form> <?php
+
+}else{
+
+
+if(isset($errorMessage)) {echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+$estimado_total ='';
+$ejecuta_total = '';
+$compro_total = '';
+$cod_obra = '';
+$read="readonly";
+
+
+
+			$datos['cfpd07']['cod_dep']='';
+			$datos['cfpd07']['cod_obra']='';
+			$datos['cfpd07']['denominacion']='';
+			$datos['cfpd07']['denominacion_2']='';
+			$datos['cfpd07']['funcionario_responsable']='';
+			$datos['cfpd07']['fecha_inicio']='';
+			$datos['cfpd07']['fecha_conclusion']='';
+			$datos['cfpd07']['situacion']='';
+			$datos['cfpd07']['costo_total']='';
+			$datos['cfpd07']['compro_ano_ante']='';
+			$datos['cfpd07']['compro_ano_vige']='';
+			$datos['cfpd07']['ejecuta_ano_ante']='';
+			$datos['cfpd07']['ejecuta_ano_vige']='';
+			$datos['cfpd07']['estimado_presu']='';
+			$datos['cfpd07']['estimado_ano_posterior']='';
+			$datos['cfpd07']['tipo_recurso']='';
+			$datos['cfpd07']['clasificacion_recurso']='';
+			$datos['cfpd07']['ano_recurso']='';
+
+?>
+
+<?php
+
+if(isset($DATOS) && $DATOS!=null){$cuenta = 0 ;
+
+$ii=0;
+
+foreach($clasificacion_recurso as $rows){$ii++;
+	 $var_clasificacion_recurso[$ii]['tipo_recurso']           =   $rows['cfpd07_clasificacion_recurso']['tipo_recurso'];
+	 $var_clasificacion_recurso[$ii]['denominacion']           =   $rows['cfpd07_clasificacion_recurso']['denominacion'];
+	 $var_clasificacion_recurso[$ii]['clasificacion_recurso']  =   $rows['cfpd07_clasificacion_recurso']['clasificacion_recurso'];
+}//fin
+
+
+  $i = 0;
+//if($consulta!=""){
+
+foreach($DATOS as $row2){
+
+
+	 $var[$i]['cod_obra']  =  $row2['cfpd07_obras_cuerpo']['cod_obra'];
+	 $var[$i]['denominacion']  = $row2['cfpd07_obras_cuerpo']['denominacion'];
+	 $var[$i]['funcionario_responsable']  = $row2['cfpd07_obras_cuerpo']['funcionario_responsable'];
+	 $var[$i]['fecha_inicio']  = $row2['cfpd07_obras_cuerpo']['fecha_inicio'];
+	 $var[$i]['fecha_conclusion']  = $row2['cfpd07_obras_cuerpo']['fecha_conclusion'];
+	 $var[$i]['situacion']  = $row2['cfpd07_obras_cuerpo']['situacion'];
+	 $var[$i]['costo_total']  = $row2['cfpd07_obras_cuerpo']['costo_total'];
+	 $var[$i]['compro_ano_ante']  = $row2['cfpd07_obras_cuerpo']['compro_ano_ante'];
+	 $var[$i]['compro_ano_vige']  = $row2['cfpd07_obras_cuerpo']['compro_ano_vige'];
+	 $var[$i]['ejecuta_ano_ante']  = $row2['cfpd07_obras_cuerpo']['ejecuta_ano_ante'];
+	 $var[$i]['ejecuta_ano_vige']  = $row2['cfpd07_obras_cuerpo']['ejecuta_ano_vige'];
+	 $var[$i]['estimado_presu']  = $row2['cfpd07_obras_cuerpo']['estimado_presu'];
+	 $var[$i]['estimado_ano_posterior']  = $row2['cfpd07_obras_cuerpo']['estimado_ano_posterior'];
+	 $var[$i]['tipo_recurso']  = $row2['cfpd07_obras_cuerpo']['tipo_recurso'];
+	 $var[$i]['ano_recurso']  = $row2['cfpd07_obras_cuerpo']['ano_estimacion'];
+	 $var[$i]['clasificacion_recurso']  = $row2['cfpd07_obras_cuerpo']['clasificacion_recurso'];
+
+
+
+
+
+
+foreach($DATOS2 as $row){
+
+	if( $var[$i]['cod_obra'] == $row['cfpd07_obras_partidas']['cod_obra']){
+
+	 $var[$i]['cod_dep']  = $row['cfpd07_obras_partidas']['cod_dep'];
+     $var[$i]['cod_sector']  = $row['cfpd07_obras_partidas']['cod_sector'];
+	 $var[$i]['cod_programa'] = $row['cfpd07_obras_partidas']['cod_programa'];
+	 $var[$i]['cod_sub_prog']  =   $row['cfpd07_obras_partidas']['cod_sub_prog'];
+	 $var[$i]['cod_proyecto']  =   $row['cfpd07_obras_partidas']['cod_proyecto'];
+	 $var[$i]['cod_activ_obra']  = $row['cfpd07_obras_partidas']['cod_activ_obra'];
+	 $var[$i]['cod_partida']  =   $row['cfpd07_obras_partidas']['cod_partida'];
+	 $var[$i]['cod_generica']  =   $row['cfpd07_obras_partidas']['cod_generica'];
+	 $var[$i]['cod_especifica']  =   $row['cfpd07_obras_partidas']['cod_especifica'];
+	 $var[$i]['cod_sub_espec']  =   $row['cfpd07_obras_partidas']['cod_sub_espec'];
+	 $var[$i]['cod_auxiliar']  =   $row['cfpd07_obras_partidas']['cod_auxiliar'];
+
+
+	 for($jjj=1; $jjj<=$ii; $jjj++){
+       if($var_clasificacion_recurso[$jjj]['tipo_recurso']==$var[$i]['tipo_recurso'] && $var_clasificacion_recurso[$jjj]['clasificacion_recurso']==$var[$i]['clasificacion_recurso']){
+              $var[$i]['denominacion_2'] = $var_clasificacion_recurso[$jjj]['denominacion'];
+         	}
+	}//fin
+
+
+         foreach($sector as $s){
+         	if($s['cfpd02_sector']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector']){
+         		if($s['cfpd02_sector']['denominacion']!='' || $s['cfpd02_sector']['denominacion']!=null)
+         		  $deno[$i]['deno1']=$s['cfpd02_sector']['denominacion'];
+         		else
+         		  $deno[$i]['deno1']='N/A';
+         	}
+         }
+         foreach($programa as $p){
+         	if($p['cfpd02_programa']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector'] && $p['cfpd02_programa']['cod_programa']==$row['cfpd07_obras_partidas']['cod_programa']){
+         		if($p['cfpd02_programa']['denominacion']!='' || $p['cfpd02_programa']['denominacion']!=null)
+         		    $deno[$i]['deno2']=$p['cfpd02_programa']['denominacion'];
+         		else
+         		   $deno[$i]['deno2']='N/A';
+         	}
+         }
+         foreach($subprograma as $sp){
+         	if($sp['cfpd02_sub_prog']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector'] && $sp['cfpd02_sub_prog']['cod_programa']==$row['cfpd07_obras_partidas']['cod_programa'] && $sp['cfpd02_sub_prog']['cod_sub_prog']==$row['cfpd07_obras_partidas']['cod_sub_prog']){
+         		if($sp['cfpd02_sub_prog']['denominacion']!='' || $sp['cfpd02_sub_prog']['denominacion']!=null)
+         		   $deno[$i]['deno3']=$sp['cfpd02_sub_prog']['denominacion'];
+         		else
+         		   $deno[$i]['deno3']='N/A';
+         	}
+         }
+         foreach($proyecto as $proy){
+         	if($proy['cfpd02_proyecto']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector'] && $proy['cfpd02_proyecto']['cod_programa']==$row['cfpd07_obras_partidas']['cod_programa'] && $proy['cfpd02_proyecto']['cod_sub_prog']==$row['cfpd07_obras_partidas']['cod_sub_prog'] && $proy['cfpd02_proyecto']['cod_proyecto']==$row['cfpd07_obras_partidas']['cod_proyecto']){
+         		if($proy['cfpd02_proyecto']['denominacion']!='' || $proy['cfpd02_proyecto']['denominacion']!=null)
+         		   $deno[$i]['deno4']=$proy['cfpd02_proyecto']['denominacion'];
+         		else
+                   $deno[$i]['deno4']='N/A';
+         	}
+         }$deno[$i]['deno5']='';
+         foreach($actividad as $activ){
+         	if($activ['cfpd02_activ_obra']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector'] && $activ['cfpd02_activ_obra']['cod_programa']==$row['cfpd07_obras_partidas']['cod_programa'] && $activ['cfpd02_activ_obra']['cod_sub_prog']==$row['cfpd07_obras_partidas']['cod_sub_prog'] && $activ['cfpd02_activ_obra']['cod_proyecto']==$row['cfpd07_obras_partidas']['cod_proyecto'] && $activ['cfpd02_activ_obra']['cod_activ_obra']==$row['cfpd07_obras_partidas']['cod_activ_obra']){
+         		if($activ['cfpd02_activ_obra']['denominacion']!='' || $activ['cfpd02_activ_obra']['denominacion']!=null)
+         		   $deno[$i]['deno5']=$activ['cfpd02_activ_obra']['denominacion'];
+         		else
+                   $deno[$i]['deno5']='N/A';
+         	}
+        }if($deno[$i]['deno5']==''){ $deno[$i]['deno5']='N/A';}
+         foreach($partida as $part){
+         	if($part['cfpd01_ano_partida']['cod_partida']==substr($row['cfpd07_obras_partidas']['cod_partida'], -2)){
+         		if($part['cfpd01_ano_partida']['denominacion']!='' || $part['cfpd01_ano_partida']['denominacion']!=null)
+         		    $deno[$i]['deno6']=$part['cfpd01_ano_partida']['denominacion'];
+         		else
+                   $deno[$i]['deno6']='N/A';
+         	}
+         }
+         foreach($generica as $gen){
+         	if($gen['cfpd01_ano_generica']['cod_partida']==substr($row['cfpd07_obras_partidas']['cod_partida'], -2) && $gen['cfpd01_ano_generica']['cod_generica']==$row['cfpd07_obras_partidas']['cod_generica']){
+         		if($gen['cfpd01_ano_generica']['denominacion']!='' && $gen['cfpd01_ano_generica']['denominacion']!=null)
+         		$deno[$i]['deno7']=$gen['cfpd01_ano_generica']['denominacion'];
+         		else
+                   $deno[$i]['deno7']='N/A';
+         	}
+         }
+         foreach($especifica as $espec){
+         	if($espec['cfpd01_ano_especifica']['cod_partida']==substr($row['cfpd07_obras_partidas']['cod_partida'], -2) && $espec['cfpd01_ano_especifica']['cod_generica']==$row['cfpd07_obras_partidas']['cod_generica'] && $espec['cfpd01_ano_especifica']['cod_especifica']==$row['cfpd07_obras_partidas']['cod_especifica']){
+         		if($espec['cfpd01_ano_especifica']['denominacion']!='' || $espec['cfpd01_ano_especifica']['denominacion']!=null)
+         		$deno[$i]['deno8']=$espec['cfpd01_ano_especifica']['denominacion'];
+         		else
+                   $deno[$i]['deno8']='N/A';
+         	}
+         }
+         foreach($subespecifica as $subespec){
+         	if($subespec['cfpd01_ano_sub_espec']['cod_partida']==substr($row['cfpd07_obras_partidas']['cod_partida'], -2) && $subespec['cfpd01_ano_sub_espec']['cod_generica']==$row['cfpd07_obras_partidas']['cod_generica'] && $subespec['cfpd01_ano_sub_espec']['cod_especifica']==$row['cfpd07_obras_partidas']['cod_especifica'] && $subespec['cfpd01_ano_sub_espec']['cod_sub_espec']==$row['cfpd07_obras_partidas']['cod_sub_espec']){
+         		if($subespec['cfpd01_ano_sub_espec']['denominacion']!='' || $subespec['cfpd01_ano_sub_espec']['denominacion']!=null)
+         		$deno[$i]['deno9']=$subespec['cfpd01_ano_sub_espec']['denominacion'];
+         		else
+                   $deno[$i]['deno9']='N/A';
+         	}
+         }
+          foreach($auxiliar as $aux){
+         	if($aux['cfpd05_auxiliar']['cod_sector']==$row['cfpd07_obras_partidas']['cod_sector'] &&  $aux['cfpd05_auxiliar']['cod_programa']==$row['cfpd07_obras_partidas']['cod_programa'] &&  $aux['cfpd05_auxiliar']['cod_sub_prog']==$row['cfpd07_obras_partidas']['cod_sub_prog']&&  $aux['cfpd05_auxiliar']['cod_proyecto']==$row['cfpd07_obras_partidas']['cod_proyecto'] &&  $aux['cfpd05_auxiliar']['cod_activ_obra']==$row['cfpd07_obras_partidas']['cod_activ_obra'] && $aux['cfpd05_auxiliar']['cod_partida']==$row['cfpd07_obras_partidas']['cod_partida'] && $aux['cfpd05_auxiliar']['cod_generica']==$row['cfpd07_obras_partidas']['cod_generica'] && $aux['cfpd05_auxiliar']['cod_especifica']==$row['cfpd07_obras_partidas']['cod_especifica'] && $aux['cfpd05_auxiliar']['cod_sub_espec']==$row['cfpd07_obras_partidas']['cod_sub_espec'] && $aux['cfpd05_auxiliar']['cod_auxiliar']==$row['cfpd07_obras_partidas']['cod_auxiliar']){
+
+         		if($aux['cfpd05_auxiliar']['denominacion']!='' || $aux['cfpd05_auxiliar']['denominacion']!=null){
+
+         		$deno[$i]['deno10']=$aux['cfpd05_auxiliar']['denominacion'];
+         		}else{
+                   $deno[$i]['deno10']='N/A';}
+
+         	}
+         }
+
+            break;
+
+     	}//fin
+
+      }//fin for 2
+
+$i++;
+
+}//fin fors
+
+
+
+
+
+ $i--;
+$totalPages_Recordset1 = $i;
+$totalPages_Recordset1 = abs($totalPages_Recordset1) ;
+$totalPages_Recordset1 = floor($totalPages_Recordset1);
+
+if(isset($pagina_actual)){$pageNum_Recordset1 = $pagina_actual; }else{$pageNum_Recordset1 = 0;}
+$siguiente = $pageNum_Recordset1+1;
+$anterior = $pageNum_Recordset1 - 1;
+
+if($var[$pageNum_Recordset1]['clasificacion_recurso']=='0'){
+   $var[$pageNum_Recordset1]['plan_inversion']='2';}else{$var[$pageNum_Recordset1]['plan_inversion']='1';}
+
+
+?>
+
+
+
+
+
+<table width='700'  border='0' cellpadding='0' cellspacing='0'  style='margin-top:10px;' class="tablacompromiso tablacompromiso2">
+<?php  $d=$session->read('SScoddep'); if($d==1){ if($consolidado==2){ $opc = "Dependencia";}else{ $opc = "Institución"; } echo ' <th colspan="3">Consolidado por: '.$opc.' </th>'; } ?>
+
+           <tr>
+        <td align="right" colspan="2" width="240" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="hidden" name="data[cfpp07][ano]"  value="<?= date('Y')+1;?>" id="anoPresupuesto" size="2"  maxlength="4" onKeyPress="return solonumeros(event);"></td>
+        </tr>
+
+        <tr><td align='right' width="150">Sector</td><td align='center' width="50" class="textNegro ds"><? $a[1]=$var[$pageNum_Recordset1]['cod_sector']; echo $sisap->AddCero2($a[1]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno1'];?></td></tr>
+        <tr><td align='right'>Programa</td><td align='center' class="textNegro ds"><? $a[2]=$var[$pageNum_Recordset1]['cod_programa']; echo $sisap->AddCero2($a[2]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno2'];?></td></tr>
+        <tr><td align='right'>Sub_Programa</td><td align='center' class="textNegro ds"><? $a[3]=$var[$pageNum_Recordset1]['cod_sub_prog']; echo $sisap->AddCero2($a[3]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno3'];?></td></tr>
+        <tr><td align='right'>Proyecto</td><td align='center' class="textNegro ds"><? $a[4]=$var[$pageNum_Recordset1]['cod_proyecto']; echo $sisap->AddCero2($a[4]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno4'];?></td></tr>
+        <tr><td align='right'>Actividad u Obra</td><td align='center' class="textNegro ds"><? $a[5]=$var[$pageNum_Recordset1]['cod_activ_obra']; echo $sisap->AddCero2($a[5]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno5'];?></td></tr>
+        <tr><td align='right'>Partida</td><td align='center' class="textNegro ds"><? $a[6]=substr($var[$pageNum_Recordset1]['cod_partida'], -2); echo $sisap->AddCero2($a[6], CE);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno6'];?></td></tr>
+        <tr><td align='right'>Gen&eacute;rica</td><td align='center' class="textNegro ds"><? $a[7]=$var[$pageNum_Recordset1]['cod_generica']; echo $sisap->AddCero2($a[7]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno7'];?></td></tr>
+        <tr><td align='right'>Especifica</td><td align='center' class="textNegro ds"><? $a[8]=$var[$pageNum_Recordset1]['cod_especifica']; echo $sisap->AddCero2($a[8]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno8'];?></td></tr>
+        <tr><td align='right'>Sub-Especifica</td><td align='center' class="textNegro ds"><? $a[9]= $var[$pageNum_Recordset1]['cod_sub_espec'] ; echo $sisap->AddCero2($a[9]);?></td><td class="textNegro"><?= $deno[$pageNum_Recordset1]['deno9'];?></td></tr>
+        <tr><td align='right'>Auxiliar</td><td align='center' class="textNegro ds"><? $a[10]=$var[$pageNum_Recordset1]['cod_auxiliar']; echo $sisap->AddCero2($a[10]);?></td><td class="textNegro" id="denocfpp05auxiliar"><?= $deno[$pageNum_Recordset1]['deno10'] ?></td></tr>
+        <tr><td align='center' colspan="3"></td></tr>
+
+        </td></tr>
+</table>
+
+<br>
+
+
+<div id='selecion'>
+ <table border="0" width='700' class="tablacompromiso tablacompromiso2">
+	<tr>
+         	  <td width='150'>C&oacute;digo de la Obra</td>
+         	  <td>Denominaci&oacute;n de la Obra</td>
+         	  <td colspan="2">Funcionario Responsable</td>
+         	</tr>
+
+         	<tr>
+         	  <td align="center" >
+
+         	  <?php
+
+         	  if($agregar=='si'){
+
+         	  	echo $sisap->inputValidaCodigo('cfpp07/cod_obra', 'cfpd07',  array('cod_presi'=>''.$cod_presi.'', 'cod_entidad'=>''.$cod_entidad.'', 'cod_tipo_inst'=>''.$cod_tipo_inst.'', 'cod_inst'=>''.$cod_inst.'', 'cod_dep'=>''.$cod_dep.'', 'cod_sector'=>''.$opcion1.'', 'cod_programa'=>''.$opcion2.'', 'cod_sub_prog'=>''.$opcion3.'', 'cod_proyecto'=>''.$opcion4.'', 'cod_activ_obra'=>''.$opcion5.'', 'cod_partida'=>''.$opcion6.'', 'cod_generica'=>''.$opcion7.'', 'cod_especifica'=>''.$opcion8.'', ''.$aux1.''=>''.$opcion9.'', ''.$aux2.''=>''.$opcion10.'', ''.$aux3.''=>''), array( ''.$read.''=> ''.$read.'', 'size' =>'20'), true);
+
+         	  }else if($boton=='modificar'){
+
+         	  echo $html->input('cfpp07/cod_obra', array( 'readonly'=> 'readonly', 'type'=>'text' , 'value'=>''.$sisap->add_c_c($var[$pageNum_Recordset1]['cod_obra']).'', 'id' =>'valida', 'size'=>'20'));
+
+              echo '<div id="aux" style="display:none;">
+						<input type="hidden" name="existe" value="no"  id="existe"/>
+						<input type="hidden" name="aux_codigo" value="'.$var[$pageNum_Recordset1]['cod_obra'].'"  id="aux_codigo"/>
+              </div>';
+
+         	  }else if($cod_obra!=''){
+
+         	  	echo $sisap->selectTagRemote('cfpp07/cod_obra', $cod_obra,  array('value1'=>'otros', 'opcion1'=>'agregar'),  ''.$selecion_cod_obra.'', array( 'onchange1'=>'/cfpp07/selecion/'.$opcion1.'/'.$opcion2.'/'.$opcion3.'/'.$opcion4.'/'.$opcion5.'/'.$opcion6.'/'.$opcion7.'/'.$opcion8.'/'.$opcion9.'/'.$opcion10.'' , 'update1'=>'selecion', 'id'=>'valida'  , true), null, true);
+
+         	    echo '<div id="aux" style="display:none;">
+						<input type="hidden" name="existe" value="no"  id="existe"/>
+						<input type="hidden" name="aux_codigo" value="'.$selecion_cod_obra.'"  id="aux_codigo"/>
+              </div>';
+
+         	  }else{
+
+         	  	echo $html->input('cfpp07/cod_obra', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$var[$pageNum_Recordset1]['cod_obra'].'', 'id' =>'valida', 'size'=>'20'));
+
+         	  	echo '<div id="aux" style="display:none;">
+						<input type="hidden" name="existe" value="no"  id="existe"/>
+						<input type="hidden" name="aux_codigo" value="nada"  id="aux_codigo"/>
+              </div>';
+
+         	  }
+
+              ?>
+
+         	  </td>
+         	  <td><?= $html->textarea('cfpp07/denominacion', array(''.$read.''=> ''.$read.'','rows'=>'3',  'cols' => '38', 'value'=>''.$var[$pageNum_Recordset1]['denominacion'].'', 'id' =>'denominacion'),  false) ?></td>
+         	  <td colspan="2"><?php echo $html->input('cfpp07/funcionario_responsable', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$var[$pageNum_Recordset1]['funcionario_responsable'].'', 'id' =>'funcionario_responsable', 'size'=>'30')); ?></td>
+         	</tr>
+</table>
+
+
+
+<table border="0" width='700' class="tablacompromiso tablacompromiso2">
+           	<tr>
+         	  <td >Fecha Inicio</td>
+         	  <td>Fecha Conclusi&oacute;n</td>
+         	  <td>Situaci&oacute;n</td>
+         	  <td>Costo Total</td>
+         	</tr>
+
+         	<tr>
+         	  <td width='180' align="center">
+         	  <?php echo $html->input('cfpp07/fecha_inicio', array( ''.$read.''=> ''.$read.'', 'type'=>'hidden' , 'value'=>''.$var[$pageNum_Recordset1]['fecha_inicio'].'', 'id' =>'fecha_inicio', 'size'=>'13')); ?>
+         	  <?php
+
+
+$fecha = $var[$pageNum_Recordset1]['fecha_inicio'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+
+
+}
+
+
+$y=date("Y");
+$tope=$y+20;
+$principio=$y-20;
+
+if($fecha!='' && $boton=='modificar'){
+for($i=1; $i<=31; $i++){
+$valida=checkdate($mes, $i, $year);
+if($valida==0){$dms=$i-1; $i=31;}else{$dms=$i;}
+}//FIN FOR
+?><select name="data[cfpp07][dia_inicio]" id='dia_inicio' style="width:60px">
+<?php for($i=1; $i<=$dms; $i++){?>
+       <option value="<?php echo $i; ?>" <?php if($dia==$i){echo'selected="selected" ';}?> ><?php echo $i; ?></option>
+<?php }//FIN FOR ?>
+</select><?php }else if($fecha!=''){
+echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$dia.'', 'id'=>'dia_inicio', 'size'=>'2'));echo '-';
+}else{ ?><select name="data[cfpp07][dia_inicio]" id='dia_inicio' style="width:60px">
+<option selected value="" >Dia</option>
+</select><? }//fin del dia ?><?php if($fecha!='' && $boton=='modificar'){ ?><select name="data[cfpp07][mes_inicio]" onChange="populate_inscripcion(this.form,this.selectedIndex, 'inicio');" id='mes_inicio' style="width:60px">
+    <option selected value="" >Mes</option>
+	<option value="">----</option>
+    <option value="1"  <?php if($mes=='01'){echo 'selected';} ?>>Enero</option>
+    <option value="2"  <?php if($mes=='02'){echo 'selected';} ?>>Febrero</option>
+    <option value="3"  <?php if($mes=='03'){echo 'selected';} ?>>Marzo</option>
+    <option value="4"  <?php if($mes=='04'){echo 'selected';} ?>>Abril</option>
+    <option value="5"  <?php if($mes=='05'){echo 'selected';} ?>>Mayo</option>
+    <option value="6"  <?php if($mes=='06'){echo 'selected';} ?>>Junio</option>
+    <option value="7"  <?php if($mes=='07'){echo 'selected';} ?>>Julio</option>
+    <option value="8"  <?php if($mes=='08'){echo 'selected';} ?>>Agosto</option>
+    <option value="9"  <?php if($mes=='09'){echo 'selected';} ?>>Septiembre</option>
+    <option value="10" <?php if($mes=='10'){echo 'selected';} ?>>Octubre</option>
+    <option value="11" <?php if($mes=='11'){echo 'selected';} ?>>Noviembre</option>
+    <option value="12" <?php if($mes=='12'){echo 'selected';} ?>>Diciembre</option>
+</select><?php }else if($fecha!=''){echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$mes.'', 'id'=>'mes_inicio', 'size'=>'2'));echo '-';
+}else{?><select name="data[cfpp07][mes_inicio]" onChange="populate_inscripcion(this.form,this.selectedIndex, 'inicio');" id='mes_inicio' style="width:60px">
+    <option selected value="" >Mes</option>
+	<option value="">----</option>
+    <option value="1"  <?php if($mes=='01'){echo 'selected';} ?>>Enero</option>
+    <option value="2"  <?php if($mes=='02'){echo 'selected';} ?>>Febrero</option>
+    <option value="3"  <?php if($mes=='03'){echo 'selected';} ?>>Marzo</option>
+    <option value="4"  <?php if($mes=='04'){echo 'selected';} ?>>Abril</option>
+    <option value="5"  <?php if($mes=='05'){echo 'selected';} ?>>Mayo</option>
+    <option value="6"  <?php if($mes=='06'){echo 'selected';} ?>>Junio</option>
+    <option value="7"  <?php if($mes=='07'){echo 'selected';} ?>>Julio</option>
+    <option value="8"  <?php if($mes=='08'){echo 'selected';} ?>>Agosto</option>
+    <option value="9"  <?php if($mes=='09'){echo 'selected';} ?>>Septiembre</option>
+    <option value="10" <?php if($mes=='10'){echo 'selected';} ?>>Octubre</option>
+    <option value="11" <?php if($mes=='11'){echo 'selected';} ?>>Noviembre</option>
+    <option value="12" <?php if($mes=='12'){echo 'selected';} ?>>Diciembre</option>
+</select><?php }
+
+
+if($fecha!='' && $boton=='modificar'){
+
+?><select name="data[cfpp07][year_inicio]" onChange="populate_inscripcion(this.form,this.form.mes_inicio.selectedIndex , 'inicio');" id='year_inicio' style="width:60px">
+ <option selected value="" >A&ntilde;o</option>
+ <option value="">----</option>
+ <?php for($i=$principio; $i<=$tope; $i++){ ?><option value="<?php echo $i; ?>" <?php if($year==$i){echo'selected="selected"';}?>><?php echo $i; ?></option><?php }//FIN DEL FOR ?>
+ </select><?php }else if($fecha!=''){echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$year.'', 'id'=>'year_inicio', 'size'=>'4'));
+       }else{?><select name="data[cfpp07][year_inicio]" onChange="populate_inscripcion(this.form,this.form.mes_inicio.selectedIndex, 'inicio');" id='year_inicio' style="width:60px">
+ <option selected value="" >A&ntilde;o</option>
+ <option value="">----</option>
+ <?php for($i=$principio; $i<=$tope; $i++){ ?><option value="<?php echo $i; ?>" <?php if($year==$i){echo'selected="selected"';}?>><?php echo $i; ?></option><?php }//FIN DEL FOR ?>
+ </select><?php }?>
+
+
+
+         	  </td>
+
+         	  <td width='180' align="center" >
+         	  <?php echo $html->input('cfpp07/fecha_conclusion', array( ''.$read.''=> ''.$read.'', 'type'=>'hidden' , 'value'=>''.$var[$pageNum_Recordset1]['fecha_conclusion'].'', 'id' =>'fecha_conclusion', 'size'=>'15')); ?>
+<?php
+
+$fecha = $var[$pageNum_Recordset1]['fecha_conclusion'];
+$mes = '';
+$year = '';
+if($fecha!=''){
+
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+
+
+
+}
+
+
+$y=date("Y");
+$tope=$y+20;
+$principio=$y-20;
+
+if($fecha!='' && $boton=='modificar'){
+for($i=1; $i<=31; $i++){
+$valida=checkdate($mes, $i, $year);
+if($valida==0){$dms=$i-1; $i=31;}else{$dms=$i;}
+}//FIN FOR
+?><select name="data[cfpp07][dia_conclusion]" id='dia_conclusion' style="width:60px">
+<?php for($i=1; $i<=$dms; $i++){?>
+       <option value="<?php echo $i; ?>" <?php if($dia==$i){echo'selected="selected" ';}?> ><?php echo $i; ?></option>
+<?php }//FIN FOR ?>
+</select><?php }else if($fecha!=''){
+echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$dia.'', 'id'=>'dia_conclusion', 'size'=>'2'));echo '-';
+}else{ ?><select name="data[cfpp07][dia_conclusion]" id='dia_conclusion' style="width:60px">
+<option selected value="" >Dia</option>
+</select><? }//fin del dia ?><?php if($fecha!='' && $boton=='modificar'){ ?><select name="data[cfpp07][mes_conclusion]" onChange="populate_inscripcion(this.form,this.selectedIndex, 'conclusion');" id='mes_conclusion' style="width:60px">
+    <option selected value="" >Mes</option>
+	<option value="">----</option>
+    <option value="1"  <?php if($mes=='01'){echo 'selected';} ?>>Enero</option>
+    <option value="2"  <?php if($mes=='02'){echo 'selected';} ?>>Febrero</option>
+    <option value="3"  <?php if($mes=='03'){echo 'selected';} ?>>Marzo</option>
+    <option value="4"  <?php if($mes=='04'){echo 'selected';} ?>>Abril</option>
+    <option value="5"  <?php if($mes=='05'){echo 'selected';} ?>>Mayo</option>
+    <option value="6"  <?php if($mes=='06'){echo 'selected';} ?>>Junio</option>
+    <option value="7"  <?php if($mes=='07'){echo 'selected';} ?>>Julio</option>
+    <option value="8"  <?php if($mes=='08'){echo 'selected';} ?>>Agosto</option>
+    <option value="9"  <?php if($mes=='09'){echo 'selected';} ?>>Septiembre</option>
+    <option value="10" <?php if($mes=='10'){echo 'selected';} ?>>Octubre</option>
+    <option value="11" <?php if($mes=='11'){echo 'selected';} ?>>Noviembre</option>
+    <option value="12" <?php if($mes=='12'){echo 'selected';} ?>>Diciembre</option>
+</select><?php }else if($fecha!=''){echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$mes.'', 'id'=>'mes_conclusion', 'size'=>'2'));echo '-';
+}else{?><select name="data[cfpp07][mes_conclusion]" onChange="populate_inscripcion(this.form,this.selectedIndex, 'conclusion');" id='mes_conclusion' style="width:60px">
+    <option selected value="" >Mes</option>
+	<option value="">----</option>
+    <option value="1"  <?php if($mes=='01'){echo 'selected';} ?>>Enero</option>
+    <option value="2"  <?php if($mes=='02'){echo 'selected';} ?>>Febrero</option>
+    <option value="3"  <?php if($mes=='03'){echo 'selected';} ?>>Marzo</option>
+    <option value="4"  <?php if($mes=='04'){echo 'selected';} ?>>Abril</option>
+    <option value="5"  <?php if($mes=='05'){echo 'selected';} ?>>Mayo</option>
+    <option value="6"  <?php if($mes=='06'){echo 'selected';} ?>>Junio</option>
+    <option value="7"  <?php if($mes=='07'){echo 'selected';} ?>>Julio</option>
+    <option value="8"  <?php if($mes=='08'){echo 'selected';} ?>>Agosto</option>
+    <option value="9"  <?php if($mes=='09'){echo 'selected';} ?>>Septiembre</option>
+    <option value="10" <?php if($mes=='10'){echo 'selected';} ?>>Octubre</option>
+    <option value="11" <?php if($mes=='11'){echo 'selected';} ?>>Noviembre</option>
+    <option value="12" <?php if($mes=='12'){echo 'selected';} ?>>Diciembre</option>
+</select><?php }
+
+if($fecha!='' && $boton=='modificar'){
+
+?><select name="data[cfpp07][year_conclusion]" onChange="populate_inscripcion(this.form,this.form.mes_conclusion.selectedIndex, 'conclusion');" id='year_conclusion' style="width:60px">
+ <option selected value="" >A&ntilde;o</option>
+ <option value="">----</option>
+ <?php for($i=$principio; $i<=$tope; $i++){ ?><option value="<?php echo $i; ?>" <?php if($year==$i){echo'selected="selected"';}?>><?php echo $i; ?></option><?php }//FIN DEL FOR ?>
+ </select><?php }else if($fecha!=''){echo $html->input('cfpp07/fecha', array( ''.$read.''=> ''.$read.'', 'type'=>'text' , 'value'=>''.$year.'', 'id'=>'year_conclusion', 'size'=>'4'));
+       }else{?><select name="data[cfpp07][year_conclusion]" onChange="populate_inscripcion(this.form,this.form.mes_conclusion.selectedIndex, 'conclusion');" id='year_conclusion' style="width:60px">
+ <option selected value="" >A&ntilde;o</option>
+ <option value="">----</option>
+ <?php for($i=$principio; $i<=$tope; $i++){ ?><option value="<?php echo $i; ?>" <?php if($year==$i){echo'selected="selected"';}?>><?php echo $i; ?></option><?php }//FIN DEL FOR ?>
+ </select><?php }?>
+
+
+         	  </td>
+
+         	  <td valign="top" >
+         	 	<input type="radio" name="data[cfpp07][situacion]" id="terminado" value="T" <?php if($var[$pageNum_Recordset1]['situacion']=='Terminado'){echo 'checked';} ?> ><label for="terminado">Terminado</label><br>
+				<input type="radio" name="data[cfpp07][situacion]" id="paralizado" value="P" <?php if($var[$pageNum_Recordset1]['situacion']=='Paralizado'){echo 'checked';} ?> ><label for="paralizado">Paralizado</label><br>
+ 				<input type="radio" name="data[cfpp07][situacion]" id="eejecucion" value="E" <?php if($var[$pageNum_Recordset1]['situacion']=='En ejecución'){echo 'checked';} ?> ><label for="eejecucion">En ejecuci&oacute;n</label><br>
+				<input type="radio" name="data[cfpp07][situacion]" id="aejecutarse" value="A" <?php if($var[$pageNum_Recordset1]['situacion']=='A ejecutarse'){echo 'checked';} ?> ><label for="aejecutarse">A ejecutarse</label>
+			   </td>
+
+
+         	  <td >
+         	  <input name="data[cfpp07][costo_total]"  <?php echo $read; ?> id="costo_total" size="27"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('costo_total'); " style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['costo_total']);?> >
+         	  </td>
+         	</tr>
+</table>
+
+
+
+<table border="1" width='700'>
+         	 <tr>
+         	   <td colspan="4" align="center">C O M P R O M E T I D A S</td>
+         	 </tr>
+
+         	 <tr>
+         	   <td align="center">A&ntilde;os Anteriores</td>
+         	   <td align="center">A&ntilde;o Vigente</td>
+         	   <td align="center" colspan="2">Total</td>
+         	 </tr>
+         	 <?php  if(!$compro_total){$compro_total = $var[$pageNum_Recordset1]['compro_ano_ante'] + $var[$pageNum_Recordset1]['compro_ano_vige'];}?>
+
+         	 <tr>
+         	   <td align="center">
+         	   <input name="data[cfpp07][compro_ano_ante]"  <?php echo $read; ?> id="compro_ano_ante" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('compro_ano_ante'); cargar_monto_id('compro_ano_ante','compro_ano_vige', 'compro_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['compro_ano_ante']);?> >
+         	   </td>
+         	   <td align="center">
+         	   <input name="data[cfpp07][compro_ano_vige]"  <?php echo $read; ?> id="compro_ano_vige" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('compro_ano_vige'); cargar_monto_id('compro_ano_ante','compro_ano_vige', 'compro_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['compro_ano_vige']);?> >
+         	   </td>
+         	   <td align="center" colspan="2">
+         	   <input name="data[cfpp07][compro_total]"  <?php echo $read; ?> id="compro_total" size="28"  readonly onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('compro_total'); " style="text-align:right;" value=<?php echo $sisap->Formato2($compro_total);?> >
+         	   </td>
+         	 </tr>
+
+
+
+
+
+         	 <tr>
+         	   <td colspan="4" align="center">E J E C U T A D A S</td>
+         	 </tr>
+
+         	 <tr>
+         	   <td align="center">A&ntilde;os Anteriores</td>
+         	   <td align="center">A&ntilde;o Vigente</td>
+         	   <td align="center" colspan="2">Total</td>
+         	 </tr>
+
+         	  <?php  if(!$ejecuta_total){$ejecuta_total = $var[$pageNum_Recordset1]['ejecuta_ano_ante'] + $var[$pageNum_Recordset1]['ejecuta_ano_vige'];}?>
+
+         	 <tr>
+         	   <td align="center">
+         	   <input name="data[cfpp07][ejecuta_ano_ante]"  <?php echo $read; ?> id="ejecuta_ano_ante" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('ejecuta_ano_ante'); cargar_monto_id('ejecuta_ano_ante', 'ejecuta_ano_vige', 'ejecuta_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['ejecuta_ano_ante']);?> >
+         	   </td>
+         	   <td align="center">
+         	   <input name="data[cfpp07][ejecuta_ano_vige]"  <?php echo $read; ?> id="ejecuta_ano_vige" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('ejecuta_ano_vige'); cargar_monto_id('ejecuta_ano_ante', 'ejecuta_ano_vige', 'ejecuta_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['ejecuta_ano_vige']);?> >
+         	   </td>
+         	   <td align="center" colspan="2">
+         	   <input name="data[cfpp07][ejecuta_total]"   <?php echo $read; ?> id="ejecuta_total" size="28"  readonly onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('ejecuta_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($ejecuta_total);?> >
+         	    </td>
+         	 </tr>
+
+
+
+
+
+         	 <tr>
+         	   <td colspan="4" align="center">E S T I M A D A S</td>
+         	 </tr>
+
+         	 <tr>
+         	   <td align="center">Presupuestada</td>
+         	   <td align="center">A&ntilde;os posteriores</td>
+         	   <td align="center" colspan="2">Total</td>
+         	 </tr>
+
+         	 <?php  if(!$estimado_total){$estimado_total = $var[$pageNum_Recordset1]['estimado_presu'] + $var[$pageNum_Recordset1]['estimado_ano_posterior'];}?>
+
+
+         	 <tr>
+         	   <td align="center">
+         	   <input name="data[cfpp07][estimado_presu]"  <?php echo $read; ?> id="estimado_presu" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('estimado_presu'); cargar_monto_id('estimado_presu', 'estimado_ano_posterior', 'estimado_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['estimado_presu']);?> >
+         	   </td>
+         	   <td align="center">
+         	   <input name="data[cfpp07][estimado_ano_posterior]"  <?php echo $read; ?> id="estimado_ano_posterior" size="28"  onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('estimado_ano_posterior'); cargar_monto_id('estimado_presu', 'estimado_ano_posterior', 'estimado_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($var[$pageNum_Recordset1]['estimado_ano_posterior']);?> >
+         	    </td>
+         	   <td align="center" colspan="2">
+         	   <input name="data[cfpp07][estimado_total]"  <?php echo $read; ?> id="estimado_total" size="28"  readonly onKeyPress="return solonumeros_con_punto(event);" onChange="moneda('estimado_total');" style="text-align:right;" value=<?php echo $sisap->Formato2($estimado_total);?> >
+         	   </td>
+         	 </tr>
+</table>
+<br>
+<table border="1" width='700'>
+         	 <tr><td colspan="1" align="center">
+             Año: <?= $sisap->inputTagRemote('cfpp07/ano_recurso', array('url'=>'/cfpp07/session_ano', 'update'=>'tipo_recurso', 'value'=>''.$var[$pageNum_Recordset1]['ano_recurso'].'', $read=>$read)); ?>
+             </td>
+             <td colspan="3" align="center">
+         	 <?= $html->radio('cfpp07/tipo_recurso', array('1'=>'Ordinario','2'=>'Coordinado','3'=>'Fci','4'=>'Mpps', '5'=>'Extraordinarios', '6'=>'Ingresos propios'), NULL, array('value'=>''.$var[$pageNum_Recordset1]['tipo_recurso'].''))?>
+         	 </td></tr>
+</table>
+<br>
+<table border="1" width='700'>
+         	 <tr>
+         	 	<td colspan="4" align="center">Pertenece a un Plan de Inversión: <?= $html->radio('cfpp07/cod_tipo_transaccion', array('1'=>'Si','2'=>'No'), NULL, array('value'=>''.$var[$pageNum_Recordset1]['plan_inversion'].'')); ?></td>
+            </tr>
+</table>
+
+<br>
+
+<?php if($var[$pageNum_Recordset1]['plan_inversion']=='1'){?>
+
+<table border="1" width='700'>
+         	 <tr>
+         	 	<td colspan="1" align="center">Select</td>
+             	<td colspan="1" align="center">Código</td>
+             	<td colspan="2" align="center">Denominación</td>
+            </tr>
+
+             <tr>
+         	 	<td colspan="1" align="center">
+
+         	 	<?php if(!empty($clasificacion_recurso)){ ?>
+            		 <?= $sisap->selectTagRemote('cfpp07/select_clasificacion_recurso', null,  null,  '',array('onchange1'=>'/cfpp07/aceptacion_monto/', 'update1'=>'aceptacion',  'id'=>'select_prueba', 'style'=>'width:47px', 'disabled'=>'disabled', true), null, true); ?>
+
+             	     <?php }else{
+
+             	     	$sisap->SelectVacio();
+
+             	     }?>
+             	</td>
+
+           		<td colspan="1" align="center">
+           		<?= $html->input('cfpp07/clasificacion_recurso', array( 'readonly'=> 'readonly', 'type'=>'text' , 'value'=>$sisap->AddCero2($var[$pageNum_Recordset1]['clasificacion_recurso']), 'id' =>'clasificacion_recurso', 'size'=>'4'));  ?>
+           		</td>
+
+		        <td colspan="2" width='10'>
+		  			 <?=  $html->input('cfpp07/denominacion', array('readonly'=> 'readonly','type'=>'text' , 'value'=>$var[$pageNum_Recordset1]['denominacion_2'], 'id' =>'clasificacion_recurso_denominacion', 'size'=>'40')) ?>
+		 	   </td>
+
+
+ </table>
+
+<?php }    if($var[$pageNum_Recordset1]['cod_dep']!=$d){$var22 = 'disabled'; }else{$var22 = ''; }  ?>
+<br><br>
+
+       <?= $sisap->buttonTagRemote('cfpp07/modificar', array ( 'value'=>'Modificar', 'disabled'=>$var22), array('url1' => '/cfpp07/selecion/'.$var[$pageNum_Recordset1]['cod_sector'].'/'.$var[$pageNum_Recordset1]['cod_programa'].'/'.$var[$pageNum_Recordset1]['cod_sub_prog'].'/'.$var[$pageNum_Recordset1]['cod_proyecto'].'/'.$var[$pageNum_Recordset1]['cod_activ_obra'].'/'.$var[$pageNum_Recordset1]['cod_partida'].'/'.$var[$pageNum_Recordset1]['cod_generica'].'/'.$var[$pageNum_Recordset1]['cod_especifica'].'/'.$var[$pageNum_Recordset1]['cod_sub_espec'].'/'.$var[$pageNum_Recordset1]['cod_auxiliar'].'/'.$var[$pageNum_Recordset1]['cod_obra'].'/modificar/consulta/'.$ejercicio.'/'.$consolidado, 'update1'=>'selecion')) ?>
+       <?= $sisap->buttonTagRemote('cfpp07/eliminar', array ( 'value'=>'Eliminar', 'disabled'=>$var22), array('url1' => '/cfpp07/eliminar_consulta/'.$var[$pageNum_Recordset1]['cod_sector'].'/'.$var[$pageNum_Recordset1]['cod_programa'].'/'.$var[$pageNum_Recordset1]['cod_sub_prog'].'/'.$var[$pageNum_Recordset1]['cod_proyecto'].'/'.$var[$pageNum_Recordset1]['cod_activ_obra'].'/'.$var[$pageNum_Recordset1]['cod_partida'].'/'.$var[$pageNum_Recordset1]['cod_generica'].'/'.$var[$pageNum_Recordset1]['cod_especifica'].'/'.$var[$pageNum_Recordset1]['cod_sub_espec'].'/'.$var[$pageNum_Recordset1]['cod_auxiliar'].'/'.$var[$pageNum_Recordset1]['cod_obra'].'/'.$ejercicio.'/'.$consolidado, 'update1'=>'registro_de_auxiliares')) ?>
+       <?= $sisap->buttonTagRemote('cfpp07/principal', array ( 'value'=>'Salir'), array('url1' => '/cfpp07/', 'update1'=>'principal')) ?>
+        <br><br>
+                <span class="pagenav">
+        <?php  if ($pageNum_Recordset1 > 0) {   $opcion = " "; }else{ $opcion = 'disabled' ;}  ?>
+		   <?= $sisap->buttonTagRemote('cfpp07/anterior', array ( 'value'=>'Anterior' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07/consulta/'.$ejercicio.'/'.$anterior.'/no/'.$consolidado, 'update1'=>'registro_de_auxiliares')) ?>
+       </span>
+       <span class="pagenav">
+       <?php if ($pageNum_Recordset1 < $totalPages_Recordset1) {   $opcion = " "; }else{ $opcion =  'disabled';}  ?>
+	       <?= $sisap->buttonTagRemote('cfpp07/siguiente', array ( 'value'=>'Siguiente' ,  'disabled'=> ''.$opcion.''), array('url1' => '/cfpp07/consulta/'.$ejercicio.'/'.$siguiente.'/no/'.$consolidado, 'update1'=>'registro_de_auxiliares')) ?>
+       </span>
+<br><br>
+
+</div>
+
+
+
+<?php }else{  ?>
+
+
+<table width='100%'  border='0' cellpadding='0' cellspacing='0'  style='margin-top:10px;'>
+<tr><td align="center"><?=  $sisap->mensajes_error('NO EXISTEN DATOS');  ?>
+</td></tr>
+</table>
+
+<?php } ?>
+
+
+
+
+<?php }//fin consolidado ?>
+
+
+
+
+
+
+

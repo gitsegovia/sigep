@@ -1,0 +1,350 @@
+
+<div id='todox'>
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CONSULTA DE ACTIVIDAD EN EL SISTEMA","","800");?>
+
+<?= $sisap->OpenTable("800")?>
+<form action="<?php echo $html->url('/monitor_actividad/consulta'); ?>" method="post" id="consulta_actividad_form">
+<table style="width: 100%" class="tablacompromiso tablacompromiso2">    
+    <thead>
+        <tr>
+            <td style="text-align: center;" colspan="3">SELECCIONE EL TIPO DE CONSULTA</td>
+        </tr>
+        <tr id="peticion_tipo">
+            <td style="text-align: center;" colspan="3">
+                <input type="radio" name="data[Consulta][tipo]" value="1" id="actividad_usuario" class="" checked="checked"/>
+                <label for="actividad_usuario">ACTIVIDAD POR USUARIO</label>
+
+                <input type="radio" name="data[Consulta][tipo]" value="2" id="actividad_modulo" class=""/>
+                <label for="actividad_modulo">ACTIVIDAD POR MODULO</label>
+         
+                 <input type="radio" name="data[Consulta][tipo]" value="3" id="actividad_modulo" class=""/>
+                <label for="actividad_modulo">CONSULTA AVANZADA</label>
+
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width: 75px;text-align: center;">AVANZADO</td>
+            <td>CONSULTA</td>
+            <td style="width: 75px;"></td>  
+        </tr>
+        <tr>
+            <td style="text-align: center;">
+                <input type="checkbox" name="data[Consulta][avanzado]" id="busqueda_avanzada"/>
+            </td>
+            <td>
+                <input type="text" class="inputtext" name="data[Consulta][parametro]" id="consulta_parametro"/>
+            </td>
+            <td>
+                <input type="submit" value="Buscar"/>
+            </td>
+        </tr>
+    </tbody>
+    <tfoot id="consulta_avanzada" style="display: none;">
+        <tr>
+            <td style="text-align: center;">ACCI&Oacute;N</td>
+            <td>
+                <input type="text" class="inputtext" name="data[Consulta][consulta]" id="consulta_query"/>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;">SELECCIONE TIPOS DE PETICI&Oacute;N</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;" >
+                <input type="radio" name="data[Consulta][peticion]" value="get_" id="peticion_get" checked="checked"/>
+                <label for="peticion_get">SOLICITUD REQUEST_GET</label>
+                <input type="radio" name="data[Consulta][peticion]" value="post_" id="peticion_post"/>
+                <label for="peticion_post">SOLICITUD DE REQUEST_POST</label>
+                <input type="radio" name="data[Consulta][peticion]" value="get_post" id="peticion_get_post"/>
+                <label for="peticion_get_post">SOLICITUD REQUEST_GET Y REQUEST_POST</label>
+            </td>
+        </tr>
+        <!--<tr>
+            <td colspan="3" style="text-align: center;">SELECCIONE TIPOS DE ACCI&Oacute;N</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;">
+                <input type="checkbox" name="data[Consulta][consultar_]" id="operacion_consultar"/>
+                <label for="operacion_consultar">CONSULTAR</label>
+                <input type="checkbox" name="data[Consulta][guardar_]" id="operacion_guardar"/>
+                <label for="operacion_guardar">GUARDAR</label>
+                <input type="checkbox" name="data[Consulta][modificar_]" id="operacion_modificar"/>
+                <label for="operacion_modificar">MODIFICAR</label>
+                <input type="checkbox" name="data[Consulta][eliminar_]" id="operacion_eliminar"/>
+                <label for="operacion_eliminar">ELIMINAR</label>
+                <input type="checkbox" name="data[Consulta][pdf_]" id="operacion_pdf"/>
+                <label for="operacion_pdf">REPORTES PDF</label>
+                <input type="checkbox" name="data[Consulta][todas_]" id="operacion_todas"/>
+                <label for="operacion_todas">TODAS LAS ACCIONES</label>
+            </td>
+        </tr>-->
+        <tr>
+            <td colspan="3" style="text-align: center;">ORDEN (FECHA) DE LOS DATOS</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;">
+                <input type="radio" name="data[Consulta][orden]" value="asc" id="orden_asc" checked="checked"/>
+                <label for="orden_asc">ASCENDENTE</label>
+                <input type="radio" name="data[Consulta][orden]" value="desc" id="orden_desc"/>
+                <label for="orden_desc">DESCENDENTE</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;">RANGO (FECHA) DE LOS DATOS</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: center;">
+                <table style="position: relative; margin: auto;" >
+                    <tr>
+                        <td style="border: none;">
+                            INICIO
+                        </td>
+                        <td style="border: none;">
+                            <input type="text" class="input_fecha" name="data[Consulta][f_inicio]" id="fecha_inicio" onclick="displayCalendar(document.getElementById('fecha_inicio'),'dd/mm/yyyy',this)" />
+                        </td>
+                        <td style="border: none;">
+                            FIN
+                        </td>
+                        <td style="border: none;">
+                            <input type="text" class="input_fecha" name="data[Consulta][f_fin]" id="fecha_fin" onclick="displayCalendar(document.getElementById('fecha_fin'),'dd/mm/yyyy',this)"/>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+    
+
+    <table style="width: 100%; margin-top: 20px; display: none;" class="tablacompromiso tablacompromiso2" id="tabla_cabecera">    
+        <tr  class="tr_negro">
+            <!--<td style="width: 70px; text-align: center;">PETICI&Oacute;N</td>
+            <td style="width: 150px; text-align: center;">USUARIO</td>
+            <td style="width: 300px; text-align: center;">URL/M&Oacute;DULO</td>
+            <td style="width: 100px; text-align: center;">IP</td>
+            <td style="width: 99px; text-align: center;">FECHA</td>
+            <td style="width: 10px;">&nbsp;</td>-->
+            <td style="text-align: center">PETICIONES</td>
+        </tr>
+    </table>
+    <div style="max-height: 200px;overflow-y: auto; display: none;" id="div_data_resultado_consulta">
+        <table style="width: 100%" class="tablacompromiso tablacompromiso2" id="data_resultado_consulta" >    
+            
+        </table>
+        <input type="hidden" value='<tr data-id="{peticion}" bgcolor="{bgcolor}">
+                <td style="padding-top: 5px;padding-bottom: 5px;">
+                    <strong>PETICI&Oacute;N: </strong>{peticion} &nbsp;&nbsp;&nbsp;
+                    <strong>TIPO: </strong>{tipo} &nbsp;&nbsp;&nbsp;
+                    <strong>FECHA: </strong>{fecha}&nbsp;&nbsp;&nbsp;
+                    <img src="/img/eye.png" border="0" class="img_right" onclick="jQuery.fn.VerPeticion(this);">
+                    <br><br>
+                    <strong>IP: </strong>{ip}&nbsp;&nbsp;&nbsp;&nbsp;
+                    <strong>USUARIO: </strong>{usuario}&nbsp;&nbsp;&nbsp;&nbsp;
+                    <strong>M&Oacute;DULO: &nbsp;</strong>{modulo}<br><br>
+                    <strong>URL: &nbsp;</strong>{url}<br>
+                </td>
+            </tr>' id="template_resultado_tr" />
+        <!--<input type="hidden" value='<tr data-id="{peticion}" bgcolor="{bgcolor}">
+                <td style="width: 70px; text-align: center;">{peticion}</td>
+                <td style="width: 150px; " width="150">{usuario}</td>
+                <td style="width: 300px; ">{url}</td>
+                <td style="width: 100px; text-align: center;">{ip}</td>
+                <td style="width: 99px; text-align: center;">{fecha}</td>
+                </tr>' id="template_resultado_tr" />-->
+    </div>
+    <table style="width: 100%;display: none;" class="tablacompromiso tablacompromiso2" id="tabla_pie">    
+        <tr  class="tr_negro">
+            <td style="text-align: left;width: 80%;">SE HAN ENCONTRADO UN TOTAL DE (<span id="cantidad_peticiones"></span>) PETICIONES</td>
+            <td style="width: 20%;text-align: right;">
+                P&Aacute;GINA: 
+                <select id="select_paginador" style="width: 80px;"></select>
+            </td>
+        </tr>
+        
+    </table>
+    
+    <table style="width: 100%; margin-top: 20px; display: none;" class="tablacompromiso tablacompromiso2" id="tabla_resultado_peticion">    
+        <tr  class="tr_negro">
+            <td style="text-align: center">DETALLES DE LA PETICI&Oacute;N</td>
+        </tr>
+        <tr bgcolor="#CDF2FF">
+            <td id="view_resultado_peticion" style="padding-top: 10px;padding-bottom: 10px;font-size: 12px;">
+                
+            </td>
+        </tr>
+    </table>
+    
+</form>
+    <style type="text/css">
+        .img_right{
+            float: right;
+            margin-right: 5px;
+            margin-top: 0px;
+            cursor: pointer;
+        }
+    </style>
+<?= $sisap->CloseTable()?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'));?>
+</div>
+<?php
+    //echo $javascript->link('jquery.jsonview');
+    echo $html->css('jquery.jsonview');
+?>
+<script type="text/javascript">
+jQuery(document).ready(function (){
+   jQuery.getScript('<?php echo $html->url('/js/jquery.jsonview.js',true); ?>');
+   jQuery('#consulta_avanzada').find('input').attr('disabled','disabled');
+   
+   jQuery('#busqueda_avanzada').change(function(){
+       if(jQuery(this).is(':checked')){
+        jQuery('#consulta_avanzada').fadeIn().find('input').removeAttr('disabled');
+        //jQuery('#peticion_tipo').fadeOut().find('input').attr('disabled','disabled');
+       }else{
+        jQuery('#consulta_avanzada').fadeOut().find('input').attr('disabled','disabled');
+        //jQuery('#peticion_tipo').fadeIn().find('input').removeAttr('disabled');
+       }
+   })
+   
+   jQuery('#consulta_actividad_form').submit(function(e){
+       e.preventDefault();
+       e.stopPropagation();
+       Element.show('mini_loading');
+       jQuery.ajax({
+           url: jQuery(this).attr('action'),
+           data:jQuery(this).serialize(),
+           type:'POST',
+           dataType:'JSON'
+       }).done(function(data){
+           //console.log(data);
+           if(data.completed){
+               jQuery("#data_resultado_consulta").html('');
+               var color1='#DAEBFF', color2='#CDF2FF';
+               jQuery.each(data.data, function(k, v) {
+                    var template = jQuery("#template_resultado_tr").val();
+                    template = template.replace('{peticion}', v.monitor_actividad.id);
+                    template = template.replace('{peticion}', v.monitor_actividad.id);
+                    template = template.replace('{usuario}', v.monitor_actividad.usuario);
+                    template = template.replace('{url}', v.monitor_actividad.url_);
+                    template = template.replace('{ip}', v.monitor_actividad.ip);
+                    template = template.replace('{fecha}', v.monitor_actividad.fecha);
+                    //template = template.replace('{modulo}', "("+v.monitor_actividad.session_.Modulo+" - "+v.monitor_actividad.session_.Modulo2+")");
+                    template = template.replace('{modulo}',v.monitor_actividad.modulo);
+                    if(k%2==0){
+                        template = template.replace('{bgcolor}', color1);
+                    }else{
+                        template = template.replace('{bgcolor}', color2);
+                    }
+                    if(v.monitor_actividad.get_==1 && v.monitor_actividad.post_==1){
+                        template = template.replace('{tipo}', 'GET & POST');
+                    }else if(v.monitor_actividad.get_==1 && v.monitor_actividad.post_==0){
+                        template = template.replace('{tipo}', 'GET');
+                    }else if(v.monitor_actividad.get_==0 && v.monitor_actividad.post_==1){
+                        template = template.replace('{tipo}', 'POST');
+                    }else if(v.monitor_actividad.get_==0 && v.monitor_actividad.post_==0){
+                        template = template.replace('{tipo}', 'NULL');
+                    }
+                    jQuery("#data_resultado_consulta").append(template);
+                });
+                //Seteamos el Select de Paginas
+                jQuery("#select_paginador").find("option").remove();
+                for(var i = 1; i<=data.paginas; i++){
+                    jQuery("#select_paginador").append(jQuery("<option></option>").attr("value", i).text(i));
+                }
+                jQuery("#select_paginador").val(data.pag_actual);
+                jQuery("#cantidad_peticiones").text(data.peticiones)
+                jQuery("#tabla_cabecera, #div_data_resultado_consulta, #tabla_pie").fadeIn();
+                fun_msj2(data.message);
+           }else{
+            fun_msj(data.message);
+           }
+       }).complete(function(){
+           Element.hide('mini_loading');
+       }).fail(function(){});
+       
+   });
+   
+   
+   jQuery("#select_paginador").change(function(){
+      //Aqui lo que hare es enviar el mismo formulario pero con la pagina que se esta pidiendo
+      Element.show('mini_loading');
+      jQuery.ajax({
+           url: jQuery("#consulta_actividad_form").attr('action')+'/'+jQuery(this).val(),
+           data:jQuery("#consulta_actividad_form").serialize(),
+           type:'POST',
+           dataType:'JSON'
+       }).done(function(data){
+           //console.log(data);
+           if(data.completed){
+               jQuery("#data_resultado_consulta").html('');
+               var color1='#DAEBFF', color2='#CDF2FF';
+               jQuery.each(data.data, function(k, v) {
+                    var template = jQuery("#template_resultado_tr").val();
+                    template = template.replace('{peticion}', v.monitor_actividad.id);
+                    template = template.replace('{peticion}', v.monitor_actividad.id);
+                    template = template.replace('{usuario}', v.monitor_actividad.usuario);
+                    template = template.replace('{url}', v.monitor_actividad.url_);
+                    template = template.replace('{ip}', v.monitor_actividad.ip);
+                    template = template.replace('{fecha}', v.monitor_actividad.fecha);
+                    //template = template.replace('{modulo}', "("+v.monitor_actividad.session_.Modulo+" - "+v.monitor_actividad.session_.Modulo2+")");
+                    template = template.replace('{modulo}', v.monitor_actividad.modulo);
+                    if(k%2==0){
+                        template = template.replace('{bgcolor}', color1);
+                    }else{
+                        template = template.replace('{bgcolor}', color2);
+                    }
+                    if(v.monitor_actividad.get_==1 && v.monitor_actividad.post_==1){
+                        template = template.replace('{tipo}', 'GET & POST');
+                    }else if(v.monitor_actividad.get_==1 && v.monitor_actividad.post_==0){
+                        template = template.replace('{tipo}', 'GET');
+                    }else if(v.monitor_actividad.get_==0 && v.monitor_actividad.post_==1){
+                        template = template.replace('{tipo}', 'POST');
+                    }else if(v.monitor_actividad.get_==0 && v.monitor_actividad.post_==0){
+                        template = template.replace('{tipo}', 'NULL');
+                    }
+                    jQuery("#data_resultado_consulta").append(template);
+                });
+                //Seteamos el Select de Paginas
+                jQuery("#select_paginador").find("option").remove();
+                for(var i = 1; i<=data.paginas; i++){
+                    jQuery("#select_paginador").append(jQuery("<option></option>").attr("value", i).text(i));
+                }
+                jQuery("#select_paginador").val(data.pag_actual);
+                jQuery("#cantidad_peticiones").text(data.peticiones)
+                jQuery("#tabla_cabecera, #div_data_resultado_consulta, #tabla_pie").fadeIn();
+                fun_msj2(data.message);
+           }else{
+            fun_msj(data.message);
+           }
+       }).complete(function(){
+           Element.hide('mini_loading');
+       }).fail(function(){});
+      
+   });
+   
+   jQuery.fn.VerPeticion=function(objDOM){
+         Element.show('mini_loading');
+         jQuery.ajax({
+           url: '<?php echo $html->url('ver_peticion'); ?>',
+           data:{data:{id:jQuery(objDOM).parent().parent().attr('data-id')}},
+           type:'POST',
+           dataType:'JSON'
+         }).done(function(data){
+            jQuery("#view_resultado_peticion").JSONView(data.data, {collapsed: true});
+            jQuery("#tabla_resultado_peticion").fadeIn();
+         }).complete(function(){
+           Element.hide('mini_loading');
+         }).fail(function(){});  
+   };
+});
+</script>

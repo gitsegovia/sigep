@@ -1,0 +1,75 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+ ?>
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+				 <tr>
+				    <th width="15%" height="22" >Código snc</th>
+				    <th width="10%" height="22" >Código sistema</th>
+					<th width="60%">Denominación</th>
+				    <th class="" width="8%">ACCIÓN</th>
+		          </tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){ ?>
+		        		<?php if($color==1){$color=0;}else{$color=1;} ?>
+
+					      <tr class="row<?php echo $color; ?>">
+						    <td class="" width="15%" height="22"  width="2">
+						         <?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_snc"]   ?>
+						         <?php
+                                        if($ve["v_cscd01_catalogo_con_snc_denominacion"]["denominacion_snc"]==""){
+                                              echo $html->image('check_rojo.png',array('border'=>0));
+                                        }//fin if
+						         ?>
+						    </td>
+						    <td class="" width="10%" height="22"  width="2"><?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]   ?></td>
+						    <td class="" width="60%">                       <?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["denominacion"]." - ".$ve["v_cscd01_catalogo_con_snc_denominacion"]["denominacion_medida"]    ?></td>
+						    <td class="" width="6%">
+						     <?php echo $sisap->linkTagRemote($html->image('eye.png',array('border'=>0)), array("onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ", 'url1'=>'/cscp01_catalogo/principal/'.$deno.'/'.$ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"],   'update1'=>'principal_cscp01' ), false ); ?>
+                            </td>
+						  </tr>
+
+
+                     <?php } ?>
+				  <?php }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" width="15%" height="22"  width="2">--</td>
+					    <td class="" width="10%" >--</td>
+					    <td class="" width="60%" >--</td>
+					    <td class="" width="6%" >--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/cscp01_catalogo/buscar_cod_sistema_2/'.$opcion.'/a', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

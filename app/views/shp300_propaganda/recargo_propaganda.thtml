@@ -1,0 +1,105 @@
+<div style="height:100px; overflow:auto;">
+						<table width="100%" cellspacing="0" cellpadding="0" id="grid" class=" tablacompromiso tablacompromiso2">
+								<tr class="tr_negro">
+							    	<td align="center" width="10%">C&oacute;digo</td>
+									<td align="center" width="78%">Denominaci&oacute;n de los recargo</td>
+								    <td align="center" width="12%">Porcentaje</td>
+						    		<td align="center" width="10%">Agregar</td>
+						    		<td align="center" width="10%">Eliminar</td>
+					          	</tr>
+		 <?php
+
+		                  $contar = 0;
+		                  $i  = 0;
+		                  $total_porcentaje = 0;
+		                  $recargo_aux = split(",", $recargo);
+					      if(!empty($cod_recargo)){
+					  	     foreach($cod_recargo as $ve){
+                                $op = 1;
+					  	     	if($i%2==0){ $color="#CDF2FF";  }else{ $color="#DAEBFF"; }
+		                             $contar++;
+					  	     		 $i++;
+					  	     	?>
+					  	     	<?php
+                                         for($a_recargo=0; $a_recargo<count($recargo_aux); $a_recargo++){
+                                             if($ve['shd300_recargos']['cod_recargo']==$recargo_aux[$a_recargo]){
+                                               $op=2;
+//                                               $total_porcentaje += $ve['shd300_recargos']['porcentaje'];
+                                               $codigo_recargo    = $ve['shd300_recargos']['cod_recargo'];
+                                               $total_porcentaje += $_SESSION["recargo"][$codigo][$numero."_".$codigo_recargo]["porcentaje"];
+                                               $ve['shd300_recargos']['porcentaje'] = $_SESSION["recargo"][$codigo][$numero."_".$codigo_recargo]["porcentaje"];
+                                               break;
+                                             }
+                                         }
+                                         ?>
+					            <tr bgcolor="<?= $color ?>"  id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+									    <td class="td2center"><?= $sisap->AddCero2($ve['shd300_recargos']['cod_recargo']) ?></td>
+									    <td class="td2"><?= $ve['shd300_recargos']['denominacion']?></td>
+									    <td class="td2center"><?= $sisap->Formato2($ve['shd300_recargos']['porcentaje']) ?></td>
+
+									    <?php if($op==1){?>
+											    <td class="td2center" height="22">
+											      <?php echo $ajax->link($html->image('edit_add.png', array('border'=>0, "height"=>"24px", "width"=>"24px")), '/shp300_propaganda/recargo_propaganda/1/'.$codigo."/".$ve['shd300_recargos']['cod_recargo']."/".$numero, array('update'=>'cargar_recargo','title'=>'Agregar'),'',false,true); ?>
+											    </td>
+											    <td class="td2center" height="22"></td>
+									      <?php }else{ ?>
+									      	    <td class="td2center" height="22"></td>
+											    <td class="td2center" height="22">
+											      <?php echo $ajax->link($html->image('delete.png',array('border'=>0, "height"=>"24px", "width"=>"24px")), '/shp300_propaganda/recargo_propaganda/2/'.$codigo."/".$ve['shd300_recargos']['cod_recargo']."/".$numero, array('update'=>'cargar_recargo','title'=>'Eliminar'),'',false,true); ?>
+											    </td>
+									      <?php } ?>
+							  </tr>
+					  	    <?php
+
+					  	     }//fin for
+
+
+					      }else{ ?>
+
+								    <tr bgcolor="#CDF2FF" class="textNegro2">
+									    <td class="td2center" height="22"  width="2">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									    <td class="td2center">--</td>
+									</tr>
+
+					      <?php }//fin else
+
+                              if($total_porcentaje!=0){$total_porcentaje = $total_porcentaje/100;}
+
+					      ?>
+				         </table>
+</div>
+<input type="hidden" name="data[shp300_propaganda][porcentaje_recargo]"    id="porcentaje_recargo"       value="<?= $total_porcentaje ?>" />
+
+
+
+
+
+
+<script>
+
+if($("monto_mensual").value!="0,00"){
+
+monto_mensual = $("monto_mensual").value;
+monto_mensual = retornar_valor_calculo(monto_mensual);
+
+porcentaje_recargo         = $("porcentaje_recargo").value;
+monto_adicional            = redondear(eval(monto_mensual) * eval(porcentaje_recargo), 2);
+
+total_mensual              = eval(monto_mensual) + eval(monto_adicional);
+total_mensual              = redondear(total_mensual, 2);
+$("total_mensual").value   = total_mensual;
+$("monto_adicional").value = monto_adicional;
+
+moneda("total_mensual");
+moneda("monto_adicional");
+
+}else{
+    $("monto_mensual").value    = "0,00";
+	$("total_mensual").value    = "0,00";
+	$("monto_adicional").value  = "0,00";
+}
+
+</script>

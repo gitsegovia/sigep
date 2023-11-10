@@ -1,0 +1,594 @@
+<?php
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+set_time_limit(0);
+ini_set("memory_limit","1536M");
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+$_SESSION["cod_sector"]       ="";
+$_SESSION["deno_sector"]      ="";
+$_SESSION["cod_programa"]     ="";
+$_SESSION["deno_programa"]    ="";
+$_SESSION["cod_sub_prog"]     ="";
+$_SESSION["deno_sub_prog"]    ="";
+$_SESSION["cod_proyecto"]     ="";
+$_SESSION["cod_activ_obra"]   ="";
+$_SESSION["UE"]               ="";
+$_SESSION["cod_partida"]      ="";
+$_SESSION["cod_generica"]     ="";
+$_SESSION["cod_especifica"]   ="";
+$_SESSION["cod_sub_espec"]    ="";
+$_SESSION["cod_auxiliar"]     ="";
+$_SESSION["disponibilidad_t"] ="";
+$_SESSION["denominacion"]     ="";
+$_SESSION["asignacion_anual"] ="";
+$_SESSION["asignacion_ajustada"] = "";
+$_SESSION["aumento"]          ="";
+$_SESSION["disminucion"]      ="";
+$_SESSION["compromiso_anual"] ="";
+$_SESSION["causado_anual"]    ="";
+$_SESSION["pagado_anual"]     ="";
+$_SESSION["mes"]              ="";
+$_SESSION["dia_desde"]        ="";
+$_SESSION["dia_hasta"]        ="";
+$_SESSION["tipo_gasto"]       ="";
+$_SESSION["tipo_recurso"]     ="";
+$_SESSION["codigo_UE"]        ="";
+$_SESSION["organismo"]        ="";
+$meses=array('01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
+$t_gasto=array(1=>"Funcionamiento",2=>"Inversion",3=>"Situados",4=>"Transferencias");
+$t_recurso=array(1=>"Ordinario",2=>"Coordinado",3=>"Laee",4=>"Fides",5=>"Ingresos extraordinarios");
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$this->top_reporte("LIBRO DIARIO DEL PRESUPUESTO POR ACTIVIDADES", "", "", array("Y"=>"7", "X"=>"16", "Z"=>"12"), array("Y"=>"17", "X"=>"330"));
+
+
+
+		/*$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',7,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION['entidad_federal_aux']."",'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION['titulo']."",'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"LIBRO DIARIO DEL PRESUPUESTO POR ACTIVIDADES",'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 325;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);*/
+
+    $this->SetFont('vera','B',7);
+	$this->Cell(135,1,"",'TRL',0,'L');
+	$this->Cell(0,1,"",'TR',1,'L');
+
+	$this->Cell(35,4,"ORGANISMO",'L',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(100,4,$_SESSION["organismo"],'R',0,'L');
+	$this->SetFont('vera','B',7);
+	$this->Cell(35,4,"TIPO DE GASTO:",'',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(0,4,$_SESSION["tipo_gasto"],'R',1,'L');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(35,4,"Unidad Ejecutora:",'L',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(100,4,$_SESSION["UE"],'R',0,'L');
+	$this->SetFont('vera','B',7);
+	$this->Cell(35,4,"TIPO DE RECURSO:",'',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(0,4,$_SESSION["tipo_recurso"],'R',1,'L');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(35,4,"CÓDIGO:",'L',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(100,4,$_SESSION["codigo_UE"],'R',0,'L');
+	$this->SetFont('vera','B',7);
+	$this->Cell(10,4,"AÑO",'',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(10,4,$_SESSION["ano"],'B',0,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(10,4,"MES",'',0,'C');
+	$this->SetFont('vera','',7);
+	$this->Cell(18,4,$_SESSION["mes"],'B',0,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(22,4,"DESDE EL DIA",'',0,'L');
+	$this->SetFont('vera','',7);
+	$this->Cell(8,4,$_SESSION["dia_desde"],'B',0,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(22,4,"HASTA EL DIA",'',0,'C');
+	$this->SetFont('vera','',7);
+	$this->Cell(8,4,$_SESSION["dia_hasta"],'B',0,'C');
+	$this->Cell(0,4,"",'R',1,'L');
+
+	$this->Cell(135,3,"",'RLB',0,'L');
+	$this->Cell(0,3,"",'RB',1,'L');
+
+	$this->SetFont('vera','B',5);
+	$this->Cell(9,3,"",'TRL',0,'C');
+	$this->Cell(7,3,"",'TR',0,'C');
+	$this->Cell(7,3,"SUB.",'TR',0,'C');
+	$this->Cell(9,3,"",'TR',0,'C');
+	$this->Cell(7,3,"",'TR',0,'C');
+	$this->Cell(7,3,"",'TR',0,'C');
+	$this->Cell(7,3,"",'TR',0,'C');
+	$this->Cell(7,3,"",'TR',0,'C');
+	$this->Cell(7,3,"SUB.",'TR',0,'C');
+	$this->Cell(8,3,"",'TR',0,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(70,3,"",'TR',0,'C');
+	$this->Cell(25,3,"ASIGNACIÓN",'TR',0,'C');
+	$this->Cell(25,3,"",'TR',0,'C');
+	$this->Cell(25,3,"",'TR',0,'C');
+	$this->Cell(25,3,"ASIGNACIÓN",'TR',0,'C');
+	$this->Cell(25,3,"",'TR',0,'C');
+	$this->Cell(25,3,"",'TR',0,'C');
+	$this->Cell(25,3,"",'TR',0,'C');
+	$this->Cell(0,3,"",'TR',1,'C');
+
+	$this->SetFont('vera','B',5);
+	$this->Cell(9,3,"SECTOR",'BRL',0,'C');
+	$this->Cell(7,3,"PROG.",'BR',0,'C');
+	$this->Cell(7,3,"PROG.",'BR',0,'C');
+	$this->Cell(9,3,"PROYEC.",'BR',0,'C');
+	$this->Cell(7,3,"ACTIV.",'BR',0,'C');
+	$this->Cell(7,3,"PART.",'BR',0,'C');
+	$this->Cell(7,3,"GEN.",'BR',0,'C');
+	$this->Cell(7,3,"ESP.",'BR',0,'C');
+	$this->Cell(7,3,"ESP.",'BR',0,'C');
+	$this->Cell(8,3,"AUX.",'BR',0,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(70,3,"DENOMINACION",'RB',0,'C');
+	$this->Cell(25,3,"ORIGINAL",'RB',0,'C');
+	$this->Cell(25,3,"AUMENTO",'RB',0,'C');
+	$this->Cell(25,3,"DISMINUCIÓN",'RB',0,'C');
+	$this->Cell(25,3,"AJUSTADA",'RB',0,'C');
+	$this->Cell(25,3,"COMPROMISO",'RB',0,'C');
+	$this->Cell(25,3,"CAUSADO",'RB',0,'C');
+	$this->Cell(25,3,"PAGADO",'RB',0,'C');
+	$this->Cell(0,3,"DISPONIBILIDAD",'RB',1,'C');
+
+
+	//-----------------------------------------------------------
+	   $ldeno=strlen($_SESSION["denominacion"]);
+       if($ldeno<=50){
+    	  $alto1=3.5;
+       }else if($ldeno>50 && $ldeno<=100){
+       	  $alto1=7;
+       }else if($ldeno>100 && $ldeno<=150){
+       	  $alto1=10.5;
+       }else if($ldeno>150 && $ldeno<=200){
+       	  $alto1=14;
+       }else if($ldeno>200 && $ldeno<=250){
+       	  $alto1=15.5;
+       }else if($ldeno>250 && $ldeno<=300){
+       	  $alto1=11.5;
+       }else if($ldeno>300 && $ldeno<=400){
+       	  $alto1=24;
+       }else{
+       	  $alto1=26.5;
+       }
+	$this->SetFont('vera','',6);
+	$this->Cell(9,$alto1,$_SESSION["cod_sector"],'RL',0,'C');//---[sector]
+	$this->Cell(7,$alto1,$_SESSION["cod_programa"],'R',0,'C');//----[programa]
+	$this->Cell(7,$alto1,$_SESSION["cod_sub_prog"],'R',0,'C');//----[sub-prog]
+	$this->Cell(9,$alto1,$_SESSION["cod_proyecto"],'R',0,'C');//----[proyec]
+	$this->Cell(7,$alto1,$_SESSION["cod_activ_obra"],'R',0,'C');//----[acti]
+	$this->Cell(7,$alto1,$_SESSION["cod_partida"],'R',0,'C');//----[partida]
+	$this->Cell(7,$alto1,$_SESSION["cod_generica"],'R',0,'C');//----[generica]
+	$this->Cell(7,$alto1,$_SESSION["cod_especifica"],'R',0,'C');//----[especifica]
+	$this->Cell(7,$alto1,$_SESSION["cod_sub_espec"],'R',0,'C');//----[sub-especifica]
+	$this->Cell(8,$alto1,$_SESSION["cod_auxiliar"],'',0,'C');//----[auxiliar]
+    $this->Cell(1,$alto1,"",'L',0,'C');
+    $varX = $this->GetX();
+    $varY = $this->GetY();
+    $this->Cell(69,1,"",'',2,'C');
+    $this->MultiCell(69,2,$_SESSION["denominacion"]." ".$ldeno,'','BL');//---[CONCEPTO DEL ASIENTO]
+    $varX = $varX+69;
+    $this->SetXY($varX,$varY);
+	$this->Cell(25,$alto1,$_SESSION["asignacion_anual"],'LR',0,'R');//---[ORIGINAL]
+	$this->Cell(25,$alto1,$_SESSION["aumento"],'RB',0,'R');//---[AUMENTO]
+	$this->Cell(25,$alto1,$_SESSION["disminucion"],'RB',0,'R');//---[DISMINUCIÓN]
+	$this->Cell(25,$alto1,$_SESSION["asignacion_ajustada"],'RB',0,'R');//---[ASIGNACION AJUSTADA]
+	$this->Cell(25,$alto1,$_SESSION["compromiso_anual"],'RB',0,'R');//---[COMPROMISOS]
+	$this->Cell(25,$alto1,$_SESSION["causado_anual"],'RB',0,'R');//---[CAUSADO]
+	$this->Cell(25,$alto1,$_SESSION["pagado_anual"],'RB',0,'R');//---[PAGADO]
+	$this->Cell(0,$alto1,$_SESSION["disponibilidad_t"],'RB',1,'R');//----[DISPONIBILIDAD]
+	//-----------------------------------------------------------
+
+
+	/*$this->SetFont('vera','B',7);
+	$this->Cell(144,5,"DETALLES",'LBT',0,'C');
+	$this->Cell(15,5,"",'RB',0,'C');
+	$this->Cell(39,5,"MODIFICACIONES",'RB',0,'C');
+	$this->Cell(39,5,"COMPROMISOS",'RB',0,'C');
+	$this->Cell(27,5,"",'RB',0,'C');
+	$this->Cell(37,5,"GASTOS CAUSADOS",'RB',0,'C');
+	$this->Cell(0,5,"PAGOS",'RB',1,'C');*/
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(153,3,"",'RTL',0,'C');
+	$this->Cell(27,3,"asignación",'RT',0,'C');
+	$this->Cell(15,3,"",'R',0,'C');
+	$this->Cell(12,3,"NÚMERO",'R',0,'C');
+	$this->Cell(27,3,"Modificaciones",'R',0,'C');
+	$this->Cell(27,3,"",'R',0,'C');
+	$this->Cell(27,3,"SALDO PARA",'R',0,'C');
+	$this->Cell(29,3,"",'R',0,'C');
+	$this->Cell(0,3,"",'R',1,'C');
+
+	$this->Cell(153,3,"CONCEPTO DEL ASIENTO",'RLB',0,'C');
+	$this->Cell(27,3,"inicial",'RB',0,'C');
+	$this->Cell(15,3,"FECHA",'RB',0,'C');
+	$this->Cell(12,3,"ASIENTO",'RB',0,'C');
+	$this->Cell(27,3,"presupuestarias",'RB',0,'C');
+	$this->Cell(27,3,"compromiso",'RB',0,'C');//--
+	$this->Cell(27,3,"COMPROMETER",'RB',0,'C');
+	$this->Cell(29,3,"causado",'RB',0,'C');
+	$this->Cell(0,3,"pagado",'RB',1,'C');
+
+
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf= new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+
+$ORG=array();
+foreach($ORGANISMOS as $O){
+     $ORG[$O["arrd05"]["cod_dep"]]["denominacion"]=$O["arrd05"]["denominacion"];
+}
+if(isset($DATOS) && $DATOS!=null){
+foreach($DATOS as $datos){
+
+	$dato=$datos[0];
+	//$dato=$datos[$modelop];
+	//print_r($dato);
+	$_SESSION["cod_sector"]       = $sisap->AddCero2($dato["cod_sector"]);
+	$_SESSION["cod_programa"]     = $sisap->AddCero2($dato["cod_programa"]);
+	$_SESSION["cod_sub_prog"]     = $sisap->AddCero2($dato["cod_sub_prog"]);
+	$_SESSION["cod_proyecto"]     = $sisap->AddCero2($dato["cod_proyecto"]);
+	$_SESSION["cod_activ_obra"]   = $sisap->AddCero2($dato["cod_activ_obra"]);
+	$_SESSION["UE"]  = $dato["cod_proyecto"]!=0? $dato["ue_proyecto"]: $dato["ue_activ_obra"];
+	$_SESSION["cod_partida"]      = $dato["cod_partida"];
+	$_SESSION["cod_generica"]     = $sisap->AddCero2($dato["cod_generica"]);
+	$_SESSION["cod_especifica"]   = $sisap->AddCero2($dato["cod_especifica"]);
+	$_SESSION["cod_sub_espec"]    = $sisap->AddCero2($dato["cod_sub_espec"]);
+	$_SESSION["cod_auxiliar"]     = $sisap->mascara_cuatro($dato["cod_auxiliar"]);
+	if($dato["cod_auxiliar"]==0){
+		$_SESSION["denominacion"]  =$dato["deno_sub_espec"];
+	}else{
+	    $_SESSION["denominacion"]  =$dato["deno_auxiliar"];
+	}
+	$_SESSION["disponibilidad_t"]  =$sisap->Formato2($dato["disponibilidad"]);
+	$_SESSION["asignacion_anual"]  =$sisap->Formato2($dato["asignacion_anual"]);
+	$_SESSION["asignacion_ajustada"]  =$sisap->Formato2($dato["total_asignacion"]);
+	$_SESSION["aumento"]           =$sisap->Formato2($dato["aumento"]);
+	$_SESSION["disminucion"]       =$sisap->Formato2($dato["disminucion"]);
+	$_SESSION["compromiso_anual"]  =$sisap->Formato2($dato["compromiso_anual"]);
+	$_SESSION["causado_anual"]     =$sisap->Formato2($dato["causado_anual"]);
+	$_SESSION["pagado_anual"]      =$sisap->Formato2($dato["pagado_anual"]);
+	$_SESSION["organismo"]         =$ORG[$dato["cod_dep"]]["denominacion"];
+	$_SESSION["codigo_UE"]         =$sisap->mascara_cuatro($dato["cod_dep"]);
+	$_SESSION["tipo_gasto"]        =$t_gasto[$dato["cod_tipo_gasto"]];
+	$_SESSION["tipo_recurso"]      =$t_recurso[$dato["tipo_presupuesto"]];
+	$_SESSION["mes"]               =$meses[$mes];
+	$_SESSION["dia_desde"]         =$dia_desde;
+	$_SESSION["dia_hasta"]         =$dia_hasta;
+    $_SESSION["ano"]=$ANO;
+	$DISPONIBILIDAD=$dato["asignacion_anual"]+$dato["aumento"]-$dato["disminucion"];
+	$_SESSION["disponibilidadT"]  =$sisap->Formato2($DISPONIBILIDAD);
+    $pdf->AddPage();
+
+    $monto_modificaciones_a = $dato["monto_modificaciones"];
+    $monto_compromisos_a    = $dato["monto_compromisos"];
+    $monto_causados_a       = $dato["monto_causados"];
+    $monto_pagados_a        = $dato["monto_pagados"];
+
+	$t_modificaciones=$monto_modificaciones_a;
+	$t_compromiso=$monto_compromisos_a;
+	$t_causado=$monto_causados_a;
+	$t_pagado=$monto_pagados_a;
+	$saldo_comprometer=($dato["asignacion_anual"]+$monto_modificaciones_a)-$monto_compromisos_a;
+	$t_compromiso_anulado=0;
+	$t_causado_anulado=0;
+	$t_pagado_anulado=0;
+
+$pdf->SetFont('vera','',7);
+/*
+HACEMOS ESTO. DISPONIBILIDAD ES IGUAL A 1000,00
+DECRETO NO. 01 DE FECHA 01/02/2008 AUMENTA 10.00
+EN ESE CASO SALDO PARA COMPROMETER = (DISPONIBILIDAD + AUMENTO) EL AUMENTO LO ESTABLECEMOS POR SU SIGNO
+EN LA COLUMNA SALDO PAR COMPROMER DEBE APARECE 990,00
+Y ASI LO HACEMOS CON LAS DISMINUCIONES
+LA VARIABLE TIENE QUE CARGAR EL MONTO EN NEGATIVO
+PARA LOGRAR EL NEGATIVO
+TIENES QUE HACER ESTO
+MONTO=(MONTO*-1)
+*/
+/***
+ * ACUMULADOS
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+
+    $alto=4;
+    $pdf->Cell(1,$alto,"",'L',0,'C');
+    $pdf->SetFont('vera','',6);
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(152,1,"",'',2,'C');
+    $pdf->SetFont('vera','B',6);
+    $pdf->MultiCell(151,2,"MOVIMIENTOS REALIZADOS DESDE: ".$sisap->Cfecha($fecha_acumulada["inicial"],"D/M/A")." HASTA ".$sisap->Cfecha($fecha_acumulada["final"],"D/M/A"),'','L');//---[CONCEPTO DEL ASIENTO]
+    $varX = $varX+152;
+    $pdf->SetXY($varX,$varY);
+
+    $pdf->Cell(27,$alto,$sisap->Formato2($dato["asignacion_anual"]),'LR',0,'C');//------[asignacion_inicial]
+	$pdf->Cell(15,$alto,"",'RL',0,'C');//-----------[FECHA]
+	$pdf->Cell(12,$alto,"",'R',0,'C');//------[NUMERO ASIENTO]
+	$pdf->Cell(27,$alto,$sisap->Formato2($monto_modificaciones_a),'R',0,'C');//------------[MONTO]
+	$pdf->Cell(27,$alto,$sisap->Formato2($monto_compromisos_a),'R',0,'C');//------------[MONTO]
+	$pdf->Cell(27,$alto,$sisap->Formato2($saldo_comprometer),'R',0,'C');//--[SALDO PARA COMPROMETER]
+	$pdf->Cell(29,$alto,$sisap->Formato2($monto_causados_a),'R',0,'C');//------------[MONTO]
+	$pdf->Cell(0,$alto,$sisap->Formato2($monto_pagados_a),'R',1,'C');//-------------[MONTO]
+	$pdf->Cell(0,0,"",'T',1);
+
+
+$pdf->SetFont('vera','',6);
+
+ /**
+  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  */
+foreach($v_librodiario as $rs_ld){
+	$rld=$rs_ld["v_librodiario_2"];
+	if($rld["cod_dep"]==$dato["cod_dep"] && $rld["cod_sector"]==$dato["cod_sector"] && $rld["cod_programa"]==$dato["cod_programa"] && $rld["cod_sub_prog"]==$dato["cod_sub_prog"] && $rld["cod_proyecto"]==$dato["cod_proyecto"] && $rld["cod_activ_obra"]==$dato["cod_activ_obra"] && $rld["cod_partida"]==$dato["cod_partida"] && $rld["cod_generica"]==$dato["cod_generica"] && $rld["cod_especifica"]==$dato["cod_especifica"] && $rld["cod_sub_espec"]==$dato["cod_sub_espec"] && $rld["cod_auxiliar"]==$dato["cod_auxiliar"] && $rld["tipo_asiento"]==1){
+    $rld["concepto"]= preg_replace("/\r\n|\r/", "", $rld["concepto"]);
+ 	$rld["concepto"] = str_replace("\n", " ", $rld["concepto"]);
+ 	$rld["concepto"] = str_replace("\r", " ", $rld["concepto"]);
+ 	$rld["concepto"] = str_replace("  ", " ", $rld["concepto"]);
+ 	$cant_l=strlen(trim($rld["concepto"]));
+    $len_deno=strlen($rld["concepto"]);
+       if($len_deno<=105){
+    	  $alto=4;
+       }else if($len_deno>105 && $len_deno<=160){
+       	  $alto=5.7;
+       }else if($len_deno>160 && $len_deno<=220){
+       	  $alto=6.7;
+       }else if($len_deno>220){
+       	  $alto=8;
+       }
+    $rld["concepto"] .=$len_deno;
+    $pdf->Cell(1,$alto,"",'L',0,'C');
+    $pdf->SetFont('vera','',6);
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(152,1,"",'',2,'C');
+    $tipo_mod=substr($rld["concepto"],0,17);
+    $pdf->MultiCell(151,2,$rld["concepto"],'','L');//---[CONCEPTO DEL ASIENTO]
+    $varX = $varX+152;
+    $pdf->SetXY($varX,$varY);
+    /*if($tipo_mod=="CREDITO ADICIONAL"){
+         $monto="".$sisap->Formato2($rld["monto"]);
+         $monto2="".$rld["monto"];
+    }else if($tipo_mod=="DISMINUCION POR T"){
+         $monto="-".$sisap->Formato2($rld["monto"]);
+         $monto2=$rld["monto"];
+         $monto2=$monto2*(-1);
+    }else if($tipo_mod=="REBAJA PRESUPUEST"){
+    	$monto="-".$sisap->Formato2($rld["monto"]);
+    	$monto2=$rld["monto"];
+    	$monto2=$monto2*(-1);
+    }else if($tipo_mod=="AUMENTO POR TRASL"){
+    	$monto="".$sisap->Formato2($rld["monto"]);
+    	$monto2="".$rld["monto"];
+    }else{
+    	$monto="".$sisap->Formato2($rld["monto"]);
+    	$monto2="".$rld["monto"];
+    }*/
+    $monto=$sisap->Formato2($rld["monto"]);
+    $monto2=$rld["monto"];
+    //$monto2 = (int) $monto2;
+    $t_modificaciones+=$monto2;
+    $pdf->Cell(27,$alto,"",'LR',0,'C');//------[monto anterior]
+	$pdf->Cell(15,$alto,$sisap->Cfecha($rld["fecha"],"D/M/A"),'RL',0,'C');//-----------[FECHA]
+	$pdf->Cell(12,$alto,$sisap->mascara_cuatro($rld["numero_asiento"]).'k','R',0,'C');//------[NUMERO ASIENTO]
+	$pdf->Cell(27,$alto,$monto,'R',0,'C');//------------[MONTO]
+	$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+	$pdf->Cell(27,$alto,"",'R',0,'C');//--[SALDO PARA COMPROMETER]
+	$pdf->Cell(29,$alto,"",'R',0,'C');//------------[MONTO]
+	$pdf->Cell(0,$alto,"",'R',1,'C');//-------------[MONTO]
+	$pdf->Cell(0,0,"",'T',1);
+	}
+    //compromisos
+	if($rld["cod_dep"]==$dato["cod_dep"] && $rld["cod_sector"]==$dato["cod_sector"] && $rld["cod_programa"]==$dato["cod_programa"] && $rld["cod_sub_prog"]==$dato["cod_sub_prog"] && $rld["cod_proyecto"]==$dato["cod_proyecto"] && $rld["cod_activ_obra"]==$dato["cod_activ_obra"] && $rld["cod_partida"]==$dato["cod_partida"] && $rld["cod_generica"]==$dato["cod_generica"] && $rld["cod_especifica"]==$dato["cod_especifica"] && $rld["cod_sub_espec"]==$dato["cod_sub_espec"] && $rld["cod_auxiliar"]==$dato["cod_auxiliar"] && $rld["tipo_asiento"]==2){
+    $rld["concepto"]= preg_replace("/\r\n|\r/", "", $rld["concepto"]);
+ 	$rld["concepto"] = str_replace("\n", " ", $rld["concepto"]);
+ 	$rld["concepto"] = str_replace("\r", " ", $rld["concepto"]);
+ 	$cant_l=strlen(trim($rld["concepto"]));
+    $len_deno=strlen($rld["concepto"]);
+       if($len_deno<=320){
+    	  $alto=8;
+       }else if($len_deno>320  && $len_deno<=450){
+       	  $alto=11.6;
+       }else if($len_deno>450 && $len_deno<=550){
+       	  $alto=12.6;
+       }else if($len_deno>550 && $len_deno<=650){
+       	  $alto=15.6;
+       }else if($len_deno>650 && $len_deno<=750){
+       	  $alto=17.6;
+       }else if($len_deno>750 && $len_deno<=850){
+       	  $alto=19.6;
+       }else if($len_deno>850){
+       	  $alto=22.6;
+       }
+    $pdf->Cell(1,$alto,"",'L',0,'C');
+    $pdf->SetFont('vera','',6);
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->Cell(152,1,"",'',2,'C');
+    $pdf->MultiCell(151,2,$rld["concepto"],'','L');//---[CONCEPTO DEL ASIENTO]
+    $varX = $varX+152;
+    $pdf->SetXY($varX,$varY);
+    $pdf->Cell(27,$alto,"",'LR',0,'C');//------[monto anterior]
+	$pdf->Cell(15,$alto,$sisap->Cfecha($rld["fecha"],"D/M/A"),'RL',0,'C');//-----------[FECHA]
+	$pdf->Cell(12,$alto,$sisap->mascara_cuatro($rld["numero_asiento"]),'R',0,'C');//------[NUMERO ASIENTO]
+	$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+	$pdf->Cell(27,$alto,$sisap->Formato2($rld["monto"]),'R',0,'C');//------------[MONTO]
+	$tc=substr(trim($rld["concepto"]),0,strlen("ANULACION"));
+	/*if($tc!="ANULACION"){
+	   $t_compromiso=$t_compromiso+$rld["monto"];
+	   $saldo_comprometer=$saldo_comprometer-$rld["monto"];
+	}else{
+	   $t_compromiso_anulado=$t_compromiso_anulado+$rld["monto"];
+	   $saldo_comprometer=$saldo_comprometer+$rld["monto"];
+	}*/
+	$t_compromiso=$t_compromiso+$rld["monto"];
+    $saldo_comprometer=($saldo_comprometer+$monto2)-$rld["monto"];
+    $monto2 = 0;
+	$pdf->Cell(27,$alto,$sisap->Formato2($saldo_comprometer),'R',0,'C');//--[SALDO PARA COMPROMETER]
+	$pdf->Cell(29,$alto,"",'R',0,'C');//------------[MONTO]
+	$pdf->Cell(0,$alto,"",'R',1,'C');//-------------[MONTO]
+	$pdf->Cell(0,0,"",'T',1);
+	}
+         //causados
+		if($rld["cod_dep"]==$dato["cod_dep"] && $rld["cod_sector"]==$dato["cod_sector"] && $rld["cod_programa"]==$dato["cod_programa"] && $rld["cod_sub_prog"]==$dato["cod_sub_prog"] && $rld["cod_proyecto"]==$dato["cod_proyecto"] && $rld["cod_activ_obra"]==$dato["cod_activ_obra"] && $rld["cod_partida"]==$dato["cod_partida"] && $rld["cod_generica"]==$dato["cod_generica"] && $rld["cod_especifica"]==$dato["cod_especifica"] && $rld["cod_sub_espec"]==$dato["cod_sub_espec"] && $rld["cod_auxiliar"]==$dato["cod_auxiliar"] && $rld["tipo_asiento"]==3){
+	    $rld["concepto"]= preg_replace("/\r\n|\r/", "", $rld["concepto"]);
+	 	$rld["concepto"] = str_replace("\n", " ", $rld["concepto"]);
+	 	$rld["concepto"] = str_replace("\r", " ", $rld["concepto"]);
+	 	$cant_l=strlen(trim($rld["concepto"]));
+	    $len_deno=strlen($rld["concepto"]);
+	       if($len_deno<=320){
+	    	  $alto=8;
+	       }else if($len_deno>320  && $len_deno<=450){
+	       	  $alto=11.6;
+	       }else if($len_deno>450 && $len_deno<=550){
+	       	  $alto=12.6;
+	       }else if($len_deno>550 && $len_deno<=650){
+	       	  $alto=15.6;
+	       }else if($len_deno>650 && $len_deno<=750){
+	       	  $alto=17.6;
+	       }else if($len_deno>750 && $len_deno<=850){
+	       	  $alto=19.6;
+	       }else if($len_deno>850){
+	       	  $alto=22.6;
+	       }
+	    $pdf->Cell(1,$alto,"",'L',0,'C');
+	    $pdf->SetFont('vera','',6);
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(152,1,"",'',2,'C');
+	    $pdf->MultiCell(151,2,$rld["concepto"],'','L');//---[CONCEPTO DEL ASIENTO]
+	    $varX = $varX+152;
+	    $pdf->SetXY($varX,$varY);
+	    $pdf->Cell(27,$alto,"",'LR',0,'C');//------[monto anterior]
+		$pdf->Cell(15,$alto,$sisap->Cfecha($rld["fecha"],"D/M/A"),'RL',0,'C');//-----------[FECHA]
+		$pdf->Cell(12,$alto,$sisap->mascara_cuatro($rld["numero_asiento"]),'R',0,'C');//------[NUMERO ASIENTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//--[SALDO PARA COMPROMETER]
+		$pdf->Cell(29,$alto,$sisap->Formato2($rld["monto"]),'R',0,'C');//------------[MONTO]
+		$pdf->Cell(0,$alto,"",'R',1,'C');//-------------[MONTO]
+		$pdf->Cell(0,0,"",'T',1);
+		$anu_cau=substr(trim($rld["concepto"]),0,strlen("ANULACION"));
+			//if(strtoupper($anu_cau)!="ANULACION"){
+			   $t_causado=$t_causado+$rld["monto"];
+			//}else{
+			  // $t_causado_anulado=$t_causado_anulado+$rld["monto"];
+			//}
+		}
+		//pagados
+		if($rld["cod_dep"]==$dato["cod_dep"] && $rld["cod_sector"]==$dato["cod_sector"] && $rld["cod_programa"]==$dato["cod_programa"] && $rld["cod_sub_prog"]==$dato["cod_sub_prog"] && $rld["cod_proyecto"]==$dato["cod_proyecto"] && $rld["cod_activ_obra"]==$dato["cod_activ_obra"] && $rld["cod_partida"]==$dato["cod_partida"] && $rld["cod_generica"]==$dato["cod_generica"] && $rld["cod_especifica"]==$dato["cod_especifica"] && $rld["cod_sub_espec"]==$dato["cod_sub_espec"] && $rld["cod_auxiliar"]==$dato["cod_auxiliar"] && $rld["tipo_asiento"]==4){
+	    $rld["concepto"]= preg_replace("/\r\n|\r/", "", $rld["concepto"]);
+	 	$rld["concepto"] = str_replace("\n", " ", $rld["concepto"]);
+	 	$rld["concepto"] = str_replace("\r", " ", $rld["concepto"]);
+	 	$cant_l=strlen(trim($rld["concepto"]));
+	    $len_deno=strlen($rld["concepto"]);
+	       if($len_deno<=320){
+	    	  $alto=8;
+	       }else if($len_deno>320  && $len_deno<=450){
+	       	  $alto=11.6;
+	       }else if($len_deno>450 && $len_deno<=550){
+	       	  $alto=12.6;
+	       }else if($len_deno>550 && $len_deno<=650){
+	       	  $alto=15.6;
+	       }else if($len_deno>650 && $len_deno<=750){
+	       	  $alto=17.6;
+	       }else if($len_deno>750 && $len_deno<=850){
+	       	  $alto=19.6;
+	       }else if($len_deno>850){
+	       	  $alto=22.6;
+	       }
+	    $pdf->Cell(1,$alto,"",'L',0,'C');
+	    $pdf->SetFont('vera','',6);
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->Cell(152,1,"",'',2,'C');
+	    $pdf->MultiCell(151,2,$rld["concepto"]."",'','L');//---[CONCEPTO DEL ASIENTO]
+	    $varX = $varX+152;
+	    $pdf->SetXY($varX,$varY);
+	    $pdf->Cell(27,$alto,"",'LR',0,'C');//------[monto anterior]
+		$pdf->Cell(15,$alto,$sisap->Cfecha($rld["fecha"],"D/M/A"),'RL',0,'C');//-----------[FECHA]
+		$pdf->Cell(12,$alto,$sisap->mascara_cuatro($rld["numero_asiento"]),'R',0,'C');//------[NUMERO ASIENTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//------------[MONTO]
+		$pdf->Cell(27,$alto,"",'R',0,'C');//--[SALDO PARA COMPROMETER]
+		$pdf->Cell(29,$alto,"",'R',0,'C');//------------[MONTO]
+		$pdf->Cell(0,$alto,$sisap->Formato2($rld["monto"]),'R',1,'C');//-------------[MONTO]
+		$pdf->Cell(0,0,"",'T',1);
+		$anu_pag=substr(trim($rld["concepto"]),0,strlen("ANULACION"));
+
+			//if(strtoupper($anu_pag)!="ANULACION"){
+			   $t_pagado=$t_pagado+$rld["monto"];
+			//}else{
+			  // $t_pagado_anulado=$t_pagado_anulado+$rld["monto"];
+			//}
+		}
+
+}//fin foreach v_librodiario
+
+
+///////TOTALES
+                        $saldo_comprometer=($dato["asignacion_anual"]+$t_modificaciones)-$t_compromiso;
+                        $pdf->SetFont('vera','B',8);
+                        $pdf->Cell(153,8,"TOTALES: ",'L',0,'R');
+					    $pdf->SetFont('vera','B',7);
+					    $pdf->Cell(27,8,$sisap->Formato2($dato["asignacion_anual"]),'LR',0,'C');//------[asignacion_inicial]
+		                $pdf->Cell(15,8,"",'RL',0,'C');//-----------[FECHA]
+						$pdf->Cell(12,8,"",'LR',0,'C');//------[NUMERO ASIENTO]
+						$pdf->Cell(27,8,$sisap->Formato2($t_modificaciones),'R',0,'C');//------------[MONTO]
+						$pdf->Cell(27,8,$sisap->Formato2($t_compromiso),'R',0,'C');//--[SALDO PARA COMPROMETER]
+						$pdf->Cell(27,8,$sisap->Formato2($saldo_comprometer),'R',0,'C');//------------[MONTO]
+						$pdf->Cell(29,8,$sisap->Formato2($t_causado),'R',0,'C');//------[NUMERO ASIENTO]
+						$pdf->Cell(0,8,$sisap->Formato2($t_pagado),'R',1,'C');//-------------[MONTO]
+						$pdf->Cell(0,0,"",'T',1);
+
+}//fin foreach DATOS
+}//fin isset
+
+$pdf->Output('libro_diario_ejecucion_financiera_'.date("d-m-Y h:i:sa").".pdf",'D');
+?>

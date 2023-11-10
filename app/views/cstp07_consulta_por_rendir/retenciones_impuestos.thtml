@@ -1,0 +1,1167 @@
+<?php
+/*
+ * Creado el 14/04/2008 a las 05:18:20 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+
+
+$cont = 0;
+
+foreach($datos_cuerpo_impuesto as $ve_aux){$cont++;}
+
+
+
+if($cont==0){
+			 switch($var){
+			      case '1':
+						echo '<table width="100%" border="0"><tr><td width="150">';
+						  echo $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Generar Diskette'), array('url1' => '/cstp07_consulta_por_rendir/generar_diskett_iva/'.$desde.'/'.$hasta, 'update1'=>'diskett'));
+						echo '</td> <td id="diskett"></td></tr></table> ';
+			        break;
+			 }//fin switch
+}//fin fi
+
+?>
+<table width="100%" border="0"><tr><td width="150">Reporte:
+<?php
+ switch($var){
+    case '1':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_iva_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php } break;
+
+     case '2':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_islr_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php  } break;
+
+
+       case '3':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_timbrefiscal_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php  } break;
+
+
+       case '4':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_impmunicipal_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php  } break;
+
+
+        case '5':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_multa_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php  } break;
+
+
+        case '6':{ ?>
+    	 <form name="form"  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_retencion_responsabilidad_acumulado_pend_por_periodo/'.$desde.'/'.$hasta); ?>">
+             <input name="data[reposicion][ano_orden_pago]"    value="si" type="hidden">
+             <?php echo $html->input('reposicion/submit',array('type'=>'image','src'=>$this->webroot.'img/pdf.png')); ?>
+         </form>
+      <?php  } break;
+
+
+ }//fin
+
+
+
+?>
+
+</td></tr></table>
+
+<div id="funcion" ></div>
+
+<div id="distribuir" style="height:350px; overflow:auto;">
+<table width="100%" border="1" cellspacing="0">
+    <tr bgcolor="#000000">
+       <td align="center" colspan="7" style="font-size:10pt; color:ffffff;"><br /><b><?=$titulo?></b></td>
+    </tr>
+
+    <tr bgcolor="#000000">
+    	<td width="20" align="center" style="font-size:8pt; color:ffffff;"><b>Fecha</b></td>
+    	<td width="70" align="center" style="font-size:8pt; color:ffffff;"><b>Orden<br />de Pago</b></td>
+    	<td width="280" align="center" style="font-size:8pt; color:ffffff;"><b>Beneficiario</b></td>
+    	<td width="70" align="center" style="font-size:8pt; color:ffffff;"><b>Monto</b></td>
+    	<td width="10" align="center" style="font-size:8pt; color:ffffff;"><b>Por Emitir</b></td>
+    	<td width="10" align="center" style="font-size:8pt; color:ffffff;">&nbsp;<b>Por Restaurar</b>&nbsp;</td>
+    	<td width="10" align="center" style="font-size:8pt; color:ffffff;">&nbsp;<b>Congelado</b>&nbsp;</td>
+   </tr>
+
+ <?php
+ $k = 1;
+ $j = 0;
+ $aux = "";
+ $total_monto       = 0;
+ $total_total_monto = 0;
+
+$total_emitir       = 0;
+$total_total_emitir = 0;
+
+$total_reemitir       = 0;
+$total_total_reemitir = 0;
+
+$total_congelado        = 0;
+$total_total_congelado  = 0;
+
+ switch($var){
+      case '1':
+				 foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_iva']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+
+                          <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+		                                      	if($total_monto!=0){
+		                                      		 foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		 }//fin foreach
+
+
+		                                      	?><tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php
+                                                  $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+
+                                           if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                       // if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	   break;
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+
+						<?php
+
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_iva']['status']=6; }
+						if($impuesto['cstd07_retenciones_cuerpo_iva']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_iva']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago'])) ?>&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep'] &&  $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_iva']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_iva']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_iva']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_iva']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_iva']['status']==3){ $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_iva']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>"  style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_iva']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center"  id="poremitir_<?= $j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_iva']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_iva']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_iva']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_iva']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_iva']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+
+					 	$total_monto += $impuesto['cstd07_retenciones_cuerpo_iva']['monto'];
+                   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+		case '2':
+				  foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_islr']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+						 <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                                       foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		    }//fin foreach
+	                                      		if($total_monto!=0){
+		                                      	?> <tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+
+		                                      	 if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                        //if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+						<?php
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_islr']['status']=6;}
+						if($impuesto['cstd07_retenciones_cuerpo_islr']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_islr']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_islr']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_islr']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_islr']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_islr']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_islr']['status']==3){  $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_islr']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_islr']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_islr']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_islr']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center"  id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_islr']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_islr']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_islr']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+
+					 	$total_monto += $impuesto['cstd07_retenciones_cuerpo_islr']['monto'];
+                   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+		case '3':
+				  foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_timbre']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+
+						 <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                                     foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		    }//fin foreach
+	                                      		if($total_monto!=0){
+		                                      	?> <tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+		                                      	 if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                        //if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+						<?php
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_timbre']['status']=6;}
+						if($impuesto['cstd07_retenciones_cuerpo_timbre']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_timbre']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?= $j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_timbre']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_timbre']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_timbre']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_timbre']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_timbre']['status']==3){  $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_timbre']['fecha_proceso_registro']))?></td>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($impuesto['cstd07_retenciones_cuerpo_timbre']['ano_orden_pago'])?></td>
+						    	<td height="25px" align="center" id="actual_<?= $j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_timbre']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_timbre']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_timbre']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_timbre']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_timbre']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_timbre']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+
+                     $total_monto += $impuesto['cstd07_retenciones_cuerpo_timbre']['monto'];
+                   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+      case '4':
+				  foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_municipal']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+						 <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                                     foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		    }//fin foreach
+	                                      		if($total_monto!=0){
+		                                      	?> <tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+		                                      	 if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                        //if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+						<?php
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_municipal']['status']=6;}
+						if($impuesto['cstd07_retenciones_cuerpo_municipal']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_municipal']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_municipal']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_municipal']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_municipal']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_municipal']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_municipal']['status']==3){  $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_municipal']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_municipal']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_municipal']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_municipal']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_municipal']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_municipal']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_municipal']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+                      $total_monto += $impuesto['cstd07_retenciones_cuerpo_municipal']['monto'];
+				   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+
+
+
+
+
+		case '5':
+				  foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_multa']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+						 <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                                     foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		    }//fin foreach
+	                                      		if($total_monto!=0){
+		                                      	?> <tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+		                                      	 if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                        //if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+						<?php
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_multa']['status']=6;}
+						if($impuesto['cstd07_retenciones_cuerpo_multa']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_multa']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_multa']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_multa']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_multa']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_multa']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_multa']['status']==3){  $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_multa']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_multa']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_multa']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_multa']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_multa']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_multa']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+                      $total_monto += $impuesto['cstd07_retenciones_cuerpo_multa']['monto'];
+				   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+
+
+
+
+
+
+             case '6':
+				  foreach($datos_cuerpo_impuesto as $impuesto){ $tipo_dependencia = 0;
+				 	foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                              $tipo_dependencia = $aux_dependencia['cugd02_dependencia']['tipo_dependencia']; break;
+                                      }//fin if
+				 	}//fin for
+				 	if($tipo_dependencia==1){
+				 	$j++;
+				 	$ano_orden=$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['ano_orden_pago'];
+				 	$num_orden_pago=$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago'];
+				 	$mascara_num_orden=$sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago']);
+
+						  if($k%2 == 0){$color = "#CDF2FF";
+						  }else{
+						  $color = "#DAEBFF";
+						  }
+						  $k++;
+
+						 ?>
+
+
+						 <?php
+                                foreach($cugd02_dependencia as $aux_dependencia){
+                                      if($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep']==$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+	                                      	if($aux!=$aux_dependencia['cugd02_dependencia']['cod_dependencia']){
+                                                     foreach($cugd02_dependencia as $aux_dependencia2){
+		                                      		     if($aux==$aux_dependencia2['cugd02_dependencia']['cod_dependencia']){$dependencia_deno = $aux_dependencia2['cugd02_dependencia']['denominacion'];}
+		                                      		    }//fin foreach
+	                                      		if($total_monto!=0){
+		                                      	?> <tr>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		                                      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                                                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+											    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                                                  </tr>
+                                               <?php $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+                                                  $total_monto    = 0;
+                                                  $total_emitir   = 0;
+                                                  $total_reemitir = 0;
+                                                  $total_congelado= 0;
+		                                      	}//fin if
+		                                      	 if($opcion1!=1){
+		                                      	echo '<tr colspan="7" bgcolor="ffffff">';
+		                                      	echo '<td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;">';
+		                                      	  echo '<b>'.strtoupper($aux_dependencia['cugd02_dependencia']['denominacion']).'</b>';
+		                                        echo'</td>';
+		                                        echo '</tr>';}
+		                                        $dependencia_deno = $aux_dependencia['cugd02_dependencia']['denominacion'];
+		                                        $aux = $aux_dependencia['cugd02_dependencia']['cod_dependencia'];
+		                                        //if($opcion1==1){echo '<tr colspan="7" bgcolor="ffffff"><td width="110" align="center" height="25px" colspan="7" style="font-size:8pt; font-family:verdana; color:000000;"><b><br></b></td></tr>';}
+	                                      	}//fin if
+                                      	}//fin if
+                                }//fin foreach
+                          ?>
+
+
+
+
+
+						  <tr id="<?= $j ?>" bgcolor="<?=$color?>">
+
+
+						<?php
+						if($opcion1==1){$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['status']=6;}
+						if($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['status']==1){ $total_emitir++;
+						?>
+								<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:status; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['status']==2){
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+
+						   </tr>
+					  	<?php
+					 	}elseif($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['status']==3){  $total_reemitir++;
+					 	?>
+					 			<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago'])) ?></td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+						}elseif($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['status']==4){ $total_congelado++;
+					 	?>
+						    	<td height="25px" align="center" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->cambia_fecha($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['fecha_proceso_registro']))?></td>
+
+						    	<td height="25px" align="center" id="actual_<?=$j?>" style="font-size:8pt; font-family:verdana; color:000000;"><?= strtoupper($sisap->mascara_ocho($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago'])) ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						    	<?php
+						   	    foreach($datos_ordenpago as $orden){
+						   	       if($orden['cepd03_ordenpago_cuerpo']['cod_dep']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['cod_dep'] && $orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$impuesto['cstd07_retenciones_cuerpo_responsabilidad']['numero_orden_pago']){
+						        ?>
+								   <td height="25px" style="font-size:7pt; font-family:verdana; color:000000;">&nbsp;<?= strtoupper($orden['cepd03_ordenpago_cuerpo']['beneficiario'])?></td>
+						        <?php
+						           }
+						        }
+						        ?>
+						    	<td height="25px" align="right" style="font-size:cpt; font-family:verdana; color:000000;"><?=$sisap->Formato2($impuesto['cstd07_retenciones_cuerpo_responsabilidad']['monto'])?>&nbsp;</td>
+						    	<td height="25px" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" style="font-size:9pt; font-family:verdana; color:000000;">&nbsp;</td>
+						    	<td height="25px" align="center" id="congelado_<?=$j?>" style="font-size:9pt; font-family:verdana; color:000000;"><b>X</b></td>
+
+						   </tr>
+					  	<?php
+					 	}
+                      $total_monto += $impuesto['cstd07_retenciones_cuerpo_responsabilidad']['monto'];
+				   }//fin foreach
+				 }//fin foreach
+
+				 break;
+
+
+
+
+
+
+
+ }//fin switch
+
+       if($total_monto!=0){  ?>
+       	   <tr>
+              	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+              	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+              	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b><?php if($opcion1!=1){echo'Total dependencia:';}else{echo strtoupper($dependencia_deno);} ?></b></td>
+                    <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_monto)?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_emitir; ?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_reemitir; ?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_congelado; ?></b></td>
+                  </tr>
+                  <?php
+
+                                                  $total_total_monto     += $total_monto;
+                                                  $total_total_emitir    += $total_emitir;
+                                                  $total_total_reemitir  += $total_reemitir;
+                                                  $total_total_congelado += $total_congelado;
+
+
+                  ?>
+	    	<tr>
+			    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		      	    <td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;">&nbsp;</td>
+		      	    <td height="25px" bgcolor="ffffff" align="right" style="font-size:9pt; font-family:status; color:000000;"><b>Total: </b></td>
+		            <td height="25px" bgcolor="ffffff" align="right" style="font-size:cpt; font-family:status; color:000000;"><b><?=$sisap->Formato2($total_total_monto)?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" id="poremitir_<?=$j?>" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_total_emitir; ?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_total_reemitir; ?></b></td>
+			    	<td height="25px" bgcolor="ffffff" align="center" style="font-size:9pt; font-family:status; color:000000;"><b><?= $total_total_congelado; ?></b></td>
+	    	</tr>
+
+    <?php  	}//fin if ?>
+ </table>
+ </div>
+
+<br /><br />
+
+<?= $sisap->submitTagRemote('Consultar', array('funcion'=>'cstp07_consulta_por_rendir_valida', 'url1' => '/cstp07_consulta_por_rendir/retenciones_impuestos', 'update1'=>'td-impuestos', 'id'=>'ir', 'disabled'=>'disabled')); ?>
+
+<?= $sisap->buttonTagRemote('/cstp03_movimientos_manuales/', array ('type'=>'button', 'value'=>'    Salir    '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+

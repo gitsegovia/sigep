@@ -1,0 +1,279 @@
+<?php
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer(){
+	    $this->SetY(-15);
+	    $this->SetFont('vera','B',6);
+	    $this->Cell(150,8," ",0,0,'R');
+	    $this->Cell(0,18,"FORMA: 2.001 ",0,0,'R');
+	}
+
+
+	function Header()
+	{
+
+        $titulo_A = $_SESSION['titulo'];
+        $titulo_B = "PRESUPUESTO DE INGRESOS - (EN BOLIVARES)";
+        $titulo_C = "PRESUPUESTO: ".$_SESSION['ejercicio'];
+        $this->top_reporte2(array($titulo_A,$titulo_B,$titulo_C), array("Y"=>"12", "X"=>"31", "Z"=>"11"), null);
+		$this->SetFont('vera','B',8);
+		$this->Cell(59,4,"C Ó D I G O",'TLR',0,'C');
+		$this->Cell(0,4,"",'TR',1);
+		$this->Cell(59,4,"(Recursos)",'LB',0,'C');
+		$this->Cell(0,4,"",'LRB',1);
+		$this->Cell(11,10,"RAMO",'LB',0,'C');
+		$this->Cell(11,10,"GEN.",'LB',0,'C');
+		$this->Cell(11,10,"ESP.",'LB',0,'C');
+		$this->Cell(15,10,"SUB-ESP.",'LB',0,'C');
+		$this->Cell(11,10,"ORD.",'LB',0,'C');
+		$this->Cell(170,10,"D E N O M I N A C I Ó N",'LB',0,'C');
+		$this->Cell(0,10,"M O N T O",'LRB',1,'C');
+	}//fin funtion
+}//fin clases
+
+function Formato($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-3,1)=='.') {
+        $sents = '.'.substr($price,-2);
+        $price = substr($price,0,strlen($price)-3);
+    } elseif (substr($price,-2,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-2);
+    } else {
+        $sents = '.00';
+    }
+    $price = preg_replace("/[^0-9]/", "", $price);
+    return number_format($price.$sents,2,'.','');
+}
+
+
+?><?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"PRESUPUESTO DE INGRESOS",NULL,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_cfpp03/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('cfpp03/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('cfpp03/consolidacion', array(), '', true)  ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+<?php }else{
+
+
+
+
+
+
+
+$i=0;
+
+foreach($datos as $row){ $i++;
+	$var[$i]['ano']  =              		 $row['cfpd03']['ano'];
+	$var[$i]['cod_partida']  =        substr($row['cfpd03']['cod_partida'], -2);
+	$var[$i]['cod_generica']  =        		 $row['cfpd03']['cod_generica'];
+	$var[$i]['cod_especifica']  =       	 $row['cfpd03']['cod_especifica'];
+	$var[$i]['cod_sub_espec']  =       		 $row['cfpd03']['cod_sub_espec'];
+	$var[$i]['cod_auxiliar']  =        		 $row['cfpd03']['cod_auxiliar'];
+	$var[$i]['estimacion_inicial']  =    	 isset($row['cfpd03']['estimacion_inicial'])?$row['cfpd03']['estimacion_inicial']:$row[0]['estimacion_inicial'];
+	$var[$i]['ingresos_adicionales']  =  	 isset($row['cfpd03']['ingresos_adicionales'])?$row['cfpd03']['ingresos_adicionales']:$row[0]['ingresos_adicionales'];
+	$var[$i]['rebajas']  =                   isset($row['cfpd03']['rebajas'])?$row['cfpd03']['rebajas']:$row[0]['rebajas'];
+	$var[$i]['monto_facturado']   =       	 isset($row['cfpd03']['monto_facturado'])?$row['cfpd03']['monto_facturado']:$row[0]['monto_facturado'];
+	$var[$i]['monto_cobrado']  =   		     isset($row['cfpd03']['monto_cobrado'])?$row['cfpd03']['monto_cobrado']:$row[0]['monto_cobrado'];
+
+
+}//fin for
+
+$a = 0;
+$b = 0;
+$c = 0;
+$d = 0;
+$e = 0;
+
+foreach($partida as $part){$a++;
+			$part_aux[$a]['cod_grupo'] = $part['cfpd01_ano_partida']['cod_grupo'];
+  			$part_aux[$a]['cod_partida'] = $part['cfpd01_ano_partida']['cod_partida'];
+  			$part_aux[$a]['denominacion'] = $part['cfpd01_ano_partida']['denominacion'];
+}
+
+foreach($generica as $gen){$b++;
+			$gen_aux[$b]['cod_grupo'] = $gen['cfpd01_ano_generica']['cod_grupo'];
+			$gen_aux[$b]['cod_partida'] = $gen['cfpd01_ano_generica']['cod_partida'];
+			$gen_aux[$b]['cod_generica'] = $gen['cfpd01_ano_generica']['cod_generica'];
+			$gen_aux[$b]['denominacion'] = $gen['cfpd01_ano_generica']['denominacion'];
+
+}
+
+foreach($especifica as $espec){$c++;
+			$espec_aux[$c]['cod_grupo'] = $espec['cfpd01_ano_especifica']['cod_grupo'];
+         	$espec_aux[$c]['cod_partida'] = $espec['cfpd01_ano_especifica']['cod_partida'];
+         	$espec_aux[$c]['cod_generica'] = $espec['cfpd01_ano_especifica']['cod_generica'];
+         	$espec_aux[$c]['cod_especifica'] = $espec['cfpd01_ano_especifica']['cod_especifica'];
+         	$espec_aux[$c]['denominacion'] = $espec['cfpd01_ano_especifica']['denominacion'];
+}
+
+foreach($subespecifica as $subespec){$d++;
+	        $subespec_aux[$d]['cod_grupo'] = $subespec['cfpd01_ano_sub_espec']['cod_grupo'];
+         	$subespec_aux[$d]['cod_partida'] = $subespec['cfpd01_ano_sub_espec']['cod_partida'];
+         	$subespec_aux[$d]['cod_generica'] = $subespec['cfpd01_ano_sub_espec']['cod_generica'];
+            $subespec_aux[$d]['cod_especifica'] = $subespec['cfpd01_ano_sub_espec']['cod_especifica'];
+            $subespec_aux[$d]['cod_sub_espec'] = $subespec['cfpd01_ano_sub_espec']['cod_sub_espec'];
+            $subespec_aux[$d]['denominacion'] = $subespec['cfpd01_ano_sub_espec']['denominacion'];
+}
+
+foreach($auxiliar as $aux){$e++;
+	        $aux_aux[$e]['cod_grupo'] = $aux['cfpd01_ano_auxiliar']['cod_grupo'];
+         	$aux_aux[$e]['cod_partida'] = $aux['cfpd01_ano_auxiliar']['cod_partida'];
+            $aux_aux[$e]['cod_generica'] = $aux['cfpd01_ano_auxiliar']['cod_generica'];
+            $aux_aux[$e]['cod_especifica'] = $aux['cfpd01_ano_auxiliar']['cod_especifica'];
+            $aux_aux[$e]['cod_sub_espec'] = $aux['cfpd01_ano_auxiliar']['cod_sub_espec'];
+            $aux_aux[$e]['cod_auxiliar'] = $aux['cfpd01_ano_auxiliar']['cod_auxiliar'];
+            $aux_aux[$e]['denominacion'] = $aux['cfpd01_ano_auxiliar']['denominacion'];
+}
+
+$ano_fiscal='';
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMargin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+for($j=1; $j<=$i; $j++){
+	if($ano_fiscal!=$var[$j]['ano']){
+       $ano_fiscal=$var[$j]['ano'];
+
+
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ano_fiscal;
+$_SESSION['titulo'] = $titulo_a;
+$pdf->AddPage();
+
+
+
+//*** Por aqui comienza el ciclo repetitivo para extraer los datos ***//
+
+
+$total = 0;
+$denominacion = '';
+
+
+for($k=1; $k<=$i; $k++){
+
+	$pdf->SetFont('vera','',7);
+
+	if($ano_fiscal==$var[$k]['ano']){
+
+		if($var[$k]['cod_auxiliar']==0){
+
+			if($var[$k]['cod_generica']==0){
+				for($x=1; $x<=$a; $x++){
+					if($part_aux[$x]['cod_grupo']==CI && $part_aux[$x]['cod_partida']==substr($var[$k]['cod_partida'], -2)){$denominacion = $part_aux[$x]['denominacion'];}
+				}//fin for
+			}else if($var[$k]['cod_especifica']==0){
+				for($x=1; $x<=$b; $x++){
+					if($gen_aux[$x]['cod_grupo']==CI && $gen_aux[$x]['cod_partida']==substr($var[$k]['cod_partida'], -2) && $gen_aux[$x]['cod_generica']==$var[$k]['cod_generica']){$denominacion = $gen_aux[$x]['denominacion'];}
+				}//fin for
+			}else if($var[$k]['cod_sub_espec']==0){
+				for($x=1; $x<=$c; $x++){
+					if($espec_aux[$x]['cod_grupo']==CI && $espec_aux[$x]['cod_partida']==substr($var[$k]['cod_partida'], -2) && $espec_aux[$x]['cod_generica']==$var[$k]['cod_generica'] && $espec_aux[$x]['cod_especifica']==$var[$k]['cod_especifica']){$denominacion = $espec_aux[$x]['denominacion'];}
+				}//fin for
+			}else if($var[$k]['cod_auxiliar']==0){
+				for($x=1; $x<=$d; $x++){
+					if($subespec_aux[$x]['cod_grupo']==CI && $subespec_aux[$x]['cod_partida']==substr($var[$k]['cod_partida'], -2) && $subespec_aux[$x]['cod_generica']==$var[$k]['cod_generica'] && $subespec_aux[$x]['cod_especifica']==$var[$k]['cod_especifica'] && $subespec_aux[$x]['cod_sub_espec']==$var[$k]['cod_sub_espec']){$denominacion = $subespec_aux[$x]['denominacion'];}
+				}//fin for
+			}//finc else
+
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_partida'],CI),'TLB',0,'C'); // valor de RAMO
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_generica']),'TLB',0,'C'); // valor de GEN
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_especifica']),'TLB',0,'C'); // valor de ESP
+		$pdf->Cell(15,10,$sisap->AddCero2($var[$k]['cod_sub_espec']),'TLRB',0,'C'); // valor de SUB-ESP
+		$pdf->Cell(11,10,"",'TLRB',0,'C'); // valor de ORDINARIO
+
+			$varX = $pdf->GetX();//asigno X
+   			$varY = $pdf->GetY();//asigno Y
+    		$pdf->Cell(170,2,"",'T',2,'C');
+    		$pdf->MultiCell(170,3,$denominacion,'','J');
+    		$varX = $varX+170;//le sumo a X 170 del Cell debido a que lo capture antes.
+    		$pdf->SetXY($varX,$varY);// cargo XY
+
+		$pdf->Cell(0,10,$sisap->Formato2($var[$k]['estimacion_inicial']),'TLRB',1,'R'); // valor de MONTO
+		$pdf->Cell(0,0,"",'T',1);
+
+		}else{
+
+		for($x=1; $x<=$e; $x++){
+		  if($aux_aux[$x]['cod_grupo']==CI && $aux_aux[$x]['cod_partida']==substr($var[$k]['cod_partida'], -2) && $aux_aux[$x]['cod_generica']==$var[$k]['cod_generica'] && $aux_aux[$x]['cod_especifica']==$var[$k]['cod_especifica'] && $aux_aux[$x]['cod_sub_espec']==$var[$k]['cod_sub_espec'] && $aux_aux[$x]['cod_auxiliar']==$var[$k]['cod_auxiliar']){$denominacion = $aux_aux[$x]['denominacion'];}
+		}//fin for
+        $pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_partida'],CI),'TLB',0,'C'); // valor de RAMO
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_generica']),'TLB',0,'C'); // valor de GEN
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_especifica']),'TLB',0,'C'); // valor de ESP
+		$pdf->Cell(15,10,$sisap->AddCero2($var[$k]['cod_sub_espec']),'TLRB',0,'C'); // valor de SUB-ESP
+		$pdf->Cell(11,10,$sisap->AddCero2($var[$k]['cod_auxiliar']),'TLRB',0,'C'); // valor de ORDINARIO
+
+			$varX = $pdf->GetX();//asigno X
+   			$varY = $pdf->GetY();//asigno Y
+    		$pdf->Cell(170,2,"",'T',2,'C');
+    		$pdf->MultiCell(170,3,$denominacion,'','J');
+    		$varX = $varX+170;//le sumo a X 170 del Cell debido a que lo capture antes.
+    		$pdf->SetXY($varX,$varY);// cargo XY
+
+		$pdf->Cell(0,10,$sisap->Formato2($var[$k]['estimacion_inicial']),'TLRB',1,'R'); // valor de MONTO
+		$pdf->Cell(0,0,"",'T',1);
+		  }
+	}//fin if
+
+	$total = $total + $var[$k]['estimacion_inicial'];
+
+}//fin for
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(229,7,"T O T A L    ",'TLB',0,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,7,$sisap->Formato2($total),'TLRB',1,'R');
+$pdf->SetFont('vera','B',6);
+	}//fin if
+}//fin for
+
+
+$pdf->OutPut('forma_2001_'.date("d-m-Y"),'D');
+}?>

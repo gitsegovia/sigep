@@ -1,0 +1,405 @@
+<?
+
+if(isset($ir) && $ir=="no"){ ?>
+<?= $sisap->Tabla("",true,"RELACIÓN DE ASIENTOS DIARIOS","","750")?>
+
+<?= $sisap->OpenTable("750");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_contabilidad/relacion_asientos_diarios/si'); ?>" onsubmit="return relacion_asiento_contable()"   >
+
+
+<center>Año:<?= $sisap->selectTagRemote('cfpp00/ano', $lista_ano,  null,  $year, array('id'=>'ano', 'onChange'=>'vacio','style'=>'width:10%'  , true), null, true);?></center>
+
+<br>
+
+<?= $sisap->radioTagRemote('cfpp00/tipo_peticion', array('1'=>'Todos', '2'=>'Un Mes', '3'=>'Un Dia', '4'=>'Un Asiento en Particular'), array('url1'=>'/reporte_contabilidad/relacion_asientos_diarios/peticion/', 'update1'=>'carga_radio','value'=>'','disabled'=>'','id'=>'peticion'),null,$opc=1);?>
+
+<div id="carga_radio"></div>
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+<? }else if(isset($ir) && $ir=='peticion'){
+	if($opcion==2){?>
+		<br>
+		<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+			<tr>
+				<td width="10%" align="center">Mes:</td>
+				<td width="15%">
+					<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,'', array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+				</td>
+			</tr>
+		</table>
+
+	<?}else if($opcion==3){?>
+		<br>
+		<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+			<tr>
+				<td width="10%" align="center">Mes:</td>
+				<td width="30%">
+					<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,'', array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+				</td>
+				<td width="10%" align="center">Dia:</td>
+				<td width="30%">
+					<?= $html->dayOptionTag('cfpp00/dia',null,null,array('id'=>'dia','style'=>'width:50%')); ?>
+				</td>
+			</tr>
+		</table>
+
+	<?}else if($opcion==4){?>
+		<br>
+		<table width="60%" border="0" cellspacing="0" cellpadding="0" >
+			<tr>
+				<td width="10%" align="center">Mes:</td>
+				<td width="30%">
+					<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,'', array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+				</td>
+				<td width="10%" align="center">Dia:</td>
+				<td width="30%">
+					<?= $html->dayOptionTag('cfpp00/dia',null,null,array('id'=>'dia','style'=>'width:50%')); ?>
+				</td>
+			</tr>
+			<br>
+			<tr>
+				<td colspan="2" width="10%" align="center">Indique N° de Asiento:</td>
+				<td colspan="2" width="30%">
+					<input name="data[cfpp00][num_asiento]"  value="" id="asiento" style="width:50%;text-align:center"   onKeyPress="return solonumeros(event);"  />
+				</td>
+			</tr>
+		</table>
+
+	<?}
+
+
+?>
+<? }else if(isset($ir) && $ir=='si'){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    	$titulo_A = "ASIENTOS DIARIOS";
+		$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"191"));
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(100,5,'Comprobante','TLRB',0,'C');
+		$this->Cell(0,5,'Soporte','TRB',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(50,5,'Número','LRB',0,'C');
+		$this->Cell(50,5,'Fecha','RB',0,'C');
+
+		$this->Cell(60,5,'Tipo','RB',0,'C');
+		$this->Cell(20,5,'Número','RB',0,'C');
+		$this->Cell(0,5,'Fecha','RB',1,'C');
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(50,5,$_SESSION['num_comp_r'],'LRB',0,'C');//Número
+		$this->SetFont('vera','',6);
+		$this->Cell(50,5,$_SESSION['fecha_comp_r'],'RB',0,'C');//Fecha
+
+		$this->Cell(60,5,$_SESSION['tipo_sop_r'],'RB',0,'C');//Tipo
+		$this->Cell(20,5,$_SESSION['num_sop_r'],'RB',0,'C');//Número
+		$this->Cell(0,5,$_SESSION['fecha_sop_r'],'RB',1,'C');//Fecha
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,'Número','LR',0,'C');
+		$this->Cell(55,3,'','R',0,'C');
+		$this->Cell(70,3,'','R',0,'C');
+		$this->Cell(31,3,'','R',0,'C');
+		$this->Cell(0,3,'','R',1,'C');
+
+		$this->Cell(20,3,'de linea','LRB',0,'C');
+		$this->Cell(55,3,'Cuenta','RB',0,'C');
+		$this->Cell(70,3,'Descripción','RB',0,'C');
+		$this->Cell(31,3,'Debe','RB',0,'C');
+		$this->Cell(0,3,'Haber','RB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 15);
+
+
+$pdf->SetFont('vera','',6);
+
+
+$tipo_documento = array( '1'=>'Cheque',
+					     '2'=>'Deposito',
+					     '3'=>'Nota de Credito',
+					     '4'=>'Nota de Debito',
+					     '5'=>'Orden de Compra',
+					     '6'=>'Otros Compromisos',
+					     '7'=>'Contrato de Obras',
+					     '8'=>'Contrato de Servicios',
+					     '9'=>'Orden de Pago',
+					     '10'=>'Retención de i.v.a',
+					     '11'=>'Retención de i.s.l.r',
+					     '12'=>'Retención de timbre',
+					     '13'=>'Retención de impuesto municipal',
+					     '14'=>'Retención de multa',
+					     '15'=>'Retención de responsabilidad',
+					     '16'=>'Bienes muebles',
+					     '17'=>'Bienes inmuebles',
+					     '18'=>'Reintegros',
+					     '19'=>'Rendiciones'
+					    );
+
+
+$t_debe=0;
+$t_haber=0;
+$_SESSION['num_comp_r']='';
+$_SESSION['fecha_comp_r']='';
+$_SESSION['tipo_sop_r']='';
+$_SESSION['num_sop_r']='';
+$_SESSION['fecha_sop_r']='';
+$concatena=rand().rand().rand();
+
+if($datos!=null){
+//pr($datos);
+	for($i=0;$i<count($datos);$i++){
+
+		$concatena1=$datos[$i][0]['cod_dep'].$datos[$i][0]['ano_asiento'].$datos[$i][0]['mes_asiento'].$datos[$i][0]['dia_asiento'].$datos[$i][0]['numero_asiento'];
+		if($concatena!=$concatena1){
+			if($i!=0){
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(120,3,'Por Concepto de:','TLR',0,'C');
+				$pdf->Cell(25,3,'Totales','TR',0,'C');
+				$pdf->Cell(31,3,$sisap->Formato2($t_debe),'R',0,'R');
+				$pdf->Cell(0,3,$sisap->Formato2($t_haber),'R',1,'R');
+
+				$t_debe=0;
+				$t_haber=0;
+
+
+//				$pdf->Cell(120,5,'','LRB',0,'C');
+				$pdf->Cell(1,$height,'','L',0,'C');
+
+				$pdf->SetFont('vera','',6);
+				$varX = $pdf->GetX();//asigno X
+				$varY = $pdf->GetY();//asigno Y
+				$pdf->Cell(119,1,'','',2,'C');
+				$pdf->MultiCell(119,3,$concepto,'','J');
+				$varX = $varX+119;//le sumo a X 50 del Cell debido a que lo capture antes.
+				$pdf->SetXY($varX,$varY);// cargo XY
+
+				$pdf->Cell(25,$height,'','RL',0,'C');
+				$pdf->Cell(31,$height,'','R',0,'C');
+				$pdf->Cell(0,$height,'','R',1,'C');
+
+				$pdf->Cell(0,0,'','T',1,'C');
+
+
+				$pdf->SetFont('vera','',6);
+
+			}
+			$concatena=$concatena1;
+			$_SESSION['num_comp_r']=$datos[$i][0]['numero_asiento'];
+			$_SESSION['fecha_comp_r']=mascara($datos[$i][0]['dia_asiento'],2)."/".mascara($datos[$i][0]['mes_asiento'],2)."/".$datos[$i][0]['ano_asiento'];
+			$_SESSION['tipo_sop_r']=$tipo_documento[$datos[$i][0]['tipo_documento']];
+			$_SESSION['num_sop_r']=$datos[$i][0]['numero_documento'];
+			$_SESSION['fecha_sop_r']=$sisap->cambia_fecha($datos[$i][0]['fecha_documento']);
+			$pdf->AddPage();
+
+		}
+
+
+		$pdf->Cell(20,5,$datos[$i][0]['numero_linea'],'LR',0,'C');
+		$cuenta=$datos[$i][0]['cod_tipo_cuenta']."-".mascara($datos[$i][0]['cod_cuenta'],3)."-".mascara($datos[$i][0]['cod_subcuenta'],3)."-".mascara($datos[$i][0]['cod_division'],4)."-".mascara($datos[$i][0]['cod_subdivision'],3);
+		$pdf->Cell(55,5,$cuenta,'R',0,'C');
+
+		if($datos[$i][0]['cod_subdivision']!=0){
+			$descripcion=$datos[$i][0]['deno_subdivision'];
+		}else{
+			if($datos[$i][0]['cod_division']!=0){
+				$descripcion=$datos[$i][0]['deno_division'];
+			}else{
+				if($datos[$i][0]['cod_subcuenta']!=0){
+					$descripcion=$datos[$i][0]['deno_subcuenta'];
+				}else{
+					if($datos[$i][0]['cod_cuenta']!=0){
+						$descripcion=$datos[$i][0]['deno_cuenta'];
+					}else{
+						$descripcion=$datos[$i][0]['deno_tipo_cuenta'];
+					}
+				}
+			}
+		}
+
+
+//		$pdf->Cell(70,5,$descripcion,'RB',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(70,1,'','T',2,'L');
+		$pdf->MultiCell(69,2,$descripcion,'','L');//---[CUENTA]
+		$varX = $varX+70;
+		$pdf->SetXY($varX,$varY);
+
+		if($datos[$i][0]['debito_credito']==1){
+			$pdf->Cell(31,5,$sisap->Formato2($datos[$i][0]['monto']),'RBL',0,'C');
+			$pdf->Cell(0,5,'','RB',1,'C');
+			$t_debe+=$datos[$i][0]['monto'];
+		}else{
+			$pdf->Cell(31,5,'','RBL',0,'C');
+			$pdf->Cell(0,5,$sisap->Formato2($datos[$i][0]['monto']),'RB',1,'C');
+			$t_haber+=$datos[$i][0]['monto'];
+		}
+		$concepto=$datos[$i][0]['concepto'];
+
+			$long=strlen($concepto);
+				if($long<=45){//echo "a";
+					$height=5;
+				}else if($long>45 && $long<=90){//echo "b";
+					$height=6;
+				}else if($long>90 && $long<=135){//echo "c";
+					$height=7;
+				}else if($long>135 && $long<=170){//echo "d";
+					$height=8;
+				}else if($long>170 && $long<=205){//echo "e";
+					$height=9;
+				}else if($long>170 && $long<=240) {//echo "f";
+					$height=11;
+				}else if($long>240 && $long<=280) {//echo "g";
+					$height=13;
+				}else if($long>280 && $long<=315) {//echo "h";
+					$height=15;
+				}else if($long>315 && $long<=350) {//echo "h";
+					$height=18;
+				}else if($long>350 && $long<=400) {//echo "h";
+					$height=20;
+				}else if($long>400 && $long<=450) {//echo "h";
+					$height=22;
+				}else if($long>450 && $long<=500) {//echo "h";
+					$height=24;
+				}else if($long>500 && $long<=550) {//echo "h";
+					$height=25;
+				}else if($long>550 && $long<=600) {//echo "h";
+					$height=27;
+				}else if($long>600 && $long<=650) {//echo "h";
+					$height=30;
+				}else if($long>650 && $long<=749) {//echo "h";
+					$height=33;
+				}else if($long>750 && $long<=800) {//echo "h";
+					$height=35;
+				}else if($long>850 && $long<=900) {//echo "h";
+					$height=37;
+				}else if($long>950 && $long<=1000) {//echo "h";
+					$height=39;
+				}else if($long>1050 && $long<=1100) {//echo "h";
+					$height=41;
+				}else if($long>1150 && $long<=1200) {//echo "h";
+					$height=43;
+				}else if($long>1250 && $long<=1300) {//echo "h";
+					$height=45;
+				}else if($long>1300 && $long<=1350) {//echo "h";
+					$height=47;
+				}else{//echo "i";
+					$height=50;
+				}
+
+
+
+
+
+	}
+
+
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(120,3,'Por Concepto de:','LRT',0,'C');
+				$pdf->Cell(25,3,'Totales','RT',0,'C');
+				$pdf->Cell(31,3,$sisap->Formato2($t_debe),'R',0,'R');
+				$pdf->Cell(0,3,$sisap->Formato2($t_haber),'R',1,'R');
+
+//				$pdf->Cell(120,5,'','LRB',0,'C');
+				$pdf->Cell(1,$height,'','L',0,'C');
+
+				$pdf->SetFont('vera','',6);
+				$varX = $pdf->GetX();//asigno X
+				$varY = $pdf->GetY();//asigno Y
+				$pdf->Cell(119,1,'','',2,'C');
+				$pdf->MultiCell(119,3,$concepto,'','J');
+				$varX = $varX+119;//le sumo a X 50 del Cell debido a que lo capture antes.
+				$pdf->SetXY($varX,$varY);// cargo XY
+
+				$pdf->Cell(25,$height,'','RL',0,'C');
+				$pdf->Cell(31,$height,'','R',0,'C');
+				$pdf->Cell(0,$height,'','R',1,'C');
+
+				$pdf->Cell(0,0,'','T',1,'C');
+
+
+				$pdf->SetFont('vera','',6);
+
+
+
+}else{
+$pdf->AddPage();
+$pdf->Cell(20,5,'','LRB',0,'C');
+$pdf->Cell(55,5,'','RB',0,'C');
+$pdf->Cell(70,5,'','RB',0,'C');
+
+$pdf->Cell(31,5,'','RB',0,'C');
+$pdf->Cell(0,5,'','RB',1,'C');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(120,3,'Por Concepto de:','LR',0,'C');
+$pdf->Cell(25,3,'Totales','R',0,'C');
+$pdf->Cell(31,3,'','R',0,'C');
+$pdf->Cell(0,3,'','R',1,'C');
+
+
+//				$pdf->Cell(120,5,'','LRB',0,'C');
+$pdf->Cell(1,15,'','L',0,'C');
+
+$pdf->SetFont('vera','',6);
+$varX = $pdf->GetX();//asigno X
+$varY = $pdf->GetY();//asigno Y
+$pdf->Cell(119,1,'','',2,'C');
+$pdf->MultiCell(119,3,'','','J');
+$varX = $varX+119;//le sumo a X 50 del Cell debido a que lo capture antes.
+$pdf->SetXY($varX,$varY);// cargo XY
+
+$pdf->Cell(25,15,'','RL',0,'C');
+$pdf->Cell(31,15,'','R',0,'C');
+$pdf->Cell(0,15,'','R',1,'C');
+
+$pdf->Cell(0,0,'','T',1,'C');
+
+
+
+
+}
+
+$pdf->Output('Asientos_Diarios_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

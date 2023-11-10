@@ -1,0 +1,165 @@
+<?php
+if(isset($ir) && $ir=='si'){?>
+<?$sisap->Tabla("",true,"DENOMINACIÓN DE LOS MOVIMIENTOS DE BIENES","","750")?>
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_bienes/cimp01_denominacion_movimientos_bienes/no/'); ?>" >
+<?$sisap->OpenTable("750");?>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+</form>
+<?
+}else if(isset($ir) && $ir=='no'){
+	if(isset($datos) && $datos!=null){
+/**
+ * Create PDF document -test for unicode
+ * @package com.tecnick.tcpdf
+ * @abstract TCPDF - unicode test.
+ * @author Nicola Asuni
+ * @copyright 2005-2006 Tecnick.com S.r.l (www.tecnick.com) Via Ugo Foscolo n.112 - 012055 Quartu Sant'Elena (CA) - ITALY - www.tecnick.com - info@tecnick.com
+ * @link http://tcpdf.sourceforge.net
+ * @license http://www.gnu.org/copyleft/lesser.html LGPL
+ * @since 2005-012-12
+ */
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+
+    //Cabecera de pagina
+	function Header()
+	{
+		/*
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=$_SESSION['entidad_federal'];
+        	$varTOPh2=$_SESSION['dependencia'];
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION['entidad_federal'];
+        	$varTOPh2=$_SESSION['dependencia'];
+        	$t1=14;
+        	$t2=11;
+        }
+
+    	$this->Image($escudo,11,13,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(14,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,"DENOMINACIÓN DE LOS MOVIMIENTOS DE BIENES",'RLB',1,'C');
+		$this->Ln(1);
+
+		$this->SetFont('vera','B',8);
+		$varX_aux = $this->GetX() + 170;
+		$varY_aux = $this->GetY() - 16;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(1);
+
+		$this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',8);
+		*/
+		$titulo_A = "DENOMINACIÓN DE LOS MOVIMIENTOS DE BIENES";
+		$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"12", "Z"=>"13"), array("Y"=>"14", "X"=>"186"));
+
+		$this->Cell(100,6,"INCORPORACIONES",'TRLB',0,'C');
+		$this->Cell(0,6,"DESINCORPORACIONES",'TRB',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(17,5,"CÓDIGO",'RLB',0,'C');
+		$this->Cell(83,5,"DENOMINACIÓN",'RB',0,'C');
+		$this->Cell(17,5,"CÓDIGO",'RB',0,'C');
+		$this->Cell(0,5,"DENOMINACIÓN",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','B',5);
+
+for($i=0;$i<count($vec);$i++){
+	$cod_mov_in=$vec[$i]['cod_mov_in'];
+	$denominacion_in=$vec[$i]['denominacion_in'];
+	$cod_mov_des=$vec[$i]['cod_mov_des'];
+	$denominacion_des=$vec[$i]['denominacion_des'];
+
+$long=strlen($denominacion_in);
+	if($long<=55){//echo "a";
+		$height=6;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=8;
+	}else if($long>90 && $long<=135){//echo "c";
+		$height=14;
+	}else if($long>135 && $long<=170){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=26;
+	}else{//echo "i";
+		$height=28;
+	}
+	$pdf->SetFont('vera','',5);
+
+	$pdf->Cell(17,$height,$sisap->zero($cod_mov_in),'RL',0,'C');/////codigo
+	$pdf->Cell(83,1,"",'',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(83,3,$denominacion_in,'','L');//DENOMINACION
+	$varX =$varX+83;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+
+	$pdf->Cell(17,$height,$sisap->zero($cod_mov_des),'RL',0,'C');/////codigo
+	$pdf->Cell(78,1,"",'',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(78,3,$denominacion_des,'','L');//DENOMINACION
+	$varX =$varX+78;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+	$pdf->Cell(0,$height,"",'R',1,'C');
+	$pdf->Cell(0,0,"",'T',1,'C');
+
+}//FIN FOR
+
+}else{
+
+}
+$pdf->Output('Denominacion_de_los_movimientos_de_bienes_'.date('d-m-Y').'.pdf','D');
+}//fin ir no
+?>

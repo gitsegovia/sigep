@@ -1,0 +1,94 @@
+<?php
+if(isset($errorMessage)) {
+  	echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function tipoCargo($tipo)
+{
+	switch ($tipo) {
+		case '1':
+			return "C";
+			break;
+		
+		case '2':
+			return "F";
+			break;
+
+		case '3':
+			return "LN";
+			break;
+
+		case '4':
+			return "OC";
+			break;
+
+		case '5':
+			return "ONC";
+			break;
+	}
+}
+
+$sisap->Tabla_modulos($session->read('entidad_federal'),true,"REPORTE DEL REGISTRO DE ASIGNACIÓN DE CARGO","","950","cnmp")?>
+
+<?$sisap->OpenTable("950");?>
+<div id="carga_grilla"  style="height:300px; overflow:auto;" >
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<tr class="tr_negro">
+			<td width="5%" align="center">Tipo Cargo</td>
+			<td width="20%" align="center">Descripción Cargo</td>
+			<td width="20%" align="center">Nombre y Apellido</td>
+			<td width="8%" align="center">C.I</td>
+			<td width="8%" align="center">Fecha Ingreso</td>
+			<td width="8%" align="center">Suel Base Mensual</td>
+			<td width="8%" align="center">Monto A Suel Bas</td>
+			<td width="8%" align="center">Comp Mensual</td>
+			<td width="8%" align="center">Comp Anual</td>
+			<td width="" align="center">Acción</td>
+		</tr>
+		<?php if(isset($data)){
+			if($data!=null){
+				$i=0;
+
+				foreach($data as $row){
+					$color = ($i%2==0) ? "#CDF2FF" : "#DAEBFF";
+					$i++;
+			?>
+				<tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);">
+						<td align="center"><?= tipoCargo($row[0]['tipo_cargo']) ?></td>
+						<td align="center"><?= $row[0]['descripcion_cargo'] ?></td>
+						<td align="center"><?= $row[0]['primer_nombre'].' '.$row[0]['segundo_nombre'].' '.$row[0]['primer_apellido'].' '.$row[0]['segundo_apellido'] ?></td>
+						<td align="center"><?= $row[0]['cedula_identidad'] ?></td>
+						<td align="center"><?= date('d/m/Y', strtotime($row[0]['fecha_ingreso'])) ?></td>
+						<td align="center"><?= $row[0]['sueldo_basico_mensual'] ?></td>
+						<td align="center"><?= $row[0]['monto_anual_sueldo_basico'] ?></td>
+						<td align="center"><?= $row[0]['compensacion_mensual'] ?></td>
+						<td align="center"><?= $row[0]['compensacion_anual'] ?></td>
+						<td align="center" id="<?="li_".$i?>"   >
+							<?php echo $sisap->linkTagRemote($html->image("edit.png",array('border'=>0, 'title'=>'editar')), array("onclick"=>"", 'url1'=>'/cnmd19_registro_asignacion_cargos/edit/'.$row[0]['cedula_identidad'].'/1', 'update1'=>"principal"), false); ?>
+							<?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmd19_registro_asignacion_cargos/delete/'.$row[0]['cedula_identidad'].'/'.$row[0]['tipo_cargo'], array('update'=>'principal','title'=>'Eliminar'),'Realmente desea eliminar este Registro',false,true); ?>
+						</td>
+					</tr>
+			<?	}//fin foreach ?>
+		<? } else { ?>
+				<tr bgcolor="#CDF2FF">
+					<td >&nbsp;</td>
+					<td >&nbsp;</td>
+					<td >&nbsp;</td>
+					<td >&nbsp;</td>
+					<td >&nbsp;</td>
+					<td >&nbsp;</td>
+					<td align="center">&nbsp;</td>
+				</tr>
+			<? } 
+		} ?>
+	</table>
+</div>
+	<form name='data[cnmd19_rac]'  method = "post" action="<?php echo  $html->url('/cnmd19_registro_asignacion_cargos/report'); ?>" >
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+	<?= $sisap->buttonTagRemote('/cnmd19_registro_asignacion_cargos/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+	</form>
+<?=$sisap->CloseTable()?>

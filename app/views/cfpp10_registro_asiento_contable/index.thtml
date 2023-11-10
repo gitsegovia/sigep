@@ -1,0 +1,372 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+
+
+$tipo_documento = array( '1'=>'Cheque',
+					     '2'=>'Deposito',
+					     '3'=>'Nota de Credito',
+					     '4'=>'Nota de Debito',
+					     '5'=>'Orden de Compra',
+					     '6'=>'Otros Compromisos',
+					     '7'=>'Contrato de Obras',
+					     '8'=>'Contrato de Servicios',
+					     '9'=>'Orden de Pago',
+					     '10'=>'Retención de i.v.a',
+					     '11'=>'Retención de i.s.l.r',
+					     '12'=>'Retención de timbre',
+					     '13'=>'Retención de impuesto municipal',
+					     '14'=>'Retención deresponsabilidad CIVIL',
+					     '15'=>'Retención deresponsabilidad SOCIAL',
+					     '16'=>'Bienes muebles',
+					     '17'=>'Bienes inmuebles',
+					     '18'=>'Reintegros',
+					     '19'=>'Rendiciones'
+					    );
+
+
+
+
+
+?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"REGISTRO DE ASIENTOS CONTABLE",null,"950");?>
+<form name='data[cnmp09]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950"); ?>
+
+<div id="principal_ccfp01_subdivision">
+
+<?php
+
+	if(isset($datos_desc) && !empty($datos_desc)){
+
+ 		if($datos_desc[0][0]['instancia_asiento']==1){
+ 			$instancia=2;
+ 		}else{
+ 			$instancia=1;
+ 		}
+?>
+
+<?= $sisap->radioTagRemote('cnmp09/asientos', array('1'=>'Otros Asientos', '2'=>'Asiento de apertura'), array('url1'=>'/cfpp10_registro_asiento_contable/verifica_asiento', 'update1'=>'carga','disabled'=>'disabled','id'=>'asientos'),null,$opc=$instancia);?>
+
+<br><br>
+<input type="hidden" name="data[cnmp09][instanc_asiento]" value="<?=$instancia?>" readonly>
+<div id="carga">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr aling='center' >
+		<td width='10%' align='center' >Número Asiento</td>
+		<td width='6%' align='center'>Día</td>
+		<td width='6%' align='center'>Mes</td>
+		<td width='8%' align='center'>Año</td>
+		<td width='30%' align='center' colspan='2'>Tipo de Documento</td>
+		<td width='22%' align='center'>Número</td>
+		<td width='12%' align='center'>Fecha</td>
+	</tr>
+
+	<tr aling='center'>
+		<td width='%' align='center' id="carga_asiento"><?= $html->input('cnmp09/num_asiento', $htmlAttributes = array('value'=>$datos_desc[0][0]['numero_asiento'],'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'num_asiento'), false); ?></td>
+		<td width='%' align='center'><?= $html->dayOptionTag('cnmp09/dia',null,$datos_desc[0][0]['dia_asiento'],array('id'=>'dia', "onfocus"=>"this.blur()")); ?></td>
+		<?php if($instancia==2 && $datos_desc[0][0]['mes_asiento']==1){ ?>
+			<td width='%' align='center'><?= $html->input('cnmp09/mes', $htmlAttributes = array('value'=>$sisap->zero($datos_desc[0][0]['mes_asiento']),'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'mes'), false); ?></td>
+		<? }else{ ?>
+			<td width='%' align='center'>
+				<?= $sisap->selectTagRemote('cnmp09/mes', $meses,  null,  $datos_desc[0][0]['mes_asiento'], array('onchange1'=>'/cfpp10_registro_asiento_contable/numero_asiento', 'update1'=>'carga_asiento', 'id'=>'mes', 'onChange'=>'vacio', "onfocus"=>"this.blur()", true), null, true);?>
+			</td>
+		<? } ?>
+		<td width='%' align='center'><?= $html->input('cnmp09/ano', $htmlAttributes = array('value'=>$datos_desc[0][0]['ano_asiento'],'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'ano'), false); ?></td>
+		<?php if($instancia==2 && $datos_desc[0][0]['tipo_documento']==99){ ?>
+			<td width='7%' align='center'><?= $html->input('cnmp09/tipo_documento', $htmlAttributes = array('value'=>'99','style'=>'width:98%;text-align:center','onKeyPress'=>'return solonumeros(event);', 'readonly'=>'readonly','id'=>'select'), false); ?></td>
+		<? }else{ ?>
+			<td width='7%' align='center'><?=  $sisap->selectTagRemote('cnmp09/tipo_documento', $tipo_documento, null, $datos_desc[0][0]['tipo_documento'], array('onchange1'=>'/cfpp10_registro_asiento_contable/mostrar/', 'update1'=>'document','id'=>'select', "onfocus"=>"this.blur()", true), null, true); ?></td>
+		<? } ?>
+		<td width='23%' align='center' id="document"><?= $html->input('cnmp09/deno', $htmlAttributes = array('value'=>isset($name)?$name:'','style'=>'width:98%', 'readonly'=>'readonly','id'=>'deno'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/numero', $htmlAttributes = array('value'=>$datos_desc[0][0]['numero_documento'],'style'=>'width:98%;text-align:center', 'onKeyPress'=>'return solonumeros(event);','readonly'=>'readonly','id'=>'numero'), false); ?></td>
+		<td width='%' align='center'>
+		 <?php $sisap->input_fecha("cnmp09","fecha","fecha",$sisap->Cfecha($datos_desc[0][0]['fecha_documento'],"D/M/A")); ?>
+		</td>
+	</tr>
+</table>
+
+<br>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+	<tr aling='center'>
+		<td align='center' width='5%'>Linea</td>
+		<td align='center' width='10%'>Tipo de Movimiento</td>
+		<td align='center' width='10%'>Tipo<br>Cuenta</td>
+		<td align='center' width='10%'>Cuenta</td>
+		<td align='center' width='10%'>Sub <br>Cuenta</td>
+		<td align='center' width='10%'>División  <br>Estadística</td>
+		<td align='center' width='10%'>Subdivisión<br> Estadística</td>
+		<td align='center' width='10%'>Debe</td>
+		<td align='center' width='10%'>Haber</td>
+		<td align='center' width='5%'>Acción</td>
+	</tr>
+
+	<tr>
+		<td ><?= $html->input('cnmp09/linea', $htmlAttributes = array('value'=>isset($cont_linea)?$cont_linea:'1','style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'linea'), false); ?></td>
+		<td ><?= $sisap->radioTagRemote("cnmp09/radio_tipo", array('1'=>'Debito', '2'=>'Credito'), array('url1'=>'/cfpp10_registro_asiento_contable/select3/tipo/', 'update1'=>'st_select_1','id'=>'radio_tipo'),"<br>");?></td>
+		<td   id="st_select_1"><select id="select_1" class="select100"></select></td>
+		<td   id="st_select_2"><select id="select_2" class="select100"></select></td>
+		<td   id="st_select_3"><select id="select_3" class="select100"></select></td>
+		<td   id="st_select_4"><select id="select_4" class="select100"></select></td>
+		<td   id="st_select_5"><select id="select_5" class="select100"></select></td>
+		<td ><?= $html->input('cnmp09/debe', $htmlAttributes = array('size'=>'12','style'=>'text-align:center', 'readonly'=>'readonly','id'=>'debe','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('debe');"), false); ?></td>
+		<td ><?= $html->input('cnmp09/haber',$htmlAttributes = array('size'=>'12','style'=>'text-align:center', 'readonly'=>'readonly','id'=>'haber','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('haber');"), false); ?></td>
+		<td align='center'><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'disabled','funcion'=>'valida_agregar_asiento_detalle','url1' => '/cfpp10_registro_asiento_contable/agregar_grilla/normal/'.$existe_desc, 'update1'=>'carga_grilla')); ?></td>
+	</tr>
+</table>
+
+
+<? }else{ ?>
+
+
+
+<?= $sisap->radioTagRemote('cnmp09/asientos', array('1'=>'Otros Asientos', '2'=>'Asiento de apertura'), array('url1'=>'/cfpp10_registro_asiento_contable/verifica_asiento', 'update1'=>'carga','disabled'=>'','id'=>'asientos'),null,$opc='1');?>
+
+<br><br>
+<div id="carga">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr aling='center' >
+		<td width='10%' align='center' >Número Asiento</td>
+		<td width='6%' align='center'>Día</td>
+		<td width='6%' align='center'>Mes</td>
+		<td width='8%' align='center'>Año</td>
+		<td width='30%' align='center' colspan='2'>Tipo de Documento</td>
+		<td width='22%' align='center'>Número</td>
+		<td width='12%' align='center'>Fecha</td>
+	</tr>
+
+	<tr aling='center'>
+		<td width='%' align='center' id="carga_asiento"><?= $html->input('cnmp09/num_asiento', $htmlAttributes = array('value'=>$numero,'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'num_asiento'), false); ?></td>
+		<td width='%' align='center'><?= $html->dayOptionTag('cnmp09/dia',null,null,array('id'=>'dia')); ?></td>
+		<td width='%' align='center'>
+			<?= $sisap->selectTagRemote('cnmp09/mes', $meses,  null,  $mes, array('onchange1'=>'/cfpp10_registro_asiento_contable/numero_asiento', 'update1'=>'carga_asiento', 'id'=>'mes', 'onChange'=>'vacio'  , true), null, true);?>
+		</td>
+		<td width='%' align='center'><?= $html->input('cnmp09/ano', $htmlAttributes = array('value'=>$ano,'style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'ano'), false); ?></td>
+		<td width='7%' align='center'><?=  $sisap->selectTagRemote('cnmp09/tipo_documento', $tipo_documento, null, '', array('onchange1'=>'/cfpp10_registro_asiento_contable/mostrar/', 'update1'=>'document','id'=>'select',true), null, true); ?></td>
+		<td width='23%' align='center' id="document"><?= $html->input('cnmp09/deno', $htmlAttributes = array('value'=>'','style'=>'width:98%', 'readonly'=>'','id'=>'deno'), false); ?></td>
+		<td width='%' align='center'><?= $html->input('cnmp09/numero', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center', 'onKeyPress'=>'return solonumeros(event);','readonly'=>'','id'=>'numero'), false); ?></td>
+		<td width='%' align='center'>
+		 <?php $sisap->input_fecha("cnmp09","fecha","fecha",date("d/m/Y")); ?>
+		</td>
+	</tr>
+</table>
+
+<br>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+	<tr aling='center'>
+		<td align='center' width='5%'>Linea</td>
+		<td align='center' width='10%'>Tipo de Movimiento</td>
+		<td align='center' width='10%'>Tipo<br>Cuenta</td>
+		<td align='center' width='10%'>Cuenta</td>
+		<td align='center' width='10%'>Sub <br>Cuenta</td>
+		<td align='center' width='10%'>División  <br>Estadística</td>
+		<td align='center' width='10%'>Subdivisión<br> Estadística</td>
+		<td align='center' width='10%'>Debe</td>
+		<td align='center' width='10%'>Haber</td>
+		<td align='center' width='5%'>Acción</td>
+	</tr>
+
+	<tr>
+		<td ><?= $html->input('cnmp09/linea', $htmlAttributes = array('value'=>isset($cont_linea)?$cont_linea:'1','style'=>'width:98%;text-align:center', 'readonly'=>'readonly','id'=>'linea'), false); ?></td>
+		<td ><?= $sisap->radioTagRemote("cnmp09/radio_tipo", array('1'=>'Debito', '2'=>'Credito'), array('url1'=>'/cfpp10_registro_asiento_contable/select3/tipo/', 'update1'=>'st_select_1','id'=>'radio_tipo'),"<br>");?></td>
+		<td   id="st_select_1"><select id="select_1" class="select100"></select></td>
+		<td   id="st_select_2"><select id="select_2" class="select100"></select></td>
+		<td   id="st_select_3"><select id="select_3" class="select100"></select></td>
+		<td   id="st_select_4"><select id="select_4" class="select100"></select></td>
+		<td   id="st_select_5"><select id="select_5" class="select100"></select></td>
+		<td ><?= $html->input('cnmp09/debe', $htmlAttributes = array('size'=>'12','style'=>'text-align:center', 'readonly'=>'readonly','id'=>'debe','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('debe');"), false); ?></td>
+		<td ><?= $html->input('cnmp09/haber',$htmlAttributes = array('size'=>'12','style'=>'text-align:center', 'readonly'=>'readonly','id'=>'haber','onKeyPress'=>'return solonumeros_con_punto(event);',"onChange"=>"moneda('haber');"), false); ?></td>
+		<td align='center'><?= $sisap->submitTagRemote('+', array('id'=>'agregar','disabled'=>'disabled','funcion'=>'valida_agregar_asiento_detalle','url1' => '/cfpp10_registro_asiento_contable/agregar_grilla/normal/'.$existe_desc, 'update1'=>'carga_grilla')); ?></td>
+	</tr>
+</table>
+
+<? } ?>
+
+
+<br>
+
+<div id="carga_grilla"  style="height:210px; overflow:auto;">
+
+<?php
+
+	 if(isset($_SESSION ["items1"]) && !empty($_SESSION ["items1"])){
+
+?>
+
+<table width="100%"><tr><td align="right">
+<?= $sisap->submitTagRemote('Limpiar Lista', array('funcion'=>'confirma_limpiar_lista_completa','url1' => '/cfpp10_registro_asiento_contable/limpiar_lista/2', 'update1'=>'principal')); ?>
+</td></tr></table>
+
+<div id="grabar"  style="height:180px;overflow-y:scroll;" >
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td align="center"  width="5%">Linea</td>
+    <td align="center" width="8%">Tipo de Movimiento</td>
+    <td align="center" width="7%">Tipo<br />Cuenta</td>
+    <td align="center" width="7%">Cuenta</td>
+    <td align="center" width="7%">Sub <br />Cuenta </td>
+    <td align="center" width="7%">División<br />Estadística</td>
+    <td align="center" width="7%">Subdivisión<br />Estadística</td>
+    <td align="center" width="13%">Debe</td>
+    <td align="center" width="13%">Haber</td>
+    <td align="center" width="5%">---</td>
+  </tr>
+
+<?php
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+ 	$monto1=0;
+ 	$monto2=0;
+	$cont_ie = count($_SESSION["items1"]);
+	$cupd = $cont_ie == 1 ? 'principal' : 'carga_grilla';
+
+    foreach($_SESSION ["items1"] as $codigos){
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=7;$x++){
+    	$linea=$codigos[0];
+	   	if($x==7){
+	   		if($codigos[1]==1){
+	   			echo "<td align=\"right\" id=\"columna_$i\">".$sisap->Formato2($codigos[$x])."</td>";
+	   			echo "<td align=\"right\">---</td>";
+	   		 	$monto1=$monto1+$sisap->Formato1($codigos[$x]);
+	   		}else{
+	   			echo "<td align=\"right\">---</td>";
+	   			echo "<td align=\"right\" id=\"columna_$i\">".$sisap->Formato2($codigos[$x])."</td>";
+	   		 	$monto2=$monto2+$sisap->Formato1($codigos[$x]);
+	   		}
+	   	}else{
+	   		if($x==1 && $codigos[$x]==1){
+	   			echo "<td align=\"center\">Debito</td>";
+	   		}else if($x==1 && $codigos[$x]!=1){
+	   			echo "<td align=\"center\">Credito</td>";
+	   		}else{
+	   			echo "<td align=\"center\">".$codigos[$x]."</td>";
+	   		}
+	   	}
+    }
+   ?>
+   <td align="center">
+   	<a href="javascript:ver_documento('/cfpp10_registro_asiento_contable/editar_monto/<?=$i?>/<?=$codigos[8]?>/<?=$codigos[1]?>','<?= "columna_".$i ?>');"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar'))?></a>
+   	<?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cfpp10_registro_asiento_contable/eliminar_items/'.$codigos['id'].'/'.$codigos[8], array('update'=>$cupd,'title'=>'Eliminar'),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+   </td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+?>
+<tr>
+	<td colspan="7" align="right">TOTALES</td>
+	<td align="right" id="total_mddebe"><?=$sisap->Formato2($monto1);?></td><input type="hidden" id="monto_debe" value="<?=$monto1?>"/>
+	<td align="right" id="total_mdhaber"><?=$sisap->Formato2($monto2);?></td><input type="hidden" id="monto_haber" value="<?=$monto2?>"/>
+	<td align="center">---</td><input type="hidden" name="data[cnmp09][num_prox_line]" id="num_prox_line" value="<?=$num_prox_line?>" readonly />
+</tr>
+</table>
+
+<div id="del"></div>
+</div>
+
+
+<? }else{ ?>
+
+
+
+<table><tr><td align="left"><br></td></tr></table>
+
+	<div id="grabar"  style="height:180px;overflow-y:scroll;" >
+
+			<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			   <tr class="tr_negro">
+			    <td align="center"  width="5%">Linea</td>
+			    <td align="center" width="8%">Tipo de Movimiento</td>
+			    <td align="center" width="7%">Tipo<br />Cuenta</td>
+			    <td align="center" width="7%">Cuenta</td>
+			    <td align="center" width="7%">Sub <br />Cuenta </td>
+			    <td align="center" width="7%">División<br />Estadística</td>
+			    <td align="center" width="7%">Subdivisión<br />Estadística</td>
+			    <td align="center" width="13%">Debe</td>
+			    <td align="center" width="13%">Haber</td>
+			    <td align="center" width="5%">---</td>
+			  </tr>
+
+			  <tr bgcolor="#CDF2FF" >
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			    <td align="center" ><br></td>
+			  </tr>
+			  <tr>
+				<td colspan="7" align="right">TOTALES</td>
+				<td align="right"  id="total_mddebe"><br></td>
+				<td align="right"  id="total_mdhaber"><br></td>
+				<td align="center"><br></td>
+			</tr>
+
+			</table>
+
+	</div>
+
+<? } ?>
+
+</div>
+
+<br>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center"><b>CONCEPTO DEL ASIENTO</b></td>
+	</tr>
+	<tr>
+		<td align="center"><?= $html->textarea('cnmp09/concepto', array('value'=>'','id'=>'concepto', 'class'=>'inputtext', 'rows'=>'5'))?></td>
+	</tr>
+</table>
+<div id="vacio"></div>
+<div id="botons">
+<table width='750' border='0' cellpadding='0' cellspacing='0' aling="center">
+<tr  height="40px">
+	<td align="center">
+		<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'valida_registro_asiento_contable12','url1' => '/cfpp10_registro_asiento_contable/guardar', 'update1'=>'principal','id'=>'save', 'disabled'=>'disabled')); ?>
+		<?= $sisap->buttonTagRemote('/cnmp09/editar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Modificar'), array('url1' => '/ccfp01_subdivision/editar/', 'update1'=>'principal_ccfp01_subdivision' ))?>
+		<?= $sisap->buttonTagRemote('/cnmp09/eliminar', array ('disabled'=>'disabled', 'type'=>'button', 'value'=>'Eliminar'), array('url1' => '/ccfp01_subdivision/eliminar/', 'update1'=>'principal_ccfp01_subdivision' ))?>
+		<? /*= $sisap->buttonTagRemote('/cnmp09/consultar', array ('id'=>'consultar','type'=>'button', 'value'=>'Consultar'), array('url1' => '/cfpp10_registro_asiento_contable/consultar_form/', 'update1'=>'principal')) */ ?>
+		<?= $sisap->buttonTagRemote('/cnmp09/principal', array ( 'value'=>'Salir'), array('url1' => '/cfpp10_registro_asiento_contable/salir_asiento', 'update1'=>'principal','url2'=>'/modulos/vacio','update2'=>'principal')); ?>
+</td>
+</tr>
+</table>
+</div>
+</div>
+
+</div>
+<div id="pagina_error"></div>
+<div id="UP_OP"><?= $ajax->remoteTimer(array('url'=>'/cfpp10_registro_asiento_contable/actualizame_op/','update'=>'UP_OP','id'=>'orden_pago_refrescar','frequency'=>'220'));?></div>
+<?= $sisap->CloseTable()?>
+</form>

@@ -1,0 +1,229 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+$fecha_inscrip=$fech_inscrip;
+$fecha_actuali=$fech_actuali;
+$repre=$representante;
+$cedula=$cedula;
+$deno_comercial=$denominacion;
+$objeto2=$objeto;
+$num_expediente=$numero_expediente;
+$rif=$rif;
+$nit="1234";
+$observaciones=$observacion;
+$dir=$direccion;
+$cod_area=$cod_area;
+$telefono=$telefono;
+
+$objeto2="CERO";
+switch($objeto){
+	case '1':$objeto2="PROVEEDOR"; break;
+	case '2':$objeto2="CONTRATISTA"; break;
+	case '3':$objeto2="COOPERATIVA"; break;
+	case '4':$objeto2="PERSONA NATURAL"; break;
+	case '5':$objeto2="CONSEJO COMUNAL"; break;
+	case '6':$objeto2="ALCALDÍA"; break;
+}
+
+/*
+ Verifico la condicion del proveedor, si se esta iscribiendo o si se esta Actualizando
+ si el ano de la fecha de la actualizacion, es igual al ano de la maquina quiere decir
+ que se esta actualizando */
+ $condicion="CERO";
+ $timeup="CERO";
+ $ano_maq=date('Y');
+ $fecha=split('-',$fecha_actuali);
+ if($fecha[0]==$ano_maq){
+ 	$condicion="ACTUALIZACIÓN";
+ 	$timeup=$fecha_actuali;
+ }else{
+ 	$condicion="INSCRIPCIÓN";
+ 	$timeup=$fech_inscrip;
+ }
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+    	$this->SetY(-10);
+		$this->SetFont('vera','',5);
+   		$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=15;
+        	$t2=15;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$escudo='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodpresi'].'_'.$_SESSION['SScodentidad'].'_'.$_SESSION['SScodtipoinst'].'_'.$_SESSION['SScodinst'].'.jpg';
+        	$varTOPh1=$_SESSION['titulo_inst'];
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11=$_SESSION['titulo_inst'];
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=13;
+        	$t2=13;
+        }
+		$this->Image($escudo,102,20,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,6,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'',1,'C');
+		$this->Cell(0,16,"",'',1);
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,$_SESSION['titulo_inst'],'',1,'C');
+	//	if($apure == 1){
+			$this->Cell(0,3,"OFICINA DE ADMINISTRACIÓN CENTRAL",'',1,'C');
+			$this->Cell(0,3,"OFICINA DE COMPRAS",'',1,'C');
+	//	}else if($apure == 0){
+	//		$this->Cell(0,3,"SECRETARIA DE FINANZAS",'',1,'C');
+	//		$this->Cell(0,3,"UNIDAD DE COMPRAS",'',1,'C');
+	//	}
+		$this->SetFont('vera','B',12);
+		$this->Cell(0,2,"",'',1);
+		$this->Cell(0,10,"CONSTANCIA",'',1,'C');
+		$this->Cell(0,2,"",'B',1);
+		$this->Ln(2);
+	}//fin funtion
+
+
+
+	function Footer(){
+
+       $this->setY(-20);
+       $this->SetFont('vera','B',6);
+
+//       $this->Cell(0,2,$_SESSION['ubicacion_compras'],'B',1);
+
+			//  $varX = $pdf->GetX();
+			//	$varY = $pdf->GetY();
+			//	$pdf->SetFont('vera','',9);
+				$this->MultiCell(0,3,$_SESSION['ubicacion_compras'],'','C');//--[OBSERVACIONES]
+			//	$varX = $varX+190;
+			//	$pdf->SetXY($varX,$varY);
+
+	}
+
+}//fin de la clase PDF
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+$_SESSION['ubicacion_compras'] = $ubicacion_compras;
+
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(60,6,"SE HACE CONSTAR QUE EN FECHA : ",'',0);
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico($timeup),'',1);//--[FECHA]
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(35,6,"EL CIUDADANO (A) ",'',0);
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$repre,'',1);//--[CIUDADANO (A)]
+
+$pdf->Cell(30,6,"C.I:  ".$cedula,'',0);
+$pdf->SetFont('vera','',9);
+$pdf->Cell(0,6,"EN REPRESENTACIÓN DE LA EMPRESA ............",'',1);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$deno_comercial,'',1);//--[EMPRESA O COOPERATIVA]
+
+$pdf->SetFont('vera','',9);
+
+	//if($apure == 1){
+			$pdf->Cell(0,6,"CONSIGNÓ EN LA OFICINA DE COMPRAS DE LA OFICINA DE ADMINISTRACIÓN CENTRAL LA",'',1);
+	//}else if($apure == 0){
+	//		$pdf->Cell(0,6,"CONSIGNÓ EN LA UNIDAD DE COMPRAS DE LA SECRETARÍA DE FINANZAS LA",'',1);
+	//}
+
+
+$pdf->Cell(0,6,"DOCUMENTACIÓN EXIGIDA POR EL MANUAL QUE RIGE LA MATERIA, A LOS FINES",'',1);
+$pdf->Cell(0,6,"DE SU INSCRIPCIÓN EN LA MISMA, QUEDANDO INSCRITA COMO",'',1);
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$objeto2,'',1);//--[objeto2: EMPRESA O COOPERATIVA]
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(0,6,"HABIENDO SIDO ESTUDIADO DICHOS RECAUDOS Y ESTANDO CONFORME, SE",'',1,'L');
+
+$pdf->Cell(41,6,"RESOLVIÓ, ORDENAR SU",'',0,'L');
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$tipoconst,'',1,'L');//--[INSCRIPCION O ACTUALIZACION]
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(30,6,"BAJO EL NÚMERO",'',0,'L');
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(0,6,$num_expediente,'',1,'L');//--[NUMERO DE INSCRIPCION]
+
+$pdf->Cell(0,6,"R.I.F.  ".$rif,'',1,'L');//--[NUMERO DE INSCRIPCION]
+$pdf->Cell(0,1,"",'B',1);
+$pdf->Ln();
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,6,"OBSERVACIONES",'',1,'C');
+$pdf->Cell(1,40,"",'',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->SetFont('vera','',9);
+	$pdf->MultiCell(190,4,$observaciones,'','L');//--[OBSERVACIONES]
+	$varX = $varX+190;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,40,"",'',1,'C');
+$pdf->Ln(10);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,2,"_______________________________________",'',1,'C');
+$pdf->Cell(0,6,$firmante,'',1,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,2,$cargo,'',1,'C');
+$pdf->Ln(10);
+
+$pdf->Cell(25,3,"DIRECCIÓN:",'',0,'L');
+$pdf->MultiCell(0,3,$dir,'','L');//--[DIRECCION]
+$pdf->Ln(3);
+
+$pdf->Cell(25,6,"TELÉFONO",'',0,'L');
+$pdf->Cell(0,6,$cod_area.'-'.$telefono,'',1,'L');//--[TELEFONO]
+
+$pdf->Cell(25,8,"REVISADO POR ",'',0,'L');
+$pdf->Cell(50,8,"",'B',1,'L');//--[REVISADO POR]
+$pdf->Cell(25,6,"",'',0);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(50,4,$revisado,'',1,'C');
+$pdf->Cell(25,3,"",'',0);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(50,3,$cargo_revisado,'',1,'C');
+
+
+
+
+
+
+
+
+
+
+//$pdf->SetFont('vera','B',8);
+//$pdf->Cell(0,15,"NOTA: CONSTANCIA VALIDA POR UN AÑO A PARTIR DE LA FECHA DE EXPEDICIÓN",'',1,'L');
+$pdf->Output('Constancia_'.$deno_comercial.'_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

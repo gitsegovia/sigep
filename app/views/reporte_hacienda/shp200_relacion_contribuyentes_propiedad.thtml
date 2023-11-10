@@ -1,0 +1,250 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE CONTRIBUYENTES DE INMUEBLES URBANOS'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shp200_relacion_contribuyentes_propiedad/2/'); ?>" onsubmit="return valida_shd950_solvencia()"  >
+	 <center>
+
+	   Ordenado por:<br><?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Alfabético','2'=>'Rif/c.i'), array('url1'=>'/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+
+     </center>
+
+       <center>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </center>
+
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES DE INMUEBLES URBANOS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+
+    	$this->SetFont('vera','B',7);
+		$this->Cell(0,5,"DESCRIPCIÓN DEL INMUEBLE",'TRL',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(18,3,"",'TRL',0,'C');
+		$this->Cell(40,3,"",'TR',0,'C');
+		$this->Cell(19,3,"",'TR',0,'C');
+		$this->Cell(21,3,"",'TR',0,'C');
+		$this->Cell(50,3,"",'TR',0,'C');
+		$this->Cell(16,3,"",'TR',0,'C');
+		$this->Cell(16,3,"",'TR',0,'C');
+		$this->Cell(21,3,"",'TR',0,'C');
+		$this->Cell(35,3,"Municipio",'TR',0,'L');
+		$this->Cell(0,3,"Calle / Avenida",'TR',1,'L');
+
+		$this->Cell(18,3,"",'RL',0,'C');
+		$this->Cell(40,3,"Nombres y Apellidos",'R',0,'C');
+		$this->Cell(19,3,"Frecuencia",'R',0,'C');
+		$this->Cell(21,3,"Monto a",'R',0,'C');
+		$this->Cell(50,3,"",'R',0,'C');
+		$this->Cell(16,3,"Área",'R',0,'C');
+		$this->Cell(16,3,"Área",'R',0,'C');
+		$this->Cell(21,3,"Valor",'R',0,'C');
+		$this->Cell(35,3,"Parroquia",'R',0,'L');
+		$this->Cell(0,3,"Vereda / Edificio",'R',1,'L');
+
+		$this->Cell(18,3,"RIF/C.I.",'RBL',0,'C');
+		$this->Cell(40,3,"Razón social",'RB',0,'C');
+		$this->Cell(19,3,"de pago",'RB',0,'C');
+		$this->Cell(21,3,"cancelar",'RB',0,'C');
+		$this->Cell(50,3,"Denominación del inmueble",'RB',0,'C');
+		$this->Cell(16,3,"Terreno",'RB',0,'C');
+		$this->Cell(16,3,"Construc.",'RB',0,'C');
+		$this->Cell(21,3,"del inmueble",'RB',0,'C');
+		$this->Cell(35,3,"Centro poblado",'RB',0,'L');
+		$this->Cell(0,3,"No Casa / Local",'RB',1,'L');
+
+
+
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+if($datos!=null){
+
+$pdf->SetFont('vera','',6);
+
+$concatena='';
+for($i=0; $i<count($datos); $i++){
+
+	if($datos[$i][0]['frecuencia_pago']==1){
+		$frecuencia='MENSUAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*1;
+	}else if($datos[$i][0]['frecuencia_pago']==2){
+		$frecuencia='BIMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*2;
+	}else if($datos[$i][0]['frecuencia_pago']==3){
+		$frecuencia='TRIMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*3;
+	}else if($datos[$i][0]['frecuencia_pago']==4){
+		$frecuencia='SEMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*6;
+	}else if($datos[$i][0]['frecuencia_pago']==5){
+		$frecuencia='ANUAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*12;
+	}
+
+$concatena1=$datos[$i][0]['rif_cedula'];
+if($concatena1!=$concatena){
+$rif=$datos[$i][0]['rif_cedula'];
+$razon=$datos[$i][0]['nombre_razon'];
+
+
+}else{
+	$rif='';
+	$razon='';
+}
+$concatena=$concatena1;
+	$pdf->Cell(18,9,$rif,'RL',0,'C');// RIF/C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(40,1,"",'',2,'C');
+		$pdf->MultiCell(39,2,$razon,'','L');// Razón social
+		$varX = $varX+40;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(19,9,$frecuencia,'RL',0,'C');
+	$pdf->Cell(21,9,$sisap->Formato2($monto_cancelar),'R',0,'R');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(50,1,"",'',2,'C');
+		$pdf->MultiCell(49,2,$datos[$i][0]['nombre_inmueble'],'','L');// Denominación del inmueble
+		$varX = $varX+50;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(16,9,$sisap->Formato2($datos[$i][0]['area_terreno']),'RL',0,'R');
+	$pdf->Cell(16,9,$sisap->Formato2($datos[$i][0]['area_construccion']),'R',0,'R');
+	$pdf->Cell(21,9,$sisap->Formato2($datos[$i][0]['valor_inmueble']),'R',0,'R');
+	//$pdf->Cell(32,6,"Parroquia",'R',0,'L');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,$datos[$i][0]['deno_municipio']."\n".$datos[$i][0]['deno_parroquia']."\n".$datos[$i][0]['deno_centro'],'','L');// Razón social
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,9,"",'L',0,'L');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,$datos[$i][0]['deno_calle']."\n".$datos[$i][0]['deno_vereda']."\n".$datos[$i][0]['numero_casa'],'','L');// Razón social
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,9,"",'R',1);
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+
+
+}else{
+
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(18,8,"",'RL',0,'C');// RIF/C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(40,1,"",'',2,'C');
+		$pdf->MultiCell(39,2," ",'','L');// Razón social
+		$varX = $varX+40;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(19,8,"",'RL',0,'C');
+	$pdf->Cell(21,8," ",'R',0,'R');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(50,1,"",'',2,'C');
+		$pdf->MultiCell(49,2,"",'','L');// Denominación del inmueble
+		$varX = $varX+50;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(16,8,"",'RL',0,'R');
+	$pdf->Cell(16,8,"",'R',0,'R');
+	$pdf->Cell(21,8,"",'R',0,'R');
+	//$pdf->Cell(32,6,"Parroquia",'R',0,'L');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,"",'','L');// Razón social
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,8,"",'L',0,'L');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,"",'','L');// Razón social
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,8,"",'R',1);
+	$pdf->Cell(0,0,"",'T',1);
+
+
+}
+
+
+
+
+$pdf->Output('relacion_contribuyentes_inmuebles_urbanos_'.date("d_m_Y_h"), 'D');//Poner nombre y la opcion D
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

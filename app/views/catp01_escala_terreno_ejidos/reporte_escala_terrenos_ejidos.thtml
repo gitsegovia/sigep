@@ -1,0 +1,106 @@
+<?php
+/*
+ * Creado el 24/10/2008 a las 05:42:51 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+if(isset($var) && $var=="si"){
+?>
+<?= $sisap->Tabla('',true,'ESCALA DE TASA DE IMPUESTO DE TERRENOS EJIDOS','','950');?>
+<?= $sisap->OpenTable("950")?>
+<br />
+<form name="data[catp01_escala_terreno_ejidos]" method="post" id='form' action="<?php echo $html->url('/catp01_escala_terreno_ejidos/reporte_escala_terrenos_ejidos/no'); ?>">
+<table width="240" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="190" align="center"><b>A&ntilde;o de la Ordenanza<b>&nbsp;</td>
+	<td width="50" align="center"><input type="text" name="data[catp01_escala_terreno_ejidos][ano_ordenanza]" id="ano_ordenanza" size="4" value="<?=$anio_ej!=null?$anio_ej:date('Y')?>" maxlength="4" onKeyPress="return solonumeros_con_punto(event);" style="text-align:center" /></td>
+  </tr>
+</table>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;
+<?= $sisap->buttonTagRemote('/catp01_escala_terreno_ejidos/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+	   function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		/*
+		$this->Image('/var/www/utf8_tcpdf/images/logo_11_100.jpg',11,15,70);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"",'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,"",'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"ESCALA DE LA ORDENANZA",'RL',1,'C');
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"AÑO: ".$_SESSION['ano_ordenanza_report'],'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+	    	*/
+	    $this->top_reporte("ESCALA DE TASA DE IMPUESTO DE TERRENOS EJIDOS","AÑO: ".$_SESSION['ano_ordenanza_report'], null, array("Y"=>"11", "X"=>"15", "Z"=>"12"), array("Y"=>"18", "X"=>"184"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,4,'ESCALA','TRBL',0,'C');
+		$this->Cell(47,4,'METROS DESDE','TRB',0,'C');
+		$this->Cell(47,4,'METROS HASTA','TRB',0,'C');
+		$this->Cell(47,4,'PORCENTAJE','TRB',0,'C');
+		$this->Cell(0,4,'SUSTRAENDO','TRB',1,'C');
+
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',7);
+foreach($datos as $d){
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(15,6,$d['catd01_escala_ejidos']['escala'],'RL',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(47,6,$sisap->Formato2($d['catd01_escala_ejidos']['metros_desde']),'R',0,'C');
+	$pdf->Cell(47,6,$sisap->Formato2($d['catd01_escala_ejidos']['metros_hasta']),'R',0,'C');
+	$pdf->Cell(47,6,$sisap->Formato2($d['catd01_escala_ejidos']['porcentaje']),'R',0,'C');
+	$pdf->Cell(0,6,$sisap->Formato2($d['catd01_escala_ejidos']['sustraendo']),'R',1,'C');
+	$pdf->Cell(0,0,'','T',1,'C');
+}
+
+$pdf->Output('escala_terrenos_ejidos.pdf','D');
+}
+?>

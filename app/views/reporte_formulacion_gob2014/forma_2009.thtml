@@ -1,0 +1,313 @@
+<?php
+if(isset($ir)){
+?>
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DE LOS RECURSOS HUMANOS POR ESCALA DE SALARIOS",NULL,"950"); ?>
+<div id="actualizar"></div>
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion_gob2014/forma_2009/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cnmp05][ano]"  value="<?= $year ?>" id="ano_formular" style="text-align:center"  style="text-align:center" size="3" readonly  maxlength="4"  onKeyPress="return solonumeros(event);"  /> FORMA: 2009<br><br>
+<?= $sisap->radio_consolidado('cnmp05/consolidacion', array(), '', true)  ?>
+<br><br>
+<?= $html->submit('Generar'); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+<?
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='EXTRAOFICE') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RESUMEN DE LOS RECURSOS HUMANOS POR ESCALA DE SALARIOS";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte22(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+$altura1=6;
+	if($_SESSION["SUMA"]>0){
+
+		if($_SESSION["TIPO_TOP"]==2){
+
+$this->SetFont('vera','B',8);
+$this->Cell(0,$altura1,'PERSONAL FIJO A TIEMPO PARCIAL','TRBL',1,'C',true);
+
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(0,$altura1,'AÑO PRESUPUESTADO '.$_SESSION['ejercicio'],'TRB',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(30,$altura1,'Nº DE','R',0,'C');
+$this->Cell(0,$altura1,'MONTO ANUAL DE LAS REMUNERACIONES','R',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(30,$altura1,'GRUPO','TRL',0,'C');
+$this->Cell(176,$altura1,'ESCALAS','TR',0,'C');
+$this->Cell(30,$altura1,'CARGOS','TR',0,'C');
+$this->Cell(45,$altura1,'SUELDO BÁSICO','TR',0,'C');
+$this->Cell(45,$altura1,'COMPENSACIONES','TR',0,'C');
+$this->Cell(0,$altura1,'TOTAL','TR',1,'C');
+
+		}else if($_SESSION["TIPO_TOP"]==3){
+
+$this->SetFont('vera','B',8);
+$this->Cell(0,$altura1,'PERSONAL CONTRATADO','TRBL',1,'C',true);
+
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(0,$altura1,'AÑO PRESUPUESTADO '.$_SESSION['ejercicio'],'TRB',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(30,$altura1,'Nº DE','R',0,'C');
+$this->Cell(0,$altura1,'MONTO ANUAL DE LAS REMUNERACIONES','R',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(30,$altura1,'GRUPO','TRL',0,'C');
+$this->Cell(176,$altura1,'ESCALAS','TR',0,'C');
+$this->Cell(30,$altura1,'CARGOS','TR',0,'C');
+$this->Cell(45,$altura1,'SUELDO BÁSICO','TR',0,'C');
+$this->Cell(45,$altura1,'COMPENSACIONES','TR',0,'C');
+$this->Cell(0,$altura1,'TOTAL','TR',1,'C');
+
+		}else{
+$this->SetFont('vera','B',8);
+$this->Cell(0,$altura1,'PERSONAL FIJO A TIEMPO COMPLETO','TRBL',1,'C',true);
+
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(0,$altura1,'AÑO PRESUPUESTADO '.$_SESSION['ejercicio'],'TRB',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(206,$altura1,'','RL',0,'C');
+$this->Cell(30,$altura1,'Nº DE','R',0,'C');
+$this->Cell(0,$altura1,'MONTO ANUAL DE LAS REMUNERACIONES','R',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(30,$altura1,'GRUPO','TRL',0,'C');
+$this->Cell(176,$altura1,'ESCALAS','TR',0,'C');
+$this->Cell(30,$altura1,'CARGOS','TR',0,'C');
+$this->Cell(45,$altura1,'SUELDO BÁSICO','TR',0,'C');
+$this->Cell(45,$altura1,'COMPENSACIONES','TR',0,'C');
+$this->Cell(0,$altura1,'TOTAL','TR',1,'C');
+		}//encabezado
+	}else{
+	$this->SetFont('vera','B',12);
+	$this->Cell(370,$altura1,'NO TIENE INFORMACIÓN','TRLB',0,'C');
+	}//condicion
+}//fin Header
+
+     function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2009','',1,'R');
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','EXTRAOFICE');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+$_SESSION["SUMA"]=count($datos_nivel_tc)+count($datos_nivel_tp)+count($datos_nivel_pc);
+
+if(count($datos_nivel_tc)>0){
+//PERSONAL FIJO A TIEMPO COMPLETO
+$_SESSION["TIPO_TOP"]==1;
+
+$pdf->AddPage();
+$t1=0;
+$t2=0;
+$t3=0;
+$t4=0;
+
+	foreach($datos_nivel_tc as $r){
+		extract($r[0]);
+		$altura2=6;
+		$pdf->SetFont('vera','B',8);
+
+		$pdf->Cell(30,$altura2,$grupo,'TRL',0,'C');
+	if($escala==1){
+		$pdf->Cell(73,$altura2,'DESDE','T',0,'R');
+		}else{
+	    $pdf->Cell(73,$altura2,$sisap->Formato2($desde_monto),'T',0,'R');
+		    }
+		$pdf->Cell(73,$altura2,'-','T',0,'C');
+	if($escala==17){
+		$pdf->Cell(10,$altura2,'MAS','T',0,'R');
+		}else{
+	    $pdf->Cell(10,$altura2,$sisap->Formato2($hasta_monto),'T',0,'R');
+		    }
+
+		$pdf->Cell(20,$altura2,'','TR',0,'R');
+		$pdf->SetFont('vera','',7);
+
+if ($obreros==0){
+		$pdf->Cell(30,$altura2,'','TR',0,'C');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(0,$altura2,'','TR',1,'R');
+	}else{
+		$pdf->Cell(30,$altura2,$obreros,'TR',0,'C');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($monto_obreros),'TR',0,'R');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($compensaciones_obreros),'TR',0,'R');
+		$pdf->Cell(0,$altura2,$sisap->Formato2($monto_obreros+$compensaciones_obreros),'TR',1,'R');
+}
+
+		$t1+=$obreros;
+		$t2+=$monto_obreros;
+		$t3+=$compensaciones_obreros;
+		$t4+=$monto_obreros+$compensaciones_obreros;
+
+	}//foreach
+
+// TOTALES
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(206,6,'TOTALES: ','TRBL',0,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(30,6,$t1,'TRB',0,'C');
+$pdf->Cell(45,6,$sisap->Formato2($t2),'TRB',0,'R');
+$pdf->Cell(45,6,$sisap->Formato2($t3),'TRB',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($t4),'TRB',1,'R');
+}//fin
+
+
+if(count($datos_nivel_tp)>0){
+// PERSONAL FIJO A TIEMPO PARCIAL
+$_SESSION["TIPO_TOP"] = 2;
+
+$pdf->AddPage();
+$t1=0;
+$t2=0;
+$t3=0;
+$t4=0;
+
+	foreach($datos_nivel_tp as $r){
+		extract($r[0]);
+		$altura2=6;
+		$pdf->SetFont('vera','B',8);
+
+		$pdf->Cell(30,$altura2,$grupo,'TRL',0,'C');
+	if($escala==1){
+		$pdf->Cell(73,$altura2,'DESDE','T',0,'R');
+		}else{
+	    $pdf->Cell(73,$altura2,$sisap->Formato2($desde_monto),'T',0,'R');
+		    }
+		$pdf->Cell(73,$altura2,'-','T',0,'C');
+	if($escala==17){
+		$pdf->Cell(10,$altura2,'MAS','T',0,'R');
+		}else{
+	    $pdf->Cell(10,$altura2,$sisap->Formato2($hasta_monto),'T',0,'R');
+		    }
+
+		$pdf->Cell(20,$altura2,'','TR',0,'R');
+		$pdf->SetFont('vera','',7);
+
+if ($obreros==0){
+		$pdf->Cell(30,$altura2,'','TR',0,'C');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(0,$altura2,'','TR',1,'R');
+	}else{
+		$pdf->Cell(30,$altura2,$obreros,'TR',0,'C');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($monto_obreros),'TR',0,'R');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($compensaciones_obreros),'TR',0,'R');
+		$pdf->Cell(0,$altura2,$sisap->Formato2($monto_obreros+$compensaciones_obreros),'TR',1,'R');
+}
+
+		$t1+=$obreros;
+		$t2+=$monto_obreros;
+		$t3+=$compensaciones_obreros;
+		$t4+=$monto_obreros+$compensaciones_obreros;
+	}//foreach
+
+// TOTALES
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(206,6,'TOTALES: ','TRBL',0,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(30,6,$t1,'TRB',0,'C');
+$pdf->Cell(45,6,$sisap->Formato2($t2),'TRB',0,'R');
+$pdf->Cell(45,6,$sisap->Formato2($t3),'TRB',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($t4),'TRB',1,'R');
+}//fin
+
+
+if(count($datos_nivel_pc)>0){
+// PERSONAL CONTRATADO
+$_SESSION["TIPO_TOP"] = 3;
+
+$pdf->AddPage();
+$t1=0;
+$t2=0;
+$t3=0;
+$t4=0;
+
+	foreach($datos_nivel_pc as $r){
+		extract($r[0]);
+		$altura2=6;
+		$pdf->SetFont('vera','B',8);
+
+		$pdf->Cell(30,$altura2,$grupo,'TRL',0,'C');
+	if($escala==1){
+		$pdf->Cell(73,$altura2,'DESDE','T',0,'R');
+		}else{
+	    $pdf->Cell(73,$altura2,$sisap->Formato2($desde_monto),'T',0,'R');
+		    }
+		$pdf->Cell(73,$altura2,'-','T',0,'C');
+	if($escala==17){
+		$pdf->Cell(10,$altura2,'MAS','T',0,'R');
+		}else{
+	    $pdf->Cell(10,$altura2,$sisap->Formato2($hasta_monto),'T',0,'R');
+		    }
+
+		$pdf->Cell(20,$altura2,'','TR',0,'R');
+		$pdf->SetFont('vera','',7);
+
+if ($obreros==0){
+		$pdf->Cell(30,$altura2,'','TR',0,'C');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(45,$altura2,'','TR',0,'R');
+		$pdf->Cell(0,$altura2,'','TR',1,'R');
+	}else{
+		$pdf->Cell(30,$altura2,$obreros,'TR',0,'C');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($monto_obreros),'TR',0,'R');
+		$pdf->Cell(45,$altura2,$sisap->Formato2($compensaciones_obreros),'TR',0,'R');
+		$pdf->Cell(0,$altura2,$sisap->Formato2($monto_obreros+$compensaciones_obreros),'TR',1,'R');
+}
+
+		$t1+=$obreros;
+		$t2+=$monto_obreros;
+		$t3+=$compensaciones_obreros;
+		$t4+=$monto_obreros+$compensaciones_obreros;
+	}//foreach
+
+// TOTALES
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(206,6,'TOTALES: ','TRBL',0,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(30,6,$t1,'TRB',0,'C');
+$pdf->Cell(45,6,$sisap->Formato2($t2),'TRB',0,'R');
+$pdf->Cell(45,6,$sisap->Formato2($t3),'TRB',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($t4),'TRB',1,'R');
+}//fin
+
+
+$pdf->OutPut('forma_2009_'.date("d-m-Y").'.pdf','D');
+unset($_SESSION["TIPO_TOP"]);
+
+}
+?>

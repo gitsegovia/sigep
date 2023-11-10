@@ -1,0 +1,193 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE PLANILLAS DE LIQUIDACIÓN PREVIA'),strtoupper('PROPAGANDA COMERCIAL'),'750');
+echo $sisap->OpenTable('750');
+$ano=array();
+for($i=2000;$i<2100;$i++){
+	$ano[$i]=$i;
+}
+
+$meses= array('1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd900_planilla_liquidacion_previa_propaganda/2/'); ?>" onsubmit="return valida_shd900_planillas_liquidacion()"  >
+	 <center>
+	  Año: <?= $sisap->selectTagRemote('reporte_hacienda/ano', $ano,  null,  $ano1, array('onchange1'=>'/', 'update1'=>'vacio', 'id'=>'ano','style'=>'width:10%', 'onChange'=>'vacio'  , true), null, true);?>
+	  <br><br>
+	   Mes: <?= $sisap->selectTagRemote('reporte_hacienda/mes', $meses,  null,  '', array('onchange1'=>'/', 'update1'=>'vacio', 'id'=>'mes','style'=>'width:20%', 'onChange'=>'vacio'  , true), null, true);?>
+	   <br><br>
+	   <?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Por cobrar','2'=>'Cobrados'), array('url1'=>'/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+
+     </center>
+
+       <center>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </center>
+
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    $meses= array('1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+	$titulo_A = "RELACIÓN DE PLANILLAS DE LIQUIDACIÓN PREVIA - PROPAGANDA COMERCIAL";
+	if(isset($_SESSION['mes_report'])){
+		$titulo_B = "MES: ".$meses[$_SESSION['mes_report']]." AÑO: ".$_SESSION['ano_report'];
+	}else{
+		$titulo_B = " AÑO: ".$_SESSION['ano_report'];
+	}
+
+	if($_SESSION['tipo']==1){
+		$tipo="POR COBRAR";
+	}else{
+		$tipo="COBRADOS";
+	}
+	$titulo_C = $tipo;
+       	$this->top_reporte2(array($titulo_A,$titulo_B,$titulo_C), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"191"));
+
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(13,3,"",'TRL',0,'C');
+		$this->Cell(13,3,"",'TR',0,'C');
+		$this->Cell(18,3,"Número",'TR',0,'C');
+		$this->Cell(16,3,"",'TR',0,'C');
+		$this->Cell(51,3,"Nombres y Apellidos",'TR',0,'C');
+		$this->Cell(20,3,"Frecuencia",'TR',0,'C');
+		$this->Cell(25,3,"Monto",'TR',0,'C');
+		$this->Cell(25,3,"Monto",'TR',0,'C');
+		$this->Cell(0,3,"Monto",'TR',1,'C');
+
+		$this->Cell(13,3,"Año",'RBL',0,'C');
+		$this->Cell(13,3,"Mes",'RB',0,'C');
+		$this->Cell(18,3,"Planilla",'RB',0,'C');
+		$this->Cell(16,3,"RIF / C.I.",'RB',0,'C');
+		$this->Cell(51,3,"Razón social",'RB',0,'C');
+		$this->Cell(20,3,"de pago",'RB',0,'C');
+		$this->Cell(25,3,"Deuda",'RB',0,'C');
+		$this->Cell(25,3,"Descuento",'RB',0,'C');
+		$this->Cell(0,3,"a pagar",'RB',1,'C');
+
+
+
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+if($datos!=null){
+$meses= array('1'=>'Ene','2'=>'Feb','3'=>'Mar','4'=>'Abr','5'=>'May','6'=>'Jun','7'=>'Jul','8'=>'Ago','9'=>'Sep','10'=>'Oct','11'=>'Nov','12'=>'Dic');
+
+$pdf->SetFont('vera','',5);
+$total_deuda=0;
+$total_pagar=0;
+for($i=0; $i<count($datos); $i++){
+
+	if($datos[$i][0]['frecuencia_pago']==1){
+		$frecuencia='MENSUAL';
+	}else if($datos[$i][0]['frecuencia_pago']==2){
+		$frecuencia='BIMESTRAL';
+	}else if($datos[$i][0]['frecuencia_pago']==3){
+		$frecuencia='TRIMESTRAL';
+	}else if($datos[$i][0]['frecuencia_pago']==4){
+		$frecuencia='SEMESTRAL';
+	}else if($datos[$i][0]['frecuencia_pago']==5){
+		$frecuencia='ANUAL';
+	}
+
+	$total_deuda=($datos[$i][0]['deuda_vigente']+$datos[$i][0]['monto_recargo']+$datos[$i][0]['monto_multa']+$datos[$i][0]['monto_intereses']);
+	$total_pagar=($total_deuda-$datos[$i][0]['monto_descuento']);
+
+
+	$pdf->Cell(13,6,$datos[$i][0]['ano'],'RL',0,'C');//--[Año]
+	$pdf->Cell(13,6,$meses[$datos[$i][0]['mes']],'R',0,'C');//--[Mes]
+	$pdf->Cell(18,6,mascara_seis($datos[$i][0]['numero_planilla']),'R',0,'C');//--[Número Planilla]
+	$pdf->Cell(16,6,$datos[$i][0]['rif_cedula'],'R',0,'C');//--[RIF / C.I.]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(51,1,"",'',2,'C');
+	$pdf->MultiCell(51,2,$datos[$i][0]['razon_social_nombres'],'','L');//--[Razón social]
+	$varX = $varX+51;
+	$pdf->SetXY($varX,$varY);
+	//$pdf->Cell(42,5,"Jose Rafael Gutierrez Otto",'RB',0,'L');
+	$pdf->Cell(20,6,$frecuencia,'RL',0,'C');//--[Frecuencia de pago]
+	$pdf->Cell(25,6,$sisap->Formato2($total_deuda),'R',0,'R');//--[Monto Descuento]
+	$pdf->Cell(25,6,$sisap->Formato2($datos[$i][0]['monto_descuento']),'R',0,'R');//--[Monto Deuda]
+	$pdf->Cell(0,6,$sisap->Formato2($total_pagar),'R',1,'R');//--[Monto a pagar]
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+
+}else{
+
+
+	$pdf->Cell(13,6,'','RL',0,'C');//--[Mes]
+	$pdf->Cell(13,6,'','R',0,'C');//--[Número Planilla]
+	$pdf->Cell(18,6,'','R',0,'R');//--[RIF / C.I.]
+	$pdf->Cell(16,6,'','R',0,'R');//--[RIF / C.I.]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(51,1,"",'',2,'C');
+	$pdf->MultiCell(51,2,'','','L');//--[Razón social]
+	$varX = $varX+51;
+	$pdf->SetXY($varX,$varY);
+	//$pdf->Cell(42,5,"Jose Rafael Gutierrez Otto",'RB',0,'L');
+	$pdf->Cell(20,6,'','RL',0,'C');//--[Frecuencia de pago]
+	$pdf->Cell(25,6,'','R',0,'R');//--[Monto Descuento]
+	$pdf->Cell(25,6,'','R',0,'R');//--[Monto Deuda]
+	$pdf->Cell(0,6,'','R',1,'R');//--[Monto a pagar]
+	$pdf->Cell(0,0,"",'T',1);
+
+
+
+}
+
+$pdf->Output('relacion_planillas_liquidacion_previa_'.date("d_m_Y_h"), 'D');//Poner nombre y la opcion D
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

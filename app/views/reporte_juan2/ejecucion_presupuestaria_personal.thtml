@@ -1,0 +1,125 @@
+<?php
+if(isset($ELFORM) && $ELFORM==true){
+	?>
+  <?= $sisap->Tabla('',true,'EJECUCIÓN PRESUPUESTARIA PARTIDA 401','','850');?>
+  <?= $sisap->OpenTable("850")?>
+  <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_juan2/ejecucion_presupuestaria_personal/GENERAR'); ?>" onsubmit="return validar_pdf_balance_personal();">
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '<br>', true)  ?>
+
+  <center>
+    <?= $html->radio('reporte/modo', array('1'=>'Por Año', '2'=>'Por Fecha'), " | ",array('value'=>3,'onClick'=>'condicion_balance_personal();'))?>
+  <br>
+  <br>
+  <br>
+  <div id="seccion_ejecucion" style="display: none;">
+    Indique Año de Ejecuci&oacute;n:
+
+    <?= $html->input('reporte/ano',array('id'=>'ano', 'size'=>'6','value'=>$ANO,'maxlength'=>4, "style"=>"text-align:center;", "onKeyPress"=>"return solonumeros(event);"));?>
+  </div>
+  <div id="seccion_fecha" style="display: none;">
+    Fecha Desde: <?=$sisap->input_fecha('reporte','fecha_desde','fecha_desde',date('d/m/Y'))?>
+    <br/>
+    Fecha Hasta: <?=$sisap->input_fecha('reporte','fecha_hasta','fecha_hasta',date('d/m/Y'))?>
+  </div>
+  </center>
+  <br>
+  <?=$html->submit('Generar');?>&nbsp;
+  <?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+  <br><br>
+  </form>
+  <?=$sisap->CloseTable()?>
+<?
+}else if(isset($ELFORM) && $ELFORM==false){
+  $_SESSION['subtitle'] = $SUBTITLE;
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+		$this->top_reporte("EJECUCIÓN PRESUPUESTARIA - PARTIDA 401", $_SESSION['subtitle'], null, array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"190"));
+
+    $this->Ln(3);
+    $this->SetFont('vera','B',6);
+    $this->Cell(95,4,'DEPENDENCIA','BLT',0,'C');
+    $this->Cell(20,4,'SECTOR','BLT',0,'C');
+    $this->Cell(20,4,'PROGRAMA','BLT',0,'C');
+    $this->Cell(20,4,'SUB PROGR.','BLT',0,'C');
+    $this->Cell(20,4,'ACTIVIDAD','BLT',0,'C');
+    $this->Cell(0,4,'MONTO','BLRT',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+
+$fpdf = new fpdfview('P','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(5);
+$fpdf->SetRightMargin(5);
+$fpdf->SetAutoPageBreak(true, 5);
+
+  $total_centralizado=0;
+  $total_descentralizado=0;
+  $total=0;
+  $fpdf->AddPage();
+  $fpdf->SetFont('vera','',6);
+foreach($DATA as $rs){
+  //******************************* PRIMER BLOQUE **************************************//
+  
+  $cBen=strlen($rs[0]["deno_dependencia"]);
+  if($cBen>120){
+    $alto=10;
+  }else if($cBen>70){
+    $alto=7;    
+  }else{
+    $alto=4;
+  }
+  $fpdf->Cell(1,$alto,"",'L',0,'');//para hacer espacio
+  $varX = $fpdf->GetX();
+  $varY = $fpdf->GetY();
+  $fpdf->MultiCell(94,3,$rs[0]["deno_dependencia"],'','L');//---[Beneficiario]
+  $varX = $varX+94;
+  $fpdf->SetXY($varX,$varY);
+  $fpdf->Cell(20,$alto,$rs[0]["cod_sector"],'L',0,'C');
+  $fpdf->Cell(20,$alto,$rs[0]["cod_programa"],'L',0,'C');
+  $fpdf->Cell(20,$alto,$rs[0]["cod_sub_prog"],'L',0,'C');
+  $fpdf->Cell(20,$alto,$rs[0]["cod_activ_obra"],'L',0,'C');
+  $fpdf->Cell(0,$alto,$sisap->Formato2($rs[0]["monto"]),'LR',1,'R');
+  $fpdf->Cell(0,0,"",'T',1,'R');
+  if($rs[0]["cod_dep"]==1){
+    $total_centralizado+=$rs[0]["monto"];
+  }else{
+    $total_descentralizado+=$rs[0]["monto"];
+  }
+  $total+=$rs[0]["monto"];
+}
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(95,4,"TOTAL",'L',0,'L');
+$fpdf->Cell(0,4,$sisap->Formato2($total),'LR',1,'R');
+$fpdf->Cell(0,0,"",'T',1,'R');
+$fpdf->Ln(4);
+$fpdf->Cell(95,4,"TOTAL ENTE CENTRALIZADO",'TL',0,'L');
+$fpdf->Cell(0,4,$sisap->Formato2($total_centralizado),'TLR',1,'R');
+$fpdf->Cell(0,0,"",'T',1,'R');
+$fpdf->Ln(2);
+$fpdf->Cell(95,4,"TOTAL ENTES DECENTRALIZADO",'LT',0,'L');
+$fpdf->Cell(0,4,$sisap->Formato2($total_descentralizado),'LTR',1,'R');
+$fpdf->Cell(0,0,"",'T',1,'R');
+
+$fpdf->Output('ejecucion_presupuestaria_personal_'.date("d-m-Y").".pdf",'D');
+
+
+
+}//fin else if
+?>

@@ -1,0 +1,125 @@
+<?= $sisap->Tabla($session->read('entidad_federal'),true,'Usuarios en la Red','','750'); ?>
+<?= $sisap->OpenTable('750'); ?>
+<form name='data[cugp04_entrada_modulo]'  method = "post" id='form'>
+<div id="recargar">
+<div style="height:300px;overflow:auto;">
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr  style:"position:fixed" align="center" class="tr_negro">
+		<td width='10%'>Código Dep</td>
+		<td width='56%'>Denominación dependencia</td>
+		<td width='15%'>Username</td>
+		<td width='15%'>Hora entrada al modulo</td>
+		<td width='4%'>---</td>
+	</tr>
+
+<?php
+if(isset($datos)){
+	$i=0;
+	$j=0;
+	foreach($deno_arrd05 as $x){
+		$deno[$j] = $x['arrd05']['denominacion'];
+		$codigo[$j] = $x['arrd05']['cod_dep'];
+		$j++;
+	}
+	foreach($datos as $row){
+		$cod_dep = $row['cugd04_entrada_modulo']['cod_dep'];
+		$username = $row['cugd04_entrada_modulo']['username'];
+		$hora_entrada = $row['cugd04_entrada_modulo']['hora_entrada_modulo'];
+		$hora_comercial = $row['cugd04_entrada_modulo']['hora_comercial'];
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+<td class="td2center">
+	<?=mascara($cod_dep,4); ?>
+</td>
+<td align="legth">
+	<?= denominacion($deno, $codigo,$cod_dep); ?>
+</td>
+<td align="legth">
+	<?=$username?>
+</td>
+<td class="td2center">&nbsp;
+	<?=$hora_comercial?>
+</td>
+	<td align="center">
+	<?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cugp04_entrada_modulo/eliminar_items/'.$cod_dep.'/'.$username, array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar esta transaccion de la Lista?',false,true) ?>
+	</td>
+
+</tr>
+<?php
+$i++;
+}?>
+<tr>
+	<td colspan="4" align="right">TOTAL USUARIOS:</td>
+	<td colspan="2" align="right"><?=$sisap->zero($i)?></td>
+</tr>
+<?
+}else{
+
+
+?>
+<tr>
+<td class="td2center">
+---
+</td>
+<td class="td2center">
+---
+</td>
+<td class="td2center">
+---
+</td>
+<td class="td2center"	>
+---
+</td>
+<td class="td2center"	>
+---
+</td>
+</tr>
+<?php
+}
+?>
+
+</table>
+</div>
+</div>
+<center><br>
+<table>
+	<tr>
+		<td>
+			<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Refrescar'), array('url1' => '/cugp04_entrada_modulo/actualizar', 'update1'=>'recargar'))?>
+			<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+		</td>
+	</tr>
+</table>
+</form>
+<?= $sisap->CloseTable(); ?>
+<?php
+$sisap->CssSelect();
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+
+
+?>

@@ -1,0 +1,497 @@
+<?php
+ if(isset($var) && $var=="no"){
+?>
+
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"DEPÓSITOS PORTAL PATRIA","","950","cnmp");?>
+
+<form name="data[reporte_personal]" method="post" id='form' action="<?php echo $html->url('/reporte_personal/depositos_bancarios/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" style="empty-cells: show;" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="18%">&nbsp;</td>
+			<td width="15%" align="center">Seleccione</td>
+			<td width="10%" align="center">Código</td>
+			<td align="center">Denominación de nómina</td>
+		</tr>
+		<tr>
+			<td align="center"><b>Tipo de nómina:</b></td>
+			<td><?= $sisap->selectTagRemote('reporte_personal/select_tiponomina',  $lista,  null,  null ,array('onchange1'=>'/reporte_personal/denominacion_tiponomina_patria/', 'update1'=>'td-info-nomina','onchange2'=>'/reporte_personal/lista_bancos_ordenamiento_patria', 'update2'=>'lista_bancos_ordenamiento',  'id'=>'select_tiponomina', 'style'=>'width:100%', true), null, true); ?></td>
+			<td colspan="2">
+				<div id="td-info-nomina">
+				<table width="100%" border="0" cellpadding="0" cellspacing="0" style="empty-cells: show;">
+					<tr>
+						<td width="14%" style="border-right:0px solid #000000; border-left:0px solid #000000; border-bottom:0px solid #000000"><input type="text" name="cod_nomina" id="cod_nomina" value="" readOnly="readOnly" class="inputtext" style="text-align:center" /></td>
+						<td style="border-right:0px solid #000000; border-left:1px solid #000000; border-bottom:0px solid #000000"><input type="text" name="deno_nomina" id="deno_nomina" value="" readOnly="readOnly" class="inputtext" /></td>
+					</tr>
+				</table>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div id="lista_bancos_ordenamiento"></div>
+	<div id="lista_bancos"></div>
+	<?= $sisap->buttonTagRemote('/reporte_personal/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="si"){
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "DEPÓSITOS BANCARIOS";
+	//$this->top_reporte($titulo_A, $titulo_B, $titulo_C, array("Y"=>"4", "X"=>"12", "Z"=>"13"), array("Y"=>"14", "X"=>"254"));
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+    }//fin funtion
+
+
+	function Footer() {
+
+		if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+			$this->SetY(-15);
+			$this->SetFont('vera','',6);
+	        $this->Cell(5,5,'','',0,'C');
+	        $this->Cell(35,5,'ELABORADO POR:','T',0,'C');
+	        $this->Cell(15,5,'','',0,'C');
+			$this->Cell(35,5,'REVISADO POR:','T',0,'C');
+			$this->Cell(15,5,'','',0,'C');
+			$this->Cell(35,5,'CONFORMADO POR:','T',0,'C');
+			$this->Cell(15,5,'','',0,'C');
+			$this->Cell(35,5,'CONFORMADO PRESUPUESTARIAMENTE POR:','T',0,'C');
+			$this->Cell(0,5, '','',1,'C');
+		}
+
+	}
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+	$pdf->SetAutoPageBreak(true, 30);
+}else{
+	$pdf->SetAutoPageBreak(true, 5);
+}
+
+$pdf->AddPage();
+extract($data1[0]['Cnmd01']);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(25,4,'','',0,'C');
+$pdf->Cell(30,4,'TIPO DE NÓMINA:','',0,'R');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(80,4,mascara($cod_tipo_nomina,3).' - '.$denominacion,'B',0,'L');
+$pdf->Cell(0,4,'','',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(25,5,'','',0,'C');
+$pdf->Cell(30,5,'CORRESPONDIENTE:','',0,'R');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(80,5,''.$correspondiente,'B',0,'L');
+$pdf->Cell(0,5,'','',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(25,5,'','',0,'C');
+$pdf->Cell(30,5,'NÓMINA N°:','',0,'R');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(80,5,''.mascara($numero_nomina,3).' Periodo Desde: '.cambiar_formato_fecha($periodo_desde).' Hasta: '.cambiar_formato_fecha($periodo_hasta),'B',0,'L');
+$pdf->Cell(0,5,'','',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(25,4,'','',0,'C');
+$pdf->Cell(30,4,'BANCO:','',0,'R');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(80,4,''.$banco[0][0]['denominacion'],'B',0,'L');
+$pdf->Cell(0,4,'','',1,'C');
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',7);
+
+//$pdf->SetFont('vera','',7);
+$neto_total=0;
+$total_personas=0;
+
+
+if(isset($codip_banco) && $codip_banco==134){
+
+$pdf->Cell(30,4,'NETO A COBRAR','TRL',0,'C');
+$pdf->Cell(46,4,'CUENTA BANCARIA','TR',0,'C');
+$pdf->Cell(33,5,'CÉDULA DE IDENTIDAD','TR',0,'C');
+$pdf->Cell(0,4,'APELLIDOS Y NOMBRES','TR',1,'C');
+
+foreach($data3 as $rs){
+	extract($rs[0]);
+	$neto = $asignaciones - $deducciones;
+	$neto_if = $asignaciones - $deducciones;
+	if($neto_if!=0.00){
+		$pdf->SetFont('vera','',9);
+		$pdf->Cell(30,7,$sisap->Formato2($neto),'TRL',0,'C');
+		$pdf->Cell(46,7,$cuenta_bancaria,'TR',0,'C');
+		$pdf->Cell(33,7,$cedula_identidad,'TR',0,'C');
+			/* $varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(91,1,"",'T',2,'C');
+			$pdf->MultiCell(90,3,$nombre_completo,'','L');
+			$varX = $varX+91;
+			$pdf->SetXY($varX,$varY); */
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(0,7,$nombre_completo,'TR',1,'L');
+		$neto_total += $neto;
+		$total_personas++;
+	}
+	$pdf->Cell(0,0,"",'T',1);// Linea
+}
+
+$pdf->SetFont('vera','B',9);
+$pdf->SetTextColor(160,0,0);
+$pdf->Cell(30,5,$sisap->Formato2($neto_total),'TRBL',0,'C');
+$pdf->Cell(0,5,'<< T O T A L E S','TRB',1,'L');
+
+$pdf->Cell(30,5,$total_personas,'TRBL',0,'C');
+$pdf->Cell(0,5,'<< T O T A L   NRO.  P E R S O N A S','TRB',1,'L');
+$pdf->SetTextColor(0,0,0);
+
+}else{
+
+$pdf->Cell(33,5,'CÉDULA DE IDENTIDAD','TRL',0,'C');
+$pdf->Cell(91,4,'APELLIDOS Y NOMBRES','TR',0,'C');
+$pdf->Cell(46,4,'CUENTA BANCARIA','TR',0,'C');
+$pdf->Cell(0,4,'NETO A COBRAR','TR',1,'C');
+
+foreach($data3 as $rs){
+//	extract($rs['depositos_bancarios_final']);
+	extract($rs[0]);
+	$neto = $asignaciones - $deducciones;
+	$neto_if = $asignaciones - $deducciones;
+	//$neto_if = (int) $neto_if;
+	if($neto_if!=0.00){
+		$pdf->SetFont('vera','',10);
+		$pdf->Cell(33,7,$cedula_identidad,'TRL',0,'C');
+		$pdf->SetFont('vera','',9);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(91,1,"",'T',2,'C');
+			$pdf->MultiCell(90,3,$nombre_completo,'','L');
+			$varX = $varX+91;
+			$pdf->SetXY($varX,$varY);
+		//$pdf->Cell(95,5,$nombre_completo,'TRB',0,'L');
+		$pdf->Cell(46,7,$cuenta_bancaria,'TRL',0,'C');
+		$pdf->SetFont('vera','',9);
+		$pdf->Cell(0,7,$sisap->Formato2($neto),'TR',1,'R');
+		$neto_total += $neto;
+		$total_personas++;
+	}
+	$pdf->Cell(0,0,"",'T',1);// Linea
+}
+
+$pdf->SetFont('vera','B',9);
+$pdf->Cell(170,5,'T O T A L E S','TRLB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($neto_total),'TRB',1,'R');
+
+$pdf->Cell(170,5,'T O T A L   NRO.  P E R S O N A S','TRLB',0,'R');
+$pdf->Cell(0,5,$total_personas,'TRB',1,'R');
+}
+
+$pdf->Output('depositos_bancarios_'.date('d-m-Y').'.pdf','D');
+}elseif(isset($var) && $var=="txt"){
+
+ 	echo $filas_archivo;
+
+}elseif(isset($var) && $var=="hojac"){
+	    set_time_limit(0);
+
+	   	if($data3[0][0]['cod_entidad_bancaria']==149){//banco soberano
+ 		    	vendor ('Writer');
+			$workbook = new Spreadsheet_Excel_Writer();
+			$worksheet =& $workbook->addWorksheet('Hoja 1');
+			$worksheet->setInputEncoding('iso-8859-1');
+			$worksheet->setColumn(0, 0, 10, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(1, 1, 45, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(2, 11, 30, $format = null, $hidden = 0, $level = 0);
+
+		    $var_filas[0]=array('NACIONALIDAD','CEDULA DE IDENTIDAD','CODIGO DE BANCO','CODIGO AGENCIA','DIGITO VERIFICADOR','NUMERO DE CUENTA','MONTO DEL ABONO','BENEFICIARIO');
+		   	$fila_celda=0;
+		    $nombre='deposito_bancario';
+		    $var_date=date('His').'_'.rand();
+		    $archivo = $nombre.'_'.$var_date.'.xls';
+	 	    $filas_archivo="";
+			foreach($data3 as $rsdata){
+				extract($rsdata[0]);
+
+				$nacion=up($nacionalidad);
+				$cedula = mascara($cedula_identidad,9);
+				$nombre_completo = str_replace('  ',' ',trim($nombre_completo));
+				$nombre_completo = str_replace("\t",' ',$nombre_completo);
+				$nombre_completo = str_replace("Ñ",'@',$nombre_completo);
+				$nombre = elimina_acentos($nombre_completo);//cortar_cadena_diskette(elimina_acentos($nombre_completo), 30);
+				$nombre = str_replace("@",'Ñ',$nombre);
+				$cuenta = $cuenta_bancaria;
+				$neto_cobrar_1 = $asignaciones - $deducciones;
+				$neto_aux = str_replace('.','',$neto_cobrar_1);
+				$neto_cobrar_2 = mascara($neto_aux,15);
+				if($neto_cobrar_2!=0){
+					            $fila_celda++;
+				                $cols[0]=(string)$nacion;
+				                $cols[1]=(string)$cedula;
+				                $cols[2]=(string)mascara(substr ($cuenta_bancaria,1,3),4);
+				                $cols[3]=(string)substr ($cuenta_bancaria,4,4);
+				                $cols[4]=(string)substr ($cuenta_bancaria,8,2);
+				                $cols[5]=(string)substr ($cuenta_bancaria,10,10);
+	                            $cols[6]=(string)$neto_cobrar_2;
+				                $cols[7]=(string)$nombre;
+
+							    $var_filas[$fila_celda]=$cols;
+				}
+
+			}
+
+			foreach($var_filas as $key => $value) {
+				$i = 0;
+	    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+	      			$worksheet->writeString($key, $i, ((string)$fieldvalue));
+	      			$i++;
+	  			}
+			}
+	   	}else if($data3[0][0]['cod_entidad_bancaria']==191){//BANCO NACIONAL CREDITO BNC
+ 		    	vendor ('Writer');
+			$workbook = new Spreadsheet_Excel_Writer();
+			$worksheet =& $workbook->addWorksheet('Hoja 1');
+			$worksheet->setInputEncoding('iso-8859-1');
+			$worksheet->setColumn(0, 0, 10, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(1, 1, 45, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(2, 11, 30, $format = null, $hidden = 0, $level = 0);
+
+		    $var_filas[0]=array('TRANSACCION',' ','CUENTA','MONTO','NACIONALIDAD','CEDULA DE IDENTIDAD');
+		   	$fila_celda=0;
+		    $nombre='deposito_bancario';
+		    $var_date=date('His').'_'.rand();
+		    $archivo = $nombre.'_'.$var_date.'.xls';
+	 	    $filas_archivo="";
+			foreach($data3 as $rsdata){
+				extract($rsdata[0]);
+
+				$nacion=up($nacionalidad);
+				$cedula = mascara($cedula_identidad,9);
+				$nombre_completo = str_replace('  ',' ',trim($nombre_completo));
+				$nombre_completo = str_replace("\t",' ',$nombre_completo);
+				$nombre_completo = str_replace("Ñ",'@',$nombre_completo);
+				$nombre = elimina_acentos($nombre_completo);//cortar_cadena_diskette(elimina_acentos($nombre_completo), 30);
+				$nombre = str_replace("@",'Ñ',$nombre);
+				$cuenta = $cuenta_bancaria;
+				$neto_cobrar_1 = $asignaciones - $deducciones;
+				$neto_aux = str_replace('.','',$neto_cobrar_1);
+				$neto_cobrar_2 = mascara($neto_aux,13);
+				if($neto_cobrar_2!=0){
+					            $fila_celda++;
+				                $cols[0]=(string)'NC';
+				                $cols[1]=(string)' ';
+				                $cols[2]=(string)mascara($cuenta_bancaria,10);
+	                            $cols[3]=(string)$neto_cobrar_2;
+				                $cols[4]=(string)$nacion;
+				                $cols[5]=(string)$cedula;
+
+							    $var_filas[$fila_celda]=$cols;
+				}
+
+			}
+
+			foreach($var_filas as $key => $value) {
+				$i = 0;
+	    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+	      			$worksheet->writeString($key, $i, ((string)$fieldvalue));
+	      			$i++;
+	  			}
+			}
+
+
+ 		}else if($data3[0][0]['cod_entidad_bancaria']==163){//banco del tesoro
+	    	vendor ('Writer');
+			$workbook = new Spreadsheet_Excel_Writer();
+			$worksheet =& $workbook->addWorksheet('Hoja 1');
+			$worksheet->setInputEncoding('iso-8859-1');
+			$worksheet->setColumn(0, 0, 10, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(1, 1, 45, $format = null, $hidden = 0, $level = 0);
+			$worksheet->setColumn(2, 11, 30, $format = null, $hidden = 0, $level = 0);
+
+		    $var_filas[0]=array('','NOMBRE Y APELLIDO','CEDULA','CUENTA','SUELDO');
+		   	$fila_celda=0;
+		    $nombre='deposito_bancario';
+		    $var_date=date('His').'_'.rand();
+		    $archivo = $nombre.'_'.$var_date.'.xls';
+	 	    $filas_archivo="";
+			foreach($data3 as $rsdata){
+				extract($rsdata[0]);
+
+				$cedula = up($nacionalidad).mascara($cedula_identidad,9);
+				$nombre_completo = str_replace('  ',' ',trim($nombre_completo));
+				$nombre_completo = str_replace("\t",' ',$nombre_completo);
+				$nombre_completo = str_replace("Ñ",'@',$nombre_completo);
+				$nombre = elimina_acentos($nombre_completo);//cortar_cadena_diskette(elimina_acentos($nombre_completo), 30);
+				$nombre = str_replace("@",'Ñ',$nombre);
+				$cuenta = $cuenta_bancaria;
+				$neto_cobrar_1 = $asignaciones - $deducciones;
+				$neto_aux = explode('.',$neto_cobrar_1);
+				if(isset($neto_aux[1])){
+					$decimal=$neto_aux[1];
+				}else{
+					$decimal=33;
+				}
+				$decimal= str_pad($decimal, 2 , "0", STR_PAD_RIGHT).'';
+//				$neto_cobrar_1 = $neto_aux[0].','.$decimal;
+				$neto_cobrar_1 = $neto_cobrar_1;
+				//$neto_cobrar_2 = mascara($neto_cobrar_1,15);
+				$neto_cobrar_2 = $neto_cobrar_1;
+				//echo $cedula.$nombre.$cuenta.$neto_cobrar_2."\n";
+				if($neto_cobrar_2!=0){
+					            $fila_celda++;
+				                $cols[0]=(string)'';
+				                $cols[1]=(string)$nombre;
+				                $cols[2]=(string)$cedula;
+				                $cols[3]=(string)$cuenta;
+	                            $cols[4]=(string)$sisap->Formato2($neto_cobrar_2);
+							    $var_filas[$fila_celda]=$cols;
+				}
+
+			}
+
+			foreach($var_filas as $key => $value) {
+				$i = 0;
+	    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+	      			$worksheet->writeString($key, $i, ((string)$fieldvalue));
+	      			$i++;
+	  			}
+			}
+
+	    }else if($data3[0][0]['cod_entidad_bancaria']==134){//banesco
+        vendor ('Writer');
+		$workbook = new Spreadsheet_Excel_Writer();
+		$worksheet =& $workbook->addWorksheet('Hoja 1');
+		$worksheet->setInputEncoding('iso-8859-1');
+		$worksheet->setColumn(0, 0, 18, $format = null, $hidden = 0, $level = 0);
+		$worksheet->setColumn(1, 1, 30, $format = null, $hidden = 0, $level = 0);
+		$worksheet->setColumn(2, 11, 20, $format = null, $hidden = 0, $level = 0);
+
+	    $var_filas[0]=array('SUELDO','CUENTA','CEDULA','NOMBRE Y APELLIDO');
+	   	$fila_celda=0;
+	    $nombre='deposito_bancario';
+	    $var_date=date('His').'_'.rand();
+	    $archivo = $nombre.'_'.$var_date.'.xls';
+ 	    $filas_archivo="";
+		foreach($data3 as $rsdata){
+			extract($rsdata[0]);
+
+			$cedula = up($nacionalidad).mascara($cedula_identidad,8);
+			$nombre_completo = str_replace('  ',' ',trim($nombre_completo));
+			$nombre_completo = str_replace("\t",' ',$nombre_completo);
+			$nombre_completo = str_replace("Ñ",'@',$nombre_completo);
+			$nombre = elimina_acentos($nombre_completo);//cortar_cadena_diskette(elimina_acentos($nombre_completo), 30);
+			$nombre = str_replace("@",'Ñ',$nombre);
+			$cuenta = $cuenta_bancaria;
+			$neto_cobrar_1 = $asignaciones - $deducciones;
+			$neto_aux = explode('.',$neto_cobrar_1);
+			if(isset($neto_aux[1])){
+				$decimal=$neto_aux[1];
+			}else{
+				$decimal=0;
+			}
+			$decimal= str_pad($decimal, 2 , "0", STR_PAD_RIGHT).'';
+			$neto_cobrar_1 = $neto_aux[0].','.$decimal;
+			//$neto_cobrar_2 = mascara($neto_cobrar_1,15);
+			$neto_cobrar_2 = $neto_cobrar_1;
+			//echo $cedula.$nombre.$cuenta.$neto_cobrar_2."\n";
+			                $fila_celda++;
+                            $cols[0]=$neto_cobrar_2;
+						    $cols[1]=$cuenta;
+						    $cols[2]=$cedula;
+						    $cols[3]=$nombre;
+						    $var_filas[$fila_celda]=$cols;
+		}
+
+		foreach($var_filas as $key => $value) {
+			$i = 0;
+    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      			$worksheet->writeString($key, $i, $fieldvalue);
+      			$i++;
+  			}
+		}
+
+   	}else{
+
+   		        vendor ('Writer');
+		$workbook = new Spreadsheet_Excel_Writer();
+		$worksheet =& $workbook->addWorksheet('Hoja 1');
+		$worksheet->setInputEncoding('iso-8859-1');
+		$worksheet->setColumn(0, 0, 18, $format = null, $hidden = 0, $level = 0);
+		$worksheet->setColumn(1, 1, 30, $format = null, $hidden = 0, $level = 0);
+		$worksheet->setColumn(2, 11, 20, $format = null, $hidden = 0, $level = 0);
+
+	    $var_filas[0]=array('SUELDO','CUENTA','CEDULA','NOMBRE Y APELLIDO');
+	   	$fila_celda=0;
+	    $nombre='deposito_bancario';
+	    $var_date=date('His').'_'.rand();
+	    $archivo = $nombre.'_'.$var_date.'.xls';
+ 	    $filas_archivo="";
+		foreach($data3 as $rsdata){
+			extract($rsdata[0]);
+
+			$cedula = up($nacionalidad).mascara($cedula_identidad,8);
+			$nombre_completo = str_replace('  ',' ',trim($nombre_completo));
+			$nombre_completo = str_replace("\t",' ',$nombre_completo);
+			$nombre_completo = str_replace("Ñ",'@',$nombre_completo);
+			$nombre = elimina_acentos($nombre_completo);//cortar_cadena_diskette(elimina_acentos($nombre_completo), 30);
+			$nombre = str_replace("@",'Ñ',$nombre);
+			$cuenta = $cuenta_bancaria;
+			$neto_cobrar_1 = $asignaciones - $deducciones;
+			$neto_aux = explode('.',$neto_cobrar_1);
+			if(isset($neto_aux[1])){
+				$decimal=$neto_aux[1];
+			}else{
+				$decimal=0;
+			}
+			$decimal= str_pad($decimal, 2 , "0", STR_PAD_RIGHT).'';
+			$neto_cobrar_1 = $neto_aux[0].','.$decimal;
+			//$neto_cobrar_2 = mascara($neto_cobrar_1,15);
+			$neto_cobrar_2 = $neto_cobrar_1;
+			//echo $cedula.$nombre.$cuenta.$neto_cobrar_2."\n";
+			                $fila_celda++;
+                            $cols[0]=$neto_cobrar_2;
+						    $cols[1]=$cuenta;
+						    $cols[2]=$cedula;
+						    $cols[3]=$nombre;
+						    $var_filas[$fila_celda]=$cols;
+		}
+
+		foreach($var_filas as $key => $value) {
+			$i = 0;
+    		foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      			$worksheet->writeString($key, $i, $fieldvalue);
+      			$i++;
+  			}
+		}
+
+
+ }//fin else
+
+
+
+		$workbook->send($archivo);
+		$workbook->close();
+
+}
+
+?>

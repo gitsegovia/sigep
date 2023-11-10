@@ -1,0 +1,175 @@
+<?if($opcion1==1){ ?>
+<?$sisap->Tabla("",true,"UBICACIONES ADMINISTRATIVAS","","950")?>
+<form name='data[reporte]' method = "post" id='form_reporte' action="<?php echo $html->url('/reporte/ubicacion_administrativa/2'); ?>" >
+<?$sisap->OpenTable("950");?>
+
+<table border="0">
+	<tr>
+		<td>
+		    <?= $sisap->radioTagRemote("reporte/tipo_busqueda", array('1'=>'Todo','2'=>'Dependencia','3'=>'Direccion superior','4'=>'Coordinacion','5'=>'Secretaria','6'=>'Direccion','7'=>'Division','8'=>'Departamento','9'=>'Oficina'), array('url1'=>'/reporte/select_busqueda_administrativa/', 'update1'=>'select', 'id'=>'tipo_busqueda'), null, $opc=1);  ?>
+	    </td>
+    </tr>
+</table>
+
+<br>
+<div id="select"></div>
+<div id="funcion" style='display:none'></div>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+<? }else if($opcion1==2){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	    $this->top_reporte2(array("UBICACIONES ADMINISTRATIVAS"), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+	    $this->SetFont('vera','B',6);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(20,3,"Direccion",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(21,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(20,3,"Dependencia",'RBL',0,'C');
+		$this->Cell(20,3,"superior",'RB',0,'C');
+		$this->Cell(20,3,"Coordinacion",'RB',0,'C');
+		$this->Cell(20,3,"Secretaria",'RB',0,'C');
+		$this->Cell(20,3,"Direccion",'RB',0,'C');
+		$this->Cell(20,3,"Division",'RB',0,'C');
+		$this->Cell(21,3,"Departamento",'RB',0,'C');
+		$this->Cell(20,3,"0ficina",'RB',0,'C');
+		$this->Cell(0,3,"Denominación",'RB',1,'C');
+    }
+
+}
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+$cant_registros = count($datos);
+
+if($cant_registros > 0){
+
+	$cod_dependencia_2 = 0;
+
+	for($i=0;$i<$cant_registros;$i++){
+		$cod_dependencia	= $datos[$i][0]['cod_dependencia']==0?"":mascara2($datos[$i][0]['cod_dependencia']);
+		$cod_dir_superior	= $datos[$i][0]['cod_dir_superior']   ==0?"":mascara2($datos[$i][0]['cod_dir_superior']);
+		$cod_coordinacion	= $datos[$i][0]['cod_coordinacion']==0?"":mascara2($datos[$i][0]['cod_coordinacion']);
+		$cod_secretaria		= $datos[$i][0]['cod_secretaria']==0?"":mascara2($datos[$i][0]['cod_secretaria']);
+		$cod_direccion		= $datos[$i][0]['cod_direccion']   ==0?"":mascara2($datos[$i][0]['cod_direccion']);
+		$cod_division		= $datos[$i][0]['cod_division'] ==0?"":mascara2($datos[$i][0]['cod_division']);
+		$cod_departamento	= $datos[$i][0]['cod_departamento']   ==0?"":mascara2($datos[$i][0]['cod_departamento']);
+		$cod_oficina		= $datos[$i][0]['cod_oficina']   ==0?"":mascara2($datos[$i][0]['cod_oficina']);
+
+if (($cod_dependencia!=0 && $cod_dir_superior==0) || ($cod_dependencia!=0 && $cod_dir_superior!=0 && $cod_coordinacion==0) || ($cod_dependencia!=0 && $cod_dir_superior!=0 && $cod_coordinacion!=0 && $cod_secretaria==0)|| ($cod_dependencia!=0 && $cod_dir_superior!=0 && $cod_coordinacion!=0 && $cod_secretaria!=0 && $cod_direccion==0)){
+	$pdf->SetFont('vera','B',8);
+}else{
+	$pdf->SetFont('vera','',7);
+}
+		if($cod_dependencia != $cod_dependencia_2){
+			$pdf->Cell(20,8,$cod_dependencia,'RL',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+			$pdf->Cell(21,8,'','R',0,'C');
+			$pdf->Cell(20,8,'','R',0,'C');
+
+//$pdf->Cell(0,8,$array_dep[$datos[$i][0]['cod_dependencia']],'RB',1,'L');
+
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(0,1,"",'',2);
+			$pdf->MultiCell(0,3,$array_dep[$datos[$i][0]['cod_dependencia']],'J','L');
+			$varX = $varX+61;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,8,"",'R',1);
+			$pdf->Cell(0,0,"",'B',1);
+
+			$pdf->Cell(20,8,$cod_dependencia,'RL',0,'C');
+			$pdf->Cell(20,8,$cod_dir_superior,'R',0,'C');
+			$pdf->Cell(20,8,$cod_coordinacion,'R',0,'C');
+			$pdf->Cell(20,8,$cod_secretaria,'R',0,'C');
+			$pdf->Cell(20,8,$cod_direccion,'R',0,'C');
+			$pdf->Cell(20,8,$cod_division,'R',0,'C');
+			$pdf->Cell(21,8,$cod_departamento,'R',0,'C');
+			$pdf->Cell(20,8,$cod_oficina,'R',0,'C');
+
+//$pdf->Cell(0,8,$datos[$i][0]['denominacion'],'RB',1,'L');
+
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(0,1,"",'',2);
+			$pdf->MultiCell(0,3,$datos[$i][0]['denominacion'],'J','L');
+			$varX = $varX+61;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,8,"",'R',1);
+			$pdf->Cell(0,0,"",'B',1);
+
+
+		}else{
+			$pdf->Cell(20,8,$cod_dependencia,'RL',0,'C');
+			$pdf->Cell(20,8,$cod_dir_superior,'R',0,'C');
+			$pdf->Cell(20,8,$cod_coordinacion,'R',0,'C');
+			$pdf->Cell(20,8,$cod_secretaria,'R',0,'C');
+			$pdf->Cell(20,8,$cod_direccion,'R',0,'C');
+			$pdf->Cell(20,8,$cod_division,'R',0,'C');
+			$pdf->Cell(21,8,$cod_departamento,'R',0,'C');
+			$pdf->Cell(20,8,$cod_oficina,'R',0,'C');
+
+//$pdf->Cell(0,8,$datos[$i][0]['denominacion'],'RB',1,'L');
+
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(0,1,"",'',2);
+			$pdf->MultiCell(0,3,$datos[$i][0]['denominacion'],'J','L');
+			$varX = $varX+61;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,8,"",'R',1);
+			$pdf->Cell(0,0,"",'B',1);
+
+		}
+
+		$cod_dependencia_2	= $datos[$i][0]['cod_dependencia']==0?"":mascara2($datos[$i][0]['cod_dependencia']);
+
+	}//fin for
+
+}else{
+  //$pdf->Cell(0,8,$datos[$i][0]['denominacion'],'RB',1,'L');
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO EXISTE INFORMACIÓN','',1,'C');
+
+}//fin else
+
+$pdf->Output('ubicacion_administrativa_'.date('d-m-Y').'.pdf','D');
+}
+?>

@@ -1,0 +1,123 @@
+<?if($opcion1==1){ ?>
+<?$sisap->Tabla("",true,"RELACIÓN DE CONTRIBUYENTES DE ASEO DOMICILIARIO","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda2/relacion_contribuyente_aseo_domiciliario/2'); ?>" >
+<?$sisap->OpenTable("750");?>
+<br />
+<b>ORDENADO POR:</b><?= $html->radio('reporte_hacienda2/ordenado', array('1'=>'Alfabético', '2'=>'RIF / C.I'), null, array('value'=>'1')); ?>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if($opcion1==2){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES DE ASEO DOMICILIARIO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+    }
+
+
+}
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,3,"",'TRL',0,'C');
+$pdf->Cell(90,3,"Nombres y Apellidos",'TR',0,'C');
+$pdf->Cell(70,3,"",'TR',0,'C');
+$pdf->Cell(20,3,"Frecuencia",'TR',0,'C');
+$pdf->Cell(30,3,"Monto a",'TR',0,'C');
+$pdf->Cell(0,3,"Monto",'TR',1,'C');
+
+$pdf->Cell(25,3,"RIF/C.I.",'RBL',0,'C');
+$pdf->Cell(90,3,"Razón social",'RB',0,'C');
+$pdf->Cell(70,3,"Clasificación",'RB',0,'C');
+$pdf->Cell(20,3,"de pago",'RB',0,'C');
+$pdf->Cell(30,3,"cancelar",'RB',0,'C');
+$pdf->Cell(0,3,"deuda",'RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+
+if($datos!=null){
+
+	for($i=0;$i<count($datos);$i++){
+
+			if($datos[$i][0]['personalidad_juridica']==1) $personalidad='Natural'; else $personalidad='Juridica';
+			/////////////////////////////////////////
+			if($datos[$i][0]['frecuencia_pago']==1){
+				 $frecuencia='Mensual';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*1);
+			}else if($datos[$i][0]['frecuencia_pago']==2){
+				 $frecuencia='Bimestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*2);
+			}else if($datos[$i][0]['frecuencia_pago']==3){
+				 $frecuencia='Trimestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*3);
+			}else if($datos[$i][0]['frecuencia_pago']==4){
+				 $frecuencia='Semestral';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*6);
+			}else{
+				 $frecuencia='Anual';
+				 $monto_cancelar=($datos[$i][0]['monto_mensual']*12);
+			}
+
+	$pdf->Cell(25,6,$datos[$i][0]['rif_cedula'],'RL',0,'C');// RIF/C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(90,1,"",'',2,'C');
+		$pdf->MultiCell(89,2,$datos[$i][0]['razon_social_nombres'],'','L');// Razón social
+		$varX = $varX+90;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,6,"",'L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(69,1,"",'',2,'C');
+		$pdf->MultiCell(68,2,$datos[$i][0]['denominacion_clasificacion'],'','L');// Clasificacion
+		$varX = $varX+69;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,6,$frecuencia,'RL',0,'C');// Frecuencia de pago
+	$pdf->Cell(30,6,$sisap->Formato2($monto_cancelar),'R',0,'R');// Monto a cancelar
+	$pdf->Cell(0,6,$sisap->Formato2($datos[$i][0]['monto_deuda']),'R',1,'R');// Monto deuda
+	$pdf->Cell(0,0,"",'T',1);
+
+	}//fin for
+
+}else{
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+
+}//fin else
+
+
+
+
+
+
+$pdf->Output('relacion_contribuyentes_aseo_domiciliario_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

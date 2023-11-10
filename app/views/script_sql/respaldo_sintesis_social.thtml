@@ -1,0 +1,858 @@
+<?php
+set_time_limit(0);
+ if(isset($ir) && $ir=='no'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"SINTESIS SOCIAL",null,"750");?>
+<?= $sisap->OpenTable("750")?>
+ <form name='data[csrp01_solicitud1]' method = "post" id='form' action="<?php echo  $html->url('/reporte_e/casp01_planilla/si');  ?>" onsubmit="return casd01_reporte_solicitudes()">
+	<table width="30%">
+
+		<tr>
+    		<td  width="100" colspan="2" height="22" align="center">BUSCAR:  <?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar_datos1'),1,"Buscar Persona", "/reporte_e/casp01_planilla/buscar_datos/2", "750px", "400px" ); ?></td>
+
+		</tr>
+	</table>
+<br>
+	<table width="50%">
+		<tr>
+			<td align="right">Desde:</td>
+			<td> <?= $sisap->input_fecha('casp01','fecha_inicial','fecha_inicial');?> </td>
+			<td align="right">Hasta: </td>
+			<td><?= $sisap->input_fecha('casp01','fecha_final','fecha_final');?> </td>
+		</tr>
+	</table>
+
+
+<?= $html->submit('Generar Reporte', array('id'=>'b_generar')); ?>&nbsp;&nbsp;
+
+<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso_fi/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+</form>
+<?=$sisap->CloseTable()?>
+<?php
+
+}else if(isset($buscar_datos)){ ?>
+
+	<table border="0" width="95%">
+			        <tr>
+			           <td valign="top">
+				              <table border="0" class="tablacompromiso tablacompromiso2" style="margin-left:1px; margin-top:1px;">
+									<tr align="center">
+									  <td id="input_busqueda"  ><br>
+									     Pista:
+									     <?= $sisap->inputTagRemote('cnmp09_deduccion/buscardatos', array('url'=>'/reporte_e/casp01_planilla/buscar_por_pista/'.$opcion, 'update'=>'grilla_busqueda', 'style'=>'text-align:left;',  'id'=>'input_buscar', 'size'=>'20'))?>
+									   <br>
+									  </td>
+									</tr>
+							</table>
+			           </td>
+
+			           <td id="input_busqueda2" align="right"><br>
+					     <?php echo $ajax->link($html->image('exit.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), ' ', array('update'=>'','title'=>'Regresar'),'',false,true); ?>
+					  </td>
+					</tr>
+			</table>
+
+
+
+
+	 <br>
+			<div id="grilla_busqueda">
+						<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+								<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist"> <?php $color = 0; if($color==1){$color=0;}else{$color=1;} ?>
+										 <tr>
+										    <th width="10%">Cédula</th>
+										    <th width="30%">Apellidos y Nombres</th>
+										    <th width="5%">ACCIÓN</th>
+								          </tr>
+									      <tr class="row<?php echo $color; ?>">
+										    <td>--</td>
+										    <td>--</td>
+										    <td>--</td>
+										  </tr>
+						         </table>
+						         <table class='adminlist' width='100%'>
+									<tr>
+											<th colspan='3'  width='100%' height='22'></th>
+								   </tr>
+								 </table>
+						 </div>
+			 </div>
+<? }else if(isset($buscar_pista)){ ?>
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+ <tr>
+    <th width="10%">Cedula</th>
+    <th width="30%">Apellidos nombres</th>
+    <th width="5%">ACCIÓN</th>
+  </tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php
+//		        pr($datosFILAS);
+		        if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){ ?>
+		        		<?php if($color==1){$color=0;}else{$color=1;} ?>
+
+					      <tr class="row<?php echo $color; ?>">
+						    <td class="" width="10%" align="center"><?=$sisap->zero($ve["casd01_datos_personales"]["cedula_identidad"]) ?></td>
+						    <td class="" width="30%" align="legth"><?= $ve["casd01_datos_personales"]["apellidos_nombres"] ?></td>
+						    <td class="" width="5%" align="center">
+						     <?php echo $html->link($html->image('pdf.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")),'/reporte_e/casp01_planilla/si/'.$opcion.'/'.$ve["casd01_datos_personales"]["cedula_identidad"],null,false,false); ?>
+                            </td>
+						  </tr>
+
+
+                     <?php } ?>
+				  <?php }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" height="22"  width="2">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/reporte_e/casp01_planilla/buscar_por_pista/'.$opcion.'/a', 'grilla_busqueda', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+
+<? }else if(isset($ir) && $ir=='si'){
+
+function Cfecha($fecha,$tipo_return){
+	//$paso1 = explode('/', $fecha);
+	//$paso2 = explode('-', $fecha);
+
+$paso_aux = explode('-', $fecha);
+if(strlen($paso_aux[0])=="4"){
+
+$fecha_return = $fecha;
+
+}else{
+
+      if($tipo_return=="A-M-D"){
+           $paso = explode('/', $fecha);
+           $fecha_aux[] = $paso[2];
+           $fecha_aux[] = $paso[1];
+           $fecha_aux[] = $paso[0];
+           $fecha_return=implode('-', $fecha_aux);
+      }else if($tipo_return=="D/M/A"){
+           $paso = explode('-', $fecha);
+           $fecha_aux[] = $paso[2];
+           $fecha_aux[] = $paso[1];
+           $fecha_aux[] = $paso[0];
+           $fecha_return=implode('/', $fecha_aux);
+     }
+
+}//fin else
+
+
+//echo $fecha_return;
+
+//$fecha_return = $fecha;
+
+     return $fecha_return;
+}//fin Cfecha
+
+function edad($nacimiento){
+//restamos los años (año actual - año cumpleaños)
+$edad = date("Y") - ereg_replace("^(.{4}).*","\\1",$nacimiento);
+
+//si pasamos de año, pero aún no cumplimos años, resta 1
+if( date("m-d") < ereg_replace(".*(.{5})$","\\1",$nacimiento) )
+ $edad--;
+
+return $edad;
+}
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+//		$this->Image('/home/erick/public_html/utf8_tcpdf/Plantillas_reportes_solicitud_recurso/yandry1.png',0,0,217);
+//		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		/*$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"GOBERNACIÓN DEL ESTADO FALCÓN",'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,"DIRECCION GENERAL DE PRESUPUESTO",'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"REPORTE DE SALDOS POR PARTIDA",'RBL',1,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"GOBERNACIÓN DEL ESTADO FALCÓN",'TR',1);*/
+
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(0);
+$pdf->SetRightMargin(0);
+$pdf->SetAutoPageBreak(true, 5);
+//$pdf->AddPage();
+
+
+if($datos!=null){
+$concatena=0;
+$k=1;
+$P=0;
+for($i=0; $i<count($datos); $i++){
+
+$concatena2=$datos[$i][0]['cedula_identidad'];
+
+switch($datos[$i][0]['cod_vivienda']){
+		case 1:
+			$vivienda='QUINTA';
+		break;
+		case 2:
+			$vivienda='CASA-QUINTA';
+		break;
+		case 3:
+			$vivienda='CASA POPULAR';
+		break;
+		case 4:
+			$vivienda='VIVIENDA POPULAR';
+		break;
+		case 5:
+			$vivienda='RANCHO';
+		break;
+		case 6:
+			$vivienda='OTRO';
+		break;
+		case 7:
+			$vivienda='NINGUNO';
+		break;
+	}
+
+
+switch($datos[$i][0]['cod_tenencia_vivienda']){
+		case 1:
+			$tenencia='NINGUNA';
+		break;
+		case 2:
+			$tenencia='PROPIA';
+		break;
+		case 3:
+			$tenencia='ALQUILADA';
+		break;
+		case 4:
+			$tenencia='DE UN FAMILIAR';
+		break;
+		case 5:
+			$tenencia='AL CUIDADO';
+		break;
+		case 6:
+			$tenencia='HIPOTECA';
+		break;
+		case 7:
+			$tenencia='INVADIDA';
+		break;
+		default :
+			$tenencia='';
+		break;
+	}
+
+
+if($concatena!=$concatena2 && $i!=0){
+	$k=0;
+}else{
+	$k=1;
+}
+
+
+	if($k==0){
+		if($P!=4){
+			$t=4-$P;
+			for($x=0;$x<$t;$x++){
+				$pdf->Cell(19,6,"",'R',0);
+				$pdf->Cell(43,6,"",'LBR',0,'L');
+				$pdf->Cell(18,6,"",'RB',0,'L');
+				$pdf->Cell(14,6,"",'RB',0,'C');
+				$pdf->Cell(36,6,"",'RB',0,'C');
+				$pdf->Cell(35,6,"",'RB',0,'C');
+				$pdf->Cell(34,6,"",'RB',0,'C');
+				$pdf->Cell(0,6,"",'',1);
+			}
+		}
+
+		$pdf->Ln(4);
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"4.",'',0,'L');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(44,4,"área físico - ambiental:",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(23,4,"tipo de vivienda:",'',0,'R');
+			$pdf->Cell(26,4,$vivienda,'B',0,'L');
+			$pdf->Cell(14,4,"tenencia:",'',0,'L');
+			$pdf->Cell(28,4,$tenencia,'B',0,'L');
+			$pdf->Cell(50,4,"material de construcción; paredes:",'',0,'L');
+			$pdf->Cell(35,4,"",'B',0,'L');
+			$pdf->Cell(8,4,"piso:",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(3);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(21,4,"",'B',0,'R');
+			$pdf->Cell(10,4,"techo:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,"número de ambientes:",'',0,'C');
+			$pdf->Cell(94,4,"",'B',0,'C');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(19,4,"observación:",'',0,'L');
+			$pdf->Cell(168,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+			$pdf->Cell(20,4,"",'',0);
+			$pdf->Cell(185,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(6);
+
+
+			////////////////////////////////fin 4//////////////////////////////////////////////////
+
+
+
+
+
+
+			////////////////////////////////empieza 5//////////////////////////////////////////////////
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"5.",'',0,'L');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(60,4,"condiciones socio - económicas:",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(33,4,"total de ingreso mensual:",'',0,'L');
+			$pdf->Cell(24,4,"",'B',0,'L');
+			$pdf->Cell(30,4,",egresos: alimentación:",'',0,'L');
+			$pdf->Cell(24,4,"",'B',0,'L');
+			$pdf->Cell(14,4,",vivienda:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'L');
+			$pdf->Cell(16,4,"transporte:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'L');
+			$pdf->Cell(0,4,",",'',1,'L');
+			$pdf->Ln(3);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(15,4,"educación:",'',0,'L');
+			$pdf->Cell(22,4,"",'B',0,'L');
+			$pdf->Cell(21,4,", medicamentos:",'',0,'L');
+			$pdf->Cell(25,4,"",'B',0,'C');
+			$pdf->Cell(20,4,", Serv. básicos:",'',0,'L');
+			$pdf->Cell(27,4,"",'B',0,'C');
+			$pdf->Cell(22,4,"total de egreso:",'',0,'L');
+			$pdf->Cell(35,4,"",'B',0,'C');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(12,4,"balance:",'',0,'L');
+			$pdf->Cell(27,4,"",'B',0,'L');
+			$pdf->Cell(32,4,", sintesis de la situación:",'',0,'L');
+			$pdf->Cell(74,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(188,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(3);
+
+
+			////////////////////////////////fin 5//////////////////////////////////////////////////
+
+
+
+
+			////////////////////////////////empieza 6//////////////////////////////////////////////////
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"6.",'',0,'L');
+			$pdf->Cell(41,4,"observación y recomendaciones:",'B',0,'L');
+			$pdf->Cell(2,4,"",'',0,'L');
+			$pdf->Cell(131,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+
+
+			////////////////////////////////fin 6//////////////////////////////////////////////////
+			$pdf->Ln(4);
+			$pdf->Cell(35,4,"",'',0);
+			$pdf->Cell(45,4,"",'B',0,'L');
+			$pdf->Cell(60,4,"",'',0,'L');
+			$pdf->Cell(45,4,"",'B',0,'L');
+			$pdf->Cell(20,4,"",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(35,5,"",'',0);
+			$pdf->Cell(45,5,"",'',0,'L');
+			$pdf->Cell(60,5,"",'',0,'L');
+			$pdf->Cell(45,5,"",'',0,'L');
+			$pdf->Cell(20,5,"",'',0,'L');
+			$pdf->Cell(0,5,"",'',1);
+
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(35,4,"",'',0);
+			$pdf->Cell(45,4,"trabajadora social",'',0,'C');
+			$pdf->Cell(60,4,"",'',0,'L');
+			$pdf->Cell(45,4,"trabajadora social",'',0,'C');
+			$pdf->Cell(20,4,"",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+		}
+
+
+if($concatena!=$concatena2){
+	$pdf->AddPage();
+	$P=0;
+	$pdf->Ln(18);
+	$pdf->SetFont('vera','B',16);
+	$pdf->Cell(85,4,"",'',0);
+	$pdf->Cell(54,4,"Sintesis Social",'',0,'C');
+	$pdf->Cell(0,4,"",'',1,'C');
+
+	$pdf->SetFont('vera','B',12);
+	$pdf->Cell(85,4,"",'',0);
+	$pdf->Cell(54,4,"",'T',0,'C');
+	$pdf->Cell(0,4,"",'',1,'C');
+	$pdf->Ln(2);
+
+
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(143,4,"",'',0);
+	$pdf->Cell(32,4,"Fecha de Elaboración:",'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,$sisap->cambia_fecha($datos[$i][0]['fecha_inscripcion']),'B',0,'L');
+	$pdf->Cell(0,4,"",'',1);
+	$pdf->Ln(1);
+
+
+
+	////////////////////////////////empieza 1//////////////////////////////////////////////////
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(7,4,"1.",'',0,'L');
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(28,4,"identificación:",'B',0,'L');
+	$pdf->Cell(0,4,"",'',1,'L');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(30,4," nombre y apellidos:",'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(92,4,$datos[$i][0]['apellidos_nombres'],'B',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(31,4,"fecha y lugar de nac:",'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(34,4,$sisap->cambia_fecha($datos[$i][0]['fecha_nacimiento']),'B',0,'L');
+	$pdf->Cell(0,4,"",'R',1);
+	$pdf->Ln(2);
+
+	switch($datos[$i][0]['estado_civil']){
+		case 1:
+			$estado_civil='SOLTERO(A)';
+		break;
+		case 2:
+			$estado_civil='CASADO(A)';
+		break;
+		case 3:
+			$estado_civil='DIVORCIADO(A)';
+		break;
+		case 4:
+			$estado_civil='VIUDO(A)';
+		break;
+		case 5:
+			$estado_civil='OTRO';
+		break;
+	}
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(9,4," edad:",'',0,'R');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(21,4,edad(Cfecha($datos[$i][0]['fecha_nacimiento'],"A-M-D")),'B',0);
+	$pdf->SetFont('vera','B',7);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(6,4,"c.i.:",'',0,'C');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(38,4,$datos[$i][0]['cedula_identidad'],'B',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(19,4,"estado civil:",'',0,'C');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(37,4,$estado_civil,'B',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(18,4,"ocupación:",'',0,'R');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(39,4,$datos[$i][0]['denominacion_oficio'],'B',0,'L');
+	$pdf->Cell(0,4,"",'R',1);
+	$pdf->Ln(2);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(36,4,"  dirección de habitación:",'',0,'R');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(152,4,$datos[$i][0]['direccion_habitacion'],'B',0);
+	$pdf->Cell(0,5,"",'',1,'C');
+	$pdf->Ln(1);
+
+
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(70,4,"",'B',0,'R');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(8,4,"telf:",'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(110,4,$datos[$i][0]['telefonos_fijos']."    ".$datos[$i][0]['telefonos_movil'],'B',0,'L');
+	$pdf->Cell(0,5,"",'',1,'C');
+	$pdf->Ln(3);
+	/////////////////////////////fin 1////////////////////////////////////////////
+
+
+
+
+	////////////////////////////////empieza 2//////////////////////////////////////////////////
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(7,4,"2.",'',0,'L');
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(44,4,"identificación del niñ@",'B',0,'L');
+	$pdf->Cell(0,4,"",'',1,'L');
+	$pdf->Ln(3);//////////podria cambiar a 2
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(30,4," nombre y apellidos:",'',0,'L');
+	$pdf->Cell(156,4,"",'B',0,'L');
+	$pdf->Cell(0,4,"",'R',1);
+	$pdf->Ln(2);
+
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(32,4," fecha y lugar de nac:",'',0,'L');
+	$pdf->Cell(68,4,"",'B',0);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(9,4,"edad:",'',0,'C');
+	$pdf->Cell(27,4,"",'B',0,'C');
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(6,4,"c.i.:",'',0,'L');
+	$pdf->Cell(46,4,"",'',0,'C');
+	$pdf->Cell(0,4,"",'',1);
+	$pdf->Ln(2);
+
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(19,4,"",'',0);
+	$pdf->Cell(45,4,"",'B',0,'L');
+	$pdf->Cell(19,4,"Diagnostíco:",'',0,'L');
+	$pdf->Cell(0,4,"",'',1);
+	$pdf->Ln(2);
+
+
+	$pdf->Cell(19,4,"",'',0);
+	$pdf->Cell(167,4,"",'B',0,'L');
+	$pdf->Cell(17,4,"solicitud:",'',0,'L');
+	$pdf->Cell(0,4,"",'',1);
+	$pdf->Ln(2);
+
+	$pdf->Cell(19,4,"",'',0);
+	$pdf->Cell(174,4,"",'B',0,'L');
+	$pdf->Cell(0,4,"",'',1);
+	$pdf->Ln(4);
+
+
+	/////////////////////////////fin 2////////////////////////////////////////////
+
+
+
+
+
+	////////////////////////////////empieza 3//////////////////////////////////////////////////
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(18,4,"",'',0);
+	$pdf->Cell(7,4,"3.",'',0,'L');
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(29,4,"grupo familiar",'B',0,'L');
+	$pdf->Cell(0,4,"",'',1,'L');
+	$pdf->Ln(2);//////////podria cambiar a 2
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(19,6,"",'R',0);
+	$pdf->Cell(43,6,"nombre y apellido",'TLBR',0,'C');
+	$pdf->Cell(18,6,"nexo",'TRB',0,'C');
+	$pdf->Cell(14,6,"edad",'TRB',0,'C');
+	$pdf->Cell(36,6,"grado de instrucción",'TRB',0,'C');
+	$pdf->Cell(35,6,"ocupación",'TRB',0,'C');
+	$pdf->Cell(34,6,"observación",'TRB',0,'C');
+	$pdf->Cell(0,6,"",'',1);
+	$concatena=$concatena2;
+}else{
+
+}
+
+$pdf->SetFont('vera','',5);
+if($P<4){
+
+	$pdf->Cell(19,6,"",'R',0);
+	$pdf->Cell(43,6,$datos[$i][0]['apellidos_nombres_familiares'],'LBR',0,'L');
+	$pdf->Cell(18,6,$datos[$i][0]['denominacion_parentesco'],'RB',0,'L');
+	$pdf->Cell(14,6,edad(Cfecha($datos[$i][0]['fecha_nacimiento_familiar'],"A-M-D")),'RB',0,'C');
+	$pdf->Cell(36,6,"",'RB',0,'C');
+	$pdf->Cell(35,6,"",'RB',0,'C');
+	$pdf->Cell(34,6,"",'RB',0,'C');
+	$pdf->Cell(0,6,"",'',1);
+
+}
+	$P++;
+
+
+
+
+////////////////////////////////fin 3//////////////////////////////////////////////////
+
+
+
+
+
+////////////////////////////////empieza 4//////////////////////////////////////////////////
+
+
+}//fin for grande
+
+if($P!=4){
+			$t=4-$P;
+			for($x=0;$x<$t;$x++){
+				$pdf->Cell(19,6,"",'R',0);
+				$pdf->Cell(43,6,"",'LBR',0,'L');
+				$pdf->Cell(18,6,"",'RB',0,'L');
+				$pdf->Cell(14,6,"",'RB',0,'C');
+				$pdf->Cell(36,6,"",'RB',0,'C');
+				$pdf->Cell(35,6,"",'RB',0,'C');
+				$pdf->Cell(34,6,"",'RB',0,'C');
+				$pdf->Cell(0,6,"",'',1);
+			}
+		}
+
+		$pdf->Ln(4);
+
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"4.",'',0,'L');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(44,4,"área físico - ambiental:",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(23,4,"tipo de vivienda:",'',0,'R');
+			$pdf->Cell(26,4,$vivienda,'B',0,'L');
+			$pdf->Cell(14,4,"tenencia:",'',0,'L');
+			$pdf->Cell(28,4,$tenencia,'B',0,'L');
+			$pdf->Cell(50,4,"material de construcción; paredes:",'',0,'L');
+			$pdf->Cell(35,4,"",'B',0,'L');
+			$pdf->Cell(8,4,"piso:",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(3);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(21,4,"",'B',0,'R');
+			$pdf->Cell(10,4,"techo:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,"número de ambientes:",'',0,'C');
+			$pdf->Cell(94,4,"",'B',0,'C');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(19,4,"observación:",'',0,'L');
+			$pdf->Cell(168,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+			$pdf->Cell(20,4,"",'',0);
+			$pdf->Cell(185,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(6);
+
+
+			////////////////////////////////fin 4//////////////////////////////////////////////////
+
+
+
+
+
+
+			////////////////////////////////empieza 5//////////////////////////////////////////////////
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"5.",'',0,'L');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(60,4,"condiciones socio - económicas:",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(33,4,"total de ingreso mensual:",'',0,'L');
+			$pdf->Cell(24,4,"",'B',0,'L');
+			$pdf->Cell(30,4,",egresos: alimentación:",'',0,'L');
+			$pdf->Cell(24,4,"",'B',0,'L');
+			$pdf->Cell(14,4,",vivienda:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'L');
+			$pdf->Cell(16,4,"transporte:",'',0,'L');
+			$pdf->Cell(23,4,"",'B',0,'L');
+			$pdf->Cell(0,4,",",'',1,'L');
+			$pdf->Ln(3);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(15,4,"educación:",'',0,'L');
+			$pdf->Cell(22,4,"",'B',0,'L');
+			$pdf->Cell(21,4,", medicamentos:",'',0,'L');
+			$pdf->Cell(25,4,"",'B',0,'C');
+			$pdf->Cell(20,4,", Serv. básicos:",'',0,'L');
+			$pdf->Cell(27,4,"",'B',0,'C');
+			$pdf->Cell(22,4,"total de egreso:",'',0,'L');
+			$pdf->Cell(35,4,"",'B',0,'C');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(12,4,"balance:",'',0,'L');
+			$pdf->Cell(27,4,"",'B',0,'L');
+			$pdf->Cell(32,4,", sintesis de la situación:",'',0,'L');
+			$pdf->Cell(74,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(188,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(3);
+
+
+			////////////////////////////////fin 5//////////////////////////////////////////////////
+
+
+
+
+			////////////////////////////////empieza 6//////////////////////////////////////////////////
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(18,4,"",'',0);
+			$pdf->Cell(7,4,"6.",'',0,'L');
+			$pdf->Cell(41,4,"observación y recomendaciones:",'B',0,'L');
+			$pdf->Cell(2,4,"",'',0,'L');
+			$pdf->Cell(131,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1,'L');
+			$pdf->Ln(2);//////////podria cambiar a 2
+
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(25,4,"",'',0);
+			$pdf->Cell(180,4,"",'B',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+
+
+
+			////////////////////////////////fin 6//////////////////////////////////////////////////
+			$pdf->Ln(4);
+			$pdf->Cell(35,4,"",'',0);
+			$pdf->Cell(45,4,"",'B',0,'L');
+			$pdf->Cell(60,4,"",'',0,'L');
+			$pdf->Cell(45,4,"",'B',0,'L');
+			$pdf->Cell(20,4,"",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+			$pdf->Cell(35,5,"",'',0);
+			$pdf->Cell(45,5,"",'',0,'L');
+			$pdf->Cell(60,5,"",'',0,'L');
+			$pdf->Cell(45,5,"",'',0,'L');
+			$pdf->Cell(20,5,"",'',0,'L');
+			$pdf->Cell(0,5,"",'',1);
+
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(35,4,"",'',0);
+			$pdf->Cell(45,4,"trabajadora social",'',0,'C');
+			$pdf->Cell(60,4,"",'',0,'L');
+			$pdf->Cell(45,4,"trabajadora social",'',0,'C');
+			$pdf->Cell(20,4,"",'',0,'L');
+			$pdf->Cell(0,4,"",'',1);
+			$pdf->Ln(2);
+
+
+
+}//fin if datos!=null
+
+$pdf->Output('Sintesis_Social.pdf','D');
+
+ }//fin if
+
+
+
+?>

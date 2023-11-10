@@ -1,0 +1,351 @@
+<form>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"AUMENTO O DISMINUCIÓN",null,"950");?>
+
+<?php
+
+
+$estimado_presu    = $sisap->Formato2($estimado_presu);
+$aumento_obras     = $sisap->Formato2($aumento_obras);
+$disminucion_obras = $sisap->Formato2($disminucion_obras);
+$monto_ajustado    = $sisap->Formato2($monto_ajustado);
+$monto_contratado  = $sisap->Formato2($monto_contratado);
+$saldo             = $sisap->Formato2($saldo);
+
+?>
+
+<script>
+    $('aa11').value='<?=$estimado_presu?>';
+    $('bb11').value='<?=$aumento_obras?>';
+	$('cc11').value='<?=$disminucion_obras?>';
+	$('aj11').value='<?=$monto_ajustado?>';
+	$('dd11').value='<?=$monto_contratado?>';
+	$('ee11').value='<?=$saldo?>';
+</script>
+
+<?php
+
+if(isset($datos_orden_compra)){
+ if($datos_orden_compra!=null){
+
+ foreach($datos_orden_compra as $aux_datos_orden_compra){
+
+
+$fecha                  = $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['fecha_proceso_registro'];
+$fecha_proceso_registro = $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['fecha_proceso_registro'];
+
+$fecha_comparar         = $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['fecha_contrato_obra'];
+$year_comparar          = $fecha_comparar[0].$fecha_comparar[1].$fecha_comparar[2].$fecha_comparar[3];
+
+
+
+$mes = '';
+$year = '';
+if($fecha!=''){
+$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+$mes = $fecha[5].$fecha[6];
+$dia = $fecha[8].$fecha[9];
+$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['fecha_proceso_registro'] = $dia.'/'.$mes.'/'.$year;
+}
+
+
+
+$fecha_compara_modificacion = $fecha_proceso_registro;
+
+
+if($year_comparar==$ano_orden_compra_modificacion){
+
+   $fecha_compara_modificacion  = $fecha_comparar;
+
+}//fi if
+
+
+
+?>
+
+
+<input type="hidden" value='<?= cambia_fecha($fecha_compara_modificacion) ?>' id="fecha_validacion" size="9" readonly>
+<input value="<?= date("d/m/Y")  ?>"              id="dia_actual"                         type="hidden" />
+<input value="2"                                  id="tipo_modificacion_validacion"       type="hidden" />
+
+<?= $sisap->OpenTable("950")?>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<th colspan="5">DETALLES DEL CONTRATO</th>
+
+	<tr>
+		<td align="center">A&ntilde;o del Contrato</td>
+		<td align="center">N&uacute;mero del Contrato</td>
+		<td align="center">Fecha del Contrato</td>
+		<td align="center">A&ntilde;o Presupuesto</td>
+		<td align="center">Código de la Obra</td>
+	</tr>
+	<tr>
+		<td align="center" id="year_cotizacion">
+			<?= $html ->input('cscp04_ordencompra_modificacion/ano_orden_compra', $htmlAttributes = array('style'=>"text-align:center", 'class'=>'inputtext', 'size'=>'3', 'value'=>''.$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['ano_contrato_obra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4'), false); ?>
+		</td>
+		<td align="center">
+			<?= $sisap->selectTagRemote('cscp04_ordencompra_modificacion/numero_orden_compra', $optionElements=$lista_numero,  $extra_opciones = array(), $selected = $numero_orden_compra, $selectAttr = array('onchange1'=>'/cobp01_contratoobras_modificacion/selecion', 'update1'=>'principal' ,'id'=>'num_1','style'=>'text-align:center;', true),  $optionAttr = null,  $showEmpty = true) ?>
+		</td>
+		<td align="center" id="fecha_cotizacion">
+			<?= $html ->input('cscp04_ordencompra_modificacion/fecha_contrato_obra',    $htmlAttributes = array('style'=>"text-align:center", 'class'=>'inputtext', 'size'=>'10', 'value'=>''.$sisap->cambia_fecha($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['fecha_contrato_obra']).'',   'readonly'=>'readonly'), false); ?>
+			<?= $html ->input('cscp04_ordencompra_modificacion/fecha_proceso_registro', $htmlAttributes = array('style'=>"text-align:center", 'class'=>'inputtext', 'size'=>'10', 'value'=>''.$sisap->cambia_fecha($fecha_proceso_registro).'', 'readonly'=>'readonly', 'type'=>'hidden'), false); ?>
+		</td>
+		<td align="center" id="ano_contrato">
+			<?= $html ->input('cscp04_ordencompra_modificacion/ano_contrato', $htmlAttributes = array('style'=>"text-align:center", 'class'=>'inputtext', 'size'=>'3', 'value'=>''.$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['ano_estimacion'].'', 'readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center" id="ano_contrato">
+			<?= $html ->input('cscp04_ordencompra_modificacion/cod_obra', $htmlAttributes = array('style'=>'text-align:center; font-weight:bold; font-size:25;', 'class'=>'inputtext', 'size'=>'20', 'value'=>''.$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['cod_obra'].'', 'readonly'=>'readonly'), false); ?>
+		</td>
+	</tr>
+
+	<tr>
+		<th colspan="5" align="center">DENOMINACIÓN DE LA OBRA</th>
+	</tr>
+	<tr>
+		<td colspan="5" align="center">
+			<?= $html->textarea('cscp04_ordencompra_modificacion/denominacion_obra', $htmlAttributes = array('class'=>'inputtext', 'rows'=>'2', 'readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['denominacion_obra'].''), false); ?>
+		</td>
+	</tr>
+</table>
+
+
+<table id="proveedor" width="100%" border="0" class="tablacompromiso tablacompromiso3">
+	<tr>
+		<td colspan="1" align="center">Rif de la constructora</td>
+		<td colspan="3" align="center">Denominación de la Constructora</td>
+	</tr>
+	<tr>
+		<td colspan="1" align="center">
+			<?= $html->input('cscp04_ordencompra_modificacion/rif', $htmlAttributes = array('style'=>"text-align:center", 'class'=>'inputtext','readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['rif'].''), false); ?>
+		</td>
+		<td colspan="3" align="center">
+			<?= $html->input('cscp04_ordencompra_modificacion/nom_prov', $htmlAttributes = array('class'=>'inputtext', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?>
+		</td>
+	</tr>
+
+	<tr>
+		<td align="center">Monto del contrato</td>
+		<td align="center">Aumento</td>
+		<td align="center" >Disminución</td>
+		<td align="center">Monto Actual</td>
+	</tr>
+
+	<tr>
+		<td align="center" >
+			<?= $html->input('cscp05_ordencompra/monto_original', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_original_contrato']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?= $html->input('cscp05_ordencompra/modificaciones', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16',  'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['aumento']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+
+			<?= $html->input('cscp05_ordencompra/monto_actual', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16',  'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['disminucion']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?php
+			$monto_actual = (($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_original_contrato'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['aumento']) - $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['disminucion']);
+			?>
+
+			<?= $html->input('cscp05_ordencompra/monto_anticipo', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($monto_actual), 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+
+	</tr>
+
+
+
+<tr>
+
+
+		<td align="center" >Retención Laboral</td>
+		<td align="center">Fiel cumplimiento</td>
+		<td align="center">Monto Retenciones</td>
+		<td align="center">Monto Cancelado</td>
+</tr>
+	<tr>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/retencion_laboral', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_laboral']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/fiel_cumplimiento', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_fielcumplimiento']), 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/monto_retenciones_f_l', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_laboral'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_fielcumplimiento']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/monto_cancelado', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_cancelado']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+
+
+	</tr>
+<tr>
+		<td align="center" >Monto anticipo</td>
+		<td align="center">Amortizaciones</td>
+		<td align="center">Saldo anticipo</td>
+		<td align="center">Saldo del Contrato</td>
+</tr>
+	<tr>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/monto_anticipo', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_anticipo']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/amortizaciones', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_amortizacion']), 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+			<?php
+				$saldo_anticipo = $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_anticipo'] - $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_amortizacion'];
+			?>
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/saldo_anticipo', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_anticipo).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td align="center" >
+		<?php
+			$saldo_contrato    = (($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_original_contrato'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['aumento']) - ($aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['disminucion'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_amortizacion'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_laboral'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_retencion_fielcumplimiento'] + $aux_datos_orden_compra['cobd01_contratoobras_cuerpo']['monto_cancelado']));
+		    $saldo_actual_base = $saldo_contrato;
+		    $saldo_contrato    = $sisap->Formato2($saldo_contrato);
+		    $saldo_contrato    = $sisap->Formato1($saldo_contrato);
+		?>
+		<input type="hidden" value="<?= $saldo_actual_base?>" id="monto_actual_base">
+			<?= $html->input('cobp01_registro_anticipo_contratoobras/saldo_orden', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_contrato).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+
+	</tr>
+
+</table>
+
+<br>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+
+<tr class="tr_negro"><td colspan="6" align="center"><b>DETALLES DE LA RELACIÓN DE OBRA</b></td></tr>
+	<tr>
+		<td align="center" width="15%">MONTO DE LA OBRA</td>
+		<td align="center" width="17%">MONTO AUMENTO</td>
+		<td align="center" width="17%">MONTO DISMINUCIÓN</td>
+		<td align="center" width="17%">MONTO AJUSTADO</td>
+		<td align="center" width="17%">MONTO CONTRATADO</td>
+		<td align="center" width="17%">SALDO</td>
+	</tr>
+
+
+	<tr>
+		<td align="center">
+          <?= $html->input('cobp01_contratoobras_modificacion/aa11', $htmlAttributes = array('id'=>'aa11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+           <?= $html->input('cobp01_contratoobras_modificacion/bb11', $htmlAttributes = array('id'=>'bb11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+           <?= $html->input('cobp01_contratoobras_modificacion/cc11', $htmlAttributes = array('id'=>'cc11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+           <?= $html->input('cobp01_contratoobras_modificacion/aj11', $htmlAttributes = array('id'=>'aj11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+           <?= $html->input('cobp01_contratoobras_modificacion/dd11', $htmlAttributes = array('id'=>'dd11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+		<td align="center">
+           <?= $html->input('cobp01_contratoobras_modificacion/ee11', $htmlAttributes = array('id'=>'ee11', 'size'=>'11', 'value'=>"", 'style'=>'text-align:center;','readonly'=>'readonly'), false); ?>
+		</td>
+	</tr>
+</table>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+
+<th colspan="5">DETALLES DE LA MODIFICACIÓN</th>
+	<tr>
+		<td align="center">Año</td>
+		<td align="center">Número</td>
+		<td align="center" >Fecha</td>
+		<td align="center" >Tipo de modificación</td>
+		<td align="center" id="modificacion_texto"><br></td>
+	</tr>
+
+	<tr>
+		<td align="center" width="130">
+			<?= $html->input('cscp04_ordencompra_modificacion/ano_orden_compra_modificacion', $htmlAttributes = array(  'readonly'=>'readonly',  'class'=>'inputtext', 'style'=>"text-align:center",'id'=>'ano_orden_compra_modificacion', 'size'=>'11', 'value'=>$ano_orden_compra_modificacion, ), false); ?>
+		</td>
+		<td align="center" width="130">
+			<?= $html->input('cscp04_ordencompra_modificacion/numero_orden_compra_modificacion', $htmlAttributes = array('readonly'=>'readonly', 'class'=>'inputtext', 'id'=>'numero_orden_compra_modificacion','size'=>'11', 'value'=>$sisap->AddCero2($numero_orden_compra_modificacion), 'style'=>'text-align:center; font-size:25;'), false); ?>
+		</td>
+		<td align="center" width="170">
+		  <? $sisap->input_fecha("cscp04_ordencompra_modificacion","fecha_modificacion","fecha_modificacion", date('d/m/Y'));?>
+		</td>
+		<td align="center" width="200">
+           <?= $sisap->radioTagRemote('cscp04_ordencompra_modificacion/tipo_modificacion', array('1'=>'Aumento','2'=>'Disminución'), array('url1'=>'/cobp01_contratoobras_modificacion/tipo_modificacion/', 'update1'=>'modificacion_input', 'url2'=>'/cobp01_contratoobras_modificacion/tipo_modificacion_2/', 'update2'=>'campo_texto',  'id'=>'tipo_modificacion'), null, null)?>
+		</td>
+
+		<td align="center" width="200" id="campo_texto">
+          <br>
+		</td>
+
+
+	</tr>
+
+</table>
+
+
+<div id="modificacion_input" style="height:42px;"></div>
+
+
+
+<br>
+<div id="cotizacion"><?php include("datos.thtml");?></div>
+<div id="funcion"></div>
+<br>
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+<tr><th colspan="2" align="left">OBSERVACIONES:</th></tr>
+<tr>
+  <td colspan="2" align="center">
+			<?= $html->textarea('cscp04_ordencompra_modificacion/observaciones', $htmlAttributes = array('rows'=>'2', 'class'=>'inputtext', 'value'=>'', 'id'=>'observaciones'), false); ?>
+  </td>
+</tr>
+</table>
+<br>
+<div style="display:none;">
+<?
+ $caja['fecha_registro'] = 0;
+ $caja['dia_asiento_registro'] = 0;
+ $caja['mes_asiento_registro'] = 0;
+ $caja['ano_asiento_registro'] = 0;
+ $caja['numero_asiento_registro'] = 0;
+ $caja['username_registro'] = 0;
+ $caja['ano_anulacion'] = 0;
+ $caja['numero_acta_anulacion'] = 0;
+ $caja['fecha_proceso_anulacion'] = 0;
+ $caja['dia_asiento_anulacion'] = 0;
+ $caja['mes_asiento_anulacion'] = 0;
+ $caja['ano_asiento_anulacion'] = 0;
+ $caja['numero_asiento_anulacion'] = 0;
+ $caja['username_anulacion'] = 0;
+ $caja['radio'] = 'cobp01_contratoobras_modificacion/condicion_orden';
+ $caja['condicion_actividad'] = 1;
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+</div>
+<br>
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'cscp04_ordencompra_modificacion_valida_obra', 'url1' => '/cobp01_contratoobras_modificacion/guardar', 'update1'=>'principal', 'id'=>'guardar')); ?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/cscp04_ordencompra_modificacion/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/anular', array ('value'=>'Anular', 'disabled'=>'disabled'), array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cscp04_ordencompra_modificacion/anular/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_modificacion/consultar', array ('value'=>'buscar'), array('url1' => '/cobp01_contratoobras_modificacion/consulta_index/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+//'funcion'=>'cscp04_ordencompra_modificacion_validas'
+     }//fin
+  }//fin
+}//fin
+?>
+
+<br>
+
+
+</form>

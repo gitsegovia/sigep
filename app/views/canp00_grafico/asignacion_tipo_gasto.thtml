@@ -1,0 +1,275 @@
+<?php
+
+ if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	      echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+if($var==1){
+
+
+?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,'TipoS de GastoS', null, "950");?>
+
+<?= $sisap->OpenTable('950'); ?>
+
+<form method = "post" action="<?php echo  $html->url('/canp00_grafico/asignacion_tipo_gasto/2'); ?>" onSubmit="return cnap00_reporte_relacion_obras_proyecto_valida_radio_nivel_consulta();">
+
+<?php $sisap->radio_nivel_consulta($ano_lista, $ano_ejecucion, $vector_presi,  $cod_presi_seleccion); ?>
+
+<?= $sisap->submitTagRemote('Ver', array('funcion'=>'cnap00_reporte_relacion_obras_proyecto_valida_radio_nivel_consulta','url1' => '/canp00_grafico/asignacion_tipo_gasto/2', 'update1'=>'cuerpo', 'id'=>'ir')); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'));?>
+
+</form>
+
+<br>
+
+<div id="cuerpo"></div>
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+}else if($var==2){
+
+    $gasto_inversion = 0;
+ 	$gasto_corriente = 0;
+ 	$total = 0;
+ 	$por_gasto_inversion = 0;
+    $por_gasto_corriente = 0;
+
+
+
+ foreach($datos as $row){
+ 	$gasto_inversion = $row[0]['gasto_inversion'];
+ 	$gasto_corriente = $row[0]['gasto_corriente'];
+ 	$total = $row[0]['total'];
+ }
+
+ if($total!=0){
+	 $por_gasto_inversion = ($gasto_inversion * 100) / $total;
+	 $por_gasto_corriente = ($gasto_corriente * 100) / $total;
+ }
+
+ $username = $_SESSION['nom_usuario'];
+ $rdm = mt_rand();
+
+?>
+
+
+<div style="overflow:auto; height:500px;">
+	<form name='data[tipo_gastoPDF]'  method = "post" id='form' action="<?php echo $html->url('/canp00_grafico/asignacion_tipo_gasto/3');?>" >
+
+			<?= $html->submit('Generar reporte') ?>&nbsp; <br><br>
+
+			<input type="hidden" name="data[tipo_gastoPDF][gasto_inversion]" value="<?= $sisap->Formato2($gasto_inversion) ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][gasto_corriente]" value="<?= $sisap->Formato2($gasto_corriente) ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][total]" value="<?= $sisap->Formato2($total) ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][por_gasto_inversion]" value="<?= $sisap->Formato2($por_gasto_inversion) ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][por_gasto_corriente]" value="<?= $sisap->Formato2($por_gasto_corriente) ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][rdm]" value="<?= $rdm ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][year]" value="<?= $year ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][tipo_top]" value="<?= $tipo_top ?>">
+
+			<input type="hidden" name="data[tipo_gastoPDF][DENO_ESTADO]"          value="<?= $DENO_ESTADO ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][DENO_COD_TIPO_INST]"   value="<?= $DENO_COD_TIPO_INST ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][DENO_INST]"            value="<?= $DENO_INST ?>">
+			<input type="hidden" name="data[tipo_gastoPDF][DENO_REPUBLICA]"       value="<?= $DENO_REPUBLICA ?>">
+
+			<table width="100%" background="#000" border="0" style="color:black;background:#fff" id="grafica">
+			<tr>
+				<td width="250" width="50%" align="center">
+					<img src="/graficasPHP/graphpastel.php?dat=0,<?=$gasto_corriente?>,<?=$gasto_inversion?>&bkg=FFFFFF&wdt=250&hgt=180&usr=<?= $username ?>&rdm=<?= $rdm ?>"><br/><br/>
+				</td>
+				<td width="50%" align="center">
+					<img src="/graficasPHP/graphbarras.php?dat=<?=$total?>,<?=$gasto_corriente?>,<?=$gasto_inversion?>&bkg=FFFFFF&usr=<?= $username ?>&rdm=<?= $rdm ?>">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="font-size:large;">Leyenda:</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<table style="color:black;background:#fff">
+				     <tr>
+						<td>
+							<img src="/graficasPHP/graphref.php?ref=5&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=1&rdm=<?= $rdm ?>">
+						</td>
+						<td>
+							Gasto Total: <span style="font-size:large;"><?= $sisap->Formato2($total)." Bs." ?></span>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<img src="/graficasPHP/graphref.php?ref=8&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=2&rdm=<?= $rdm ?>">
+						</td>
+						<td>
+							Gasto Corriente: <span style="font-size:large;"><?= $sisap->Formato2($por_gasto_corriente)." %" ?> - <?= $sisap->Formato2($gasto_corriente)." Bs." ?></span>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<img src="/graficasPHP/graphref.php?ref=11&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=3&rdm=<?= $rdm ?>">
+						</td>
+						<td>
+							Gasto Inversi&oacute;n: <span style="font-size:large;"><?= $sisap->Formato2($por_gasto_inversion)." %" ?> - <?= $sisap->Formato2($gasto_inversion)." Bs." ?></span><br/>
+						</td>
+					</tr>
+
+					</table>
+				</td>
+			</tr>
+			</table>
+			<br/>
+
+
+	</form>
+</div>
+
+
+
+<?php }else if($var==3){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-10);
+    	//Select Arial italic 8
+	$this->SetFont('vera','',5);
+    	//Print current and total page numbers
+   	 //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+	  $this->info_top_reporte(array("TIPOS DE GASTOS ".$_SESSION["TITULO"]), array("Y"=>"11", "X"=>"16", "Z"=>"11"), null);
+
+            $this->SetFont('vera','B',7);
+
+            $this->Cell(40,5,'República','TBRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+
+	        if($_SESSION["tipo_top"]==1){
+
+		    $this->Cell(40,5,'Estado','BRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+			$this->Ln(37);
+
+
+	  }else if($_SESSION["tipo_top"]==2){
+
+	  	     $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+		     $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+		     $this->Ln(37);
+
+	  }else if($_SESSION["tipo_top"]==3){
+
+	  	     $this->Cell(40,5,'Estado','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+			 $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+   			 $this->Cell(40,5,'Institución','RLB',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_INST"],'RB',1,'L'); //// AQUIE LA INSTITUCIÓN
+
+			 $this->Ln(27);
+
+	  }else{
+	  	     $this->Ln(42);
+	  }
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+//for
+
+$_SESSION["tipo_top"] = $tipo_top;
+
+$_SESSION["DENO_REPUBLICA"]     = $DENO_REPUBLICA;
+$_SESSION["DENO_ESTADO"]        = $DENO_ESTADO;
+$_SESSION["DENO_COD_TIPO_INST"] = $DENO_COD_TIPO_INST;
+$_SESSION["DENO_INST"]          = $DENO_INST;
+
+
+if($year=="TODO"){
+	$_SESSION["TITULO"] = "DE TODOS LOS AÑOS";
+}else{
+	$_SESSION["TITULO"] = "DEL ".$year;
+}
+
+$pdf->AddPage();
+
+$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png',54,76,70);
+$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png',168,58,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto1_'.$user.'_'.$rdm.'.png',25,148,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto2_'.$user.'_'.$rdm.'.png',25,158,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto3_'.$user.'_'.$rdm.'.png',25,168,null);
+$pdf->Cell(0,46,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',14);
+$pdf->Cell(13,10,"",'',0);//ESPACIO
+$pdf->Cell(0,20,"Leyenda: ",'',1,'L');//NOMBRE
+$pdf->Cell(0,3,"",'',1);//ESPACIO
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,10,"",'',0);//ESPACIO
+$pdf->Cell(0,9,"          Gasto Total: ".$total." Bs.",'',1);//Gasto Total
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,10,"",'',0);//ESPACIO
+$pdf->Cell(0,8,"          Gasto Corriente: ".$por_gasto_corriente." % - ".$gasto_corriente." Bs.",'',1);//Gasto Corriente
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,10,"",'',0);//ESPACIO
+$pdf->Cell(0,11,"          Gasto de Inversion: ".$por_gasto_inversion." % - ".$gasto_inversion." Bs.",'',1);//Gasto de Inversion
+
+
+//unlink('/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png');
+//unlink('/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png');
+$pdf->Output();
+
+
+
+
+
+
+} ?>

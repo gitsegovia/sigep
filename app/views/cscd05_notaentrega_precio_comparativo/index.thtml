@@ -1,0 +1,198 @@
+<?php
+
+if(isset($var) && $var=="si"){
+?>
+<?= $sisap->Tabla('',true,'PRECIO COMPARATIVO DE PRODUCTOS','','950');?>
+<?= $sisap->OpenTable("950")?>
+<br />
+
+<form name="data[cscd05_notaentrega_precio_comparativo]" method="post" id='form' action="<?php echo $html->url('/cscd05_notaentrega_precio_comparativo/index/no'); ?>">
+
+	<table width="240" border="0" cellpadding="0" cellspacing="0">
+
+
+		<tr>
+			<div id="ano">
+
+				<td align="center">
+					A&Ntilde;O: <?= $html->input('cscd05_notaentrega_precio_comparativo/ano_vigente', $htmlAttributes = array('size'=>'4', 'onKeyPress'=>'return solonumeros(event);','style'=>'text-align:center', 'value'=>$ano_vigente), false); ?>
+  				</td>
+			</div>
+
+		</tr>
+
+  		<tr>
+  			<div id="radio">
+  				<td align="center">
+						<br>
+  						<?= $sisap->radioTagRemote('cscd05_notaentrega_precio_comparativo/opcion_filtro', array('1'=>'Todo', '2'=>'Uno en Particular'), array('url1'=>'/cscd05_notaentrega_precio_comparativo/cargar_select/1/a', 'update1'=>'informac_filtrada', "id"=>"opcion_filtro"),"", 1);?>
+  			</div>
+  		</tr>
+
+
+	</table>
+<br />
+<center>
+<div id="informac_filtrada"></div>
+<br>
+<div id="select_cargado"></div>
+<center>
+
+<?= $html->submit('Generar', array('id'=>'enviar',"cpnClick"=>"if(document.getElementById('cod_prod').value!=''){document.getElementById('form').submit();}")); ?>&nbsp;
+<?= $sisap->buttonTagRemote('/catp01_recargos_catastrales/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+
+
+
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+	set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+	   function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->top_reporte("PRECIO COMPARATIVO DE PRODUCTOS","", null, array("Y"=>"11", "X"=>"15", "Z"=>"12"), array("Y"=>"18", "X"=>"248"));
+
+ 		$this->SetFont('vera','B',6);
+       	$this->Cell(15,3,'Código','TRL',0,'C');
+		$this->Cell(54,3,'','TR',0,'C');
+		$this->Cell(20,3,'Unidad','TR',0,'C');
+		$this->Cell(15,3,'','TR',0,'C');
+		$this->Cell(15,3,'','TR',0,'C');
+		$this->Cell(15,3,'Precio','TR',0,'C');
+		$this->Cell(54,3,'','TR',0,'C');
+		$this->Cell(18,3,'','TR',0,'C');
+		$this->Cell(0,3,'DEPENDENCIA','TR',1,'C');
+
+       	$this->Cell(15,3,'Producto','BRL',0,'C');
+		$this->Cell(54,3,'PRODUCTO O SERVICIO','BR',0,'C');
+		$this->Cell(20,3,'Medida','BR',0,'C');
+		$this->Cell(15,3,'Fecha','BR',0,'C');
+		$this->Cell(15,3,'Cantidad','BR',0,'C');
+		$this->Cell(15,3,'Unitario','BR',0,'C');
+		$this->Cell(54,3,'Proveedor','BR',0,'C');
+		$this->Cell(18,3,'Rif','BR',0,'C');
+		$this->Cell(0,3,'COMPRADORA','BR',1,'C');
+
+
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+    function altura_deno ($denominacion) {
+
+	        $c = strlen($denominacion);
+
+	        if($c<=39){
+            	$alturad = 4;
+            }else if($c>39 && $c<=78){
+            	$alturad = 8;
+            }else if($c>78 && $c<=117){
+            	$alturad = 12;
+            }else if($c>117 && $c<=156){
+            	$alturad = 16;
+            }else if($c>156 && $c<=195){
+            	$alturad = 20;
+            }else if($c>195 && $c<=234){
+            	$alturad = 24;
+            }else if($c>234 && $c<=273){
+            	$alturad = 28;
+            }else if($c>273 && $c<=312){
+            	$alturad = 32;
+            }else{
+                $alturad = 36;
+            }
+
+            return $alturad;
+
+	}//fin funcion altura_deno
+
+if(isset($datos) && !empty($datos)){
+
+	$pdf->SetFont('vera','',6);
+$cod_rom="";
+foreach($datos as $x){
+
+	$altoh1 = (int) altura_deno($x[0]['denominacion_del_producto']);
+	$altoh2 = (int) altura_deno($x[0]['proveedor']);
+	$altoh3 = (int) altura_deno($x[0]['dependencia_compradora']);
+	$altoh = 4;
+
+if($cod_rom==$x[0]['codigo_prod_serv']){
+	$codigo="";
+	$denominacion="";
+	$unidad="";
+
+}else{
+	$cod_rom=$x[0]['codigo_prod_serv'];
+	$codigo=$x[0]['codigo_prod_serv'];
+	$denominacion=$x[0]['denominacion_del_producto'];
+	$unidad=$x[0]['unidad_medida'];
+
+}
+        if($altoh1 >= $altoh2 && $altoh1 >= $altoh3){ $altoh = $altoh1; } else
+        if($altoh2 >= $altoh1 && $altoh2 >= $altoh3){ $altoh = $altoh2; } else
+        if($altoh3 >= $altoh1 && $altoh3 >= $altoh2){ $altoh = $altoh3; }
+
+
+		$pdf->cell(15,$altoh,$codigo,'RL',0,'C');
+		$pdf->Cell(1,$altoh,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(53,3,$denominacion,'','J');
+		$varX = $varX+53;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(20,$altoh,$unidad,'RL',0,'C');
+		$pdf->Cell(15,$altoh,$sisap->cambia_fecha($x[0]['fecha_nota_entrega']),'R',0,'C');
+		$pdf->Cell(15,$altoh,round($x[0]['cantidad'],3),'R',0,'C');
+		$pdf->Cell(15,$altoh,$sisap->Formato2($x[0]['precio_unitario']),'R',0,'C');
+		$pdf->Cell(1,$altoh,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(53,3,$x[0]['proveedor'],'','J');
+		$varX = $varX+53;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(18,$altoh,$x[0]['rif'],'RL',0,'C');
+		$pdf->Cell(1,$altoh,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(53,3,$x[0]['dependencia_compradora'],'','J');
+		$varX = $varX+53;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,$altoh,'','R',1,'C');
+		$pdf->Cell(0,0,'','T',1,'C');
+} // FIN FOREACH
+}else{
+		$pdf->SetFont('vera','B',12);
+		$pdf->cell(0,16,"NO SE ENCONTRARÓN DATOS",'TRBL',1,'C');
+}
+	$pdf->Output('precio_comparartivo'.date('d-m-Y_hi').'.pdf','D');
+}
+?>

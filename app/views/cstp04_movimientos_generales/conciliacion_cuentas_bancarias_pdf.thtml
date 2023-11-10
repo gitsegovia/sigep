@@ -1,0 +1,153 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$titulo_A = $_SESSION['deno_entidad_bancaria'];
+		$titulo_B = "CONCILIACION BANCARIA AL ".$_SESSION['fecha_conciliacion'];
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(55,4,'SALDO SEGUN BANCO AL '.$_SESSION['fecha_conciliacion'].': ','',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION['saldo_banco'],'',1);// saldo mes anterior+deposito+NC+ND+cheque_cancelados
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(55,4,'SALDO SEGUN LIBRO AL '.$_SESSION['fecha_conciliacion'].': ','',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION['saldo_libro'],'',1);// disponible en cuenta segun reporte
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(55,4,'SALDO A CONCILIAR:','',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,4,$_SESSION['saldo_conciliar'],'',1);
+
+		$this->Ln(5);
+
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,'MENOS CHEQUES EN TRANSITO:','',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(20,5,'FECHA','TRBL',0,'C');
+		$this->Cell(30,5,'NRO DOC','TRB',0,'C');
+		$this->Cell(122,5,'BENEFICIARIO','TRB',0,'C');
+		$this->Cell(0,5,'MONTO','TRB',1,'C');
+    }//fin funtion
+
+    function Footer(){
+		$this->SetY(-38);
+		$this->SetFont('vera','B',7);
+		$this->Cell(50,4,'ELABORADO POR','',0,'C');
+		$this->Cell(100,4,'','',0);
+		$this->Cell(0,4,'REVISADO POR','',1,'C');
+
+		$this->Cell(50,10,'','',0,'C');
+		$this->Cell(100,10,'','',0);
+		$this->Cell(0,10,'','',1,'C');
+
+		$this->Cell(50,4,$_SESSION['firma1'],'T',0,'C');
+		$this->Cell(100,4,'','',0);
+		$this->Cell(0,4,$_SESSION['firma2'],'T',1,'C');
+
+		$this->Cell(50,3,$_SESSION['cargo1'],'',0,'C');
+		$this->Cell(100,3,'','',0);
+		$this->Cell(0,3,$_SESSION['cargo2'],'',1,'C');
+
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,'_______________________________________________','',1,'C');
+		$this->Cell(0,3,$_SESSION['firma3'],'',1,'C');
+		$this->Cell(0,3,$_SESSION['cargo3'],'',1,'C');
+    }//fin funtion
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 40);
+
+$cuenta_anterior = $vector_cuentas[0][0]['suma_anterior'] - $vector_cuentas[0][0]['resta_anterior'];
+$depositos_nc = $vector_cuentas[0][0]['depositos_nc'];
+$notas_debito = $vector_cuentas[0][0]['notas_debito'];
+$cheques_todos = $vector_cuentas[0][0]['cheques_todos'];
+$cheques_cancelados = $vector_cuentas[0][0]['cheques_cancelados'];
+
+$saldo_banco = ($cuenta_anterior + $depositos_nc) - $notas_debito - $cheques_cancelados;
+$saldo_libro = ($cuenta_anterior + $depositos_nc) - $notas_debito - $cheques_todos;
+$saldo_conciliar = $saldo_banco - $saldo_libro;
+
+$cuenta=$vector_cuentas[0][0]['cuenta_bancaria'];
+$cuenta_bancaria=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+$_SESSION['saldo_banco'] = $sisap->Formato2($saldo_banco);
+$_SESSION['saldo_libro'] = $sisap->Formato2($saldo_libro);
+$_SESSION['saldo_conciliar'] = $sisap->Formato2($saldo_conciliar);
+$_SESSION['fecha_conciliacion'] = $fecha_conciliacion;
+$_SESSION['deno_entidad_bancaria'] = $vector_cuentas[0][0]['deno_entidad_bancaria'].' CTA. '.$cuenta_bancaria;
+
+$pdf->AddPage();
+
+$monto_transito = 0;
+$cant_registro = count($vector_transito);
+
+$pdf->SetFont('vera','',7);
+
+for($i=0; $i<$cant_registro; $i++){
+
+$long=strlen($vector_transito[$i][0]['beneficiario']);
+if($long<=74){//echo "a";
+		$height=4;
+	}else if($long>74 && $long<=151){//echo "b";
+		$height=8;
+	}else if($long>151 && $long<=303){//echo "c";
+		$height=12;
+	}else{
+		$height=16;
+}
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($vector_transito[$i][0]['fecha_documento']),'RL',0,'C');
+	$pdf->Cell(30,$height,mascara($vector_transito[$i][0]['numero_documento'], 8),'LR',0,'C');
+	$pdf->Cell(124,1,"",'T',2,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->MultiCell(122,3,$vector_transito[$i][0]['beneficiario'],'','J');
+	$varX = $varX+122;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,$height,$sisap->Formato2($vector_transito[$i][0]['monto']),'LR',1,'R');
+	$pdf->Cell(0,0,'','T',1);
+
+	$monto_transito += $vector_transito[$i][0]['monto'];
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(50,5,'','',0,'C');
+$pdf->Cell(122,5,'TOTAL CHEQUES EN TRANSITO: ','RBL',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($monto_transito),'RB',1,'R');
+
+//.$fecha_conciliacion.' - '.$primer_dia.' - '.$ultimo_dia.' - '.$ano_movimiento.' - '.$cod_entidad_bancaria.' - '.$cod_sucursal.' - '.$cuenta_bancaria
+
+$saldo_conciliado = $saldo_conciliar - $monto_transito;
+
+$pdf->Cell(50,8,'','',0,'C');
+$pdf->Cell(123,8,'TOTAL SALDO CONCILIADO: ','',0,'R');
+$pdf->Cell(0,8,$sisap->Formato2($saldo_conciliado),'',1,'R');// saldo a conciliar - cheques en transito
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(0,2,'','',1,'R');
+
+
+$pdf->Output('reporte_conciliacion_cuentas_bancarias_'.date("d-m-Y h:i:sa").'.pdf','D');
+?>

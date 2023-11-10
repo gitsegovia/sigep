@@ -1,0 +1,1772 @@
+<?php
+$_SESSION['entidad_federal_aux'] = $_SESSION["entidad_federal"];
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = $_SESSION["dependencia"];
+
+set_time_limit(0);
+    vendor('ods');
+    $nombre='resumen_presupuestario_actividades_';
+	$object = newOds();
+
+	$object->addCell(0,1,'A',$entidad_federal,'string');
+	$object->addCell(0,2,'A',up($titulo_a),'string');
+	$object->addCell(0,3,'A','PRESUPUESTO: '.$ANO,'string');
+    $object->addCell(0,4,'A','ANÁLISIS RESUMIDO DEL PRESUPUESTO POR ACTIVIDADES ','string');
+    $object->addCell(0,5,'A','','string');
+    $celdas=array('A'=>19,'B'=>40,'C'=>17,'D'=>17,'E'=>17,'F'=>17,'G'=>17,'H'=>17,'I'=>17,'J'=>17,'K'=>17,'L'=>17);
+	$_SESSION["cod_sector"]       ="";
+	$_SESSION["deno_sector"]      ="";
+	$_SESSION["cod_programa"]     ="";
+	$_SESSION["deno_programa"]    ="";
+	$_SESSION["cod_sub_prog"]     ="";
+	$_SESSION["deno_sub_prog"]    ="";
+	$_SESSION["cod_proyecto"]     ="";
+	$_SESSION["deno_proyecto"]    ="";
+	$_SESSION["cod_activ_obra"]   ="";
+	$_SESSION["deno_activ_obra"]  ="";
+	$_SESSION["unidad_ejecutora"] ="";
+	$_SESSION["cod_partida"]      ="";
+	$_SESSION["cod_generica"]     ="";
+	$_SESSION["cod_especifica"]   ="";
+	$_SESSION["cod_sub_espec"]    ="";
+	$_SESSION["cod_auxiliar"]     ="";
+	$_SESSION["disponibilidadT"]  ="";
+	$_SESSION["denominacion"]     ="";
+	$_SESSION["asignacion_anual"] ="";
+	$_SESSION["aumento"]          ="";
+	$_SESSION["disminucion"]      ="";
+	$_SESSION["compromiso"]       ="";
+	$_SESSION["causado"]          ="";
+	$_SESSION["pagado"]           ="";
+
+
+		$this->Cell(27,4,"",'TRL',0,'L');
+		$this->Cell(15,4,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(0,4," DENOMINACIÓN",'TRL',1,'L');
+
+		$this->Cell(27,4,"SECTOR",'TRL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,$_SESSION["cod_sector"],'TRL',0,'C'); //-----[Codigo Sector]
+		$this->Cell(0,4,$_SESSION["deno_sector"],'TRL',1,'L');  //-----[Denominacion]
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(27,4,"PROGRAMA",'TRL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,$_SESSION["cod_programa"],'TRL',0,'C'); //-----[Codigo Programa]
+		$this->Cell(0,4,$_SESSION["deno_programa"],'TRL',1,'L');  //-----[Denominacion]
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(27,4,"SUB-PROGRAMA",'TRL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,$_SESSION["cod_sub_prog"],'TRL',0,'C'); //-----[Codigo Sub-Programa]
+		$this->Cell(0,4,$_SESSION["deno_sub_prog"],'TRL',1,'L');  //-----[Denominacion]
+        if($_SESSION["cod_proyecto"]!=0){
+		$this->SetFont('vera','B',6);
+		$this->Cell(27,4,"PROYECTO",'TRL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,$_SESSION["cod_proyecto"],'TRL',0,'C');//-----[CÓDIGO PROYECTO]
+		$this->Cell(0,4,$_SESSION["deno_proyecto"],'TRL',1,'L'); //-----[Denominacion]
+        }
+		$this->SetFont('vera','B',6);
+		$this->Cell(27,4,"ACTIVIDAD U OBRA",'TRL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,$_SESSION["cod_activ_obra"],'TRL',0,'C');//-----[CÓDIGO ACTIVIDAD U OBRA]
+		$this->Cell(0,4,$_SESSION["deno_activ_obra"],'TRL',1,'L'); //-----[Denominacion]
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(27,4,"UNIDAD EJECUTORA",'TBL',0,'L');
+		$this->SetFont('vera','',6);
+		$this->Cell(15,4,"",'TRB',0,'C');
+		$this->Cell(0,4,$_SESSION["unidad_ejecutora"],'TRBL',1,'L'); //-----[Denominacion]
+
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(6.5,4,"",'TL',0,'C');
+		$this->Cell(6.5,4,"",'TL',0,'C');
+		$this->Cell(6.5,4,"",'TL',0,'C');
+		$this->Cell(6.5,4,"SUB.",'TL',0,'C');
+		$this->Cell(7,4,"",'TL',0,'C');
+
+		$this->Cell(46.5,4,"",'TL',0,'C');
+		$this->Cell(20,4,"TIPO",'TL',0,'C');
+		$this->Cell(13,4,"FECHA",'TL',0,'C');
+		$this->Cell(20,4,"NÚMERO",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(20,4,"",'TL',0,'C');
+		$this->Cell(0,4,"",'TRL',1,'C');
+
+		//-------------------------------------------
+
+		$this->Cell(6.5,4,"PAR.",'BL',0,'C');
+		$this->Cell(6.5,4,"GEN.",'BL',0,'C');
+		$this->Cell(6.5,4,"ESP.",'BL',0,'C');
+		$this->Cell(6.5,4,"ESP.",'BL',0,'C');
+		$this->Cell(7,4,"AUX.",'BRL',0,'C');
+        $this->SetFont('vera','B',5);
+		$this->Cell(46.5,4,"DENOMINACiÓN / Beneficiario",'BL',0,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,4,"DOCUMENTO",'BL',0,'C');
+		$this->Cell(13,4,"PROCESO",'BL',0,'C');
+		$this->Cell(20,4,"DOCUMENTO",'BL',0,'C');
+		$this->Cell(20,4,"ASIGNACIÓN",'BL',0,'C');
+		$this->Cell(20,4,"AUMENTO",'BL',0,'C');
+		$this->Cell(20,4,"DISMINUCIÓN",'BL',0,'C');
+		$this->Cell(20,4,"COMPROMISO",'BL',0,'C');
+		$this->Cell(20,4,"CAUSADO",'BL',0,'C');
+		$this->Cell(20,4,"PAGADO",'BL',0,'C');
+		$this->Cell(0,4,"DISPONIBILIDAD",'BRL',1,'C');
+
+        $deno=trim($_SESSION["denominacion"]);
+        $deno = preg_replace('/\s\s+/', ' ', trim($deno));
+        $cdeno=strlen($deno);
+
+        $alto="4";
+		$this->SetFont('vera','B',6);
+		$this->Cell(6.5,$alto,$_SESSION["cod_partida"],'TL',0,'C');//------[partida]
+		$this->Cell(6.5,$alto,$_SESSION["cod_generica"],'TL',0,'C');//------[generica]
+		$this->Cell(6.5,$alto,$_SESSION["cod_especifica"],'TL',0,'C');//------[especifica]
+		$this->Cell(6.5,$alto,$_SESSION["cod_sub_espec"],'TL',0,'C');//------[sub-especifica]
+		$this->Cell(7,$alto,$_SESSION["cod_auxiliar"],'TRL',0,'C');//-----[auxiliar]
+		$this->MultiCell(46.5,2,$deno,'','L');//---[Beneficiario]
+		$this->Cell(20,$alto," ",'TL',0,'L');//--------[tipo Documento]
+		$this->Cell(13,$alto," ",'TL',0,'C');//-----------[fecha Documento]
+		$this->Cell(20,$alto," ",'TL',0,'C');//----------------[numero Documento]
+		$this->Cell(20,$alto,$_SESSION["asignacion_anual"],'TL',0,'R');//-----------------[ASIGNACION]
+		$this->Cell(20,$alto,$_SESSION["aumento"],'TL',0,'R');//----------------[AUMENTO]
+		$this->Cell(20,$alto,$_SESSION["disminucion"],'TL',0,'R');//----------------[DISMINUCION]
+		$this->Cell(20,$alto,$_SESSION["compromiso"],'TL',0,'R');//----------------[COMPROMISO]
+		$this->Cell(20,$alto,$_SESSION["causado"],'TL',0,'R');//----------[CAUSADO]
+		$this->Cell(20,$alto,$_SESSION["pagado"],'TL',0,'R');//----------[PAGADO]
+		$this->Cell(0,$alto,$_SESSION["disponibilidadT"],'TRL',1,'R');//--------[DISPONIBILIDAD]
+		$this->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+
+
+
+if(isset($DATOS) && $DATOS!=null){
+//inicio_ventana_barra_proceso("Generando reporte, Espere por favor...");
+$i_barra =1;
+$cantidad_de_registros = count($DATOS);
+foreach($DATOS as $datos){
+	$dato=$datos["v_analisis_presupuesto"];
+	//print_r($dato);
+	$a_cod_sector      = mascara($dato["cod_sector"],2);
+	$a_cod_programa    = mascara($dato["cod_programa"],2);
+	$a_cod_sub_prog    = mascara($dato["cod_sub_prog"],2);
+	$a_cod_proyecto    = mascara($dato["cod_proyecto"],2);
+	$a_cod_activ_obra  = mascara($dato["cod_activ_obra"],2);
+	$a_cod_partida     = $dato["cod_partida"];
+	$a_cod_generica    = mascara($dato["cod_generica"],2);
+	$a_cod_especifica  = mascara($dato["cod_especifica"],2);
+	$a_cod_sub_espec   = mascara($dato["cod_sub_espec"],2);
+	$a_cod_auxiliar    = mascara($dato["cod_auxiliar"],4);
+	$a_deno_sector     = $dato["deno_sector"];
+	$a_deno_programa   = $dato["deno_programa"];
+	$a_deno_sub_prog   = $dato["deno_sub_prog"];
+	$a_deno_proyecto   = $dato["deno_proyecto"];
+	$a_deno_activ_obra = $dato["deno_activ_obra"];
+	$a_unidad_ejecutora= $dato["unidad_e_actividad"];
+	$a_denominacion = $dato["cod_auxiliar"]==0?$dato["deno_sub_espec"]:$dato["deno_auxiliar"];
+	$a_disponibilidadT =$dato["disponibilidad"];
+	$a_asignacion_anual=$sisap->Formato2($dato["asignacion_anual"]);
+	$a_aumento         =$sisap->Formato2($dato["aumento"]);
+	$a_disminucion     =$sisap->Formato2($dato["disminucion"]);
+	$a_compromiso      =$sisap->Formato2($dato["compromiso_anual"]);
+	$a_causado         =$sisap->Formato2($dato["causado_anual"]);
+	$a_pagado          =$sisap->Formato2($dato["pagado_anual"]);
+	$DISPONIBILIDAD=$dato["asignacion_anual"]+$dato["aumento"]-$dato["disminucion"];
+	$a_disponibilidadT =$sisap->Formato2($DISPONIBILIDAD);
+
+	//ESTATICO
+	$fila_celda+=5;
+	$object->addCell(0,$fila_celda,'A', ' _');
+    $fila_celda++;
+    $object->addCell(0,$fila_celda,'A', ' _');
+    $fila_celda++;
+	$object->addCell(0,$fila_celda,'A', ' _');
+	$object->addCell(0,$fila_celda,'B', 'CÓDIGO');
+	$object->addCell(0,$fila_celda,'C', 'DENOMINACIÓN');
+	//SECTOR
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A', 'SECTOR');
+	$object->addCell(0,$fila_celda,'B', ''.$a_cod_sector.' ');
+	$object->addCell(0,$fila_celda,'C', $a_deno_sector);
+	//PROGRAMA
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A', 'PROGRAMA');
+	$object->addCell(0,$fila_celda,'B', ''.$a_cod_programa.' ');
+	$object->addCell(0,$fila_celda,'C', $a_deno_programa);
+	//SUBPROGRAMA
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A', 'SUBPROGRAMA');
+	$object->addCell(0,$fila_celda,'B', ''.$a_cod_sub_prog.' ');
+	$object->addCell(0,$fila_celda,'C', $a_deno_sub_prog);
+	//ACTIVIDAD U OBRA
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A', 'ACTIVIDAD U OBRA');
+	$object->addCell(0,$fila_celda,'B', ''.$a_cod_activ_obra.' ');
+	$object->addCell(0,$fila_celda,'C', $a_deno_activ_obra);
+	//UNIDAD EJECUTORA
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A', 'UNIDAD EJECUTORA');
+	$object->addCell(0,$fila_celda,'B', ' ');
+	$object->addCell(0,$fila_celda,'C', $a_unidad_ejecutora);
+    $fila_celda++;
+    $fila_celda++;
+    $fila_celda++;
+    //$celdas=array('A','B','C','D','E','F','G','H','I','J','K','L');
+    $fila_celda++;
+	$object->addCell(0,$fila_celda,'A', " ");
+	$object->addCell(0,$fila_celda,'B', " ");
+	$object->addCell(0,$fila_celda,'C', " ");
+	$object->addCell(0,$fila_celda,'D', "SUB.");
+	$object->addCell(0,$fila_celda,'E', " ");
+	$object->addCell(0,$fila_celda,'F', " ");
+	$object->addCell(0,$fila_celda,'G', "TIPO");
+	$object->addCell(0,$fila_celda,'H', "FECHA");
+	$object->addCell(0,$fila_celda,'I', "NÚMERO");
+	$object->addCell(0,$fila_celda,'J', " ");
+	$object->addCell(0,$fila_celda,'K', " ");
+	$object->addCell(0,$fila_celda,'L', " ");
+	$object->addCell(0,$fila_celda,'M', " ");
+	$object->addCell(0,$fila_celda,'N', " ");
+	$object->addCell(0,$fila_celda,'O', " ");
+	$object->addCell(0,$fila_celda,'P', " ");
+    $fila_celda++;
+	$object->addCell(0,$fila_celda,'A',"PAR.");
+	$object->addCell(0,$fila_celda,'B',"GEN.");
+	$object->addCell(0,$fila_celda,'C',"ESP.");
+	$object->addCell(0,$fila_celda,'D',"ESP.");
+	$object->addCell(0,$fila_celda,'E',"AUX.");
+	$object->addCell(0,$fila_celda,'F',"DENOMINACiÓN / Beneficiario");
+	$object->addCell(0,$fila_celda,'G',"DOCUMENTO");
+	$object->addCell(0,$fila_celda,'H',"PROCESO");
+	$object->addCell(0,$fila_celda,'I',"DOCUMENTO");
+	$object->addCell(0,$fila_celda,'J',"ASIGNACIÓN");
+	$object->addCell(0,$fila_celda,'K',"AUMENTO");
+	$object->addCell(0,$fila_celda,'L',"DISMINUCIÓN");
+	$object->addCell(0,$fila_celda,'M',"COMPROMISO");
+	$object->addCell(0,$fila_celda,'N',"CAUSADO");
+	$object->addCell(0,$fila_celda,'O',"PAGADO");
+	$object->addCell(0,$fila_celda,'P',"DISPONIBILIDAD");
+	$fila_celda++;
+	$object->addCell(0,$fila_celda,'A',''.$a_cod_partida.'');
+	$object->addCell(0,$fila_celda,'B',''.$a_cod_generica.'');
+	$object->addCell(0,$fila_celda,'C',''.$a_cod_especifica.'');
+	$object->addCell(0,$fila_celda,'D',''.$a_cod_sub_espec.'');
+	$object->addCell(0,$fila_celda,'E',''.$a_cod_auxiliar.'');
+	$object->addCell(0,$fila_celda,'F',''.$a_denominacion.'');
+	$object->addCell(0,$fila_celda,'G'," ");
+	$object->addCell(0,$fila_celda,'H'," ");
+	$object->addCell(0,$fila_celda,'I'," ");
+	$object->addCell(0,$fila_celda,'J',''.$a_asignacion_anual.'');
+	$object->addCell(0,$fila_celda,'K',''.$a_aumento.'');
+	$object->addCell(0,$fila_celda,'L',''.$a_disminucion.'');
+	$object->addCell(0,$fila_celda,'M',''.$a_compromiso.'');
+	$object->addCell(0,$fila_celda,'N',''.$a_causado.'');
+	$object->addCell(0,$fila_celda,'O',''.$a_pagado.'');
+	$object->addCell(0,$fila_celda,'P',''.$a_disponibilidadT.'');
+
+	$t_aumento=0;
+	$t_disminucion=0;
+	$DISPONIBILIDAD=$dato["asignacion_anual"];
+	foreach($reformulacion as $ref){
+		if($dato["cod_presi"]==$ref[0]["cod_presi"] && $dato["cod_entidad"]==$ref[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$ref[0]["cod_tipo_inst"] && $dato["cod_inst"]==$ref[0]["cod_inst"] && $dato["cod_dep"]==$ref[0]["codi_dep"] && $dato["cod_sector"]==$ref[0]["cod_sector"] && $dato["cod_programa"]==$ref[0]["cod_programa"] && $dato["cod_sub_prog"]==$ref[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$ref[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$ref[0]["cod_activ_obra"] && $dato["cod_partida"]==$ref[0]["cod_partida"] && $dato["cod_generica"]==$ref[0]["cod_generica"] && $dato["cod_especifica"]==$ref[0]["cod_especifica"] && $dato["cod_sub_espec"]==$ref[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$ref[0]["cod_auxiliar"]){
+			$DISPONIBILIDAD=$DISPONIBILIDAD+$ref[0]["monto_aumento"]-$ref[0]["monto_disminucion"];
+			$fila_celda++;
+			$object->addCell(0,$fila_celda,'A',' ');
+			$object->addCell(0,$fila_celda,'B',' ');
+			$object->addCell(0,$fila_celda,'C',' ');
+			$object->addCell(0,$fila_celda,'D',' ');
+			$object->addCell(0,$fila_celda,'E',' ');
+			$object->addCell(0,$fila_celda,'F',' ');
+			$object->addCell(0,$fila_celda,'G',"Reformulación");
+			$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($ref[0]["fecha_decreto"]));
+			$object->addCell(0,$fila_celda,'I',"".$ref[0]["numero_decreto"]);
+			$object->addCell(0,$fila_celda,'J',' ');
+			$object->addCell(0,$fila_celda,'K',$sisap->Formato2($ref[0]["monto_aumento"]));
+			$object->addCell(0,$fila_celda,'L',$sisap->Formato2($ref[0]["monto_disminucion"]));
+			$object->addCell(0,$fila_celda,'M',' ');
+			$object->addCell(0,$fila_celda,'N',' ');
+			$object->addCell(0,$fila_celda,'O',' ');
+			$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+			$t_aumento=$t_aumento+$ref[0]["monto_aumento"];
+	        $t_disminucion=$t_disminucion+$ref[0]["monto_disminucion"];
+		}//fin if
+	}//fin foreach
+
+     //foreach de Registros de Compromisos
+	//###########################
+	$t_compromiso=0;
+	$t_orden_pago=0;
+	$t_cheques=0;
+	foreach($RCompromisos as $RC){
+		if($dato["cod_presi"]==$RC[0]["cod_presi"] && $dato["cod_entidad"]==$RC[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$RC[0]["cod_tipo_inst"] && $dato["cod_inst"]==$RC[0]["cod_inst"] && $dato["cod_dep"]==$RC[0]["cod_dep"] && $dato["cod_sector"]==$RC[0]["cod_sector"] && $dato["cod_programa"]==$RC[0]["cod_programa"] && $dato["cod_sub_prog"]==$RC[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$RC[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$RC[0]["cod_activ_obra"] && $dato["cod_partida"]==$RC[0]["cod_partida"] && $dato["cod_generica"]==$RC[0]["cod_generica"] && $dato["cod_especifica"]==$RC[0]["cod_especifica"] && $dato["cod_sub_espec"]==$RC[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$RC[0]["cod_auxiliar"]){
+			$beneficiario=$RC[0]["beneficiario"];
+            $DISPONIBILIDAD=$DISPONIBILIDAD-$RC[0]["monto"];
+			$fila_celda++;
+			$object->addCell(0,$fila_celda,'A',' ');
+			$object->addCell(0,$fila_celda,'B',' ');
+			$object->addCell(0,$fila_celda,'C',' ');
+			$object->addCell(0,$fila_celda,'D',' ');
+			$object->addCell(0,$fila_celda,'E',' ');
+			$object->addCell(0,$fila_celda,'F',' '.$beneficiario);
+			$object->addCell(0,$fila_celda,'G',"Compromisos");
+			$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($RC[0]["fecha_documento"]));
+			$object->addCell(0,$fila_celda,'I',"".mascara($RC[0]["numero_documento"],8));
+			$object->addCell(0,$fila_celda,'J',' ');
+			$object->addCell(0,$fila_celda,'K',' ');
+			$object->addCell(0,$fila_celda,'L',' ');
+			$object->addCell(0,$fila_celda,'M',$sisap->Formato2($RC[0]["monto"]));
+			$object->addCell(0,$fila_celda,'N',' ');
+			$object->addCell(0,$fila_celda,'O',' ');
+			$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+			$t_compromiso=$t_compromiso+$RC[0]["monto"];
+
+		    foreach($orden_pago as $OP){
+               if($RC[0]["cod_presi"]==$OP[0]["cod_presi"] && $RC[0]["cod_entidad"]==$OP[0]["cod_entidad"] && $RC[0]["cod_tipo_inst"]==$OP[0]["cod_tipo_inst"] && $RC[0]["cod_inst"]==$OP[0]["cod_inst"] && $RC[0]["cod_dep"]==$OP[0]["cod_dep"] && $RC[0]["cod_sector"]==$OP[0]["cod_sector"] && $RC[0]["cod_programa"]==$OP[0]["cod_programa"] && $RC[0]["cod_sub_prog"]==$OP[0]["cod_sub_prog"] && $RC[0]["cod_proyecto"]==$OP[0]["cod_proyecto"] && $RC[0]["cod_activ_obra"]==$OP[0]["cod_activ_obra"] && $RC[0]["cod_partida"]==$OP[0]["cod_partida"] && $RC[0]["cod_generica"]==$OP[0]["cod_generica"] && $RC[0]["cod_especifica"]==$OP[0]["cod_especifica"] && $RC[0]["cod_sub_espec"]==$OP[0]["cod_sub_espec"] && $RC[0]["cod_auxiliar"]==$OP[0]["cod_auxiliar"] && $RC[0]["numero_orden_pago"]==$OP[0]["numero_orden_pago"]  && $RC[0]["numero_documento"]==$OP[0]["numero_documento_origen"]  && $OP[0]["numero_documento_adjunto"]=="0"  && $RC[0]["ano_orden_pago"]==$OP[0]["ano_orden_pago"]){
+					$fila_celda++;
+					$object->addCell(0,$fila_celda,'A',' ');
+					$object->addCell(0,$fila_celda,'B',' ');
+					$object->addCell(0,$fila_celda,'C',' ');
+					$object->addCell(0,$fila_celda,'D',' ');
+					$object->addCell(0,$fila_celda,'E',' ');
+					$object->addCell(0,$fila_celda,'F',' ');
+					$object->addCell(0,$fila_celda,'G',"Orden de Pago");
+					$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OP[0]["fecha_orden_pago"]));
+					$object->addCell(0,$fila_celda,'I',"".mascara($OP[0]["numero_orden_pago"],8));
+					$object->addCell(0,$fila_celda,'J',' ');
+					$object->addCell(0,$fila_celda,'K',' ');
+					$object->addCell(0,$fila_celda,'L',' ');
+					$object->addCell(0,$fila_celda,'M',' ');
+					$object->addCell(0,$fila_celda,'N',$sisap->Formato2($OP[0]["monto"]));
+					$object->addCell(0,$fila_celda,'O',' ');
+					$object->addCell(0,$fila_celda,'P',' ');
+					$t_orden_pago=$t_orden_pago+$OP[0]["monto"];
+                        foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]){
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' ');
+								$object->addCell(0,$fila_celda,'G',"Cheque");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques
+
+						foreach($NOTADEBITO as $NDD){
+								if($OP[0]["cod_presi"]==$NDD[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito E.");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($NDD[0]["fecha_nota_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($NDD[0]["numero_documento"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($NDD[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$NDD[0]["monto"];
+								}//fin if
+						}//Nota de debitos
+
+                        foreach($NOTADEBITO_CA as $NDD_CA){
+								if($OP[0]["cod_presi"]==$NDD_CA[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD_CA[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD_CA[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD_CA[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD_CA[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD_CA[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD_CA[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD_CA[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD_CA[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD_CA[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD_CA[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD_CA[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD_CA[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD_CA[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD_CA[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD_CA[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD_CA[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($NDD_CA[0]["fecha_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($NDD_CA[0]["numero_debito"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($NDD_CA[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$NDD_CA[0]["monto"];
+								}//fin if
+						}//Nota de debitos cancelaciones
+
+						foreach($DEBITO as $DEB){
+								if($OP[0]["cod_presi"]==$DEB[0]["cod_presi"] && $OP[0]["cod_entidad"]==$DEB[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$DEB[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$DEB[0]["cod_inst"] && $OP[0]["cod_dep"]==$DEB[0]["cod_dep"] && $OP[0]["cod_sector"]==$DEB[0]["cod_sector"] && $OP[0]["cod_programa"]==$DEB[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$DEB[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$DEB[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$DEB[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$DEB[0]["cod_partida"] && $OP[0]["cod_generica"]==$DEB[0]["cod_generica"] && $OP[0]["cod_especifica"]==$DEB[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$DEB[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$DEB[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$DEB[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$DEB[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($DEB[0]["fecha_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($DEB[0]["numero_debito"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($DEB[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$DEB[0]["monto"];
+								}//fin if
+						}//debito
+
+                        //Clase de beneficiario
+						//1.- Beneficiario común
+						//2.- I.S.L.R.
+						//3.- Timbre fiscal
+						//4.- Impuesto Municipal
+						//5.- I.V.A.
+						//RETENCION IVA
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==5){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención iva");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion iva
+
+						//RETENCION ISLR
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==2){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención islr");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion islr
+
+						//RETENCION MUNICIPAL
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==4){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención municipal");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion municipal
+
+						//RETENCION TIMBRE
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==3){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención timbre");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion timbre
+             }//fin if
+			}//fin foreach
+
+		}//fin if
+	}//fin foreach
+	//###########################
+
+ //foreach de Ordenes de Compras
+	//###########################
+	//$t_compromiso=0;
+
+	foreach($OCompromisos as $OC){
+		if($dato["cod_presi"]==$OC[0]["cod_presi"] && $dato["cod_entidad"]==$OC[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$OC[0]["cod_tipo_inst"] && $dato["cod_inst"]==$OC[0]["cod_inst"] && $dato["cod_dep"]==$OC[0]["cod_dep"] && $dato["cod_sector"]==$OC[0]["cod_sector"] && $dato["cod_programa"]==$OC[0]["cod_programa"] && $dato["cod_sub_prog"]==$OC[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$OC[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$OC[0]["cod_activ_obra"] && $dato["cod_partida"]==$OC[0]["cod_partida"] && $dato["cod_generica"]==$OC[0]["cod_generica"] && $dato["cod_especifica"]==$OC[0]["cod_especifica"] && $dato["cod_sub_espec"]==$OC[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$OC[0]["cod_auxiliar"]){
+			$beneficiario=$OC[0]["beneficiario"];
+            $DISPONIBILIDAD=$DISPONIBILIDAD-$OC[0]["monto"];
+			$fila_celda++;
+			$object->addCell(0,$fila_celda,'A',' ');
+			$object->addCell(0,$fila_celda,'B',' ');
+			$object->addCell(0,$fila_celda,'C',' ');
+			$object->addCell(0,$fila_celda,'D',' ');
+			$object->addCell(0,$fila_celda,'E',' ');
+			$object->addCell(0,$fila_celda,'F',' '.$beneficiario);
+			$object->addCell(0,$fila_celda,'G',"Orden de Compra");
+			$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OC[0]["fecha_orden_compra"]));
+			$object->addCell(0,$fila_celda,'I',"".mascara($OC[0]["numero_orden_compra"],8));
+			$object->addCell(0,$fila_celda,'J',' ');
+			$object->addCell(0,$fila_celda,'K',' ');
+			$object->addCell(0,$fila_celda,'L',' ');
+			$object->addCell(0,$fila_celda,'M',$sisap->Formato2($OC[0]["monto"]));
+			$object->addCell(0,$fila_celda,'N',' ');
+			$object->addCell(0,$fila_celda,'O',' ');
+			$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+			$t_compromiso=$t_compromiso+$OC[0]["monto"];
+
+            foreach($OCMcompromisos as $OCM){
+				if($OC[0]["cod_presi"]==$OCM[0]["cod_presi"] && $OC[0]["cod_entidad"]==$OCM[0]["cod_entidad"] && $OC[0]["cod_tipo_inst"]==$OCM[0]["cod_tipo_inst"] && $OC[0]["cod_inst"]==$OCM[0]["cod_inst"] && $OC[0]["cod_dep"]==$OCM[0]["cod_dep"] && $OC[0]["cod_sector"]==$OCM[0]["cod_sector"] && $OC[0]["cod_programa"]==$OCM[0]["cod_programa"] && $OC[0]["cod_sub_prog"]==$OCM[0]["cod_sub_prog"] && $OC[0]["cod_proyecto"]==$OCM[0]["cod_proyecto"] && $OC[0]["cod_activ_obra"]==$OCM[0]["cod_activ_obra"] && $OC[0]["cod_partida"]==$OCM[0]["cod_partida"] && $OC[0]["cod_generica"]==$OCM[0]["cod_generica"] && $OC[0]["cod_especifica"]==$OCM[0]["cod_especifica"] && $OC[0]["cod_sub_espec"]==$OCM[0]["cod_sub_espec"] && $OC[0]["cod_auxiliar"]==$OCM[0]["cod_auxiliar"] && $OC[0]["numero_orden_compra"]==$OCM[0]["numero_orden_compra"]){
+					if($OCM[0]["tipo_modificacion"]==1){//aumento
+						$DISPONIBILIDAD=$DISPONIBILIDAD-$OCM[0]["monto"];
+						$t_compromiso=$t_compromiso+$OCM[0]["monto"];
+		            }else {//disminucion
+		            	$DISPONIBILIDAD=$DISPONIBILIDAD+$OCM[0]["monto"];
+						$t_compromiso=$t_compromiso-$OCM[0]["monto"];
+		            }
+					$fila_celda++;
+					$object->addCell(0,$fila_celda,'A',' ');
+					$object->addCell(0,$fila_celda,'B',' ');
+					$object->addCell(0,$fila_celda,'C',' ');
+					$object->addCell(0,$fila_celda,'D',' ');
+					$object->addCell(0,$fila_celda,'E',' ');
+					$object->addCell(0,$fila_celda,'F',' ');
+					$object->addCell(0,$fila_celda,'G',"Modi. O.Compra");
+					$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OCM[0]["fecha_modificacion"]));
+					$object->addCell(0,$fila_celda,'I',"".mascara($OCM[0]["numero_modificacion"],8));
+					$object->addCell(0,$fila_celda,'J',' ');
+					$object->addCell(0,$fila_celda,'K',' ');
+					$object->addCell(0,$fila_celda,'L',' ');
+					$object->addCell(0,$fila_celda,'M',$sisap->Formato2($OCM[0]["monto"]));
+					$object->addCell(0,$fila_celda,'N',' ');
+					$object->addCell(0,$fila_celda,'O',' ');
+					$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+				 }
+				}//fin orden de compra modificaciones
+
+#############################################################
+#  HASTA AQUI LLEGUE CONTINUAR AQUI
+############################################################3
+
+
+            foreach($orden_pago as $OP){
+               if($OC[0]["cod_presi"]==$OP[0]["cod_presi"] && $OC[0]["cod_entidad"]==$OP[0]["cod_entidad"] && $OC[0]["cod_tipo_inst"]==$OP[0]["cod_tipo_inst"] && $OC[0]["cod_inst"]==$OP[0]["cod_inst"] && $OC[0]["cod_dep"]==$OP[0]["cod_dep"] && $OC[0]["cod_sector"]==$OP[0]["cod_sector"] && $OC[0]["cod_programa"]==$OP[0]["cod_programa"] && $OC[0]["cod_sub_prog"]==$OP[0]["cod_sub_prog"] && $OC[0]["cod_proyecto"]==$OP[0]["cod_proyecto"] && $OC[0]["cod_activ_obra"]==$OP[0]["cod_activ_obra"] && $OC[0]["cod_partida"]==$OP[0]["cod_partida"] && $OC[0]["cod_generica"]==$OP[0]["cod_generica"] && $OC[0]["cod_especifica"]==$OP[0]["cod_especifica"] && $OC[0]["cod_sub_espec"]==$OP[0]["cod_sub_espec"] && $OC[0]["cod_auxiliar"]==$OP[0]["cod_auxiliar"] && $OC[0]["numero_orden_compra"]==$OP[0]["numero_documento_origen"]  && $OP[0]["numero_documento_adjunto"]!="0"){
+					$fila_celda++;
+					$object->addCell(0,$fila_celda,'A',' ');
+					$object->addCell(0,$fila_celda,'B',' ');
+					$object->addCell(0,$fila_celda,'C',' ');
+					$object->addCell(0,$fila_celda,'D',' ');
+					$object->addCell(0,$fila_celda,'E',' ');
+					$object->addCell(0,$fila_celda,'F',' ');
+					$object->addCell(0,$fila_celda,'G',"Orden de Pago");
+					$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OP[0]["fecha_orden_pago"]));
+					$object->addCell(0,$fila_celda,'I',"".mascara($OP[0]["numero_orden_pago"],8));
+					$object->addCell(0,$fila_celda,'J',' ');
+					$object->addCell(0,$fila_celda,'K',' ');
+					$object->addCell(0,$fila_celda,'L',' ');
+					$object->addCell(0,$fila_celda,'M',' ');
+					$object->addCell(0,$fila_celda,'N',$sisap->Formato2($OP[0]["monto"]));
+					$object->addCell(0,$fila_celda,'O',' ');
+					$object->addCell(0,$fila_celda,'P',' ');
+					$t_orden_pago=$t_orden_pago+$OP[0]["monto"];
+
+                        foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]){
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' ');
+								$object->addCell(0,$fila_celda,'G',"Cheque");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques
+
+                        foreach($NOTADEBITO as $NDD){
+								if($OP[0]["cod_presi"]==$NDD[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito E.");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($NDD[0]["fecha_nota_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($NDD[0]["numero_documento"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($NDD[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$NDD[0]["monto"];
+								}//fin if
+						}//Nota de debitos
+
+                        foreach($NOTADEBITO_CA as $NDD_CA){
+								if($OP[0]["cod_presi"]==$NDD_CA[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD_CA[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD_CA[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD_CA[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD_CA[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD_CA[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD_CA[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD_CA[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD_CA[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD_CA[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD_CA[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD_CA[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD_CA[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD_CA[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD_CA[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD_CA[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD_CA[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($NDD_CA[0]["fecha_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($NDD_CA[0]["numero_debito"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($NDD_CA[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$NDD_CA[0]["monto"];
+								}//fin if
+						}//Nota de debitos cancelaciones
+
+						foreach($DEBITO as $DEB){
+								if($OP[0]["cod_presi"]==$DEB[0]["cod_presi"] && $OP[0]["cod_entidad"]==$DEB[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$DEB[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$DEB[0]["cod_inst"] && $OP[0]["cod_dep"]==$DEB[0]["cod_dep"] && $OP[0]["cod_sector"]==$DEB[0]["cod_sector"] && $OP[0]["cod_programa"]==$DEB[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$DEB[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$DEB[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$DEB[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$DEB[0]["cod_partida"] && $OP[0]["cod_generica"]==$DEB[0]["cod_generica"] && $OP[0]["cod_especifica"]==$DEB[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$DEB[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$DEB[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$DEB[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$DEB[0]["ano_orden_pago"]){
+									$fila_celda++;
+									$object->addCell(0,$fila_celda,'A',' ');
+									$object->addCell(0,$fila_celda,'B',' ');
+									$object->addCell(0,$fila_celda,'C',' ');
+									$object->addCell(0,$fila_celda,'D',' ');
+									$object->addCell(0,$fila_celda,'E',' ');
+									$object->addCell(0,$fila_celda,'F',' ');
+									$object->addCell(0,$fila_celda,'G',"Nota de Debito");
+									$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($DEB[0]["fecha_debito"]));
+									$object->addCell(0,$fila_celda,'I',"".mascara($DEB[0]["numero_debito"],8));
+									$object->addCell(0,$fila_celda,'J',' ');
+									$object->addCell(0,$fila_celda,'K',' ');
+									$object->addCell(0,$fila_celda,'L',' ');
+									$object->addCell(0,$fila_celda,'M',' ');
+									$object->addCell(0,$fila_celda,'N',' ');
+									$object->addCell(0,$fila_celda,'O',$sisap->Formato2($DEB[0]["monto"]));
+									$object->addCell(0,$fila_celda,'P',' ');
+									$t_cheques=$t_cheques+$DEB[0]["monto"];
+								}//fin if
+						}//debito
+                       //Clase de beneficiario
+						//1.- Beneficiario común
+						//2.- I.S.L.R.
+						//3.- Timbre fiscal
+						//4.- Impuesto Municipal
+						//5.- I.V.A.
+						//RETENCION IVA
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==5){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención iva");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion iva
+
+						//RETENCION ISLR
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==2){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención islr");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion islr
+
+						//RETENCION MUNICIPAL
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==4){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención municipal");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion municipal
+
+						//RETENCION TIMBRE
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==3){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención timbre");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion timbre
+
+
+
+
+
+             }//fin if OP
+			}//fin foreach OP
+
+
+
+			}//fin if OC
+	}//fin foreach OC
+	//###########################
+
+####################################################################################################################
+//foreach de CONTRATO DE OBRAS
+	//###########################
+
+	foreach($OBcompromisos as $OB){
+		if($dato["cod_presi"]==$OB[0]["cod_presi"] && $dato["cod_entidad"]==$OB[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$OB[0]["cod_tipo_inst"] && $dato["cod_inst"]==$OB[0]["cod_inst"] && $dato["cod_dep"]==$OB[0]["cod_dep"] && $dato["cod_sector"]==$OB[0]["cod_sector"] && $dato["cod_programa"]==$OB[0]["cod_programa"] && $dato["cod_sub_prog"]==$OB[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$OB[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$OB[0]["cod_activ_obra"] && $dato["cod_partida"]==$OB[0]["cod_partida"] && $dato["cod_generica"]==$OB[0]["cod_generica"] && $dato["cod_especifica"]==$OB[0]["cod_especifica"] && $dato["cod_sub_espec"]==$OB[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$OB[0]["cod_auxiliar"]){
+			$beneficiario=$OB[0]["beneficiario"];
+            $DISPONIBILIDAD=$DISPONIBILIDAD-$OB[0]["monto"];
+			$fila_celda++;
+			$object->addCell(0,$fila_celda,'A',' ');
+			$object->addCell(0,$fila_celda,'B',' ');
+			$object->addCell(0,$fila_celda,'C',' ');
+			$object->addCell(0,$fila_celda,'D',' ');
+			$object->addCell(0,$fila_celda,'E',' ');
+			$object->addCell(0,$fila_celda,'F',' '.$beneficiario);
+			$object->addCell(0,$fila_celda,'G',"Contrato Obras");
+			$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OB[0]["fecha_contrato_obra"]));
+			$object->addCell(0,$fila_celda,'I',"".mascara($OB[0]["numero_contrato_obra"],8));
+			$object->addCell(0,$fila_celda,'J',' ');
+			$object->addCell(0,$fila_celda,'K',' ');
+			$object->addCell(0,$fila_celda,'L',' ');
+			$object->addCell(0,$fila_celda,'M',$sisap->Formato2($OB[0]["monto"]));
+			$object->addCell(0,$fila_celda,'N',' ');
+			$object->addCell(0,$fila_celda,'O',' ');
+			$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+			$t_compromiso=$t_compromiso+$OB[0]["monto"];
+
+	 foreach($OBMcompromisos as $OBM){
+		if($OB[0]["cod_presi"]==$OBM[0]["cod_presi"] && $OB[0]["cod_entidad"]==$OBM[0]["cod_entidad"] && $OB[0]["cod_tipo_inst"]==$OBM[0]["cod_tipo_inst"] && $OB[0]["cod_inst"]==$OBM[0]["cod_inst"] && $OB[0]["cod_dep"]==$OBM[0]["cod_dep"] && $OB[0]["cod_sector"]==$OBM[0]["cod_sector"] && $OB[0]["cod_programa"]==$OBM[0]["cod_programa"] && $OB[0]["cod_sub_prog"]==$OBM[0]["cod_sub_prog"] && $OB[0]["cod_proyecto"]==$OBM[0]["cod_proyecto"] && $OB[0]["cod_activ_obra"]==$OBM[0]["cod_activ_obra"] && $OB[0]["cod_partida"]==$OBM[0]["cod_partida"] && $OB[0]["cod_generica"]==$OBM[0]["cod_generica"] && $OB[0]["cod_especifica"]==$OBM[0]["cod_especifica"] && $OB[0]["cod_sub_espec"]==$OBM[0]["cod_sub_espec"] && $OB[0]["cod_auxiliar"]==$OBM[0]["cod_auxiliar"] && strtoupper($OB[0]["numero_contrato_obra"])==strtoupper($OBM[0]["numero_contrato_obra"])){
+			if($OBM[0]["tipo_modificacion"]==1){//aumento
+						$DISPONIBILIDAD=$DISPONIBILIDAD-$OBM[0]["monto"];
+						$t_compromiso=$t_compromiso+$OCM[0]["monto"];
+		            }else {//disminucion
+		            	$DISPONIBILIDAD=$DISPONIBILIDAD+$OBM[0]["monto"];
+						$t_compromiso=$t_compromiso-$OBM[0]["monto"];
+		            }
+					$fila_celda++;
+					$object->addCell(0,$fila_celda,'A',' ');
+					$object->addCell(0,$fila_celda,'B',' ');
+					$object->addCell(0,$fila_celda,'C',' ');
+					$object->addCell(0,$fila_celda,'D',' ');
+					$object->addCell(0,$fila_celda,'E',' ');
+					$object->addCell(0,$fila_celda,'F',' ');
+					$object->addCell(0,$fila_celda,'G',"Modi. O.Obras");
+					$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OBM[0]["fecha_modificacion"]));
+					$object->addCell(0,$fila_celda,'I',"".mascara($OBM[0]["numero_modificacion"],8));
+					$object->addCell(0,$fila_celda,'J',' ');
+					$object->addCell(0,$fila_celda,'K',' ');
+					$object->addCell(0,$fila_celda,'L',' ');
+					$object->addCell(0,$fila_celda,'M',$sisap->Formato2($OBM[0]["monto"]));
+					$object->addCell(0,$fila_celda,'N',' ');
+					$object->addCell(0,$fila_celda,'O',' ');
+					$object->addCell(0,$fila_celda,'P',$sisap->Formato2($DISPONIBILIDAD));
+		 }
+		}//fin obras modificaciones
+
+            foreach($orden_pago as $OP){
+               if($OB[0]["cod_presi"]==$OP[0]["cod_presi"] && $OB[0]["cod_entidad"]==$OP[0]["cod_entidad"] && $OB[0]["cod_tipo_inst"]==$OP[0]["cod_tipo_inst"] && $OB[0]["cod_inst"]==$OP[0]["cod_inst"] && $OB[0]["cod_dep"]==$OP[0]["cod_dep"] && $OB[0]["cod_sector"]==$OP[0]["cod_sector"] && $OB[0]["cod_programa"]==$OP[0]["cod_programa"] && $OB[0]["cod_sub_prog"]==$OP[0]["cod_sub_prog"] && $OB[0]["cod_proyecto"]==$OP[0]["cod_proyecto"] && $OB[0]["cod_activ_obra"]==$OP[0]["cod_activ_obra"] && $OB[0]["cod_partida"]==$OP[0]["cod_partida"] && $OB[0]["cod_generica"]==$OP[0]["cod_generica"] && $OB[0]["cod_especifica"]==$OP[0]["cod_especifica"] && $OB[0]["cod_sub_espec"]==$OP[0]["cod_sub_espec"] && $OB[0]["cod_auxiliar"]==$OP[0]["cod_auxiliar"] && strtoupper($OB[0]["numero_contrato_obra"])==strtoupper($OP[0]["numero_documento_origen"])  && $OP[0]["numero_documento_adjunto"]!="0"){
+					$fila_celda++;
+					$object->addCell(0,$fila_celda,'A',' ');
+					$object->addCell(0,$fila_celda,'B',' ');
+					$object->addCell(0,$fila_celda,'C',' ');
+					$object->addCell(0,$fila_celda,'D',' ');
+					$object->addCell(0,$fila_celda,'E',' ');
+					$object->addCell(0,$fila_celda,'F',' ');
+					$object->addCell(0,$fila_celda,'G',"Orden de Pago");
+					$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($OP[0]["fecha_orden_pago"]));
+					$object->addCell(0,$fila_celda,'I',"".mascara($OP[0]["numero_orden_pago"],8));
+					$object->addCell(0,$fila_celda,'J',' ');
+					$object->addCell(0,$fila_celda,'K',' ');
+					$object->addCell(0,$fila_celda,'L',' ');
+					$object->addCell(0,$fila_celda,'M',' ');
+					$object->addCell(0,$fila_celda,'N',$sisap->Formato2($OP[0]["monto"]));
+					$object->addCell(0,$fila_celda,'O',' ');
+					$object->addCell(0,$fila_celda,'P',' ');
+					$t_orden_pago=$t_orden_pago+$OP[0]["monto"];
+
+                        foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]){
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' ');
+								$object->addCell(0,$fila_celda,'G',"Cheque");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques
+						foreach($NOTADEBITO as $NDD){
+								if($OP[0]["cod_presi"]==$NDD[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD[0]["ano_orden_pago"]){
+									$beneficiario=$NDD[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito E.",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($NDD[0]["fecha_nota_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($NDD[0]["numero_documento"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($NDD[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									//$DISPONIBILIDAD=$DISPONIBILIDAD-$NDD[0]["monto"];
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$NDD[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//Nota de debitos
+
+                        foreach($NOTADEBITO_CA as $NDD_CA){
+								if($OP[0]["cod_presi"]==$NDD_CA[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD_CA[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD_CA[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD_CA[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD_CA[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD_CA[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD_CA[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD_CA[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD_CA[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD_CA[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD_CA[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD_CA[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD_CA[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD_CA[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD_CA[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD_CA[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD_CA[0]["ano_orden_pago"]){
+									$beneficiario=$NDD_CA[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($NDD_CA[0]["fecha_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($NDD_CA[0]["numero_debito"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($NDD_CA[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$NDD_CA[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//Nota de debitos cancelaciones
+
+						foreach($DEBITO as $DEB){
+								if($OP[0]["cod_presi"]==$DEB[0]["cod_presi"] && $OP[0]["cod_entidad"]==$DEB[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$DEB[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$DEB[0]["cod_inst"] && $OP[0]["cod_dep"]==$DEB[0]["cod_dep"] && $OP[0]["cod_sector"]==$DEB[0]["cod_sector"] && $OP[0]["cod_programa"]==$DEB[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$DEB[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$DEB[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$DEB[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$DEB[0]["cod_partida"] && $OP[0]["cod_generica"]==$DEB[0]["cod_generica"] && $OP[0]["cod_especifica"]==$DEB[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$DEB[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$DEB[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$DEB[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$DEB[0]["ano_orden_pago"]){
+									$beneficiario=$DEB[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($DEB[0]["fecha_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($DEB[0]["numero_debito"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($DEB[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$DEB[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//debito
+
+                       //Clase de beneficiario
+						//1.- Beneficiario común
+						//2.- I.S.L.R.
+						//3.- Timbre fiscal
+						//4.- Impuesto Municipal
+						//5.- I.V.A.
+						//RETENCION IVA
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==5){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención iva");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion iva
+
+						//RETENCION ISLR
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==2){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención islr");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion islr
+
+						//RETENCION MUNICIPAL
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==4){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención municipal");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion municipal
+
+						//RETENCION TIMBRE
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==3){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención timbre");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion timbre
+
+             }//fin if OP
+			}//fin foreach OP
+
+
+
+			}//fin if OB
+	}//fin foreach OB
+	//###########################
+
+
+
+####################################################################################################################
+//foreach de CONTRATO DE SERVICIO
+	//###########################
+
+	foreach($CScompromisos as $CS){
+		if($dato["cod_presi"]==$CS[0]["cod_presi"] && $dato["cod_entidad"]==$CS[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$CS[0]["cod_tipo_inst"] && $dato["cod_inst"]==$CS[0]["cod_inst"] && $dato["cod_dep"]==$CS[0]["cod_dep"] && $dato["cod_sector"]==$CS[0]["cod_sector"] && $dato["cod_programa"]==$CS[0]["cod_programa"] && $dato["cod_sub_prog"]==$CS[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$CS[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$CS[0]["cod_activ_obra"] && $dato["cod_partida"]==$CS[0]["cod_partida"] && $dato["cod_generica"]==$CS[0]["cod_generica"] && $dato["cod_especifica"]==$CS[0]["cod_especifica"] && $dato["cod_sub_espec"]==$CS[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$CS[0]["cod_auxiliar"]){
+			$beneficiario=$CS[0]["beneficiario"];
+			$cBen=strlen($beneficiario);
+			if($cBen>35){
+				$alto=5.5;
+			}else{
+				$alto=4;
+			}
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+			$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+			$varX = $fpdf->GetX();
+			$varY = $fpdf->GetY();
+			$fpdf->SetFont('vera','',5);
+			$fpdf->MultiCell(46.5,2,$CS[0]["beneficiario"],'','L');//---[Beneficiario]
+			$varX = $varX+46.5;
+			$varY = $varY-1;
+			$fpdf->SetXY($varX,$varY);
+			$fpdf->SetFont('vera','',5);
+			$fpdf->Cell(20,$alto,"Contrato Servicio",'BL',0,'L');//--------[tipo Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(13,$alto,$sisap->Cfecha($CS[0]["fecha_contrato_servicio"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+			$fpdf->SetFont('vera','',4.5);
+			$fpdf->Cell(20,$alto,$sisap->mascara_ocho($CS[0]["numero_contrato_servicio"]),'BL',0,'C');//----------------[numero Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($CS[0]["monto"]),'BL',0,'R');//----------------[COMPROMISO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------[CAUSADO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------[PAGADO]
+			$DISPONIBILIDAD=$DISPONIBILIDAD-$CS[0]["monto"];
+			if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+			$fpdf->Cell(0,$alto,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+            $fpdf->SetTextColor(0,0,0);
+			$t_compromiso=$t_compromiso+$CS[0]["monto"];
+			$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+
+	foreach($CSMcompromisos as $CSM){
+		if($CS[0]["cod_presi"]==$CSM[0]["cod_presi"] && $CS[0]["cod_entidad"]==$CSM[0]["cod_entidad"] && $CS[0]["cod_tipo_inst"]==$CSM[0]["cod_tipo_inst"] && $CS[0]["cod_inst"]==$CSM[0]["cod_inst"] && $CS[0]["cod_dep"]==$CSM[0]["cod_dep"] && $CS[0]["cod_sector"]==$CSM[0]["cod_sector"] && $CS[0]["cod_programa"]==$CSM[0]["cod_programa"] && $CS[0]["cod_sub_prog"]==$CSM[0]["cod_sub_prog"] && $CS[0]["cod_proyecto"]==$CSM[0]["cod_proyecto"] && $CS[0]["cod_activ_obra"]==$CSM[0]["cod_activ_obra"] && $CS[0]["cod_partida"]==$CSM[0]["cod_partida"] && $CS[0]["cod_generica"]==$CSM[0]["cod_generica"] && $CS[0]["cod_especifica"]==$CSM[0]["cod_especifica"] && $CS[0]["cod_sub_espec"]==$CSM[0]["cod_sub_espec"] && $CS[0]["cod_auxiliar"]==$CSM[0]["cod_auxiliar"] && strtoupper($CS[0]["numero_contrato_servicio"])==strtoupper($CSM[0]["numero_contrato_servicio"])){
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[partida]
+			$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[generica]
+			$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[especifica]
+			$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[sub-especifica]
+			$fpdf->Cell(7,4,"",'BRL',0,'C');//-----[auxiliar]
+			$fpdf->SetFont('vera','',6);
+			//$fpdf->Cell(40,0,"",'T',2,'C');//para hacer espacio
+			$varX = $fpdf->GetX();
+			$varY = $fpdf->GetY();
+			$fpdf->SetFont('vera','',5);
+			$fpdf->MultiCell(46.5,2," ",'','L');//---[Beneficiario]
+			$varX = $varX+46.5;
+			$fpdf->SetXY($varX,$varY);
+			$fpdf->SetFont('vera','',5);
+			$fpdf->Cell(20,4,"Modi. C. Serv.",'BL',0,'L');//--------[tipo Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(13,4,$sisap->Cfecha($CSM[0]["fecha_modificacion"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+			$fpdf->Cell(20,4,$sisap->mascara_ocho($CSM[0]["numero_modificacion"]),'BL',0,'C');//----------------[numero Documento]
+			$fpdf->Cell(20,4," ",'BL',0,'R');//-----------------[ASIGNACION]
+			$fpdf->Cell(20,4," ",'BL',0,'R');//----------------[AUMENTO]
+			$fpdf->Cell(20,4," ",'BL',0,'R');//----------------[DISMINUCION]
+			$fpdf->Cell(20,4,$sisap->Formato2($CSM[0]["monto"]),'BL',0,'R');//----------------[COMPROMISO]
+			$fpdf->Cell(20,4," ",'BL',0,'R');//----------[CAUSADO]
+			$fpdf->Cell(20,4," ",'BL',0,'R');//----------[PAGADO]
+
+            if($CSM[0]["tipo_modificacion"]==1){//aumento
+				$DISPONIBILIDAD=$DISPONIBILIDAD-$CSM[0]["monto"];
+				if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+				$fpdf->Cell(0,4,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+				$t_compromiso=$t_compromiso+$CSM[0]["monto"];
+            }else {//disminucion
+            	$DISPONIBILIDAD=$DISPONIBILIDAD+$CSM[0]["monto"];
+            	if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+				$fpdf->Cell(0,4,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+				$t_compromiso=$t_compromiso-$CSM[0]["monto"];
+            }
+            $fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+            $fpdf->SetTextColor(222,3,0);
+		 }
+		}//fin obras modificaciones
+
+            foreach($orden_pago as $OP){
+               if($CS[0]["cod_presi"]==$OP[0]["cod_presi"] && $CS[0]["cod_entidad"]==$OP[0]["cod_entidad"] && $CS[0]["cod_tipo_inst"]==$OP[0]["cod_tipo_inst"] && $CS[0]["cod_inst"]==$OP[0]["cod_inst"] && $CS[0]["cod_dep"]==$OP[0]["cod_dep"] && $CS[0]["cod_sector"]==$OP[0]["cod_sector"] && $CS[0]["cod_programa"]==$OP[0]["cod_programa"] && $CS[0]["cod_sub_prog"]==$OP[0]["cod_sub_prog"] && $CS[0]["cod_proyecto"]==$OP[0]["cod_proyecto"] && $CS[0]["cod_activ_obra"]==$OP[0]["cod_activ_obra"] && $CS[0]["cod_partida"]==$OP[0]["cod_partida"] && $CS[0]["cod_generica"]==$OP[0]["cod_generica"] && $CS[0]["cod_especifica"]==$OP[0]["cod_especifica"] && $CS[0]["cod_sub_espec"]==$OP[0]["cod_sub_espec"] && $CS[0]["cod_auxiliar"]==$OP[0]["cod_auxiliar"] && strtoupper($CS[0]["numero_contrato_servicio"])==strtoupper($OP[0]["numero_documento_origen"])  && $OP[0]["numero_documento_adjunto"]!="0"){
+					$fpdf->SetFont('vera','B',6);
+					$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[partida]
+					$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[generica]
+					$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[especifica]
+					$fpdf->Cell(6.5,4,"",'BL',0,'C');//------[sub-especifica]
+					$fpdf->Cell(7,4,"",'BRL',0,'C');//-----[auxiliar]
+					$fpdf->SetFont('vera','',6);
+					//$fpdf->Cell(40,0,"",'T',2,'C');//para hacer espacio
+					$varX = $fpdf->GetX();
+					$varY = $fpdf->GetY();
+					$fpdf->SetFont('vera','',5);
+					$fpdf->MultiCell(46.5,2," ",'','L');//---[Beneficiario]
+					$varX = $varX+46.5;
+					$fpdf->SetXY($varX,$varY);
+					$fpdf->SetFont('vera','',5);
+					$fpdf->Cell(20,4,"Orden de Pago",'BL',0,'L');//--------[tipo Documento]
+					$fpdf->SetFont('vera','',6);
+					$fpdf->Cell(13,4,$sisap->Cfecha($OP[0]["fecha_orden_pago"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+					$fpdf->Cell(20,4,$sisap->mascara_ocho($OP[0]["numero_orden_pago"]),'BL',0,'C');//----------------[numero Documento]
+					$fpdf->Cell(20,4," ",'BL',0,'R');//-----------------[ASIGNACION]
+					$fpdf->Cell(20,4," ",'BL',0,'R');//----------------[AUMENTO]
+					$fpdf->Cell(20,4," ",'BL',0,'R');//----------------[DISMINUCION]
+					$fpdf->Cell(20,4," ",'BL',0,'R');//----------------[COMPROMISO]
+					$fpdf->Cell(20,4,$sisap->Formato2($OP[0]["monto"]),'BL',0,'R');//----------[CAUSADO]
+					$fpdf->Cell(20,4," ",'BL',0,'R');//----------[PAGADO]
+					//$fpdf->Cell(0,4,$sisap->Formato2($DISPONIBILIDAD),'RL',1,'R');//--------[DISPONIBILIDAD]
+					$fpdf->Cell(0,4," ",'BRL',1,'R');//--------[DISPONIBILIDAD]
+					//if($OP["0"]["cod_tipo_documento"]==8){//solo valuacion servicios
+					$t_orden_pago=$t_orden_pago+$OP[0]["monto"];
+					//}else{
+					  //  $t_orden_pago=$t_orden_pago+0;
+					//}
+					$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+
+                        foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]){
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' ');
+								$object->addCell(0,$fila_celda,'G',"Cheque");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques
+						foreach($NOTADEBITO as $NDD){
+								if($OP[0]["cod_presi"]==$NDD[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD[0]["ano_orden_pago"]){
+									$beneficiario=$NDD[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito E.",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($NDD[0]["fecha_nota_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($NDD[0]["numero_documento"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($NDD[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									//$DISPONIBILIDAD=$DISPONIBILIDAD-$NDD[0]["monto"];
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$NDD[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//Nota de debitos
+
+                        foreach($NOTADEBITO_CA as $NDD_CA){
+								if($OP[0]["cod_presi"]==$NDD_CA[0]["cod_presi"] && $OP[0]["cod_entidad"]==$NDD_CA[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$NDD_CA[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$NDD_CA[0]["cod_inst"] && $OP[0]["cod_dep"]==$NDD_CA[0]["cod_dep"] && $OP[0]["cod_sector"]==$NDD_CA[0]["cod_sector"] && $OP[0]["cod_programa"]==$NDD_CA[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$NDD_CA[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$NDD_CA[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$NDD_CA[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$NDD_CA[0]["cod_partida"] && $OP[0]["cod_generica"]==$NDD_CA[0]["cod_generica"] && $OP[0]["cod_especifica"]==$NDD_CA[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$NDD_CA[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$NDD_CA[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$NDD_CA[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$NDD_CA[0]["ano_orden_pago"]){
+									$beneficiario=$NDD_CA[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($NDD_CA[0]["fecha_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($NDD_CA[0]["numero_debito"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($NDD_CA[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$NDD_CA[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//Nota de debitos cancelaciones
+
+						foreach($DEBITO as $DEB){
+								if($OP[0]["cod_presi"]==$DEB[0]["cod_presi"] && $OP[0]["cod_entidad"]==$DEB[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$DEB[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$DEB[0]["cod_inst"] && $OP[0]["cod_dep"]==$DEB[0]["cod_dep"] && $OP[0]["cod_sector"]==$DEB[0]["cod_sector"] && $OP[0]["cod_programa"]==$DEB[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$DEB[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$DEB[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$DEB[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$DEB[0]["cod_partida"] && $OP[0]["cod_generica"]==$DEB[0]["cod_generica"] && $OP[0]["cod_especifica"]==$DEB[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$DEB[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$DEB[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$DEB[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$DEB[0]["ano_orden_pago"]){
+									$beneficiario=$DEB[0]["beneficiario"];
+									$cBen=strlen($beneficiario);
+									if($cBen>35){
+										$alto=5.5;
+									}else{
+										$alto=4;
+									}
+									$fpdf->SetFont('vera','B',6);
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+									$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+									$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+									$varX = $fpdf->GetX();
+									$varY = $fpdf->GetY();
+									$fpdf->SetFont('vera','',5);
+									$fpdf->MultiCell(46.5,2,"",'','L');//---[Beneficiario]
+									$varX = $varX+46.5;
+									$varY = $varY-1;
+									$fpdf->SetXY($varX,$varY);
+									$fpdf->SetFont('vera','',5);
+									$fpdf->Cell(20,$alto,"Nota de Debito",'BL',0,'L');//--------[tipo Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(13,$alto,$sisap->Cfecha($DEB[0]["fecha_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+									//$fpdf->SetFont('vera','',4.5);
+									$fpdf->Cell(20,$alto,$sisap->mascara_ocho($DEB[0]["numero_debito"]),'BL',0,'C');//----------------[numero Documento]
+									$fpdf->SetFont('vera','',6);
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+									$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------------[COMPROMISO]
+									$fpdf->Cell(20,$alto,"",'BL',0,'R');//----------[CAUSADO]
+									$fpdf->Cell(20,$alto,$sisap->Formato2($DEB[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+									$fpdf->Cell(0,$alto,"",'BRL',1,'R');//--------[DISPONIBILIDAD]
+									$t_cheques=$t_cheques+$DEB[0]["monto"];
+									$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+								}//fin if
+						}//debito
+                       //Clase de beneficiario
+						//1.- Beneficiario común
+						//2.- I.S.L.R.
+						//3.- Timbre fiscal
+						//4.- Impuesto Municipal
+						//5.- I.V.A.
+						//RETENCION IVA
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==5){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención iva");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion iva
+
+						//RETENCION ISLR
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==2){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención islr");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion islr
+
+						//RETENCION MUNICIPAL
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==4){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención municipal");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion municipal
+
+						//RETENCION TIMBRE
+						 foreach($cheques as $CH){
+			               if($OP[0]["cod_presi"]==$CH[0]["cod_presi"] && $OP[0]["cod_entidad"]==$CH[0]["cod_entidad"] && $OP[0]["cod_tipo_inst"]==$CH[0]["cod_tipo_inst"] && $OP[0]["cod_inst"]==$CH[0]["cod_inst"] && $OP[0]["cod_dep"]==$CH[0]["cod_dep"] && $OP[0]["cod_sector"]==$CH[0]["cod_sector"] && $OP[0]["cod_programa"]==$CH[0]["cod_programa"] && $OP[0]["cod_sub_prog"]==$CH[0]["cod_sub_prog"] && $OP[0]["cod_proyecto"]==$CH[0]["cod_proyecto"] && $OP[0]["cod_activ_obra"]==$CH[0]["cod_activ_obra"] && $OP[0]["cod_partida"]==$CH[0]["cod_partida"] && $OP[0]["cod_generica"]==$CH[0]["cod_generica"] && $OP[0]["cod_especifica"]==$CH[0]["cod_especifica"] && $OP[0]["cod_sub_espec"]==$CH[0]["cod_sub_espec"] && $OP[0]["cod_auxiliar"]==$CH[0]["cod_auxiliar"] && $OP[0]["numero_orden_pago"]==$CH[0]["numero_orden_pago"]  && $OP[0]["ano_orden_pago"]==$CH[0]["ano_orden_pago"]  && $CH[0]["clase_beneficiario"]==3){//  && $OP[0]["cod_entidad_bancaria"]==$CH[0]["cod_entidad_bancaria"]  && $OP[0]["cod_sucursal"]==$CH[0]["cod_sucursal"]  && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"]   && $OP[0]["cuenta_bancaria"]==$CH[0]["cuenta_bancaria"] && $OP[0]["numero_cheque"]==$CH[0]["numero_cheque"]
+								$fila_celda++;
+								$object->addCell(0,$fila_celda,'A',' ');
+								$object->addCell(0,$fila_celda,'B',' ');
+								$object->addCell(0,$fila_celda,'C',' ');
+								$object->addCell(0,$fila_celda,'D',' ');
+								$object->addCell(0,$fila_celda,'E',' ');
+								$object->addCell(0,$fila_celda,'F',' '.$CH[0]["beneficiario"]);
+								$object->addCell(0,$fila_celda,'G',"Retención timbre");
+								$object->addCell(0,$fila_celda,'H',"".cambiar_formato_fecha($CH[0]["fecha_cheque"]));
+								$object->addCell(0,$fila_celda,'I',"".mascara($CH[0]["numero_cheque"],8));
+								$object->addCell(0,$fila_celda,'J',' ');
+								$object->addCell(0,$fila_celda,'K',' ');
+								$object->addCell(0,$fila_celda,'L',' ');
+								$object->addCell(0,$fila_celda,'M',' ');
+								$object->addCell(0,$fila_celda,'N',' ');
+								$object->addCell(0,$fila_celda,'O',$sisap->Formato2($CH[0]["monto"]));
+								$object->addCell(0,$fila_celda,'P',' ');
+								$t_cheques=$t_cheques+$CH[0]["monto"];
+			             }//fin if
+						}//fin foreach cheques retencion timbre
+             }//fin if OP
+			}//fin foreach OP
+
+
+
+			}//fin if CS
+	}//fin foreach CS
+	//###########################
+foreach($RENDICIONES as $RDC){
+		if($dato["cod_presi"]==$RDC[0]["cod_presi"] && $dato["cod_entidad"]==$RDC[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$RDC[0]["cod_tipo_inst"] && $dato["cod_inst"]==$RDC[0]["cod_inst"] && $dato["cod_dep"]==$RDC[0]["cod_dep"] && $dato["cod_sector"]==$RDC[0]["cod_sector"] && $dato["cod_programa"]==$RDC[0]["cod_programa"] && $dato["cod_sub_prog"]==$RDC[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$RDC[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$RDC[0]["cod_activ_obra"] && $dato["cod_partida"]==$RDC[0]["cod_partida"] && $dato["cod_generica"]==$RDC[0]["cod_generica"] && $dato["cod_especifica"]==$RDC[0]["cod_especifica"] && $dato["cod_sub_espec"]==$RDC[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$RDC[0]["cod_auxiliar"]){
+			$beneficiario=$RDC[0]["funcionario_responsable"];
+			$cBen=strlen($beneficiario);
+			if($cBen>35){
+				$alto=5.5;
+			}else{
+				$alto=4;
+			}
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+			$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+			$varX = $fpdf->GetX();
+			$varY = $fpdf->GetY();
+			$fpdf->SetFont('vera','',5);
+			$fpdf->MultiCell(46.5,2,$RDC[0]["funcionario_responsable"],'','L');//---[Beneficiario]
+			$varX = $varX+46.5;
+			$varY = $varY-1;
+			$fpdf->SetXY($varX,$varY);
+			$fpdf->SetFont('vera','',5);
+			$fpdf->Cell(20,$alto,"Rendiciones",'BL',0,'L');//--------[tipo Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(13,$alto,$sisap->Cfecha($RDC[0]["fecha_rendicion"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+			//$fpdf->SetFont('vera','',4.5);
+			$fpdf->Cell(20,$alto,$sisap->mascara_ocho($RDC[0]["numero_rendicion"]),'BL',0,'C');//----------------[numero Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($RDC[0]["monto"]),'BL',0,'R');//----------------[COMPROMISO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($RDC[0]["monto"]),'BL',0,'R');//----------[CAUSADO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($RDC[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+			$DISPONIBILIDAD=$DISPONIBILIDAD-$RDC[0]["monto"];
+			if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+			$fpdf->Cell(0,$alto,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+            $fpdf->SetTextColor(0,0,0);
+			//$t_compromiso=$t_compromiso+$RDC[0]["monto"];
+			$t_compromiso=$t_compromiso+$RDC[0]["monto"];
+			$t_orden_pago=$t_orden_pago+$RDC[0]["monto"];
+			$t_cheques=$t_cheques+$RDC[0]["monto"];
+			$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+		}//fin if
+		}//RENDIONES
+
+foreach($NOTADEBITO as $NDD){
+		if($dato["cod_presi"]==$NDD[0]["cod_presi"] && $dato["cod_entidad"]==$NDD[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$NDD[0]["cod_tipo_inst"] && $dato["cod_inst"]==$NDD[0]["cod_inst"] && $dato["cod_dep"]==$NDD[0]["cod_dep"] && $dato["cod_sector"]==$NDD[0]["cod_sector"] && $dato["cod_programa"]==$NDD[0]["cod_programa"] && $dato["cod_sub_prog"]==$NDD[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$NDD[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$NDD[0]["cod_activ_obra"] && $dato["cod_partida"]==$NDD[0]["cod_partida"] && $dato["cod_generica"]==$NDD[0]["cod_generica"] && $dato["cod_especifica"]==$NDD[0]["cod_especifica"] && $dato["cod_sub_espec"]==$NDD[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$NDD[0]["cod_auxiliar"] && $NDD[0]["numero_orden_pago"]==0){
+			$beneficiario=$NDD[0]["beneficiario"];
+			$cBen=strlen($beneficiario);
+			if($cBen>35){
+				$alto=5.5;
+			}else{
+				$alto=4;
+			}
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+			$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+			$varX = $fpdf->GetX();
+			$varY = $fpdf->GetY();
+			$fpdf->SetFont('vera','',5);
+			$fpdf->MultiCell(46.5,2,$NDD[0]["beneficiario"],'','L');//---[Beneficiario]
+			$varX = $varX+46.5;
+			$varY = $varY-1;
+			$fpdf->SetXY($varX,$varY);
+			$fpdf->SetFont('vera','',5);
+			$fpdf->Cell(20,$alto,"Nota de Debito",'BL',0,'L');//--------[tipo Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(13,$alto,$sisap->Cfecha($NDD[0]["fecha_nota_debito"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+			//$fpdf->SetFont('vera','',4.5);
+			$fpdf->Cell(20,$alto,$sisap->mascara_ocho($NDD[0]["numero_documento"]),'BL',0,'C');//----------------[numero Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($NDD[0]["monto"]),'BL',0,'R');//----------------[COMPROMISO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($NDD[0]["monto"]),'BL',0,'R');//----------[CAUSADO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($NDD[0]["monto"]),'BL',0,'R');//----------[PAGADO]
+			$DISPONIBILIDAD=$DISPONIBILIDAD-$NDD[0]["monto"];
+			if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+			$fpdf->Cell(0,$alto,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+            $fpdf->SetTextColor(0,0,0);
+			$t_compromiso=$t_compromiso+$NDD[0]["monto"];
+			$t_orden_pago=$t_orden_pago+$NDD[0]["monto"];
+			$t_cheques=$t_cheques+$NDD[0]["monto"];
+			$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+		}//fin if
+}//Nota de debitos
+
+
+
+foreach($REINTEGRO as $REIN){
+		if($dato["cod_presi"]==$REIN[0]["cod_presi"] && $dato["cod_entidad"]==$REIN[0]["cod_entidad"] && $dato["cod_tipo_inst"]==$REIN[0]["cod_tipo_inst"] && $dato["cod_inst"]==$REIN[0]["cod_inst"] && $dato["cod_dep"]==$REIN[0]["cod_dep"] && $dato["cod_sector"]==$REIN[0]["cod_sector"] && $dato["cod_programa"]==$REIN[0]["cod_programa"] && $dato["cod_sub_prog"]==$REIN[0]["cod_sub_prog"] && $dato["cod_proyecto"]==$REIN[0]["cod_proyecto"] && $dato["cod_activ_obra"]==$REIN[0]["cod_activ_obra"] && $dato["cod_partida"]==$REIN[0]["cod_partida"] && $dato["cod_generica"]==$REIN[0]["cod_generica"] && $dato["cod_especifica"]==$REIN[0]["cod_especifica"] && $dato["cod_sub_espec"]==$REIN[0]["cod_sub_espec"] && $dato["cod_auxiliar"]==$REIN[0]["cod_auxiliar"]){
+			$beneficiario=$REIN[0]["funcionario_responsable"];
+			$cBen=strlen($beneficiario);
+			if($cBen>35){
+				$alto=5.5;
+			}else{
+				$alto=4;
+			}
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[partida]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[generica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[especifica]
+			$fpdf->Cell(6.5,$alto,"",'BL',0,'C');//------[sub-especifica]
+			$fpdf->Cell(7,$alto,"",'BRL',0,'C');//-----[auxiliar]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(46.5,1,"",'T',2,'C');//para hacer espacio
+			$varX = $fpdf->GetX();
+			$varY = $fpdf->GetY();
+			$fpdf->SetFont('vera','',5);
+			$fpdf->MultiCell(46.5,2,$REIN[0]["funcionario_responsable"],'','L');//---[Beneficiario]
+			$varX = $varX+46.5;
+			$varY = $varY-1;
+			$fpdf->SetXY($varX,$varY);
+			$fpdf->SetFont('vera','',5);
+			$fpdf->Cell(20,$alto,"Reintegro",'BL',0,'L');//--------[tipo Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(13,$alto,$sisap->Cfecha($REIN[0]["fecha_reintegro"],"D/M/A"),'BL',0,'C');//-----------[fecha Documento]
+			//$fpdf->SetFont('vera','',4.5);
+			$fpdf->Cell(20,$alto,$sisap->mascara_ocho($REIN[0]["numero_reintegro"]),'BL',0,'C');//----------------[numero Documento]
+			$fpdf->SetFont('vera','',6);
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//-----------------[ASIGNACION]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[AUMENTO]
+			$fpdf->Cell(20,$alto," ",'BL',0,'R');//----------------[DISMINUCION]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($REIN[0]["monto_compromiso"]),'BL',0,'R');//----------------[COMPROMISO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($REIN[0]["monto_causado"]),'BL',0,'R');//----------[CAUSADO]
+			$fpdf->Cell(20,$alto,$sisap->Formato2($REIN[0]["monto_pagado"]),'BL',0,'R');//----------[PAGADO]
+			$DISPONIBILIDAD=$DISPONIBILIDAD+$REIN[0]["monto_compromiso"];
+			if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+			$fpdf->Cell(0,$alto,$sisap->Formato2($DISPONIBILIDAD),'BRL',1,'R');//--------[DISPONIBILIDAD]
+            $fpdf->SetTextColor(0,0,0);
+			$t_compromiso=$t_compromiso-$REIN[0]["monto_compromiso"];
+			$t_orden_pago=$t_orden_pago-$REIN[0]["monto_causado"];
+			$t_cheques=$t_cheques-$REIN[0]["monto_pagado"];
+			$fpdf->Cell(0,0,"",'T',1,'R');//--------[LINEA]
+		}//fin if
+}//Reintegro
+
+
+
+
+
+
+
+
+
+
+
+
+	//aqui la seccion que va a mostrar los totales por partida
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(6.5,7,"",'TBL',0,'C');//------[partida]
+	$fpdf->Cell(6.5,7,"",'TB',0,'C');//------[generica]
+	$fpdf->Cell(6.5,7,"",'TB',0,'C');//------[especifica]
+	$fpdf->Cell(6.5,7,"",'TB',0,'C');//------[sub-especifica]
+	$fpdf->Cell(7,7,"",'TRB',0,'C');//-----[auxiliar]
+
+	$fpdf->SetFont('vera','',6);
+	$fpdf->Cell(46.5,7,"TOTAL PARTIDA",'TBL',0,'L');//para hacer espacio
+	$fpdf->SetFont('vera','',5);
+	$fpdf->Cell(20,7," ",'TBL',0,'L');//--------[tipo Documento]
+	$fpdf->SetFont('vera','',6);
+	$fpdf->Cell(13,7,"",'TBL',0,'C');//-----------[fecha Documento]
+	$fpdf->Cell(20,7,"",'TBL',0,'C');//----------------[numero Documento]
+	$fpdf->Cell(20,7,$sisap->Formato2($dato["asignacion_anual"]),'TBL',0,'R');//-----------------[ASIGNACION]
+	$fpdf->Cell(20,7,$sisap->Formato2($t_aumento),'TBL',0,'R');//----------------[AUMENTO]
+	$fpdf->Cell(20,7,$sisap->Formato2($t_disminucion),'TBL',0,'R');//----------------[DISMINUCION]
+	$fpdf->Cell(20,7,$sisap->Formato2($t_compromiso),'TBL',0,'R');//----------------[COMPROMISO]
+	$fpdf->Cell(20,7,$sisap->Formato2($t_orden_pago),'TBL',0,'R');//----------[CAUSADO]
+	$fpdf->Cell(20,7,$sisap->Formato2($t_cheques),'TBL',0,'R');//----------[PAGADO]
+	if($DISPONIBILIDAD<0){
+               $fpdf->SetTextColor(222,3,0);
+	}
+	$fpdf->Cell(0,7,$sisap->Formato2($DISPONIBILIDAD),'TRBL',1,'R');//--------[DISPONIBILIDAD]
+    $fpdf->SetTextColor(0,0,0);
+	//$fpdf->Cell(40,0,"",'T',2,'C');//para hacer espacio
+
+}//fin foreachs
+
+}//fin if isset
+//$fpdf->OutPut('analisis_presupuesto_'.date("d-m-Y h:i:sa").".pdf",'D');
+
+$fpdf->Output('analisis_presupuesto_'.date("d_m_Y_h_i").'.pdf','D');
+//$fpdf->Output('analisis_presupuesto_'.date("d_m_Y_h_i"),'SISAP_AJAX', 1);
+?>

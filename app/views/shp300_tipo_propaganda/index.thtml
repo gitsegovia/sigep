@@ -1,0 +1,180 @@
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+function Formato_4_out($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-5,1)=='.') {
+        $sents = '.'.substr($price,-4);
+        $price = substr($price,0,strlen($price)-5);
+    } elseif (substr($price,-4,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-4);
+    } else {
+        $sents = '.0000';
+    }
+
+   if($sents==".0000"){
+   	   	return number_format($price,4,',','.');
+   }else{
+     $price = preg_replace("/[^0-9]/", "", $price);
+     return number_format($price.$sents,4,',','.');
+   }//fin else
+}//fin function
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"TIPOS DE PROPAGANDA","","950");?>
+
+<form name='data[shp300_tipo_propaganda]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+<div id="buscar">
+<table border="0" width="100%">
+
+<tr>
+ 	<td colspan="4" align="center">
+	  <table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+		  <tr>
+		    	    <td width="7%" align="center"  class="td4" height="22">C&oacute;digo</td>
+					<td width="38%" align="center" class="td4">Denominaci&oacute;n</td>
+			        <td width="10%" align="center">Tipo de Unidad</td>
+					<td width="10%" align="center">Art&iacute;culo</td>
+		    		<td width="10%" align="center">Valor<br />Unidad<br />Tributaria</td>
+		    		<td width="10%" align="center">Cantidad<br />Unidades<br />Tributarias</td>
+					<td width="10%" align="center">Monto</td>
+					<td width="5%"  align="center" class="td4">Acci&oacute;n</td>
+		  </tr>
+		  <tr>
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][codigo]"               value="<?= $sisap->AddCero2($codigo) ?>"    id="codigo"           class="inputtext"  readonly style="text-align:center" /></td>
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][denominacion]"         value=""                                    id="denominacion"     class="inputtext"  maxlength="100" /></td>
+		    	<td align="center">
+			    	<input type="radio" name="data[shp300_tipo_propaganda][tipo_unidad]" id="unidad" value="1"><label for="unidad">Unidad</label><br />
+					<input type="radio" name="data[shp300_tipo_propaganda][tipo_unidad]" id="metros" value="2" checked><label for="metros">Metros</label>
+		    	</td>
+
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][articulo]"             value=""                                    id="articulo"         class="inputtext"    style="text-align:center"  maxlength="10"/></td>
+
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][valor_ut]"             value="<?= $sisap->Formato2($vut) ?>"        style="text-align:center"   id="valor_ut"      class="inputtext"  onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('valor_ut');" readonly="readonly" /></td>
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][cantidad_ut]"          value=""        style="text-align:center"   id="cantidad_ut"      class="inputtext"    onKeyPress="return solonumeros_con_punto(event);" onChange="javascript:if(eval(this.value)>eval(0)){$('monto').value = redondear((reemplazarPC($('valor_ut').value) * reemplazarPC(this.value)),2); moneda('monto'); $('monto').readOnly=true;}else{$('monto').readOnly=false; $('monto').value='';}" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('cantidad_ut',2);" onfocus="javascript:if(this.value=='0,00'){this.value='';}" /></td>
+
+		    	<td align="center"><input type="text" name="data[shp300_tipo_propaganda][monto]"                value=""                                    id="monto"            class="inputtext"    style="text-align:center" onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('monto');" /></td>
+		      	<td align="center"><?= $sisap->submitTagRemote('+', array("funcion"=>"tipo_propaganda_agregar",'url1' => '/shp300_tipo_propaganda/guardar/', 'update1'=>'principal','id'=>'plus')); ?></td>
+    	  </tr>
+		  <tr>
+		  </table>
+  </td>
+</tr>
+</table>
+
+
+<br>
+
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid"  CLASS="TR_NEGRO tablacompromiso tablacompromiso2">
+		<tr bgcolor="#333">
+		    	    <td width="7%" align="center"  class="td4" height="22">C&oacute;digo</td>
+					<td width="35%" align="center" class="td4">Denominaci&oacute;n</td>
+			        <td width="10%" align="center">Tipo de Unidad</td>
+					<td width="10%" align="center">Art&iacute;culo</td>
+		    		<td width="10%" align="center">Valor<br />Unidad<br />Tributaria</td>
+		    		<td width="10%" align="center">Cantidad<br />Unidades<br />Tributarias</td>
+					<td width="10%" align="center">Monto</td>
+					<td width="8%"  align="center" class="td4">Acci&oacute;n</td>
+		</tr>
+
+<?php
+
+ 	$i=0;
+ 	$total=0;
+
+ if(isset($datos)){
+  if($datos!=null){
+    foreach($datos as $ve){
+
+    	if($i%2==0){ $color ="#CDF2FF";}else{$color="#DAEBFF";}
+
+?>
+
+<tr bgcolor="<?= $color ?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td align="center" class="td4"><?= $sisap->AddCero2($ve['shd300_tipo_propaganda']['cod_tipo']) ?></td>
+    <td class="td2" align="left"  id="denominacion_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= $ve['shd300_tipo_propaganda']['denominacion'] ?></td>
+
+    <?php if($ve['shd300_tipo_propaganda']['tipo_unidad']==1){$ve['shd300_tipo_propaganda']['tipo_unidad']="Unidad"; }else{$ve['shd300_tipo_propaganda']['tipo_unidad']="Metros"; } ?>
+    <td class="td2" align="center"  id="tipo_unidad_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= $ve['shd300_tipo_propaganda']['tipo_unidad'] ?></td>
+
+    <td class="td2" align="center"  id="articulo_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= $ve['shd300_tipo_propaganda']['articulo'] ?></td>
+
+    <td class="td2" align="center"  id="valor_ut_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= $sisap->Formato2($ve['shd300_tipo_propaganda']['valor_ut']) ?></td>
+    <td class="td2" align="center"  id="cantidad_ut_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= Formato2($ve['shd300_tipo_propaganda']['cantidad_ut']) ?></td>
+
+    <td class="td2" align="right"  id="monto_<?= $ve['shd300_tipo_propaganda']['cod_tipo']?>" ><?= $sisap->Formato2($ve['shd300_tipo_propaganda']['monto']) ?></td>
+
+    <td align="center" class="td4">
+		<?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/shp300_tipo_propaganda/editar2/'.$ve['shd300_tipo_propaganda']['cod_tipo'].'/'.$i, array('update'=>"fila_".$i,'title'=>'Editar'),false,false,true); ?>
+		<?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/shp300_tipo_propaganda/eliminar/'.$ve['shd300_tipo_propaganda']['cod_tipo'], array('update'=>'distribuir','title'=>'Eliminar'),'Realmente desea eliminar este Registro',false,true); ?>
+    </td>
+</tr>
+
+<?php $i++;
+	}//fin foreach
+
+ }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+</tr>
+
+<?
+ }
+?>
+
+<?
+
+ }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+</tr>
+
+<?
+ }
+?>
+
+
+
+</table></div>
+
+
+
+
+<div id="funcion"></div>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'));?>
+</div>
+
+<?=$sisap->CloseTable()
+
+?>
+
+</form>

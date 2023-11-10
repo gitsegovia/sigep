@@ -1,0 +1,236 @@
+<?php
+
+
+
+//require_once('../tcpdf.php');
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+//$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '2008';
+$_SESSION['titulo_a'] = '';
+$_SESSION['dependencia'] = strtoupper($dependencia);
+$_SESSION['nomina']= $nomina;
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+/**********************************************************************/
+
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',5,32,23);
+		$this->SetFont('vera','B',10);
+		$this->Cell(20,6,"",'TL',0);
+		$this->Cell(0,6,$_SESSION["entidad_federal"],'TR',1);//---AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET)
+		$this->Cell(25,4,"",'L',0);
+		$this->SetFont('vera','',9);
+		$this->Cell(0,4,$_SESSION['dependencia'],'R',1);//-----------------AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET)
+		$this->SetFont('vera','B',12);
+		$this->Cell(30,10,"",'L',0);
+		$this->MultiCell(0,5,"REPORTE DE LOS CARGOS DE LA INSTITUCIÓN\n",'R','C');
+		$this->SetFont('vera','',7);
+		$this->Cell(30,3,"",'L',0);
+		$this->Cell(0,3,"(BOLÍVAR FUERTE)",'R',1,'C');
+		$this->SetFont('vera','',9);
+		$this->Cell(22,5,"",'BL',0);
+		$this->Cell(100,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'B',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,5,"Nomina: ".$_SESSION['nomina'],'RB',0,'R');// <-- VARIABLE DE PRESUPUESTO AQUI
+		$this->Ln(7);
+
+
+		$this->SetFont('vera','B',4);
+		$this->Cell(6,2,"",'TRL',0,'C');
+		$this->Cell(7,2,"C",'TR',1,'C');
+
+		$varX = $this->GetX();//capturo X
+		$varY = $this->GetY();//capturo Y
+
+		$this->Cell(6,2,"C",'RL',0,'C');
+		$this->Cell(7,2,"O",'R',1,'C');
+
+		$this->Cell(6,2,"O",'RL',0,'C');
+		$this->Cell(7,2,"D",'R',1,'C');
+
+		$this->Cell(6,2,"D",'RL',0,'C');
+		$this->Cell(7,2,".",'R',1,'C');
+
+		$this->Cell(6,2,".",'RL',0,'C');
+		$this->Cell(7,2,"P",'R',1,'C');
+
+		$this->Cell(6,2,"C",'RL',0,'C');
+		$this->Cell(7,2,"U",'R',1,'C');
+
+		$this->Cell(6,2,"A",'RL',0,'C');
+		$this->Cell(7,2,"E",'R',1,'C');
+
+		$this->Cell(6,2,"R",'RL',0,'C');
+		$this->Cell(7,2,"S",'R',1,'C');
+
+		$this->Cell(6,2,"G",'RL',0,'C');
+		$this->Cell(7,2,"T",'R',1,'C');
+
+		$this->Cell(6,2,"O",'RLB',0,'C');
+		$this->Cell(7,2,"O",'RB',1,'C');
+
+		$varX = $varX+13;
+		$varY = $varY-2;
+		$this->SetXY($varX,$varY);
+
+		$this->Cell(42,4,"",'TRL',0,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"UBICACIÓN ADMINISTRATIVA",'TRB',1,'C');
+
+		$varY = $varY+4;
+		$this->SetXY($varX,$varY);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(42,16,"DENOMINACIÓN DEL PUESTO",'RB',0,'C');
+
+		$this->Cell(28,16,"DIR. SUPERIOR",'TRLB',0,'C');
+		$this->Cell(28,16,"COORDINACIÓN",'TRB',0,'C');
+		$this->Cell(28,16,"SECRETARÍA",'TRB',0,'C');
+		$this->Cell(29,16,"DIRECCIÓN",'TRB',0,'C');
+		$this->Cell(29,16,"DIVISIÓN",'TRB',0,'C');
+		$this->Cell(29,16,"DEPARTAMENTO",'TRB',0,'C');
+		$this->Cell(31,16,"OFICINA",'TRB',0,'C');
+		$this->Cell(0,16,"SUELDO",'TRB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+
+/**
+* Aqui se inicializa la clase fpdfview la cual extiende de TCPDF
+* a la variable a usar para el generar el Documento PDF sera -- $pdf->
+*/
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(3);
+$pdf->SetRightMargin(3);
+$pdf->SetAutoPageBreak(true, 10);
+//$_SESSION['entidad_federal_aux'] = $entidad_federal;   // estas son las variables de seccion
+//$_SESSION['ejercicio'] = $ANO;                         // estas son las variables de seccion
+//$_SESSION['titulo'] = $titulo_a;                       // estas son las variables de seccion
+$pdf->AddPage();
+
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+
+$total=0;
+foreach($datos as $row){
+
+$cod_cargo = $row['v_cfpd97']['cod_cargo'];
+$cod_tipo_nomina = $row['v_cfpd97']['cod_tipo_nomina'];
+$tipo_nomina = $row['v_cfpd97']['tipo_nomina'];
+$cod_puesto = $row['v_cfpd97']['cod_puesto'];
+$denominacion_clase = $row['v_cfpd97']['denominacion_clase'];
+$dir_superior= $row['v_cfpd97']['dir_superior'];
+$coordinacion = $row['v_cfpd97']['coordinacion'];
+$secretaria = $row['v_cfpd97']['secretaria'];
+$direccion = $row['v_cfpd97']['direccion'];
+$division = $row['v_cfpd97']['division'];
+$departamento= $row['v_cfpd97']['departamento'];
+$oficina = $row['v_cfpd97']['oficina'];
+$sueldo_basico = $sisap->formato2($row['v_cfpd97']['sueldo_basico']);
+
+$total+=$row['v_cfpd97']['sueldo_basico'];
+
+//$deno = "ANALISTAS DE SISTEMAS Y PROGRAMADORES AVANZADOS";
+
+
+
+$pdf->SetFont('vera','',5);
+$pdf->Cell(6,11,$cod_cargo,'RLB',0,'C');
+$pdf->Cell(7,11,$cod_puesto,'RB',0,'C');
+$varX = $pdf->GetX();//asigno X
+$varY = $pdf->GetY();//asigno Y
+
+
+$pdf->SetFont('vera','',5);
+	$pdf->Cell(42,2,"",'T',2,'C');
+	$pdf->MultiCell(42,3,$denominacion_clase,'','J');//------DENOMINACION DEL PUESTO
+	$varX = $varX+42;//le sumo a X 55 del Cell debido a que lo capture antes.
+	$pdf->SetXY($varX,$varY);// cargo XY
+
+$pdf->SetFont('vera','',5);
+
+	$pdf->Cell(28,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(28,3,$dir_superior,'','J');//--------------DIRECCION SUPERIOR
+	$varX = $varX+28;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(28,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(28,3,$coordinacion,'','J');//--------------COORDINACION
+	$varX = $varX+28;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(28,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(28,3,$secretaria,'','J');//--------------SECRETARIA
+	$varX = $varX+28;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(29,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(29,3,$direccion,'','J');//--------------DIRECCION
+	$varX = $varX+29;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(29,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(29,3,$division,'','J');//--------------DIVISION
+	$varX = $varX+29;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(29,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(29,3,$departamento,'','J');//--------------DEPARTAMENTO
+	$varX = $varX+29;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(31,2,"",'LT',2,'C');
+	$pdf->Cell(1,9,"",'L',0);
+	$pdf->MultiCell(31,3,$oficina,'','J');//--------------OFICINA
+	$varX = $varX+31;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(1,11,"",'L',0);
+	$pdf->Cell(0,11,$sueldo_basico,'R',1,'R');//----------SUELDO
+	$pdf->Cell(0,0,"",'T',1);
+
+}
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(257,5,"TOTAL   ",'TLB',0, 'R');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(0,5,$sisap->formato2($total),'TLRB',1, 'R');
+//$pdf->Cell(0,4,"",'',1,'LB');
+// Colocamos el nombre al documento y lo enviamos al navegador
+$pdf->Output('cargos_institucion_'.date("d-m-Y"),'D');
+//$pdf->Output();
+?>

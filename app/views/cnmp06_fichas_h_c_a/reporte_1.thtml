@@ -1,0 +1,294 @@
+<?php
+/*
+ * Created on 20/01/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ if($opcion==1){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CAMBIOS O ASCENSOS DE FUNCIONARIOS","","850");?>
+
+<form name="data[reporte_personal]" method="post" id='form' action="<?php echo $html->url('/cnmp06_fichas_h_c_a/reporte_1/2'); ?>">
+<?= $sisap->OpenTable("850")?>
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td width="10%" align="center" align='center'>Seleccione</td>
+	    <td width="10%" align="center" align='center'>C&oacute;digo</td>
+	    <td width="80%" align="center" align='center'>Denominaci&oacute;n tipo n&oacute;mina</td>
+	</tr>
+	<tr>
+	    <td width="10%" align="center"><?=  $sisap->selectTagRemote('cnmp06_fichas_h_c_a/cod_tipo_nomina', $cod_tipo_nomina , array(null),  null, array('onchange1'=>'/cnmp05_historial_traslado/codigo_nomina', 'update1'=>'codigo_nomi','onchange2'=>'/cnmp05_historial_traslado/denominacion_nomina', 'update2'=>'denominacion_nomi', 'id'=>'select_nomina'  , true), null, true); ?></td>
+		<td width="10%" align="center"><div id="codigo_nomi">      <input type="text"  name="data[cnmp05_historial_traslado][codigo]"        value="" size="33"  readonly="readonly" class="inputtext" style="text-align:center"/></div></td>
+		<td width="80%" align="center"><div id="denominacion_nomi"><input type="text"  name="data[cnmp05_historial_traslado][denominacion]"  value="" size="45"  readonly="readonly" class="inputtext"/></div></td>
+	</tr>
+</table>
+
+<br>
+
+<?= $sisap->radioTagRemote('/cnmp06_fichas_h_c_a/opcion_busqueda1', array('1'=>'Todos los funcionarios', '2'=>'Uno en particular'), array('url1'=>'/cnmp05_historial_traslado/funcion_1/', 'update1'=>'funcion_1', "id"=>"opcion_busqueda1"),"", 1);?>
+
+
+<div id="funcion_1"></div>
+<div id="funcion_2"></div>
+
+<input type="hidden"  name="data[cnmp06_fichas_h_c_a][cedula_identidad]" id="cedula_id"  value="" size="45"  readonly="readonly" class="inputtext"/>
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/reporte_personal/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}else  if($opcion==2){
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+	function Footer(){
+	}
+	function Header(){
+        $this->top_reporte("CAMBIOS O ASCENSOS DE FUNCIONARIOS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"12"), array("Y"=>"15", "X"=>"325"));
+
+	    $this->SetFont('vera','B',8);
+				$this->Cell(20,5,"CÓDIGO",'TRL',0,'C');
+				$this->Cell(80,5,"DENOMINACIÓN DE NÓMINA",'BTR',0,'C');
+				$this->Cell(60,5,"PRIMER APELLIDO",'TLR',0,'C');
+				$this->Cell(60,5,"SEGUNDO APELLIDO",'TR',0,'C');
+				$this->Cell(60,5,"PRIMER NOMBRE",'TR',0,'C');
+				$this->Cell(0, 5,"SEGUNDO NOMBRE",'TR',1,'C');
+
+		$this->SetFont('vera','',8);
+				$this->Cell(20,8,$_SESSION["CÓDIGO"],'TRL',0,'C');
+	                $varX = $this->GetX();
+					$varY = $this->GetY();
+					$this->Cell(80,0,"",'',2,'C');
+					$this->MultiCell(79,3,$_SESSION["DENOMINACION_DE_NÓMINA"],'','L');
+					$varX = $varX+80;
+					$this->SetXY($varX,$varY);
+				$this->Cell(60,8,$_SESSION["PRIMER_APELLIDO"],'TRL',0,'C');
+				$this->Cell(60,8,$_SESSION["SEGUNDO_APELLIDO"],'TR',0,'C');
+				$this->Cell(60,8,$_SESSION["PRIMER_NOMBRE"],'TR',0,'C');
+				$this->Cell(0, 8,$_SESSION["SEGUNDO_NOMBRE"],'TR',1,'C');
+
+		$this->SetFont('vera','B',8);
+
+				$this->Cell(160,5,"CARGO ANTERIOR",'TRL',0,'C');
+				$this->Cell(0,  5,"CARGO ACTUAL",'TR',1,'C');
+
+		$this->SetFont('vera','B',7);
+
+				$this->Cell(13,3,"Código",'TRL',0,'C');
+				$this->Cell(27,3,"Denominación",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TR',0,'C');
+				$this->Cell(26,3,"Denominación",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TRL',0,'C');
+				$this->Cell(14,3,"Fecha",'TR',0,'C');
+				$this->Cell(14,3,"Fecha",'TR',0,'C');
+				$this->Cell(15,3,"Sueldo",'TR',0,'C');
+				$this->Cell(15,3,"Sueldo",'TR',0,'C');
+
+				$this->Cell(13,3,"Código",'TRL',0,'C');
+				$this->Cell(27,3,"Denominación",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TR',0,'C');
+				$this->Cell(25,3,"Denominación",'TR',0,'C');
+				$this->Cell(12,3,"Código",'TRL',0,'C');
+				$this->Cell(14,3,"Fecha",'TR',0,'C');
+				$this->Cell(14,3,"Fecha",'TR',0,'C');
+				$this->Cell(15,3,"Sueldo",'TR',0,'C');
+				$this->Cell(15,3,"Sueldo",'TR',0,'C');
+				$this->Cell(0, 3,"Cambio",'TR',1,'C');
+		////////////////////////////////////////////////////
+
+				$this->Cell(13,3,"Nómina",'RL',0,'C');
+				$this->Cell(27,3,"de la Nómina",'BR',0,'C');
+				$this->Cell(12,3,"Cargo",'R',0,'C');
+				$this->Cell(12,3,"Puesto",'R',0,'C');
+				$this->Cell(26,3,"del Puesto",'BR',0,'C');
+				$this->Cell(12,3,"Ficha",'RL',0,'C');
+				$this->Cell(14,3,"Desde",'R',0,'C');
+				$this->Cell(14,3,"Hasta",'R',0,'C');
+				$this->Cell(15,3,"Básico",'R',0,'C');
+				$this->Cell(15,3,"Integral",'R',0,'C');
+
+				$this->Cell(13,3,"Nómina",'RL',0,'C');
+				$this->Cell(27,3,"de la Nómina",'BR',0,'C');
+				$this->Cell(12,3,"Cargo",'R',0,'C');
+				$this->Cell(12,3,"Puesto",'R',0,'C');
+				$this->Cell(25,3,"del Puesto",'BR',0,'C');
+				$this->Cell(12,3,"Ficha",'RL',0,'C');
+				$this->Cell(14,3,"Desde",'R',0,'C');
+				$this->Cell(14,3,"Hasta",'R',0,'C');
+				$this->Cell(15,3,"Básico",'R',0,'C');
+				$this->Cell(15,3,"Integral",'R',0,'C');
+				$this->Cell(0, 3,"ASCENSOS?",'R',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LEGAL');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 7);
+
+
+
+
+$codigo_tipo_nomina_aux = 0;
+$cedula_aux             = 0;
+$i=0;
+
+foreach($resultado as $aux){
+
+
+	$cod_presi          =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_presi"];
+	$cod_entidad        =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_entidad"];
+	$cod_tipo_inst      =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_tipo_inst"];
+	$cod_inst           =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_inst"];
+	$cod_dep            =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_dep"];
+	$cedula_identidad   =   $aux["v_cnmd06_fichas_h_c_a2"]["cedula_identidad"];
+	$secuencia          =   $aux["v_cnmd06_fichas_h_c_a2"]["secuencia"];
+
+	$cod_tipo_nomina_anterior  =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_tipo_nomina_anterior"];
+	$deno_nomina_anterior      =   $aux["v_cnmd06_fichas_h_c_a2"]["deno_nomina_anterior"];
+	$cod_cargo_anterior        =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_cargo_anterior"];
+	$cod_puesto_anterior       =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_puesto_anterior"];
+    $deno_puesto_anterior      =   $aux["v_cnmd06_fichas_h_c_a2"]["deno_puesto_anterior"];
+    $cod_ficha_anterior        =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_ficha_anterior"];
+    $desde_fecha_anterior      =   $aux["v_cnmd06_fichas_h_c_a2"]["desde_fecha_anterior"];
+    $hasta_fecha_anterior      =   $aux["v_cnmd06_fichas_h_c_a2"]["hasta_fecha_anterior"];
+    $sueldo_basico_anterior    =   $aux["v_cnmd06_fichas_h_c_a2"]["sueldo_basico_anterior"];
+    $sueldo_integral_anterior  =   $aux["v_cnmd06_fichas_h_c_a2"]["sueldo_integral_anterior"];
+
+    $cod_tipo_nomina_actual  =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_tipo_nomina_actual"];
+    $deno_nomina_actual      =   $aux["v_cnmd06_fichas_h_c_a2"]["deno_nomina_actual"];
+    $cod_cargo_actual        =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_cargo_actual"];
+    $cod_puesto_actual       =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_puesto_actual"];
+    $deno_puesto_actual      =   $aux["v_cnmd06_fichas_h_c_a2"]["deno_puesto_actual"];
+    $cod_ficha_actual        =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_ficha_actual"];
+    $fecha_desde_actual      =   $aux["v_cnmd06_fichas_h_c_a2"]["fecha_desde_actual"];
+
+
+    if(isset($resultado[$i+1]["v_cnmd06_fichas_h_c_a2"]["cod_tipo_nomina"])){
+        $fecha_hasta_actual = cambia_fecha($resultado[$i+1]["v_cnmd06_fichas_h_c_a2"]["desde_fecha_anterior"]);
+    }else{
+    	$fecha_hasta_actual = "";
+    }
+
+    $sueldo_basico_actual    =   $aux["v_cnmd06_fichas_h_c_a2"]["sueldo_basico_actual"];
+    $sueldo_integral_actual  =   $aux["v_cnmd06_fichas_h_c_a2"]["sueldo_integral_actual"];
+    $cambio_ascenso          =   $aux["v_cnmd06_fichas_h_c_a2"]["cambio_ascenso"];
+
+    $cod_tipo_nomina  =   $aux["v_cnmd06_fichas_h_c_a2"]["cod_tipo_nomina"];
+    $deno_nomina      =   $aux["v_cnmd06_fichas_h_c_a2"]["deno_nomina"];
+
+
+    $primer_apellido  =   $aux["v_cnmd06_fichas_h_c_a2"]["primer_apellido"];
+    $segundo_apellido =   $aux["v_cnmd06_fichas_h_c_a2"]["segundo_apellido"];
+    $primer_nombre    =   $aux["v_cnmd06_fichas_h_c_a2"]["primer_nombre"];
+    $segundo_nombre   =   $aux["v_cnmd06_fichas_h_c_a2"]["segundo_nombre"];
+
+
+           if($cod_tipo_nomina   != $codigo_tipo_nomina_aux  ||
+              $cedula_aux        != $cedula_identidad){
+
+           	  $codigo_tipo_nomina_aux = $cod_tipo_nomina;
+           	  $cedula_aux             = $cedula_identidad;
+
+                $_SESSION["CÓDIGO"]                   =  mascara($cod_tipo_nomina,3);
+                $_SESSION["DENOMINACION_DE_NÓMINA"]   =  $deno_nomina;
+
+                $_SESSION["PRIMER_APELLIDO"]    =  $primer_apellido;
+                $_SESSION["SEGUNDO_APELLIDO"]   =  $segundo_apellido;
+                $_SESSION["PRIMER_NOMBRE"]      =  $primer_nombre;
+                $_SESSION["SEGUNDO_NOMBRE"]     =  $segundo_nombre;
+
+             	$pdf->AddPage();
+           }
+
+
+
+
+								/////////////////////////////////////////////////////////////
+								$pdf->SetFont('vera','',6);
+										$pdf->Cell(13,12,mascara($cod_tipo_nomina_anterior,6),'TRL',0,'C');
+											$varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(27,0,"",'',2,'C');
+											$pdf->MultiCell(26,3,$deno_nomina_anterior,'','L');
+											$varX = $varX+27;
+											$pdf->SetXY($varX,$varY);
+										$pdf->Cell(12,12,mascara($cod_cargo_anterior,6),'RTL',0,'C');
+										$pdf->Cell(12,12,mascara($cod_puesto_anterior,6),'RT',0,'C');
+										    $varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(26,0,"",'',2,'C');
+											$pdf->MultiCell(25,3,$deno_puesto_anterior,'','L');
+											$varX = $varX+26;
+											$pdf->SetXY($varX,$varY);
+										$pdf->Cell(12,12,mascara($cod_ficha_anterior,6),'RTL',0,'C');
+										$pdf->Cell(14,12,cambia_fecha($desde_fecha_anterior),'RT',0,'C');
+										$pdf->Cell(14,12,cambia_fecha($hasta_fecha_anterior),'RT',0,'C');
+										$pdf->Cell(15,12,$sisap->Formato2($sueldo_basico_anterior),'RT',0,'R');
+										$pdf->Cell(15,12,$sisap->Formato2($sueldo_integral_anterior),'RT',0,'R');
+
+
+										$pdf->Cell(13,12,mascara($cod_tipo_nomina_actual,6),'TRL',0,'C');
+										    $varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(27,0,"",'',2,'C');
+											$pdf->MultiCell(26,3,$deno_nomina_actual,'','L');
+											$varX = $varX+27;
+											$pdf->SetXY($varX,$varY);
+										$pdf->Cell(12,12,mascara($cod_cargo_actual,6),'RTL',0,'C');
+										$pdf->Cell(12,12,mascara($cod_puesto_actual,6),'RT',0,'C');
+										    $varX = $pdf->GetX();
+											$varY = $pdf->GetY();
+											$pdf->Cell(25,0,"",'',2,'C');
+											$pdf->MultiCell(24,3,$deno_puesto_actual,'','L');
+											$varX = $varX+25;
+											$pdf->SetXY($varX,$varY);
+										$pdf->Cell(12,12,mascara($cod_ficha_actual,6),'RTL',0,'C');
+										$pdf->Cell(14,12,cambia_fecha($fecha_desde_actual),'RT',0,'C');
+										$pdf->Cell(14,12,$fecha_hasta_actual,'RT',0,'C');
+										$pdf->Cell(15,12,$sisap->Formato2($sueldo_basico_actual),'RT',0,'R');
+										$pdf->Cell(15,12,$sisap->Formato2($sueldo_integral_actual),'RT',0,'R');
+
+										$pdf->Cell(0, 12,$cambio_ascenso==1?"Cambio":"Ascenso",'RT',1,'C');
+								$pdf->Cell(0,0,"",'T',1,'C');
+								///////////////////////////////////////////////////////////////////
+
+		$i++;
+}//fin foreach
+
+
+$pdf->OutPut('cambio_ascenso_'.date("d-m-Y").".pdf",'D');
+
+
+}
+?>

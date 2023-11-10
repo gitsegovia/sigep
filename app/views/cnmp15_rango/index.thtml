@@ -1,0 +1,129 @@
+
+<form name='data[cnmp15]'  method = "post" id='form'>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr align='center'>
+		<td width='10%'>Seleccion</td>
+		<td width='10%'>Código de Nómina</td>
+		<td width='50%'>Denominación de la Nómina</td>
+		<td width='15%'>Fecha Desde</td>
+		<td width='15%'>Fecha Hasta</td>
+		<td width='8%'><br></td>
+	</tr>
+
+	<tr align='center'>
+		<td width='10%' ><?=  $sisap->selectTagRemote('cnmp15/cod_nomina', isset($nomina)?$nomina:array(),null,  '', array('onchange1'=>'/cnmp15_rango/cod_nomina', 'update1'=>'showcod_nomina', 'onchange2'=>'/cnmp15_rango/deno_nomina', 'update2'=>'showdeno_nomina', 'id'=>'nomina_1','onclick'=>'cnmp10_cancelacion_limpiar11()',true), null, true); ?></td>
+		<td width='10%' id="showcod_nomina"><input name="data[cnmp15][cod_nomina]"  value="" id="cod_nomina"  onKeyPress="return solonumeros(event);" class="inputtext" readonly></td>
+		<td width='50%' id="showdeno_nomina"><input name="data[cnmp15][deno_nomina]"  value="" id="deno_nomina"  onKeyPress="return solonumeros(event);" class="inputtext" readonly></td>
+		<td width='10%'><input type="text" name="data[cnmp15][fecha_desde]" value="" style="text-align:right;" name="data[cnmp15][fecha]" id="fecha1" size="8" readonly="readonly"><?= $html->imageTag($path='date.png', $alt ="Calendario", $htmlAttributes = array("onClick"=>"displayCalendar(document.forms[0].fecha1,'dd/mm/yyyy',this)", 'style'=>'margin: 0 0 0 0; padding: 0 0 0 0;', 'border'=>'0', 'width'=>'14%'), $return = false)?></td>
+		<td width='10%'><input type="text" name="data[cnmp15][fecha_hasta]" value="" style="text-align:right;" name="data[cnmp15][fecha]" id="fecha2" size="8" readonly="readonly"><?= $html->imageTag($path='date.png', $alt ="Calendario", $htmlAttributes = array("onClick"=>"displayCalendar(document.forms[0].fecha2,'dd/mm/yyyy',this)", 'style'=>'margin: 0 0 0 0; padding: 0 0 0 0;', 'border'=>'0', 'width'=>'14%'), $return = false)?></td>
+	    <td width='10%'><?= $sisap->submitTagRemote('+', array('funcion'=>'valida_cnmp15_rango','id'=>'save','url1' => '/cnmp15_rango/guardar', 'update1'=>'grilla_guarda')); ?>&nbsp;
+	    </td>
+	</tr>
+</table>
+
+
+<br>
+
+<div id="grilla_guarda">
+
+
+<div style="height:300px;overflow:auto;">
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" style:"position:fixed" align="center">
+		<td align="center" width="10%">C&oacute;digo N&oacute;mina</td>
+		<td align="center" width="50%">Denominaci&oacute;n de la N&oacute;mina</td>
+		<td align="center" width="10%">Fecha Desde</td>
+		<td align="center" width="10%">Fecha Hasta</td>
+		<td align="center" width="5%">---</td>
+		<td align="center" width="5%">---</td>
+	</tr>
+
+<?php
+
+function denominacion($deno, $codigo, $cod_nomina){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_nomina){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+if(isset($datos) && $datos!=null){
+	$i=0;
+	$j=0;
+	foreach($lista1 as $x){
+		$deno[$j] = $x['Cnmd01']['denominacion'];
+		$codigo[$j] = $x['Cnmd01']['cod_tipo_nomina'];
+		$j++;
+	}
+	foreach($datos as $row){
+		$cod_nomina = $row['cnmd15_rango']['cod_tipo_nomina'];
+		$fecha_desde = $row['cnmd15_rango']['fecha_desde'];
+		$fecha_hasta = $row['cnmd15_rango']['fecha_hasta'];
+		$deno1=denominacion($deno, $codigo,$cod_nomina);
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+
+<td class="td2center">
+	<?=$sisap->zero($cod_nomina); ?>
+</td>
+<td align="legth">
+	<?=$deno1;?>
+</td>
+<td class="td2center">
+	<?=$sisap->cambia_fecha($fecha_desde)?>
+</td>
+<td class="td2center">
+	<?=$sisap->cambia_fecha($fecha_hasta)?>
+</td>
+<td width="75" align="center"  id="<?= "li_".$i ?>">
+<a href="javascript:ver_documento('/cnmp15_rango/modificar/<?=$cod_nomina?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el documento bancario'))?></a>
+</td>
+<td width="75" align="center"><?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp15_rango/eliminar/'.$cod_nomina, array('update'=>'vacio', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('fila_$i');"), "Realmente desea Eliminar este registro?", false, true); ?></td>
+
+</tr>
+
+<?
+$i++;
+	}
+}else{
+?>
+<tr  class="textNegro2" bgcolor="#CDF2FF">
+
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td width="75" align="center">---</td>
+<td width="75" align="center">---</td>
+</tr>
+
+
+<?php
+}
+?>
+
+</table>
+<input type="hidden" id="TI" value="<?=$i?>" />
+
+</div>
+</div>
+
+<div id="vacio"></div>
+<br><br>
+<?= $sisap->submitTagRemote('Cancelar', array('id'=>'cancelar','url1' => '/cnmp15_rango/cancelar', 'update1'=>'grilla_guarda')); ?>&nbsp;
+
+
+</form>
+

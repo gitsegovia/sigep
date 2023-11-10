@@ -1,0 +1,68 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+function Header(){}
+
+
+}//fin class
+
+$fpdf = new fpdfview('P','mm','Letter');
+$fpdf->header();
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(20);
+$fpdf->SetLeftMargin(20);
+$fpdf->SetRightMargin(15);
+$fpdf->SetAutoPageBreak(true, 10);
+$fpdf->AddPage();
+
+$fpdf->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',21,22,23);
+$fpdf->SetFont('vera','B',10);
+$fpdf->Cell(20,6,"",'TL',0);
+$fpdf->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);
+$fpdf->Cell(25,4,"",'L',0);
+$fpdf->SetFont('vera','',9);
+$fpdf->Cell(0,4,$_SESSION['titulo_a'],'R',1);
+$fpdf->SetFont('vera','B',12);
+$fpdf->Cell(30,10,"",'L',0);
+$fpdf->MultiCell(0,5,"CLASIFICADOR DE PARTIDAS NACIONAL\n",'R','C');
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(30,3,"",'L',0);
+$fpdf->Cell(0,3,"(BOLÍVAR FUERTE)",'R',1,'C');
+$fpdf->SetFont('vera','',9);
+$fpdf->Cell(22,5,"",'BL',0);
+$fpdf->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);
+$fpdf->Ln(10);
+
+
+foreach($consulta as $datos){
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(30,5,$datos['codigo'],'',0,'R');
+$fpdf->MultiCell(0,5,$datos['descripcion'],'','J');
+$fpdf->Cell(30,10,"",'',0);
+$fpdf->SetFont('vera','',9);
+$fpdf->MultiCell(0,5,$datos['concepto'],'','J');
+$fpdf->Ln(5);
+}
+$fpdf->OutPut();
+?>

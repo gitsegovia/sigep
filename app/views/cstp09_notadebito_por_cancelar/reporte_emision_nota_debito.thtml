@@ -1,0 +1,274 @@
+<?php
+/*
+ * Creado el 13/01/2014 a las 8:55:09 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion: Por Ing. René C.H.
+ */
+
+if(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,4,"NOTA DE DÉBITO",'RL',1,'C');
+		$this->Cell(0,3,"",'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+    }//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+  if(isset($tipo_reporte)){
+
+    $orden_pago_agrupada='';
+
+    for($i=0; $i<count($notad); $i++){
+
+      $mostrar=false;
+      $agrupada=false;
+
+      if(($i+1)<count($notad)){
+        if(($notad[$i][0]['numero_debito']==$notad[$i+1][0]['numero_debito']) and ($notad[$i][0]['concepto']==$notad[$i+1][0]['concepto'])){
+          // en la misma pagina
+          $mostrar=false;
+          $orden_pago_agrupada.=$sisap->mascara_seis($notad[$i][0]['numero_orden_pago']).",";
+        }else{
+          // otra pagina
+          if($orden_pago_agrupada==""){
+            $orden_pago=$orden_pago_agrupada.$sisap->mascara_seis($notad[$i][0]['numero_orden_pago']);
+            $orden_pago_agrupada='';
+            $agrupada=true;
+          }else{
+            $orden_pago=$sisap->mascara_seis($notad[$i][0]['numero_orden_pago']);
+          }
+          $pdf->AddPage();
+          $mostrar=true;
+        }
+      }else{
+        if($orden_pago_agrupada!=""){
+          $orden_pago=$orden_pago_agrupada.$sisap->mascara_seis($notad[$i][0]['numero_orden_pago']);
+          $orden_pago_agrupada='';
+          $agrupada=true;
+        }else{
+          $orden_pago=$sisap->mascara_seis($notad[$i][0]['numero_orden_pago']);
+        }
+        $pdf->AddPage();
+        $mostrar=true;
+      }
+
+      if($mostrar){
+
+        $pdf->Ln(3);
+        $pdf->SetFont('vera','B',8);
+        $pdf->Cell(63,5,'NÚMERO','TRBL',0,'C');
+        $pdf->Cell(63,5,'FECHA','TRB',1,'C');
+        $pdf->SetFont('vera','B',16);
+        $pdf->Cell(63,6,$sisap->mascara_ocho($notad[$i][0]['numero_debito']),'RBL',0,'C');
+        $pdf->SetFont('vera','',8);
+        $pdf->Cell(63,6,$sisap->cambia_fecha($notad[$i][0]['fecha_debito']),'RB',1,'C');
+
+        $pdf->Ln(10);
+        $pdf->SetFont('vera','',8);
+        $pdf->Cell(63,6,'ENTIDAD BANCARIA','TRL',0,'L');
+        $pdf->SetFont('vera','B',10);
+        $pdf->Cell(0,6,$ent_ban[$notad[$i][0]['cod_entidad_bancaria']],'TR',1,'L');
+
+        $pdf->SetFont('vera','',8);
+        $pdf->Cell(63,6,'NÚMERO DE CUENTA BANCARIA','TRBL',0,'L');
+        $pdf->SetFont('vera','B',10);
+        $pdf->Cell(0,6,$notad[$i][0]['cuenta_bancaria'],'TRB',1,'L');
+
+
+        $pdf->Ln(10);
+        if($agrupada){
+          $pdf->SetFont('vera','',8);
+          $pdf->Cell(63,16,'Nº ORDEN(ES) DE PAGO','TRBL',0,'L');
+          $pdf->SetFont('vera','',10);
+          $varX = $pdf->GetX();
+          $varY = $pdf->GetY();
+          $pdf->Cell(0,1,"",'T',2,'C');
+          $pdf->MultiCell(131,3,$orden_pago,'','TBL');//--[EMPRESA]
+          $varX = $varX+132;
+          $pdf->SetXY($varX,$varY);
+          $pdf->Cell(0,16,'','R',1);
+          $pdf->Cell(0,0,'','T',1);
+        }else{
+          $pdf->SetFont('vera','',8);
+          $pdf->Cell(63,6,'Nº ORDEN DE PAGO','TRL',0,'L');
+          $pdf->SetFont('vera','B',12);
+          $pdf->Cell(0,6,$orden_pago,'TR',1,'L');
+        }
+
+        $pdf->SetFont('vera','',8);
+        $pdf->Cell(63,6,'MONTO BOLÍVARES','TRBL',0,'L');
+        $pdf->SetFont('vera','B',12);
+        $pdf->Cell(0,6,$sisap->Formato2($notad[$i][0]['monto']),'TRB',1,'L');
+
+        $pdf->SetFont('vera','B',8);
+        $pdf->Cell(63,8,'CANTIDAD EN LETRAS','RL',0,'L');
+        $pdf->SetFont('vera','',8);
+        $varX = $pdf->GetX();
+        $varY = $pdf->GetY();
+        $pdf->Cell(132,1,"",'',2,'C');
+        $pdf->MultiCell(131,3,$sisap->convertir($notad[$i][0]['monto']),'','L');//--[EMPRESA]
+        $varX = $varX+132;
+        $pdf->SetXY($varX,$varY);
+        $pdf->Cell(0,8,'','R',1);
+        $pdf->Cell(0,0,'','T',1);
+
+
+        $pdf->Ln(10);
+        $pdf->SetFont('vera','B',10);
+        $pdf->Cell(0,5,'CONCEPTO','TRBL',1,'C');
+        $pdf->Cell(1,50,'','L',0);
+        $varX = $pdf->GetX();
+        $varY = $pdf->GetY();
+        $pdf->SetFont('vera','',9);
+        $pdf->Cell(194,1,"",'',2,'C');
+        $pdf->MultiCell(193,5,$notad[$i][0]['concepto'],'','L');//--[EMPRESA]
+        $varX = $varX+194;
+        $pdf->SetXY($varX,$varY);
+        $pdf->Cell(1,50,'','R',1);
+        $pdf->Cell(0,0,'','T',1);
+
+        $pdf->Ln(8);
+
+        /* $pdf->SetFont('vera','BU',9);
+        $pdf->Cell(0,5,'FIRMAS AUTORIZADAS','',1,'C');
+
+        $pdf->Ln(5);
+        $pdf->SetFont('vera','B',7);
+        $pdf->Cell(105,5,'AGENTE DE RETENCIÓN/ORDENADOR DE PAGO','TRBL',0,'C');
+        $pdf->Cell(0,5,'FISCAL DE RENTAS/ADMINISTRADOR','TRB',1,'C');
+        $pdf->Cell(105,18,'','RL',0,'C');//--[AGENTE DE RETENCIÓN]
+        $pdf->Cell(0,18,'','R',1,'C');//--[FISCAL DE RENTAS]
+        $pdf->Cell(105,5,'FIRMA Y SELLO','TRBL',0,'C');
+        $pdf->Cell(0,5,'FIRMA Y SELLO','TRB',1,'C'); */
+
+        /////////////////// ***** INICIO NUEVA FORMA DE FIRMA ***** //////////////////////////
+
+          $pdf->SetFont('vera','B',10);
+          $pdf->Cell(0,5,"FIRMAS AUTORIZADAS",'TRL',1,'C');
+
+          // FIRMA REPONSABILIDAD:
+            $pdf->SetFont('vera', 'B', 7);
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 6, "", 'TL', 0, 'C');
+            $pdf->Cell(100, 1, "", 'T', 2, 'C');
+            $pdf->MultiCell(100, 2, $responsa_primera_firma, '', 'C'); // ------------[RESPONSABILIDAD 1]
+            $varX = $varX + 100;
+            $pdf->SetXY($varX, $varY);
+
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 6, "", 'L', 0, 'C');
+            $pdf->Cell(0, 1, "", 'T', 2, 'C');
+            $pdf->MultiCell(0, 2, $responsa_segunda_firma, '', 'C'); // ------------[RESPONSABILIDAD 2]
+            $varX = $varX + 0;
+            $pdf->SetXY($varX, $varY);
+            $pdf->Cell(0, 5, "", 'R', 1, 'R');
+
+          // FIRMA CARGO:
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 25, "", 'TL', 0, 'C');
+            $pdf->Cell(100, 1, "", 'T', 2, 'C');
+            $pdf->MultiCell(100, 2, $cargo_primera_firma, '', 'C'); // ------------[CARGO 1]
+            $varX = $varX + 100;
+            $pdf->SetXY($varX, $varY);
+
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 25, "", 'L', 0, 'C');
+            $pdf->Cell(0, 1, "", 'T', 2, 'C');
+            $pdf->MultiCell(0, 2, $cargo_segunda_firma, '', 'C'); // ------------[CARGO 2]
+            $varX = $varX + 0;
+            $pdf->SetXY($varX, $varY);
+            $pdf->Cell(0, 25, "", 'R', 1, 'R');
+
+          // FIRMA FUNCIONARIO:
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 4, "", 'L', 0, 'C');
+            $pdf->Cell(100, 1, "", '', 2, 'C');
+            $pdf->MultiCell(100, 2, $funcionario_primera_firma, '', 'C'); // ------------[FUNCIONARIO 1]
+            $varX = $varX + 100;
+            $pdf->SetXY($varX, $varY);
+
+            $varX = $pdf->GetX();
+            $varY = $pdf->GetY();
+            $pdf->Cell(1, 4, "", 'L', 0, 'C');
+            $pdf->Cell(0, 1, "", '', 2, 'C');
+            $pdf->MultiCell(0, 2, $funcionario_segunda_firma, '', 'C'); // ------------[FUNCIONARIO 2]
+            $varX = $varX + 0;
+            $pdf->SetXY($varX, $varY);
+            $pdf->Cell(0, 4, "", 'R', 1, 'R');
+
+          // FIRMA CEDULA:
+
+            $pdf->Cell(100, 3, "  ".$cedula_primera_firma, 'RBL', 0, 'C'); // ------------[CEDULA 1]
+            $pdf->Cell(0, 3, "  ".$cedula_segunda_firma, 'RB', 1, 'C'); // ------------[CEDULA 2]
+
+            /*
+              $varX = $pdf->GetX();
+              $varY = $pdf->GetY();
+              $pdf->Cell(1, 3, "", 'L', 0, 'C');
+              $pdf->Cell(40, 1, "", '', 2, 'C');
+              $pdf->MultiCell(40, 2, $cedula_primera_firma, '', 'C'); // ------------[CEDULA 1]
+              $varX = $varX + 40;
+              $pdf->SetXY($varX, $varY);
+
+              $varX = $pdf->GetX();
+              $varY = $pdf->GetY();
+              $pdf->Cell(1, 3, "", 'L', 0, 'C');
+              $pdf->Cell(0, 1, "", '', 2, 'C');
+              $pdf->MultiCell(0, 2, $cedula_segunda_firma, '', 'C'); // ------------[CEDULA 2]
+              $varX = $varX + 0;
+              $pdf->SetXY($varX, $varY);
+              $pdf->Cell(0, 3, "", 'R', 1, 'R');
+              $pdf->Cell(0, 6, "", 'T', 1, 'C');
+            */
+        /////////////////////// ****** FIN NUEVA FORMA DE FIRMA ****** ///////////////////////////
+
+      }
+    } //fin for
+
+  }//fin isset
+
+
+$pdf->OutPut('Emision_nota_debito_'.date('Y_m_d').'_.pdf','D');
+}
+?>

@@ -1,0 +1,394 @@
+<?php
+
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+
+class fpdfview extends TCPDF{
+
+
+function Footer(){}//fin footer
+
+
+function Header(){
+
+
+
+
+$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION["entidad_federal"];
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11=$_SESSION["dependencia"];
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=11;
+        }
+
+		$this->Image($escudo,7,15,$t1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(230,4,$varTOPh1,'T',0);
+		$this->SetFont('vera','',6);
+		    $this->Cell(0,4,'Pagina: '.$this->PageNo().'/TPAG','TR',1);//-------------------------PAGINACION
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',6);
+		$this->Cell(230,3,$varTOPh2,'',0);
+		  $this->Cell(0,3,'Fecha: '.date('d/m/Y'),'R',1);//-----------------------------FECHA
+		  $this->Cell(245,3,"",'L',0);
+		  $this->Cell(0,3,'Hora: '.date('h:i a'),'R',1);//-----------------------------HORA
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,9,"ANALÍTICO POR CUENTA",'RLB',1,'C');
+		$this->Ln(2);
+
+
+
+
+        $this->SetFont('vera','B',6);
+		$this->Cell(14,3,"NÚMERO",'TL',0,'C');
+		$this->Cell(18,3,"FECHA",'TL',0,'C');
+		$this->Cell(15,3,"TIPO",'TL',0,'C');
+		$this->Cell(18,3,"MONTO",'TL',0,'C');
+		$this->Cell(30,3,"NÚMERO",'TL',0,'C');
+		$this->Cell(15,3,"NÚMERO",'TL',0,'C');
+		$this->Cell(25,3,"MONTO",'TL',0,'C');
+		$this->Cell(18,3,"FECHA",'TL',0,'C');
+		$this->Cell(55,3,"BENEFICIARIO",'TL',0,'C');
+		$this->Cell(42,3,"CATEGORÍA",'TL',0,'C');
+		$this->Cell(0,3,"MONTO",'TRL',1,'C');
+
+
+		$this->Cell(14,3,"ORDEN",'L',0,'C');
+		$this->Cell(18,3,"ORDEN",'L',0,'C');
+		$this->Cell(15,3,"ORDEN",'L',0,'C');
+		$this->Cell(18,3,"ORDEN",'L',0,'C');
+		$this->Cell(30,3,"CUENTA",'L',0,'C');
+		$this->Cell(15,3,"CHEQUE",'L',0,'C');
+		$this->Cell(25,3,"CHEQUE",'L',0,'C');
+		$this->Cell(18,3,"CHEQUE",'L',0,'C');
+		$this->Cell(55,3,"",'L',0,'C');
+		$this->Cell(42,3,"PROGRAMÁTICA",'L',0,'C');
+		$this->Cell(0,3,"PARTIDA",'RL',1,'C');
+
+
+		$this->Cell(14,3,"PAGO",'LB',0,'C');
+		$this->Cell(18,3,"PAGO",'LB',0,'C');
+		$this->Cell(15,3,"PAGO",'LB',0,'C');
+		$this->Cell(18,3,"PAGO",'LB',0,'C');
+		$this->Cell(30,3,"",'LB',0,'C');
+		$this->Cell(15,3,"",'LB',0,'C');
+		$this->Cell(25,3,"",'LB',0,'C');
+		$this->Cell(18,3,"",'LB',0,'C');
+		$this->Cell(55,3,"",'LB',0,'C');
+		$this->Cell(42,3,"",'LB',0,'C');
+		$this->Cell(0,3,"",'RLB',1,'C');
+
+}//fin headre
+
+
+
+
+
+}//fin class
+
+
+
+
+
+if($opcion=='si'){ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"ANALÍTICO POR CUENTA","","950");?>
+<form  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_analitico_por_cuenta/si'); ?>" onSubmit="return reporte_analitico_por_cuenta();">
+
+
+
+<?= $sisap->OpenTable("950")?>
+
+
+
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+    <tr>
+    	<td width="10%">Selecci&oacute;n </td>
+    	<td width="50">Codigo </td>
+    	<td>Denominac&oacute;n de la Entidad Bancaria </td>
+    </tr>
+
+    <tr>
+    	 <td width="5%"><div id='st_tipo'>
+    	 <?=  $sisap->selectTagRemote('cepp03_pagos_por_cancelar/entidad', $tipo ,null,  '', array('onchange1'=>'/cepp03_pagos_por_cancelar/select/sucursal/a', 'update1'=>'st_sucursal', 'onchange2'=>'/cepp03_pagos_por_cancelar/mostrar/entidades/codigo', 'update2'=>'codigo_select_2', 'onchange3'=>'/cepp03_pagos_por_cancelar/mostrar/entidades/deno', 'update3'=>'deno_select_2', 'id'=>'select_1'  , true), null, true); ?>
+
+           		 </div>
+           </td>
+	    <td><div id="codigo_select_2">&nbsp;</div></td>
+	    <td><div id="deno_select_2">&nbsp;</div></td>
+    </tr>
+
+    <tr>
+    	<td width="10%">Selecci&oacute;n </td>
+    	<td width="50">Codigo </td>
+    	<td>Denominac&oacute;n de la Sucursal Bancaria </td>
+    </tr>
+
+
+    <tr>
+	    <td align='center'><div id='st_sucursal'><select id='select_2'></select></div></td>
+	    <td width="50"><div id="codigo_select_3">&nbsp;</div></td>
+	    <td ><div id="deno_select_3">&nbsp;</div></td>
+    </tr>
+</table>
+
+<br>
+
+<table width="50%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+      <tr  >
+	    	<td  width="30px">Cuenta Bancaria</td>
+	    	<td align='center' width="200""><div id='st_cuenta'><select id='select_3'></select></div></td>
+	  	</tr>
+</table>
+
+<br>
+
+<table  width="50%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<th colspan="2">PERIODO</th>
+
+
+<?php
+      $d=$session->read('SScoddep'); $d=3;
+   if($d==1){
+?>
+<tr><td colspan="2">
+CONSOLIDADO POR:<?= $html->radio('reporte3/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), null, array('value'=>'1'))?>
+</td></tr>
+
+<?php }//fin  ?>
+
+
+<tr>
+		<td align="center" width="20%">Desde Periodo</td>
+		<td align="center" width="20%">Hasta Periodo</td>
+</tr>
+<tr>
+    	<td><input type="text" value='' style="text-align:right;" name="data[reporte3][desde_periodo]" id="desde_periodo" class="inputtext80" readonly><?= $html->imageTag($path='date.png', $alt ="Calendario", $htmlAttributes = array("onClick"=>"displayCalendar(document.forms[0].desde_periodo,'dd/mm/yyyy',this)", 'style'=>'margin: 0 0 0 0; padding: 0 0 0 0;', 'border'=>'0', 'width'=>'10%'), $return = false)?></td>
+		<td><input type="text" value='' style="text-align:right;" name="data[reporte3][hasta_periodo]" id="hasta_periodo" class="inputtext80" readonly><?= $html->imageTag($path='date.png', $alt ="Calendario", $htmlAttributes = array("onClick"=>"displayCalendar(document.forms[0].hasta_periodo,'dd/mm/yyyy',this)", 'style'=>'margin: 0 0 0 0; padding: 0 0 0 0;', 'border'=>'0', 'width'=>'10%'), $return = false)?></td>
+</tr>
+
+</table>
+
+<br>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+
+
+
+
+<?php }else{
+
+
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+
+
+$pdf->AddPage();
+
+
+
+$aux   = "";
+$aux_2 = "";
+$aux_3 = "";
+
+
+$total_monto       = 0;
+$total_orden       = 0;
+$total_total_monto = 0;
+
+$total_partida_monto       = 0;
+$total_paritda_total_monto = 0;
+$total_total_orden         = 0;
+
+$ver_cuenta_bancaria = "";
+$ver_numero_cheque = "";
+$ver_orden = "";
+$ver_dep   = "";
+
+foreach($resultado as $ve){
+
+if($global=='si'){
+       if($aux!=$ve[0]['cod_dep']){
+          $aux = $ve[0]['cod_dep'];
+          if($total_monto!=0){
+			        $pdf->SetFont('vera','B',6);
+					$pdf->Cell(32,7,"Total Dependencia:",'LB',0,'R');
+					$pdf->Cell(33,7,$sisap->Formato2($total_orden),'LB',0,'R');
+					$pdf->Cell(45,7,"",'LB',0,'C');
+					$pdf->Cell(25,7,$sisap->Formato2($total_monto),'LB',0,'R');
+					$pdf->Cell(110,7,"",'LB',0,'C');
+					$pdf->Cell(0,7,$sisap->Formato2($total_partida_monto),'RLB',1,'R');
+			}//fin
+          $total_total_monto         +=  $total_monto;
+		  $total_paritda_total_monto +=  $total_partida_monto;
+		  $total_total_orden         +=  $total_orden;
+          $total_monto           = 0;
+          $total_orden           = 0;
+          $total_partida_monto   = 0;
+          $pdf->SetFont('vera','B',7);
+       	  $pdf->Cell(0,8,$ve[0]['denominacion'],'RLB',1,'C');
+       }//fin else
+}//fin if
+
+
+$concate = $sisap->AddCero2($ve[0]['cod_sector']).'.'.$sisap->AddCero2($ve[0]['cod_programa']).'.'.$sisap->AddCero2($ve[0]['cod_sub_prog']).'.'.$sisap->AddCero2($ve[0]['cod_proyecto']).'.'.$sisap->AddCero2($ve[0]['cod_activ_obra']).'.'.$sisap->AddCero2(substr($ve[0]['cod_partida'], -2), substr($ve[0]['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve[0]['cod_generica']).'.'.$sisap->AddCero2($ve[0]['cod_especifica']).'.'.$sisap->AddCero2($ve[0]['cod_sub_espec']).'.'.$sisap->AddCero2($ve[0]['cod_auxiliar']);
+
+
+switch($ve[0]['clase_beneficiario']){
+	case '1':{$ve[0]['monto_neto_cobrar'] = $ve[0]['monto_neto_cobrar'];  }break;
+	case '2':{$ve[0]['monto_neto_cobrar'] = $ve[0]['monto_islr'];  }break;
+	case '3':{$ve[0]['monto_neto_cobrar'] = $ve[0]['monto_timbre_fiscal'];  }break;
+	case '4':{$ve[0]['monto_neto_cobrar'] = $ve[0]['monto_impuesto_municipal'];  }break;
+	case '5':{$ve[0]['monto_neto_cobrar'] = $ve[0]['monto_retencion_iva'];  }break;
+}//fin switch
+
+
+
+
+
+if($ver_orden != $ve[0]['numero_orden_pago'] || $ver_dep !=  $ve[0]['cod_dep']  ||  $ver_numero_cheque != $ve[0]['numero_cheque']){
+	$ver_orden = $ve[0]['numero_orden_pago'];
+   $total_orden       += $ve[0]['monto_neto_cobrar'];
+   $ver_dep =  $ve[0]['cod_dep'];
+}//fin
+
+
+$total_partida_monto       += $ve[0]['monto_partida'];
+
+$ver = $ve[0]['numero_orden_pago'].'.'.$ve[0]['fecha_orden_pago'].'.'.$ve[0]['tipo_orden'].'.'.$ve[0]['cuenta_bancaria'].'.'.$ve[0]['numero_cheque'];
+
+if($aux_2 !=  $ve[0]['numero_orden_pago'].'.'.$ve[0]['fecha_orden_pago'].'.'.$ve[0]['tipo_orden'].'.'.$ve[0]['cuenta_bancaria'].'.'.$ve[0]['numero_cheque']){
+   $aux_2  =  $ve[0]['numero_orden_pago'].'.'.$ve[0]['fecha_orden_pago'].'.'.$ve[0]['tipo_orden'].'.'.$ve[0]['cuenta_bancaria'].'.'.$ve[0]['numero_cheque'];
+
+
+
+if($ver_cuenta_bancaria != $ve[0]['cuenta_bancaria'] ||  $ver_numero_cheque != $ve[0]['numero_cheque']){
+   $total_monto               += $ve[0]['monto'];
+   $ver_cuenta_bancaria = $ve[0]['cuenta_bancaria'];
+   $ver_numero_cheque   = $ve[0]['numero_cheque'];
+   //$pdf->Cell(0,7,$ve[0]['cuenta_bancaria'].$ve[0]['numero_cheque'],'T',1);
+
+}//fin else
+
+if($ve[0]['tipo_orden']==1){$tipo="Permanente";}else{$tipo="Especial";}
+
+        $pdf->SetFont('vera','',6);
+        $pdf->Cell(14,7,$sisap->mascara_ocho($ve[0]['numero_orden_pago']),'L',0,'C');
+		$pdf->Cell(18,7,$sisap->cambia_fecha($ve[0]['fecha_orden_pago']),'L',0,'C');
+		$pdf->Cell(15,7,$tipo,'L',0,'C');
+		$pdf->Cell(18,7,$sisap->Formato2($ve[0]['monto_neto_cobrar']),'L',0,'R');
+		$pdf->Cell(30,7,$ve[0]['cuenta_bancaria'],'L',0,'C');
+		$pdf->Cell(15,7,$sisap->mascara_ocho($ve[0]['numero_cheque']),'L',0,'C');
+		$pdf->Cell(25,7,$sisap->Formato2($ve[0]['monto']),'L',0,'R');
+		$pdf->Cell(18,7,$sisap->cambia_fecha($ve[0]['fecha_cheque']),'L',0,'C');
+$pdf->Cell(1,7,"",'L',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->Cell(54,1,"",'',2);
+	$pdf->MultiCell(54,3,$ve[0]['beneficiario'],'','L');//Concepto Orden de Pago
+	$varX = $varX+54;//le sumo a X ---> 180.
+	$pdf->SetXY($varX,$varY);// cargo XY
+}else{
+        $pdf->Cell(14,7,"",'L',0,'C');
+		$pdf->Cell(18,7,"",'L',0,'C');
+		$pdf->Cell(15,7,"",'L',0,'C');
+		$pdf->Cell(18,7,"",'L',0,'C');
+		$pdf->Cell(30,7,"",'L',0,'C');
+		$pdf->Cell(15,7,"",'L',0,'C');
+		$pdf->Cell(25,7,"",'L',0,'C');
+		$pdf->Cell(18,7,"",'L',0,'C');
+		$pdf->Cell(55,7,"",'L',0,'C');
+}//fin else
+
+
+
+		$pdf->Cell(42,7,$concate,'L',0,'C');
+		$pdf->Cell(0,7,$sisap->Formato2($ve[0]['monto_partida']),'RL',1,'R');
+        $pdf->Cell(0,0,"",'T',1);
+
+
+
+
+}//fin foreach
+
+
+
+ if($total_monto!=0){
+			        $pdf->SetFont('vera','B',6);
+					$pdf->Cell(32,7,"Total Dependencia: ",'LB',0,'R');
+					$pdf->Cell(33,7,$sisap->Formato2($total_orden),'LB',0,'R');
+					$pdf->Cell(45,7,"",'LB',0,'C');
+					$pdf->Cell(25,7,$sisap->Formato2($total_monto),'LB',0,'R');
+					$pdf->Cell(110,7,"",'LB',0,'C');
+					$pdf->Cell(0,7,$sisap->Formato2($total_partida_monto),'RLB',1,'R');
+					  $total_total_monto         +=  $total_monto;
+					  $total_paritda_total_monto +=  $total_partida_monto;
+					  $total_total_orden         +=  $total_orden;
+          if($global=='si'){
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(32,7,"Total Institución: ",'LB',0,'R');
+					$pdf->Cell(33,7,$sisap->Formato2($total_total_orden),'LB',0,'R');
+					$pdf->Cell(45,7,"",'LB',0,'C');
+					$pdf->Cell(25,7,$sisap->Formato2($total_total_monto),'LB',0,'R');
+					$pdf->Cell(110,7,"",'LB',0,'C');
+					$pdf->Cell(0,7,$sisap->Formato2($total_paritda_total_monto),'RLB',1,'R');
+          }//fin if
+}//fin
+
+
+
+
+
+$pdf->OutPut('Reporte_analitico_pago_'.date('Y_m_d'),'D');
+
+
+
+
+
+
+
+
+}//fin else
+
+
+
+
+?>

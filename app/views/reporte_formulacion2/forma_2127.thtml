@@ -1,0 +1,205 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('BASES DE CÁLCULO DE LOS INGRESOS PARA EL AÑO PRESUPUESTADO Y SU COMPARACIÓN CON LOS PREVISTOS EN EL AÑO ANTERIOR'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion2/forma_2127/2/'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "BASES DE CÁLCULO DE LOS INGRESOS PARA EL AÑO PRESUPUESTADO Y SU COMPARACIÓN CON LOS PREVISTOS EN EL AÑO ANTERIOR";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	if(isset($_SESSION['ano_top']))$ano=$_SESSION['ano_top'];else$ano='';
+	$this->Cell(0,5,'PRESUPUESTO: '.$ano,'TRBL',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(17,4,'','RL',0,'C');
+	$this->Cell(183,4,'','R',0,'C');
+	$this->Cell(28,4,'ESTIMACIÓN','R',0,'C');
+	$this->Cell(32,4,'ASIGNACIÓN','R',0,'C');
+	$this->Cell(28,4,'','R',0,'C');
+	$this->Cell(28,4,'','R',0,'C');
+	$this->Cell(0,4,'','R',1,'C');
+
+	$this->Cell(17,4,'','RL',0,'C');
+	$this->Cell(183,4,'','R',0,'C');
+	$this->Cell(28,4,'AÑO','R',0,'C');
+	$this->Cell(32,4,'AJUSTADA AL CIERRE','R',0,'C');
+	$this->Cell(28,4,'ESTIMADO','R',0,'C');
+	$this->Cell(28,4,'','R',0,'C');
+	$this->Cell(0,4,'BASE DE','R',1,'C');
+
+	$this->Cell(17,4,'CÓDIGO','RBL',0,'C');
+	$this->Cell(183,4,'CONCEPTO','RB',0,'C');
+	$this->Cell(28,4,'ANTERIOR','RB',0,'C');
+	$this->Cell(32,4,'DEL AÑO ANTERIOR','RB',0,'C');
+	$this->Cell(28,4,'PRESUPUESTADO','RB',0,'C');
+	$this->Cell(28,4,'DIFERENCIA','RB',0,'C');
+	$this->Cell(0,4,'CÁLCULO','RB',1,'C');
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2127','',1,'R');
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+if($datos!=null){
+$total_esti_anterior=0;
+$total_asignacion_ajustada=0;
+$total_presupuesto=0;
+$total_diferencia=0;
+
+
+	$pdf->SetFont('vera','',7);
+	for($i=0; $i<count($datos); $i++){
+
+		$total_esti_anterior+=$datos[$i][0]['estimacion_inicial_pasada'];
+
+		$total_presupuesto+=$datos[$i][0]['estimacion_inicial_actual'];
+
+		if($datos[$i][0]['estimacion_inicial_pasada']!='')$esti_anterior=$sisap->Formato2($datos[$i][0]['estimacion_inicial_pasada']); else $esti_anterior='';
+
+		$asignacion_ajustada=(($datos[$i][0]['estimacion_inicial_pasada']+$datos[$i][0]['ingresos_adicionales_pasada'])-$datos[$i][0]['rebajas_pasada']);
+
+		$total_asignacion_ajustada+=$asignacion_ajustada;
+
+		$diferencia=($asignacion_ajustada-$datos[$i][0]['estimacion_inicial_actual']);
+
+		$total_diferencia+=$diferencia;
+
+		if($asignacion_ajustada=='' || $asignacion_ajustada==0)$asignacion_ajustada=''; else $asignacion_ajustada=$sisap->Formato2($asignacion_ajustada);
+
+		if($datos[$i][0]['ano_anterior']!=''){
+			$base=$datos[$i][0]['ano']."-".$datos[$i][0]['ano_anterior'];
+		}else{
+			$base=$datos[$i][0]['ano'];
+		}
+
+		$pdf->Cell(17,7,$sisap->AddCero2(substr($datos[$i][0]['cod_partida'],-2),CI),'RL',0,'C');// CÓDIGO
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(183,1,"",'',2,'C');
+			$pdf->MultiCell(182,3,$datos[$i][0]['denominacion_partida'],'','L');// CONCEPTO
+			$varX = $varX+183;
+			$pdf->SetXY($varX,$varY);
+
+		$pdf->Cell(28,7,$esti_anterior,'RL',0,'R');// ESTIMACIÓN ANTERIOR
+		$pdf->Cell(32,7,$asignacion_ajustada,'R',0,'R');// ASIGNACIÓN AJUSTADA AL CIERRE DEL AÑO ANTERIOR
+		$pdf->Cell(28,7,$sisap->Formato2($datos[$i][0]['estimacion_inicial_actual']),'R',0,'R');// ESTIMADO PRESUPUESTADO
+		$pdf->Cell(28,7,$sisap->Formato2($diferencia),'R',0,'R');// DIFERENCIA
+		$pdf->Cell(0,7,'','R',1,'C');// BASE DE CÁLCULO
+		$pdf->Cell(0,0,'','T',1);
+	}
+
+if($total_esti_anterior!='' || $total_esti_anterior!=0)$total_esti_anterior=$sisap->Formato2($total_esti_anterior); else $total_esti_anterior='';
+
+if($total_asignacion_ajustada!='' || $total_asignacion_ajustada!=0)$total_asignacion_ajustada=$sisap->Formato2($total_asignacion_ajustada); else $total_asignacion_ajustada='';
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(200,6,'T O T A L E S: ','RBL',0,'R');
+	$pdf->Cell(28,6,$total_esti_anterior,'RBL',0,'R');// TOTAL ESTIMACIÓN ANTERIOR
+	$pdf->Cell(32,6,$total_asignacion_ajustada,'RB',0,'R');// TOTAL ASIGNACIÓN AJUSTADA AL CIERRE DEL AÑO ANTERIOR
+	$pdf->Cell(28,6,$sisap->Formato2($total_presupuesto),'RB',0,'R');// TOTAL ESTIMADO PRESUPUESTADO
+	$pdf->Cell(28,6,$sisap->Formato2($total_diferencia),'RB',0,'R');// TOTAL DIFERENCIA
+	$pdf->Cell(0,6,'','RB',1,'C');// BASE DE CÁLCULO
+
+
+}else{
+
+	$pdf->SetFont('vera','',7);
+		$pdf->Cell(17,7,'','RL',0,'C');// CÓDIGO
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(183,1,"",'',2,'C');
+			$pdf->MultiCell(182,3,"",'','L');// CONCEPTO
+			$varX = $varX+183;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(28,7,'','RL',0,'R');// ESTIMACIÓN ANTERIOR
+		$pdf->Cell(32,7,'','R',0,'R');// ASIGNACIÓN AJUSTADA AL CIERRE DEL AÑO ANTERIOR
+		$pdf->Cell(28,7,'','R',0,'R');// ESTIMADO PRESUPUESTADO
+		$pdf->Cell(28,7,'','R',0,'R');// DIFERENCIA
+		$pdf->Cell(0,7,'','R',1,'C');// BASE DE CÁLCULO
+		$pdf->Cell(0,0,'','T',1);
+
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(200,6,'T O T A L E S: ','RBL',0,'R');
+	$pdf->Cell(28,6,'','RBL',0,'R');// TOTAL ESTIMACIÓN ANTERIOR
+	$pdf->Cell(32,6,'','RB',0,'R');// TOTAL ASIGNACIÓN AJUSTADA AL CIERRE DEL AÑO ANTERIOR
+	$pdf->Cell(28,6,'','RB',0,'R');// TOTAL ESTIMADO PRESUPUESTADO
+	$pdf->Cell(28,6,'','RB',0,'R');// TOTAL DIFERENCIA
+	$pdf->Cell(0,6,'','RB',1,'C');// BASE DE CÁLCULO
+
+}
+
+
+$pdf->Output('FORMA_2127_base_de_calculo_ingresos_ano_presupuestado.pdf','D');
+
+}//fin function
+
+
+?>

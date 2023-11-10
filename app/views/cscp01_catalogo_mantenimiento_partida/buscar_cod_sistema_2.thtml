@@ -1,0 +1,76 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+ ?>
+<table width='100%' border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" align="center">
+	    <td width="100">Código snc</td>
+	    <td width="60">Código <br>sistema</td>
+		<td>Denominación</td>
+		<td width="130">Código <br> presupuestario</td>
+	    <td width="80">ACCIÓN</td>
+	    <td width="10">&nbsp;</td>
+	</tr>
+</table>
+<div id="distribuir_busqueda" style="height:200px; overflow-y:scroll;">
+		<table width='100%' border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){ ?>
+		        		<?php if($color==1){$color=2;}else{$color=1;}
+		        		 $partida =      substr($ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_partida"],0,1).".".separa_partida_de_grupo($ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_partida"]);
+						 $partida .= ".".mascara2($ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_generica"]);
+						 $partida .= ".".mascara2($ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_especifica"]);
+						 $partida .= ".".mascara2($ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_sub_espec"]);
+		        		?>
+					      <tr class="tr_grid_c<?php echo $color; ?>"   id="guarda_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>">
+						    <td class="" id="campo_0_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>"  width="100" align="center">
+						         <?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["cod_snc"]   ?>
+						    </td>
+						    <td id="campo_a_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>"   width="60" align="center"><?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]   ?></td>
+						    <td id="campo_b_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>">                       <?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["denominacion"]." - ".$ve["v_cscd01_catalogo_con_snc_denominacion"]["denominacion_medida"]    ?></td>
+						    <td id="campo_c_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>"   width="130" align="center">        <?= $partida    ?></td>
+						    <td width="80" align="center">
+		                          <div id="iconos_1_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>">
+                                       <?= $sisap->submitTagRemote('', array('url1' => '/cscp01_catalogo_mantenimiento_partida/guardar/'.$ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"].'/', 'update1'=>'funcion', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"])); ?>
+							      </div>
+								  <div id="iconos_2_<?= $ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"]  ?>" style="display:none;">
+							           <?= $sisap->submitTagRemote('', array('url1' => '/cscp01_catalogo_mantenimiento_partida/guardar/'.$ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"].'/', 'update1'=>'funcion', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$ve["v_cscd01_catalogo_con_snc_denominacion"]["codigo_prod_serv"])); ?>
+							      </div>
+                            </td>
+						  </tr>
+                     <?php } ?>
+				  <?php }else{ ?>
+              <tr class="tr_grid_c1">
+			        <td width="100">--</td>
+				    <td width="60">--</td>
+					<td>--</td>
+					<td width="130">--</td>
+				    <td width="90">--</td>
+			  </tr>
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/cscp01_catalogo_mantenimiento_partida/buscar_cod_sistema_2/'.$opcion.'/a', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

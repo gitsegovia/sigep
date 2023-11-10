@@ -1,0 +1,639 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"Solicitud de licencia de actividades económicas","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/shp100_solicitud_patente_industria_comercio_detallado/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+<br><br>
+<?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Todos','2'=>'Uno especifico'), array('url1'=>'/reporte_hacienda/ventana_reporte_patente_3/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+<br /><br />
+<div id="funcion"></div>
+<div id="div_contribuyente">&nbsp;</div>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+//require_once('../tcpdf.php');
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "SOLICITUD DE LICENCIA DE ACTIVIDADES ECONÓMICAS DE INDUSTRIA Y COMERCIO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"191"));
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+foreach($datos_solicitud as $datos){
+
+
+$pdf->AddPage();
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,'DATOS RAZON SOCIAL','TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(20,3,'Número','TRL',0,'C');
+$pdf->Cell(20,3,'Fecha','TR',0,'C');
+$pdf->Cell(25,3,'R.I.F.','TR',0,'C');
+$pdf->Cell(0,3,'','TR',1,'C');
+
+$pdf->Cell(20,3,'Solicitud','RBL',0,'C');
+$pdf->Cell(20,3,'Solicitud','RB',0,'C');
+$pdf->Cell(25,3,'Cedula Identidad','RB',0,'C');
+$pdf->Cell(0,3,'Denominación comercial','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,5,$datos['v_shd100_solicitud']['numero_solicitud'],'RL',0,'C');//--[Numero Solicitud]
+$pdf->Cell(20,5,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_solicitud']),'R',0,'C');//--[Fecha Solicitud]
+$pdf->Cell(25,5,$datos['v_shd100_solicitud']['rif_cedula'],'R',0,'C');//--[RIF / Cedula Identidad]
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['razon_social_nombres'],'R',1,'L');//--[Denominación comercial]
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,6,'País','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_pais_razon'],'','L');//País
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Estado','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_estado_razon'],'','L');//Estado
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Municipio','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(45,1,"",'T',2,'C');
+	$pdf->MultiCell(45,2,$datos['v_shd100_solicitud']['deno_municipio_razon'],'','L');//Municipio
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,6,"",'TR',1);
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,6,'Parroquia','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_parroquia_razon'],'','L');//Parroquia
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Centro poblado','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_centro_razon'],'','L');//Centro poblado
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Calle o Avenida','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(45,1,"",'T',2,'C');
+	$pdf->MultiCell(45,2,$datos['v_shd100_solicitud']['deno_vialidad_razon'],'','L');//Calle o Avenida
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,6,"",'TR',1);
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,6,'Vereda o Edificio','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_vereda_razon'],'','L');//Vereda o Edificio
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Casa/Local','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['numero_local_razon'],'','L');//Casa/Local
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Fecha Inscripcion','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,6,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_inscripcion']),'TR',1);//Fecha Inscripcion
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,5,'Teléfono fijo','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['telefonos_fijos_razon'],'TR',0);//Teléfono fijo
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Teléfono celular','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['telefonos_celulares_razon'],'TR',0);//Teléfono celular
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Correo electrónico','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['correo_electronico_razon'],'TR',1);//Correo electrónico
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(25,5,'Nacionalidad','TRL',0,'L');
+
+if($datos['v_shd100_solicitud']['nacionalidad_razon'] == 1){
+	$nac="VENEZOLANO";
+}else{
+	$nac="EXTRANJERO";
+}
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$nac,'TR',0);//Nacionalidad
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Estado civil','TR',0,'L');
+
+$pdf->SetFont('vera','',6);
+if($datos['v_shd100_solicitud']['estado_civil'] == 1){
+	$pdf->Cell(40,5,'SOLTERO','TR',0);//Estado civil
+}elseif($datos['v_shd100_solicitud']['estado_civil'] == 2){
+	$pdf->Cell(40,5,'CASADO','TR',0);//Estado civil
+}elseif($datos['v_shd100_solicitud']['estado_civil'] == 3){
+	$pdf->Cell(40,5,'DIVORCIADO','TR',0);//Estado civil
+}elseif($datos['v_shd100_solicitud']['estado_civil'] == 4){
+	$pdf->Cell(40,5,'VIUDO','TR',0);//Estado civil
+}elseif($datos['v_shd100_solicitud']['estado_civil'] == 5){
+	$pdf->Cell(40,5,'OTROS','TR',0);//Estado civil
+}else{
+	$pdf->Cell(40,5,'','TR',0);
+}
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Profesión','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['deno_profesion'],'TR',1);//Profesión
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(104,5,'DATOS CONSTITUCIÓN DE LA EMPRESA','TRL',0,'C');
+$pdf->Cell(0,5,'PRIMER EJERCICIO ECONÓMICO','TR',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Fecha de inicio','TRL',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_inicio_const']),'TR',0,'C');//Fecha de inicio const
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Fecha de cierre','TR',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_cierre_const']),'TR',0,'C');//Fecha de cierre const
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Fecha de inicio','TRL',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_inicio_econo']),'TR',0,'C');//Fecha de inicio econ
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Fecha de cierre','TR',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$sisap->cambia_fecha($datos['v_shd100_solicitud']['fecha_cierre_economico']),'TR',1,'C');//Fecha de cierre econ
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,8,'Registro mercantil:','TL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(176,1,"",'T',2,'C');
+	$pdf->MultiCell(175,2,$datos['v_shd100_solicitud']['registro_mercantil'],'','L');//--[registro_mercantil]
+	$varX = $varX+176;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,8,"",'TR',1,'L');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Tiene sucursal?','TRL',0,'C');
+$pdf->Cell(26,4,'Es fabricante?','TR',0,'C');
+$pdf->Cell(26,4,'N empleados','TR',0,'C');
+$pdf->Cell(25,4,'N obreros','TR',0,'C');
+
+$pdf->Cell(26,4,'Categoría','TRL',0,'C');
+$pdf->Cell(26,4,'Establecimiento','TR',0,'C');
+$pdf->Cell(26,4,'Tipo local','TR',0,'C');
+$pdf->Cell(0,4,'Mercado','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['tiene_sucursal']==1 ? 'SI' : 'NO','TRL',0,'C');//Tiene sucursal?
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['es_fabricante']==1 ? 'SI' : 'NO','TR',0,'C');//Es fabricante?
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['numero_empleado'],'TR',0,'C');//N empleados
+$pdf->Cell(25,4,$datos['v_shd100_solicitud']['numero_obreros'],'TR',0,'C');//N obreros
+
+if($datos['v_shd100_solicitud']['categoria_comercial']==1){
+	$pdf->Cell(26,4,"Mayor",'TRL',0,'C');//Categoría
+}elseif($datos['v_shd100_solicitud']['categoria_comercial']==2){
+	$pdf->Cell(26,4,"Detal",'TRL',0,'C');//Categoría
+}elseif($datos['v_shd100_solicitud']['categoria_comercial']==3){
+	$pdf->Cell(26,4,"Ambos",'TRL',0,'C');//Categoría
+}else{
+	$pdf->Cell(26,4,$datos['v_shd100_solicitud']['categoria_comercial'],'TRL',0,'C');
+}
+
+// Tipo establecimiento
+if($datos['v_shd100_solicitud']['tipo_establecimiento']==1){
+	$pdf->Cell(26,4,"Industrial",'TR',0,'C');//Establecimiento
+}elseif($datos['v_shd100_solicitud']['tipo_establecimiento']==2){
+	$pdf->Cell(26,4,"Comercial",'TR',0,'C');//Establecimiento
+}elseif($datos['v_shd100_solicitud']['tipo_establecimiento']==3){
+	$pdf->Cell(26,4,"Similar indole",'TR',0,'C');//Establecimiento
+}else{
+	$pdf->Cell(26,4,$datos['v_shd100_solicitud']['tipo_establecimiento'],'TR',0,'C');
+}
+
+
+// Tipo local
+if($datos['v_shd100_solicitud']['tipo_local']==1){
+	$pdf->Cell(26,4,"Un inmueble",'TR',0,'C');//Tipo local
+}elseif($datos['v_shd100_solicitud']['tipo_local']==2){
+	$pdf->Cell(26,4,"Mas de un Inmueble",'TR',0,'C');//Tipo local
+}elseif($datos['v_shd100_solicitud']['tipo_local']==3){
+	$pdf->Cell(26,4,"Parte de un inmueble",'TR',0,'C');//Tipo local
+}else{
+	$pdf->Cell(26,4,$datos['v_shd100_solicitud']['tipo_local'],'TR',0,'C');
+}
+
+
+//Mercado cubre
+if($datos['v_shd100_solicitud']['mercado_cubre']==1){
+	$pdf->Cell(0,4,"Nacional",'TR',1,'C');//Mercado
+}elseif($datos['v_shd100_solicitud']['mercado_cubre']==2){
+	$pdf->Cell(0,4,"Extranjero",'TR',1,'C');//Mercado
+}elseif($datos['v_shd100_solicitud']['mercado_cubre']==3){
+	$pdf->Cell(0,4,"Ambos",'TR',1,'C');//Mercado
+}else{
+	$pdf->Cell(0,4,$datos['v_shd100_solicitud']['mercado_cubre'],'TR',1,'C');
+}
+
+//--------------------------------------------
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'N Ficha catastral','TRL',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['numero_ficha_catastral'],'TR',0,'C');//N Ficha catastral
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Capital','TR',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(25,4,$sisap->Formato2($datos['v_shd100_solicitud']['capital']),'TR',0,'C');//Capital
+
+   $datos['v_shd100_solicitud']['horario_trab_desde']++;
+   $datos['v_shd100_solicitud']['horario_trab_hasta']++;
+if($datos['v_shd100_solicitud']['horario_trab_desde']>12){$datos['v_shd100_solicitud']['horario_trab_desde']-=12; $op_h_d=1;}else{$op_h_d=0;}
+if($datos['v_shd100_solicitud']['horario_trab_hasta']>12){$datos['v_shd100_solicitud']['horario_trab_hasta']-=12; $op_h_h=1;}else{$op_h_h=0;}
+   $datos['v_shd100_solicitud']['horario_trab_desde'] = mascara2($datos['v_shd100_solicitud']['horario_trab_desde']).":00";
+   $datos['v_shd100_solicitud']['horario_trab_hasta'] = mascara2($datos['v_shd100_solicitud']['horario_trab_hasta']).":00";
+   if($op_h_d==0){$datos['v_shd100_solicitud']['horario_trab_desde'] .= " AM "; }else{$datos['v_shd100_solicitud']['horario_trab_desde'] .= " PM ";}
+   if($op_h_h==0){$datos['v_shd100_solicitud']['horario_trab_hasta'] .= " AM "; }else{$datos['v_shd100_solicitud']['horario_trab_hasta'] .= " PM ";}
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Horario desde','TRL',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['horario_trab_desde'],'TR',0,'C');//Horario desde
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Horario hasta','TR',0,'C');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['horario_trab_hasta'],'TR',1,'C');//Horario hasta
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DATOS DEL REPRESENTANTE O PROPIEDAD','TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Nacionalidad','TRL',0,'C');
+$pdf->Cell(26,4,'Cedula identidad','TR',0,'C');
+$pdf->Cell(0,4,'Denominación comercial','TR',1,'C');
+
+if($datos['v_shd100_solicitud']['nacionalidad_repre'] == 1){
+	$nac_repre="VENEZOLANO";
+}else{
+	$nac_repre="EXTRANJERO";
+}
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(26,4,$nac_repre,'TRL',0,'C');//Nacionalidad repre
+$pdf->Cell(26,4,$datos['v_shd100_solicitud']['cedula_identidad'],'TR',0,'C');//Cedula identidad repre
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['nombres_apellidos'],'TR',1,'L');//Denominación comercial repre
+
+
+//--------------------------------------------------------------------
+/*
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'País','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['deno_pais_repre'],'TR',0);//País Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Estado','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['deno_estado_repre'],'TR',0);//Estado Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Municipio','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['deno_municipio_repre'],'TR',1);//Municipio Repre
+*/
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'País','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_pais_repre'],'','L');//País Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Estado','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_estado_repre'],'','L');//Estado Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Municipio','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(45,1,"",'T',2,'C');
+	$pdf->MultiCell(45,2,$datos['v_shd100_solicitud']['deno_municipio_repre'],'','L');//Municipio Repre
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,6,"",'TR',1);
+
+/*
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Parroquia','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['deno_parroquia_repre'],'TR',0);//Parroquia Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Centro poblado','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['deno_centro_repre'],'TR',0);//Centro poblado Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Calle o Avenida','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['deno_vialidad_repre'],'TR',1);//Calle o Avenida Repre
+*/
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Parroquia','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_parroquia_repre'],'','L');//Parroquia Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Centro poblado','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_centro_repre'],'','L');//Centro poblado Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Calle o Avenida','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(45,1,"",'T',2,'C');
+	$pdf->MultiCell(45,2,$datos['v_shd100_solicitud']['deno_vialidad_repre'],'','L');//Calle o Avenida Repre
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,6,"",'TR',1);
+
+/*
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Vereda o Edificio','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['deno_vereda_repre'],'TR',0);//Vereda o Edificio Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Casa/Local','TR',0,'L');//Casa/Local repre
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['numero_local_repre'],'TR',0);//Casa/Local Repre
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Fecha Inscripción','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,'','TR',1);//Fecha Inscripcion Repre
+*/
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Vereda o Edificio','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['deno_vereda_repre'],'','L');//Vereda o Edificio Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,6,'Casa/Local','TRL',0,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(40,1,"",'T',2,'C');
+	$pdf->MultiCell(39,2,$datos['v_shd100_solicitud']['numero_local_repre'],'','L');//Casa/Local Repre
+	$varX = $varX+40;
+	$pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,6,'Fecha Inscripcion','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,6,"",'TR',1);//Fecha Inscripcion
+
+
+
+
+if($datos['v_shd100_solicitud']['telefonos_fijos_repre']=='0'){    $datos['v_shd100_solicitud']['telefonos_fijos_repre']="";}
+if($datos['v_shd100_solicitud']['telefonos_celulares_repre']=='0'){$datos['v_shd100_solicitud']['telefonos_celulares_repre']="";}
+if($datos['v_shd100_solicitud']['correo_electronico_repre']=='0'){ $datos['v_shd100_solicitud']['correo_electronico_repre']="";}
+
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Teléfono fijo','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['telefonos_fijos_repre'],'TR',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,5,'Teléfono celular','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,5,$datos['v_shd100_solicitud']['telefonos_celulares_repre'],'TR',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(29,5,'Correo electrónico','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,5,$datos['v_shd100_solicitud']['correo_electronico_repre'],'TR',1);
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'ACTIVIDADES ECONÓMICAS','TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,3,'Código','TRL',0,'C');
+$pdf->Cell(120,3,'','TR',0,'C');
+$pdf->Cell(20,3,'','TR',0,'C');
+$pdf->Cell(20,3,'Unidades','TR',0,'C');
+$pdf->Cell(0,3,'Mínimo','TR',1,'C');
+
+$pdf->Cell(26,3,'actividad','RL',0,'C');
+$pdf->Cell(120,3,'Denominación de la actividad','R',0,'C');
+$pdf->Cell(20,3,'Alicuota','R',0,'C');
+$pdf->Cell(20,3,'tributarias','R',0,'C');
+$pdf->Cell(0,3,'tributable','R',1,'C');
+
+$i=0;
+$pdf->SetFont('vera','',6);
+foreach($datos_actividades_solicitud as $datos_actividades){
+	//echo $datos_actividades['v_shd100_solicitud_actividades']['numero_solicitud'];
+	if($datos['v_shd100_solicitud']['numero_solicitud'] == $datos_actividades['v_shd100_solicitud_activ']['numero_solicitud']){
+		$i++;
+		$pdf->Cell(26,4,$datos_actividades['v_shd100_solicitud_activ']['cod_actividad'],'TRL',0,'C');
+		$pdf->Cell(120,4,$datos_actividades['v_shd100_solicitud_activ']['denominacion_actividad'],'TR',0);
+		$pdf->Cell(20,4,$datos_actividades['v_shd100_solicitud_activ']['alicuota'],'TR',0,'C');
+		$pdf->Cell(20,4,$datos_actividades['v_shd100_solicitud_activ']['unidades_tributarias'],'TR',0,'C');
+		$pdf->Cell(0,4,$datos_actividades['v_shd100_solicitud_activ']['minimo_tributable'],'TR',1,'C');
+	}
+}
+
+if($i<12){
+	for($j=1; $j<=12-$i; $j++){
+		$pdf->Cell(26,4,"",'TRL',0,'C');
+		$pdf->Cell(120,4,"",'TR',0);
+		$pdf->Cell(20,4,"",'TR',0,'C');
+		$pdf->Cell(20,4,"",'TR',0,'C');
+		$pdf->Cell(0,4,"",'TR',1,'C');
+	}
+}
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DISTANCIA DEL ESTABLECIMIENTO','TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Bar','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(30,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_bar']),'TR',0,'C');//Bar
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(50,4,'Hospital, Clinica o Dispensario','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(30,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_hospital']),'TR',0,'C');//Hospital
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(35,4,'Instituto Educativo','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_educativo']),'TR',1,'C');//Instituto Educativo
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(26,4,'Funeraria','TRL',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(30,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_funeraria']),'TR',0,'C');//Funeraria
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(50,4,'Estimación de servicio','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(30,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_estacion']),'TR',0,'C');//Estimación de servicios
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(35,4,'Organismo de gobierno','TR',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$sisap->Formato_3_out($datos['v_shd100_solicitud']['distancia_gubernam']),'TR',1,'C');//Organismo de gobierno
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'RECAUDOS RECIBIDOS','TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(50,4,'Registro mercantil','TRL',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_reg_mercantil']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(50,4,'Croquis','TR',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_croquis']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(60,4,'Aprobación consejo comunal','TR',0,'L');
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['tilde_concejo']==1 ? "X" : "",'TR',1,'C');
+
+$pdf->Cell(50,4,'Fotocopia de la C.I.','TRL',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_fotoco_ci']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(50,4,'Certificación de los bomberos','TR',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_bomberos']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(60,4,'Pago de tasa','TR',0,'L');
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['tilde_recibo']==1 ? "X" : "",'TR',1,'C');
+
+$pdf->Cell(50,4,'Acta constitutiva','TRL',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_acta_const']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(50,4,'R.I.F.','TR',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_rif']==1 ? "X" : "",'TR',0,'C');
+$pdf->Cell(60,4,'Planilla de solicitud','TR',0,'L');
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['tilde_planilla']==1 ? "X" : "",'TR',1,'C');
+
+$pdf->Cell(50,4,'Uso conforme','TRBL',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_uso_conforme']==1 ? "X" : "",'TRB',0,'C');
+$pdf->Cell(50,4,'Solvencia inmobiliaria','TRB',0,'L');
+$pdf->Cell(15,4,$datos['v_shd100_solicitud']['tilde_solvencia']==1 ? "X" : "",'TRB',0,'C');
+$pdf->Cell(60,4,'Permisos organismos Nacionales','TRB',0,'L');
+$pdf->Cell(0,4,$datos['v_shd100_solicitud']['tilde_permiso']==1 ? "X" : "",'TRB',1,'C');
+}
+
+$pdf->Output('solicitud_licencia_actividades_económicas_ficha_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

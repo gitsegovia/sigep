@@ -1,0 +1,623 @@
+<?php
+set_time_limit(0);
+vendor('tcpdfs/tcpdf');
+
+
+	function smes($mes){
+		switch ($mes) {
+            case "01": {
+                    $var = "Enero";
+                }break;
+            case "02": {
+                    $var = "Febrero";
+                }break;
+            case "03": {
+                    $var = "Marzo";
+                }break;
+            case "04": {
+                    $var = "Abril";
+                }break;
+            case "05": {
+                    $var = "Mayo";
+                }break;
+            case "06": {
+                    $var = "Junio";
+                }break;
+            case "07": {
+                    $var = "Julio";
+                }break;
+            case "08": {
+                    $var = "Agosto";
+                }break;
+            case "09": {
+                    $var = "Septiembre";
+                }break;
+            case "10": {
+                    $var = "Octubre";
+                }break;
+            case "11": {
+                    $var = "Noviembre";
+                }break;
+            case "12": {
+                    $var = "Diciembre";
+                }break;
+            default: $var = "";
+            		 break;
+        }//fin
+
+        return $var;
+	}
+
+
+    function fecha_constancia($var=null) {
+        $fecha = $var;
+        $mes = '';
+        $year = '';
+        if ($fecha != '') {
+            $year = $fecha[0] . $fecha[1] . $fecha[2] . $fecha[3];
+            $mes = $fecha[5] . $fecha[6];
+            $dia = $fecha[8] . $fecha[9];
+        }//fin
+
+		$var = smes($mes);
+
+        $var_aux = '<b>'. $dia . '</b> días del mes de <b>' . strtoupper($var) . '</b> de <b>' . $year.'</b>';
+
+        return $var_aux;
+    }
+
+
+function strtoupper_str($var=null){
+
+$var = strtoupper($var);
+
+       $var = str_replace("ñ","Ñ", $var);
+       $var = str_replace("á","Á", $var);
+       $var = str_replace("é","É", $var);
+       $var = str_replace("í","Í", $var);
+       $var = str_replace("ó","Ó", $var);
+       $var = str_replace("ú","Ú", $var);
+
+return $var;
+
+}//fin function
+
+function strtolower_str($var=null){
+
+$var = strtolower($var);
+
+       $var = str_replace("Ñ","ñ", $var);
+       $var = str_replace("Á","á", $var);
+       $var = str_replace("É","é", $var);
+       $var = str_replace("Í","í", $var);
+       $var = str_replace("Ó","ó", $var);
+       $var = str_replace("Ú","ú", $var);
+
+return $var;
+
+}//fin function
+
+
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+
+    }
+
+     function Header() {
+
+    }
+}
+//fin clase
+
+
+$pdf = new fpdfview('P', 'mm', 'Letter');
+// $pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(15);
+$pdf->SetRightMargin(15);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+
+/** IMPRIME CERTIFICACION */
+
+
+	$pdf->AddPage();
+
+
+
+if(isset($certificacion)){
+
+
+
+/** IMPRIME CERTIFICACION */
+
+
+	$pdf->SetFont('helvetica', 'BIU', 13);
+
+
+// set JPEG quality
+$pdf->setJPEGQuality(75);
+
+
+$url = $this->themeWeb . IMAGES_URL . "logos_constancia/";
+
+if(!empty($datos_imgs[0][0]['tipo_logo_derecho'])){
+	$logo_derecho = $url.'logo_derecho_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_derecho, 12, 5, 30, 30);
+}
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_izquierdo'])){
+	$logo_izquierdo = $url.'logo_izquierdo_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_izquierdo, 165, 5, 30, 30);
+}
+
+
+
+$denominacion = $deno_inst[0][0]['denominacion'];
+$direccion = ucwords(strtolower_str($deno_inst[0][0]['direccion']));
+$cod_area = $deno_inst[0][0]['cod_area'];
+
+
+if(!empty($deno_inst[0][0]['telefonos'])){
+	if(!empty($cod_area)){
+		$telefono = 'Teléfono: '.$cod_area."-".$deno_inst[0][0]['telefonos'];
+	}else{
+		$telefono = 'Teléfono: '.$deno_inst[0][0]['telefonos'];
+	}
+}else{
+	$telefono = '';
+}
+
+
+
+if(!empty($republica)){ // PAIS
+	$deno_republica = ucwords(strtolower_str($republica[0][0]['denominacion']));
+}else{
+	$deno_republica = 'Venezuela';
+}
+
+
+
+if(!empty($estado)){ // ESTADO
+	$deno_estado = 'Estado '.ucwords(strtolower_str($estado[0][0]['denominacion']));
+}else{
+	$deno_estado = '';
+}
+
+
+
+if(!empty($cod_zona)){ // ZONA POSTAL
+	$zona_postal = $cod_zona[0][0]['zona_postal'];
+}else{
+	$zona_postal = '';
+}
+
+
+// VARs INFORMACION PIE DE PAG.:
+
+	$art_footer = "Art. 26 de la Ley de Infogobierno (Gaceta Oficial No. 40.274 de fecha 17/10/2013)";
+	$direc_footer = $direccion .", ". $deno_estado . ", " . $zona_postal ." ". $deno_republica . ". ". $telefono;
+
+
+// VAR ADSCRITO A:
+
+	if($cod_tipo_inst != '50'){
+		$deno_adscrito = $sueldo[0]['v_cnmd06_fichas']['deno_cod_secretaria'];
+	}else{
+		$deno_adscrito = $sueldo[0]['v_cnmd06_fichas']['deno_cod_direccion'];
+	}
+
+
+	if(empty($deno_adscrito)){
+		$deno_adscrito = $denominacion;
+	}
+
+
+
+
+$pdf->Ln(25);
+
+
+
+	$pdf->Cell(0, 8, "CERTIFICACIÓN", '', 1, 'C');
+	$pdf->Cell(0, 8, "CONSTANCIA DE TRABAJO ELECTRÓNICAS", '', 1, 'C');
+	$pdf->Cell(0, 15, "", '', 1, 'C');
+
+
+	$pdf->SetFont('helvetica', 'B', 8);
+
+	$pdf->SetFillColor(0, 70, 130);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->Cell(0,5,"DATOS DE LA CERTIFICACIÓN",'TRL',1,'L',1);
+
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+
+	$pdf->SetFont('helvetica', 'B', 5);
+	$pdf->Cell(25, 6, "CÉDULA EMPLEADO", 'TRL', 0, 'C');
+	$pdf->Cell(35, 6, "COD. CERTIFICACIÓN", 'TR', 0, 'C');
+	$pdf->Cell(75, 6, "TIPO DE CONSTANCIA", 'TR', 0, 'C');
+	$pdf->Cell(23, 6, "FECHA DE REGISTRO", 'TR', 0, 'C');
+	$pdf->Cell(0, 6, "FECHA DE CADUCIDAD", 'TR', 1, 'C');
+
+	$pdf->SetFont('helvetica', '', 6);
+	$pdf->Cell(25, 6, number_format($certificacion[0]['cnmd06_constancia_certificacion']['cedula_identidad'], 0, "", "."), 'TRBL', 0, 'C');
+	$pdf->Cell(35, 6, $certificacion[0]['cnmd06_constancia_certificacion']['codigo_certificacion'], 'TRB', 0, 'C');
+	$pdf->Cell(75, 6, "CONSTANCIA CON SUELDO", 'TRB', 0, 'C');
+	$pdf->Cell(23, 6, $sisap->cambia_fecha($certificacion[0]['cnmd06_constancia_certificacion']['fecha_emision']), 'TRB', 0, 'C');
+	$pdf->Cell(0, 6, $sisap->cambia_fecha($certificacion[0]['cnmd06_constancia_certificacion']['fecha_expiracion']), 'TRB', 1, 'C');
+
+
+	$pdf->Ln(5);
+
+
+	$pdf->SetFont('helvetica', 'B', 8);
+
+	$pdf->SetFillColor(0, 70, 130);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->Cell(161,5,"DATOS DEL EMPLEADO",'TRL',1,'L',1);
+
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+
+	$pdf->SetFont('helvetica', 'B', 5);
+	$pdf->Cell(25, 6, "CÉDULA:", 'TRL', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(136, 6, $datos_constancia[0]['v_cnmd06_fichas_datos_personales']['nacionalidad']."-".number_format($datos_constancia[0]['v_cnmd06_fichas_datos_personales']['cedula_identidad'], 0, "", "."), 'TRL', 1, 'L');
+	$pdf->SetFont('helvetica', 'B', 5);
+	$pdf->Cell(25, 6, "APELLIDOS Y NOMBRES:", 'TRL', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(136, 6, $datos_constancia[0]['v_cnmd06_fichas_datos_personales']['primer_apellido']." ".$datos_constancia[0]['v_cnmd06_fichas_datos_personales']['segundo_apellido']." ".$datos_constancia[0]['v_cnmd06_fichas_datos_personales']['primer_nombre']." ".$datos_constancia[0]['v_cnmd06_fichas_datos_personales']['segundo_nombre'], 'TR', 1, 'L');
+	$pdf->SetFont('helvetica', 'B', 5);
+	$pdf->Cell(25, 6, "FECHA DE INGRESO:", 'TRL', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(136, 6, $sisap->cambia_fecha($datos_constancia[0]['v_cnmd06_fichas_datos_personales']['fecha_ingreso']), 'TR', 1, 'L');
+	$pdf->SetFont('helvetica', 'B', 5);
+	$pdf->Cell(25, 6, "SUELDO:", 'TRBL', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(136, 6, $sisap->Formato2($sueldo[0]['v_cnmd06_fichas']['sueldo_integral']), 'TRB', 1, 'L');
+
+
+
+	$pdf->Ln(5);
+
+
+	$pdf->SetFont('helvetica', 'B', 8);
+
+	$pdf->SetFillColor(0, 70, 130);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->Cell(0,5,"DATOS DEL CARGO",'TRL',1,'L',1);
+
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+
+	$pdf->SetFont('helvetica', 'B', 6);
+	$pdf->Cell(15, 8.2, "NÓMINA:", 'TBL', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->MultiCell(80, 8.2, $datos_constancia[0]['v_cnmd06_fichas_datos_personales']['tipo_nomina'], 1, 'L', 0, 0);
+
+	$pdf->SetFont('helvetica', 'B', 6);
+	$pdf->Cell(15, 8.2, "CARGO:", 'TB', 0, 'L');
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->MultiCell(0, 8.2, $datos_constancia[0]['v_cnmd06_fichas_datos_personales']['denominacion_clase'], 1, 'L');
+
+
+	$pdf->Ln(5);
+	$pdf->SetFont('helvetica', '', 8);
+	$pdf->MultiCell($w=0, $h=5, "Datos existentes en el Sistema Automatizado de la <b>".ucwords(strtolower_str($denominacion))."</b> a la fecha <b>".date("d/m/Y")."</b>", $border=0, $align='L', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+
+
+// Colocando Sello y Firma
+
+if(!empty($datos_imgs[0][0]['tipo_imagen_sello_firma'])){
+
+	$imagen_sello_firma = $url.'imagen_sello_firma_'.$cod_imagen.'.jpeg';
+	$pdf->Image($imagen_sello_firma, 80, 165, 50, 50);
+
+}else{
+
+	if(!empty($datos_imgs[0][0]['tipo_imagen_sello'])){
+		$imagen_sello_firma = $url.'imagen_sello_'.$cod_imagen.'.jpeg';
+		$pdf->Image($imagen_sello_firma, 50, 160, 50, 50);
+	}
+
+	if(!empty($datos_imgs[0][0]['tipo_imagen_firma'])){
+		$imagen_sello_firma = $url.'imagen_firma_'.$cod_imagen.'.jpeg';
+		$pdf->Image($imagen_sello_firma, 105, 160, 50, 50);
+	}
+}
+
+
+
+
+	$pdf->Cell(0, 65, "", '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 12);
+	$pdf->Cell(0, 8, $datos_firma[0]['cnmd06_constancia_firmante']['funcionario_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 10);
+	$pdf->Cell(0, 6, $datos_firma[0]['cnmd06_constancia_firmante']['cargo_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 8);
+	$pdf->Cell(0, 5, $datos_firma[0]['cnmd06_constancia_firmante']['resolucion'], '', 1, 'C');
+
+
+
+	$pdf->Ln(12);
+
+
+
+	$pdf->SetFont('helvetica', 'BI', 7);
+	$pdf->Cell(0, 5, "No Requiere sello húmedo", '', 1, 'C', 0, '', 0, true);
+
+	$pdf->Ln(20);
+	$pdf->Cell(0, 2, "", 'T', 1, 'C');
+
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+
+	$pdf->SetFont('helvetica', 'B', 7);
+	$pdf->MultiCell($w=0, $h=5, $direc_footer, $border=0, $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+
+
+
+
+
+
+
+}else{
+
+
+
+
+
+// NO EXISTE
+
+if(!empty($cod_certificacion)){
+
+
+$denominacion = $deno_inst[0][0]['denominacion'];
+$direccion = ucwords(strtolower_str($deno_inst[0][0]['direccion']));
+$cod_area = $deno_inst[0][0]['cod_area'];
+
+
+if(!empty($deno_inst[0][0]['telefonos'])){
+	if(!empty($cod_area)){
+		$telefono = 'Teléfono: '.$cod_area."-".$deno_inst[0][0]['telefonos'];
+	}else{
+		$telefono = 'Teléfono: '.$deno_inst[0][0]['telefonos'];
+	}
+}else{
+	$telefono = '';
+}
+
+
+
+if(isset($republica) && !empty($republica)){ // PAIS
+	$deno_republica = ucwords(strtolower_str($republica[0][0]['denominacion']));
+}else{
+	$deno_republica = 'Venezuela';
+}
+
+
+
+if(isset($estado) && !empty($estado)){ // ESTADO
+	// $deno_estado = 'Estado '.ucwords(strtolower_str($estado[0][0]['denominacion']));
+	$deno_estado = '';
+}else{
+	$deno_estado = '';
+}
+
+
+
+if(isset($cod_zona) && !empty($cod_zona)){ // ZONA POSTAL
+	$zona_postal = $cod_zona[0][0]['zona_postal'];
+}else{
+	$zona_postal = '';
+}
+
+
+// VARs INFORMACION PIE DE PAG.:
+
+	$art_footer = "Art. 26 de la Ley de Infogobierno (Gaceta Oficial No. 40.274 de fecha 17/10/2013)";
+	$direc_footer = $direccion .", ". $deno_estado . "" . $zona_postal ."". $deno_republica . ". ". $telefono;
+
+
+	$pdf->SetFont('helvetica', 'BIU', 13);
+
+
+
+// set JPEG quality
+$pdf->setJPEGQuality(75);
+
+
+$url = $this->themeWeb . IMAGES_URL . "logos_constancia/";
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_derecho'])){
+	$logo_derecho = $url.'logo_derecho_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_derecho, 12, 5, 30, 30);
+}
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_izquierdo'])){
+	$logo_izquierdo = $url.'logo_izquierdo_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_izquierdo, 165, 5, 30, 30);
+}
+
+
+$pdf->Ln(25);
+
+
+	$pdf->Cell(0, 8, "CERTIFICACIÓN", '', 1, 'C');
+	$pdf->Cell(0, 8, "CONSTANCIA DE TRABAJO ELECTRÓNICAS", '', 1, 'C');
+	$pdf->Cell(0, 15, "", '', 1, 'C');
+
+
+	$pdf->SetFont('helvetica', 'B', 8);
+
+	$pdf->SetFillColor(0, 70, 130);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->Cell(0,5,"DATOS DE LA CERTIFICACIÓN",'TRL',1,'L',1);
+
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+
+
+	$pdf->SetFont('helvetica', 'B', 10);
+	$pdf->Cell(0, 6, "CÓDIGO DE CERTIFICACIÓN ".$cod_certificacion." NO EXISTE", 'TRBL', 1, 'C');
+
+	$pdf->Ln(5);
+	$pdf->SetFont('helvetica', '', 8);
+	$pdf->MultiCell($w=0, $h=5, "El código de certificación evidencia que ésta constancia no fue emitida por Sistema Automatizado de la <b>".ucwords(strtolower_str($denominacion))."</b>", $border=0, $align='L', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+	$pdf->Ln(15);
+	$pdf->SetFont('helvetica', 'BIU', 10);
+	$pdf->Cell(0, 5, "Ley Especial Contra los Delitos Informáticos:", '', 1, 'L', 0, '', 0, true);
+
+	$pdf->Ln(2);
+
+	$texto = '<p style="line-height:15em;">'."<b>Artículo 12. Falsificación de documentos.</b> El que, a través de cualquier medio, cree, modifique o elimine un documento que se encuentre incorporado a un sistema que utilice tecnologías de información; o cree, modifique o elimine datos del " .
+		"mismo; o incorpore a dicho sistema un documento inexistente, será penado con prisión de tres a seis años y multa de trescientas a seiscientas unidades tributarias. Cuando el agente hubiere actuado con el fin de procurar para sí o para otro algún tipo de beneficio, la pena se aumentará entre un tercio y la mitad.".'</p>';
+
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->MultiCell($w=0, $h=5, $texto, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=true, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+	$pdf->SetFont('helvetica', 'B', 7);
+	$pdf->Cell(0, 5, "Gaceta Oficial No. 37.313 de fecha 30 de Octubre de 2001", '', 1, 'L', 0, '', 0, true);
+
+
+
+
+
+// Colocando Sello y Firma
+
+if(!empty($datos_imgs[0][0]['tipo_imagen_sello_firma'])){
+
+	$imagen_sello_firma = $url.'imagen_sello_firma_'.$cod_imagen.'.jpeg';
+	$pdf->Image($imagen_sello_firma, 80, 165, 50, 50);
+
+}else{
+
+	if(!empty($datos_imgs[0][0]['tipo_imagen_sello'])){
+		$imagen_sello_firma = $url.'imagen_sello_'.$cod_imagen.'.jpeg';
+		$pdf->Image($imagen_sello_firma, 50, 160, 50, 50);
+	}
+
+	if(!empty($datos_imgs[0][0]['tipo_imagen_firma'])){
+		$imagen_sello_firma = $url.'imagen_firma_'.$cod_imagen.'.jpeg';
+		$pdf->Image($imagen_sello_firma, 105, 160, 50, 50);
+	}
+}
+
+
+
+
+	$pdf->Cell(0, 75, "", '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 12);
+	$pdf->Cell(0, 8, $datos_firma[0]['cnmd06_constancia_firmante']['funcionario_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 10);
+	$pdf->Cell(0, 6, $datos_firma[0]['cnmd06_constancia_firmante']['cargo_firmante'], '', 1, 'C');
+
+	$pdf->SetFont('helvetica', 'B', 8);
+	$pdf->Cell(0, 5, $datos_firma[0]['cnmd06_constancia_firmante']['resolucion'], '', 1, 'C');
+
+
+
+	$pdf->Ln(12);
+
+
+
+	$pdf->SetFont('helvetica', 'BI', 7);
+	$pdf->Cell(0, 5, "No Requiere sello húmedo", '', 1, 'C', 0, '', 0, true);
+
+	$pdf->Ln(19);
+	$pdf->Cell(0, 2, "", 'T', 1, 'C');
+
+	$pdf->SetFont('helvetica', '', 7);
+	$pdf->Cell(0, 5, $art_footer, '', 1, 'C', 0, '', 0, true);
+
+	$pdf->SetFont('helvetica', 'B', 7);
+	$pdf->MultiCell($w=0, $h=5, $direc_footer, $border=0, $align='C', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false);
+
+
+
+
+
+
+
+
+}else{ // CODIGO EN BLANCO
+
+
+// set JPEG quality
+$pdf->setJPEGQuality(75);
+
+
+$url = $this->themeWeb . IMAGES_URL . "logos_constancia/";
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_derecho'])){
+	$logo_derecho = $url.'logo_derecho_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_derecho, 12, 5, 30, 30);
+}
+
+
+if(!empty($datos_imgs[0][0]['tipo_logo_izquierdo'])){
+	$logo_izquierdo = $url.'logo_izquierdo_'.$cod_imagen.'.jpeg';
+	$pdf->Image($logo_izquierdo, 165, 5, 30, 30);
+}
+
+
+$pdf->Ln(25);
+
+
+	$pdf->SetFont('helvetica', 'BIU', 13);
+	$pdf->Cell(0, 8, "CERTIFICACIÓN", '', 1, 'C');
+	$pdf->Cell(0, 8, "CONSTANCIA DE TRABAJO ELECTRÓNICAS", '', 1, 'C');
+	$pdf->Cell(0, 15, "", '', 1, 'C');
+
+
+	$pdf->SetFont('helvetica', 'B', 8);
+
+	$pdf->SetFillColor(0, 70, 130);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->Cell(0,5,"",'TRL',1,'L',1);
+
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+
+
+	$pdf->SetFont('helvetica', 'B', 10);
+	$pdf->Cell(0, 6, "INGRESE EL CÓDIGO DE CERTIFICACIÓN . . .", 'TRBL', 1, 'C');
+
+
+
+}
+
+
+}
+
+
+	$pdf->Output('certificacion_'.date("d-m-Y").".pdf",'D');
+
+?>

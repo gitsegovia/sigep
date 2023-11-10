@@ -1,0 +1,96 @@
+<?php
+
+$sisap->CssSelect();
+      if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}//fin function
+
+
+
+function function_deno_bien($var1=null, $var2=null){
+	foreach($var2 as $ve){
+        if($var1==$ve["cnmd06_bienes"]["cod_bien"]){
+        	return $ve["cnmd06_bienes"]["denominacion"];
+        }//fin if
+	}//fin foreach
+}//fin function
+
+
+
+?>
+
+
+
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+		  <tr class="tr_negro">
+		    <td class="td4" width="80px">Código</td>
+		    <td class="td4" width="380px">Denominación del Bien</td>
+		    <td class="td4" width="80px">Año de compra</td>
+		    <td class="td4" width="100px">Costo</td>
+		    <td class="td4" width="100px">Cancelado?</td>
+		    <td class="td4" width="120px">ACCIÓN</td>
+          </tr>
+
+    <?php
+
+
+      if(!empty($accion)){ $i = 0;
+
+  	     foreach($accion as $ve){ if($i%2==0){ $color="#CDF2FF";  }else{ $color="#DAEBFF"; } $i++; ?>
+
+
+            <tr bgcolor="<?= $color ?>"  id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+				    <td class="td2center"><?=               mascara_tres($ve['cnmd06_datos_bienes']['cod_bien']) ?></td>
+				    <td class="td2"><?=     function_deno_bien($ve['cnmd06_datos_bienes']['cod_bien'], $dato) ?></td>
+				    <td class="td2center"  id="campo_a_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  ><?=                  $ve['cnmd06_datos_bienes']['ano_compra'] ?></td>
+				    <td class="td2"        id="campo_b_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  ><?= $sisap->Formato2($ve['cnmd06_datos_bienes']['costo']) ?></td>
+				    <td class="td2center"  id="campo_c_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  >
+				     <?= $html->radio('cnmp06_datos_bienes/cancelado'.$ve['cnmd06_datos_bienes']['consecutivo'], array('1'=>'Si', '2'=>'No'),null, array("value"=>$ve['cnmd06_datos_bienes']['cancelado'], "disabled"=>"disabled"))?>
+				    </td>
+
+
+				    <td class="td2center" height="22">
+
+				    <input type="hidden" name="data[cnmp06_datos_bienes][cod_bien<?= $ve['cnmd06_datos_bienes']['consecutivo']?>]"   value="<?= $ve['cnmd06_datos_bienes']['cod_bien']?>"  id="cod_bien<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"    class="campoText" onKeyPress="return solonumeros_con_punto(event);" readonly="readonly" />
+				    <input type="hidden" name="data[cnmp06_datos_bienes][cedula<?= $ve['cnmd06_datos_bienes']['consecutivo']?>]"     value="<?= $ve['cnmd06_datos_bienes']['cedula_identidad']?>"  id="cedula<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"   class="campoText" onKeyPress="return solonumeros_con_punto(event);" readonly="readonly" />
+
+
+                     <div id="iconos_1_<?= $ve['cnmd06_datos_bienes']['consecutivo'] ?>">
+			             <?php echo $ajax->link($html->image('edit.png',array('border'=>0)),   '/cnmp06_datos_bienes/editar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], array('update'=>'funcion','title'=>'Editar'),false,false,true); ?>
+					     <?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp06_datos_bienes/eliminar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], array('update'=>'funcion','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar este Registro',false,true); ?>
+					  </div>
+					  <div id="iconos_2_<?= $ve['cnmd06_datos_bienes']['consecutivo'] ?>" style="display:none;">
+					     <?= $sisap->submitTagRemote('', array('url1' => '/cnmp06_datos_bienes/guardar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], 'update1'=>'funcion', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$ve['cnmd06_datos_bienes']['consecutivo'])); ?>
+				         <?php echo $ajax->link($html->image('cancel.png',array('border'=>0)), '/cnmp06_datos_bienes/cancelar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], array('update'=>'funcion','title'=>'Cancelar'),false,false,true); ?>
+					  </div>
+
+				    </td>
+		  </tr>
+
+
+
+
+  	    <?php }//fin
+
+      }else{ ?>
+
+			    <tr bgcolor="#CDF2FF" class="textNegro2">
+				    <td class="td2center" height="22"  width="2">--</td>
+				    <td class="td2center">--</td>
+				    <td class="td2center">--</td>
+				    <td class="td2center">--</td>
+				    <td class="td2center">--</td>
+				    <td class="td2center">--</td>
+				</tr>
+
+      <?php }//fin else
+
+
+      ?>
+
+         </table>
+</div>

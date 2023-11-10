@@ -1,0 +1,1039 @@
+<?php if(isset($ir)){ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'), true, "CONCILIACI&Oacute;N BANCARIA - M&Eacute;TODO COMPARATIVO - BANCO VS TESORERÍA", null, "950"); ?>
+
+<form name='data[conciliacion]' method = "post" id='form' action="<?php echo $html->url('/cstp04_movimientos_generales/conciliacion_bancaria_metodo_comparativo/pdf'); ?>">
+
+<?= $sisap->OpenTable("950"); ?>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro">
+    <td width="10%" align="center">Seleccione</td>
+    <td width="7%" align="center">C&oacute;digo</td>
+    <td width="33%" align="center">Entidad Bancaria</td>
+	<td width="10%" align="center">Seleccione</td>
+    <td width="7%" align="center">C&oacute;digo</td>
+    <td width="33%" align="center">Sucursal Bancaria</td>
+  </tr>
+
+	<tr>
+	    <td>
+			<?= $sisap->selectTagRemote('conciliacion/entidad', $entidades, array(), '', array('onchange1'=>'/cstp04_movimientos_generales/conciliacion_ss_accion/1', 'update1'=>'select_sucursal','id'=>'select1','class'=>'select100',true), null, true); ?>
+		</td>
+		<td><?= $html->input('conciliacion/cod_entidad',array('id'=>'cod_entidad', 'class'=>'campoText','value'=>'','maxlength'=>4,'readonly'=>'readonly',"style"=>"text-align:center;")); ?></td>
+    	<td><?= $html->input('conciliacion/deno_entidad',array('id'=>'deno_entidad', 'class'=>'campoText','readonly'=>'readonly','value'=>'')); ?></td>
+
+	    <td id="select_sucursal">
+	          <?= $sisap->SelectVacio("data[conciliacion][sucursal]", "select2"); ?>
+	    </td>
+	    <td><?= $html->input('conciliacion/cod_sucursal',array('id'=>'cod_sucursal', 'class'=>'campoText','value'=>'','style'=>'text-align:center','maxlength'=>4,'readonly'=>'readonly')); ?></td>
+		<td><?= $html->input('conciliacion/deno_sucursal',array('id'=>'deno_sucursal', 'class'=>'campoText','value'=>'','readonly'=>'readonly')); ?></td>
+	</tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro">
+    <td width="50%" align="center">Cuenta Bancaria</td>
+    <td width="10%" align="center">A&ntilde;o</td>
+    <td width="25%" align="center">Mes</td>
+	<td width="15%" align="center">Fecha Conciliaci&oacute;n</td>
+  </tr>
+
+	<tr>
+	    <td id="select_cuentabanc">
+	          <?= $sisap->SelectVacio("data[conciliacion][cuenta]", "select3"); ?>
+	    </td>
+	    <td id="select_anosm"><?= $sisap->SelectVacio("data[conciliacion][anos]", "select4"); ?></td>
+		<td id="select_mesm"><?= $sisap->SelectVacio("data[conciliacion][mes]", "select5"); ?></td>
+		<td align="center"><?= $sisap->input_fecha("conciliacion", "fecha_conciliacion", "fecha_conciliacion", null); ?></td>
+	</tr>
+</table>
+
+<br><br>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/conciliacion/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?= $sisap->CloseTable() ?>
+
+
+</form>
+
+
+
+<?php }else{
+	$cuenta=$this->data['conciliacion']['cuenta'];
+	$cuenta_bancaria=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+	$_SESSION["entidad_banc"] = $this->data['conciliacion']['deno_entidad'];
+	$_SESSION["sucursal_banc"] = $this->data['conciliacion']['deno_sucursal'];
+	$_SESSION["cuenta_banc"] = $cuenta_bancaria;
+	$_SESSION["ano_mov_banc"] = $this->data['conciliacion']['anos'];
+	$_SESSION["mes_mov_banc"] = $this->data['conciliacion']['mes'];
+	$_SESSION["fecha_conciliacion"] = $this->data['conciliacion']['fecha_conciliacion'];
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    	if($_SESSION["TIPO_TOP"] == 1){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA","MÉTODO COMPARATIVO - BANCO VS TESORERÍA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+			$this->SetFont('vera', 'BIU', 8);
+			$this->Cell(137,5, "BANCO",'RLB',0,'C');
+			$this->Cell(44,5, "TESORERÍA",'RB',0,'C');
+			$this->Cell(0,5, "",'RB',1,'C');
+			$this->SetFont('vera', 'B', 7);
+			$this->Cell(17,5, "FECHA",'RLB',0,'C');
+			$this->Cell(20,5, "DOCUMENTO",'RB',0,'C');
+			$this->Cell(18,5, "NÚMERO",'RB',0,'C');
+			$this->Cell(55,5, "BENEFICIARIO",'RB',0,'C');
+			$this->Cell(27,5, "MONTO",'RB',0,'C');
+			$this->Cell(17,5, "FECHA",'RB',0,'C');
+			$this->Cell(27,5, "MONTO",'RB',0,'C');
+			$this->Cell(0,5, "DIFERENCIA",'RB',1,'C');
+
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 2){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA","REGISTRADOS EN BANCO Y NO REGISTRADOS EN TESORERÍA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+			$this->Cell(52,5, "FECHA",'RLB',0,'C');
+			$this->Cell(52,5, "DOCUMENTO",'RB',0,'C');
+			$this->Cell(52,5, "NÚMERO",'RB',0,'C');
+			$this->Cell(0,5, "MONTO",'RB',1,'C');
+
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 3){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA","REGISTRADOS EN TESORERÍA Y NO REGISTRADOS EN BANCO"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+			$this->Cell(20,5, "FECHA",'RLB',0,'C');
+			$this->Cell(40,5, "DOCUMENTO",'RB',0,'C');
+			$this->Cell(40,5, "NÚMERO",'RB',0,'C');
+			$this->Cell(80,5, "BENEFICIARIO",'RB',0,'C');
+			$this->Cell(0,5, "MONTO",'RB',1,'C');
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 4){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA",""), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+			            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 5){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA","MÉTODO COMPARATIVO - BANCO VS TESORERÍA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 6){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA","REGISTRADOS EN BANCO Y NO REGISTRADOS EN TESORERÍA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 7){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA","REGISTRADOS EN TESORERÍA Y NO REGISTRADOS EN BANCO"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+
+
+    	}else if($_SESSION["TIPO_TOP"] == 8){
+			$this->top_reporte2(array("CONCILIACIÓN BANCARIA - MÉTODO COMPARATIVO - BANCO VS TESORERÍA","CUADRO DEMOSTRATIVO"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"16", "X"=>"190"));
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'BANCO', 'TRBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["entidad_banc"], 'TRB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'SUCURSAL', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["sucursal_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'CUENTA', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["cuenta_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'AÑO', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["ano_mov_banc"], 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'MES', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $this->meses($_SESSION["mes_mov_banc"]), 'RB', 1, 'L');
+
+            $this->SetFont('vera', '', 8);
+            $this->Cell(40, 4, 'FECHA DE CONCILIACIÓN', 'RBL', 0, 'R');
+			$this->SetFont('vera', 'B', 8);
+            $this->Cell(0, 4, $_SESSION["fecha_conciliacion"], 'RB', 1, 'L');
+    	}
+
+
+    }//fin header
+
+    function Footer(){
+
+    }
+
+    function meses($mes){
+        switch ((string)$mes) {
+            case"1": {
+                    $var = "Enero";
+                }break;
+            case"2": {
+                    $var = "Febrero";
+                }break;
+            case"3": {
+                    $var = "Marzo";
+                }break;
+            case"4": {
+                    $var = "Abril";
+                }break;
+            case"5": {
+                    $var = "Mayo";
+                }break;
+            case"6": {
+                    $var = "Junio";
+                }break;
+            case"7": {
+                    $var = "Julio";
+                }break;
+            case"8": {
+                    $var = "Agosto";
+                }break;
+            case"9": {
+                    $var = "Septiembre";
+                }break;
+            case"10": {
+                    $var = "Octubre";
+                }break;
+            case"11": {
+                    $var = "Noviembre";
+                }break;
+            case"12": {
+                    $var = "Diciembre";
+                }break;
+            default: {
+                    $var = "";
+                }break;
+        }
+        	return $var;
+        }//fin
+
+    function tam_celda($total_char){
+		if($total_char<40){
+			$heigth = 7;
+		}elseif($total_char>=40 && $total_char<60){
+			$heigth = 10;
+		}elseif($total_char>=60 && $total_char<80){
+			$heigth = 12;
+		}elseif($total_char>=80 && $total_char<120){
+			$heigth = 18;
+		}elseif($total_char>=120 && $total_char<160){
+			$heigth = 24;
+		}elseif($total_char>=160 && $total_char<200){
+			$heigth = 30;
+		}elseif($total_char>=200 && $total_char<240){
+			$heigth = 36;
+		}elseif($total_char>=240 && $total_char<280){
+			$heigth = 42;
+		}elseif($total_char>=280 && $total_char<320){
+			$heigth = 48;
+		}elseif($total_char>=320 && $total_char<360){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+
+} //fin class
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+// $pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true,10);
+$pdf->SetFont('vera','',7);
+
+
+	// *******  P A R T E : [ A ]  *******
+
+if(!empty($conc_banc_a)){
+	$_SESSION["TIPO_TOP"] = 1;
+	$pdf->AddPage();
+
+	$linea = 0;
+
+	$tipo_doc_1c = 0; // ** Deposito **
+	$tipo_doc_1m = 0;
+	$total_dep_banco = 0;
+
+	$tipo_doc_2c = 0; // ** Nota de Credito **
+	$tipo_doc_2m = 0;
+	$total_nc_banco = 0;
+
+	$tipo_doc_3c = 0; // ** Nota de Debito **
+	$tipo_doc_3m = 0;
+	$total_nd_banco = 0;
+
+	$tipo_doc_4c = 0; // ** Cheque **
+	$tipo_doc_4m = 0;
+	$total_ch_banco = 0;
+
+	foreach($conc_banc_a as $rconc_banc_a){
+
+        $mes_banco = substr($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['fecha_banco'], 5, 2);
+        $mes_teso  = substr($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['fecha_tesoreria'], 5, 2);
+        if ($mes_banco==$mes_teso){$verificar='';}else{$verificar="*";}
+
+
+		$bene = str_replace("\n", "", $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['beneficiario']);
+		$total_char = strlen($bene);
+		$theigth = $pdf->tam_celda($total_char);
+
+		$pdf->Cell(17,$theigth,$sisap->cambia_fecha($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['fecha_banco']),'RL',0,'C');
+		$pdf->Cell(20,$theigth,$rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['documento'],'R',0,'C');
+		$pdf->Cell(18,$theigth,$rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['numero_documento'],'R',0,'C');
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(55,1,"",'',2,'C');
+		$pdf->MultiCell(54,3,$bene,'','L');
+		$varX = $varX+55;
+		$pdf->SetXY($varX,$varY);
+
+		$pdf->Cell(27,$theigth,$sisap->Formato2($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco']),'RL',0,'R');
+		$pdf->Cell(17,$theigth,$sisap->cambia_fecha($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['fecha_tesoreria']),'R',0,'C');
+		$pdf->Cell(27,$theigth,$sisap->Formato2($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_tesoreria']),'R',0,'R');
+		if ($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['diferencia']==0){
+	    $pdf->Cell(0,$theigth,$verificar,'R',1,'C');
+		$pdf->Cell(0,0,'','T',1);
+		}else{
+		$pdf->Cell(0,$theigth,$sisap->Formato2($rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['diferencia']),'R',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+		}
+
+		switch((int)$rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['tipo_documento']){
+			case 1: // ** Deposito **
+					$tipo_doc_1c++;
+					$tipo_doc_1m += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					$total_dep_banco += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					break;
+			case 2: // ** Nota de Credito **
+					$tipo_doc_2c++;
+					$tipo_doc_2m += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					$total_nc_banco += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					break;
+			case 3: // ** Nota de Debito **
+					$tipo_doc_3c++;
+					$tipo_doc_3m += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					$total_nd_banco += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					break;
+			case 4: // ** Cheque **
+					$tipo_doc_4c++;
+					$tipo_doc_4m += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					$total_ch_banco += $rconc_banc_a['v_cstd05_estado_cuenta_vs_tesoreria']['monto_banco'];
+					break;
+		}
+		$linea=($linea+$theigth);
+		if ($linea>=195){$linea=0;}
+	}
+
+    if ($linea>160){
+    $_SESSION["TIPO_TOP"] = 5;
+	$pdf->AddPage();
+    }
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,7,"RESÚMEN",'',1,'C');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(52,4,"DEPÓSITOS",'TRLB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE CRÉDITOS",'TRB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE DÉBITOS",'TRB',0,'C');
+	$pdf->Cell(0,4,"CHEQUES",'TRB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(20,4,"CANTIDAD",'TRLB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(0,4,"MONTO",'TRB',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(20,4,$tipo_doc_1c,'RLB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_1m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_2c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_2m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_3c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_3m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_4c,'RB',0,'C');
+	$pdf->Cell(0,4,$sisap->Formato2($tipo_doc_4m),'RB',1,'C');
+} // FIN IF PARTE **** [ A ] ***
+
+
+
+
+
+
+	// *******  P A R T E : [ B ]  *******
+
+if(!empty($conc_banc_b)){
+	$_SESSION["TIPO_TOP"] = 2;
+	$pdf->AddPage();
+
+	$linea = 0;
+
+	$tipo_doc_1c = 0; // ** Deposito **
+	$tipo_doc_1m = 0;
+
+	$tipo_doc_2c = 0; // ** Nota de Credito **
+	$tipo_doc_2m = 0;
+
+	$tipo_doc_3c = 0; // ** Nota de Debito **
+	$tipo_doc_3m = 0;
+
+	$tipo_doc_4c = 0; // ** Cheque **
+	$tipo_doc_4m = 0;
+
+	$theigth = 5;
+
+	foreach($conc_banc_b as $rconc_banc_b){
+		$pdf->Cell(52,$theigth,$sisap->cambia_fecha($rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['fecha_documento']),'RL',0,'C');
+		$pdf->Cell(52,$theigth,$rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['documento'],'R',0,'C');
+		$pdf->Cell(52,$theigth,$rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['numero_documento'],'R',0,'C');
+		$pdf->Cell(0,$theigth,$sisap->Formato2($rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['monto_banco']),'R',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+
+		switch((int)$rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['tipo_documento']){
+			case 1: // ** Deposito **
+					$tipo_doc_1c++;
+					$tipo_doc_1m += $rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['monto_banco'];
+					break;
+			case 2: // ** Nota de Credito **
+					$tipo_doc_2c++;
+					$tipo_doc_2m += $rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['monto_banco'];
+					break;
+			case 3: // ** Nota de Debito **
+					$tipo_doc_3c++;
+					$tipo_doc_3m += $rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['monto_banco'];
+					break;
+			case 4: // ** Cheque **
+					$tipo_doc_4c++;
+					$tipo_doc_4m += $rconc_banc_b['v_cstd05_estado_cuenta_no_tesoreria']['monto_banco'];
+					break;
+		}
+	    $linea=($linea+$theigth);
+		if ($linea>=195){$linea=0;}
+	}
+
+	if ($linea>160){
+    $_SESSION["TIPO_TOP"] = 6;
+	$pdf->AddPage();
+    }
+
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,7,"RESÚMEN",'',1,'C');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(52,4,"DEPÓSITOS",'TRLB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE CRÉDITOS",'TRB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE DÉBITOS",'TRB',0,'C');
+	$pdf->Cell(0,4,"CHEQUES",'TRB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(20,4,"CANTIDAD",'TRLB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(0,4,"MONTO",'TRB',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(20,4,$tipo_doc_1c,'RLB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_1m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_2c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_2m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_3c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_3m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_4c,'RB',0,'C');
+	$pdf->Cell(0,4,$sisap->Formato2($tipo_doc_4m),'RB',1,'C');
+} // FIN IF PARTE **** [ B ] ***
+
+
+
+
+
+
+	// *******  P A R T E : [ C ]  *******
+
+if(!empty($conc_banc_c)){
+	$_SESSION["TIPO_TOP"] = 3;
+	$pdf->AddPage();
+
+	$linea = 0;
+
+	$tipo_doc_1c = 0; // ** Deposito **
+	$tipo_doc_1m = 0;
+	$teso_dep = 0;
+
+	$tipo_doc_2c = 0; // ** Nota de Credito **
+	$tipo_doc_2m = 0;
+	$teso_nc = 0;
+
+	$tipo_doc_3c = 0; // ** Nota de Debito **
+	$tipo_doc_3m = 0;
+	$teso_nd = 0;
+
+	$tipo_doc_4c = 0; // ** Cheque **
+	$tipo_doc_4m = 0;
+	$teso_ch = 0;
+
+	foreach($conc_banc_c as $rconc_banc_c){
+
+		$bene = str_replace("\n", "", $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['beneficiario']);
+		$total_char = strlen($bene);
+		$theigth = $pdf->tam_celda($total_char);
+
+		$pdf->Cell(20,$theigth,$sisap->cambia_fecha($rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['fecha_documento']),'RL',0,'C');
+		$pdf->Cell(40,$theigth,$rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['documento'],'R',0,'C');
+		$pdf->Cell(40,$theigth,$rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['numero_documento'],'R',0,'C');
+
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(80,1,"",'',2,'C');
+		$pdf->MultiCell(79,3,$bene,'','L');
+		$varX = $varX+80;
+		$pdf->SetXY($varX,$varY);
+
+		$pdf->Cell(0,$theigth,$sisap->Formato2($rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria']),'RL',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+
+		switch((int)$rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['tipo_documento']){
+			case 1: // ** Deposito **
+					$tipo_doc_1c++;
+					$tipo_doc_1m += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					$teso_dep += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					break;
+			case 2: // ** Nota de Credito **
+					$tipo_doc_2c++;
+					$tipo_doc_2m += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					$teso_nc += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					break;
+			case 3: // ** Nota de Debito **
+					$tipo_doc_3c++;
+					$tipo_doc_3m += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					$teso_nd += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					break;
+			case 4: // ** Cheque **
+					$tipo_doc_4c++;
+					$tipo_doc_4m += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					$teso_ch += $rconc_banc_c['v_cstd05_tesoreria_no_estado_cuenta']['monto_tesoreria'];
+					break;
+		}
+		    $linea=($linea+$theigth);
+		if ($linea>=195){$linea=0;}
+	}
+
+	if ($linea>160){
+    $_SESSION["TIPO_TOP"] = 7;
+	$pdf->AddPage();
+    }
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,7,"RESÚMEN",'',1,'C');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(52,4,"DEPÓSITOS",'TRLB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE CRÉDITOS",'TRB',0,'C');
+	$pdf->Cell(52,4,"NOTAS DE DÉBITOS",'TRB',0,'C');
+	$pdf->Cell(0,4,"CHEQUES",'TRB',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(20,4,"CANTIDAD",'TRLB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(32,4,"MONTO",'TRB',0,'C');
+	$pdf->Cell(20,4,"CANTIDAD",'TRB',0,'C');
+	$pdf->Cell(0,4,"MONTO",'TRB',1,'C');
+
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(20,4,$tipo_doc_1c,'RLB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_1m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_2c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_2m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_3c,'RB',0,'C');
+	$pdf->Cell(32,4,$sisap->Formato2($tipo_doc_3m),'RB',0,'C');
+	$pdf->Cell(20,4,$tipo_doc_4c,'RB',0,'C');
+	$pdf->Cell(0,4,$sisap->Formato2($tipo_doc_4m),'RB',1,'C');
+} // FIN IF PARTE **** [ C ] ***
+
+
+
+
+			$_SESSION["TIPO_TOP"] = 4;
+
+            $saldo_actual_tesoreria = (($total_anterior_tesoreria+$suma_dep+$suma_nc)-($suma_nd+$suma_che));
+            $saldo_actual_banco=(($total_anterior_banco+$total_dep_banco+$total_nc_banco)-($total_ch_banco+$total_nd_banco));
+
+			$pdf->AddPage();
+
+			$pdf->Ln(8);
+			$pdf->SetFont('vera','B',10);
+			$pdf->Cell(0,7,"SALDOS",'',1,'C');
+
+            $pdf->SetFont('vera', 'B', 8);
+            $pdf->Cell(52, 7, '', 'TRBL', 0, 'C');
+            $pdf->Cell(52, 7, 'BANCO', 'TRB', 0, 'C');
+            $pdf->Cell(52, 7, 'TESORERÍA', 'TRB', 0, 'C');
+            $pdf->Cell(0, 7, 'NO CONCILIADA', 'TRB', 1, 'C');
+
+            $pdf->Cell(52, 7, 'SALDO ANTERIOR', 'RBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_anterior_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_anterior_tesoreria), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($total_anterior_banco-$total_anterior_tesoreria), 'RB', 1, 'C');
+
+			$pdf->SetFont('vera', '', 8);
+
+            $pdf->Cell(52, 7, 'DEPÓSITOS', 'TRBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_dep_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($suma_dep), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($total_dep_banco-$suma_dep), 'RB', 1, 'C');
+
+            $pdf->Cell(52, 7, 'NOTAS DE CRÉDITOS', 'RBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_nc_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($suma_nc), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($total_nc_banco-$suma_nc), 'RB', 1, 'C');
+
+            $pdf->Cell(52, 7, 'CHEQUES', 'TRBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_ch_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($suma_che), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($total_ch_banco-$suma_che), 'RB', 1, 'C');
+
+            $pdf->Cell(52, 7, 'NOTAS DE DEBITOS', 'RBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($total_nd_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($suma_nd), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($total_nd_banco-$suma_nd), 'RB', 1, 'C');
+
+			$pdf->SetFont('vera', 'B', 8);
+
+            $pdf->Cell(52, 7, 'SALDO ACTUAL', 'TRBL', 0, 'L');
+            $pdf->Cell(52, 7, $sisap->Formato2($saldo_actual_banco), 'RB', 0, 'C');
+            $pdf->Cell(52, 7, $sisap->Formato2($saldo_actual_tesoreria), 'RB', 0, 'C');
+            $pdf->Cell(0, 7, $sisap->Formato2($saldo_actual_banco-$saldo_actual_tesoreria), 'RB', 1, 'C');
+
+
+
+
+
+    	$_SESSION["TIPO_TOP"] = 8;
+		$pdf->AddPage();
+
+
+
+	$mayus_minus = true; // *** SI DESEAS ACTIVAR A MAYUSCULA COLOCAR EN FALSE LA VAR: $mayus_minus = false;
+
+
+		/** <----  B  A  N  C  O  ----> */
+
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,7,"BANCO",'RL',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,8,"Saldo Según Banco ".$_SESSION["fecha_conciliacion"],'TRL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,8, $sisap->Formato2($total_anterior_banco),'TR',1,'R', 0, '', $mayus_minus);
+
+	// MAS
+	$pdf->Cell(170,5,"",'RL',0,'L');
+	$pdf->Cell(0,5,"",'R',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,6,"MAS:",'RL',0,'L');
+	$pdf->Cell(0,6,"",'R',1,'L');
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(170,4,"Depósitos en tránsito ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($total_dep_banco),'R',1,'R', 0, '', $mayus_minus);
+
+	$pdf->Cell(170,4,"Notas de créditos en tránsito ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($total_nc_banco),'R',1,'R', 0, '', $mayus_minus);
+
+	$pdf->Cell(170,4,"Otras partidas no registradas en banco ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2(0),'R',1,'R', 0, '', $mayus_minus);
+
+
+
+	// MENOS
+	$pdf->Cell(170,5,"",'RL',0,'L');
+	$pdf->Cell(0,5,"",'R',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,6,"MENOS:",'RL',0,'L');
+	$pdf->Cell(0,6,"",'R',1,'L');
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(170,4,"Cheques en tránsito ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($total_ch_banco),'R',1,'R');
+
+	$pdf->Cell(170,4,"Notas de débitos en tránsito ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($total_nd_banco),'R',1,'R', 0, '', $mayus_minus);
+
+	$pdf->Cell(170,4,"Otras partidas no registradas en banco ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2(0),'R',1,'R');
+
+
+
+	$pdf->Cell(170,1,"",'RL',0,'L');
+	$pdf->SetFont('vera','BU',10);
+	$pdf->Cell(0,1, "                            ",'R',1,'C');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,8,"Saldo conciliado en banco ".$_SESSION["fecha_conciliacion"],'BRL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,8, $sisap->Formato2($saldo_actual_banco),'RB',1,'R');
+
+
+
+
+
+		/** <----  L  I  B  R  O  S  ----> */
+
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,7,"LIBROS",'RBL',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,8,"Saldo Según Libro ".$_SESSION["fecha_conciliacion"],'TRL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,8, $sisap->Formato2($total_anterior_tesoreria),'TR',1,'R');
+
+	// MAS
+	$pdf->Cell(170,5,"",'RL',0,'L');
+	$pdf->Cell(0,5,"",'R',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,6,"MAS:",'RL',0,'L');
+	$pdf->Cell(0,6,"",'R',1,'L');
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(170,4,"Depósitos no contabilizado ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($suma_dep),'R',1,'R');
+
+	$pdf->Cell(170,4,"Notas de créditos no contabilizadas ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($suma_nc),'R',1,'R');
+
+	$pdf->Cell(170,4,"Ajustes en libros ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2(0),'R',1,'R');
+
+
+
+	// MENOS
+	$pdf->Cell(170,5,"",'RL',0,'L');
+	$pdf->Cell(0,5,"",'R',1,'L');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,6,"MENOS:",'RL',0,'L');
+	$pdf->Cell(0,6,"",'R',1,'L');
+
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(170,4,"Cheques cobrados no contabilizados ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($suma_che),'R',1,'R');
+
+	$pdf->Cell(170,4,"Notas de débitos no contabilizadas ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2($suma_nd),'R',1,'R');
+
+	$pdf->Cell(170,4,"Ajustes en libros ",'RL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,4, $sisap->Formato2(0),'R',1,'R');
+
+
+
+	$pdf->Cell(170,1,"",'RL',0,'L');
+	$pdf->SetFont('vera','BU',10);
+	$pdf->Cell(0,1, "                            ",'R',1,'C');
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(170,8,"Saldo conciliado en libro ".$_SESSION["fecha_conciliacion"],'BRL',0,'L', 0, '', $mayus_minus);
+	$pdf->Cell(0,8, $sisap->Formato2($saldo_actual_tesoreria),'RB',1,'R');
+
+
+
+
+	/** <----  C  U  A  D  R  E  ----> */
+
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(170,7,"CUADRE DE CONCILIACIÓN",'RBL',0,'L');
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,7, $sisap->Formato2($saldo_actual_banco - $saldo_actual_tesoreria),'RB',1,'R');
+
+
+
+
+	/** <----  F  I  R  M  A  S  ----> */
+
+	$pdf->Ln(5);
+	$pdf->Cell(52,7,"ELABORADO POR:",'TRL',0,'C');
+	$pdf->Cell(52,7,"REVISADO POR:",'TR',0,'C');
+	$pdf->Cell(52,7,"APROBADO POR:",'TR',0,'C');
+	$pdf->Cell(0,7,"CONTABILIZADO POR:",'TR',1,'C');
+
+	$pdf->Cell(52,40,"",'TRBL',0,'C');
+	$pdf->Cell(52,40,"",'TRB',0,'C');
+	$pdf->Cell(52,40,"",'TRB',0,'C');
+	$pdf->Cell(0,40,"",'TRB',1,'C');
+
+
+
+
+unset($_SESSION["entidad_banc"]);
+unset($_SESSION["sucursal_banc"]);
+unset($_SESSION["cuenta_banc"]);
+unset($_SESSION["ano_mov_banc"]);
+unset($_SESSION["mes_mov_banc"]);
+unset($_SESSION["fecha_conciliacion"]);
+unset($_SESSION["TIPO_TOP"]);
+unset($conc_banc_a);
+unset($conc_banc_b);
+unset($conc_banc_c);
+unset($tipo_doc_1c);
+unset($tipo_doc_1m);
+unset($tipo_doc_2c);
+unset($tipo_doc_2m);
+unset($tipo_doc_3c);
+unset($tipo_doc_3m);
+unset($tipo_doc_4c);
+unset($tipo_doc_4m);
+
+	$pdf->Output('Conciliacion_Bancaria_'.date("d-m-Y"), 'D');
+
+}
+?>

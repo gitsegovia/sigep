@@ -1,0 +1,140 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+
+}
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+
+?>
+
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tr_negro">
+		<tr class="tr_negro" >
+			<td align='center'>Código de Cargo</td>
+			<td align='center'>Código de Ficha</td>
+			<td align='center'>Cedula de Identidad</td>
+			<td align='center'>Primer Apellido</td>
+			<td align='center'>Segundo Apellido</td>
+			<td align='center'>Primer Nombre</td>
+			<td align='center'>Segundo Nombre</td>
+			<td align='center'>Cantidad</td>
+			<td align='center'>---</td>
+		</tr>
+
+<?php  ///////////////***********AQUI CAMBIAR PA QUE FUNCIONE************////////////////////////
+
+if(isset($datos) && !empty($datos)){
+	//print_r($datos);
+	$i=0;
+	$j=0;
+
+	foreach($datos as $row){
+		$nomina = $row['cnmd10_individual_bolivares_cantidad']['cod_tipo_nomina'];
+		$transaccion = $row['cnmd10_individual_bolivares_cantidad']['cod_transaccion'];
+		$cod_cargo = $row['cnmd10_individual_bolivares_cantidad']['cod_cargo'];
+		$cod_ficha = $row['cnmd10_individual_bolivares_cantidad']['cod_ficha'];
+		$cantidad = $row['cnmd10_individual_bolivares_cantidad']['cantidad'];
+
+		foreach($grilla as $x){
+			$nomina1 = $x['v_cnmd06_fichas_datos_personales']['cod_tipo_nomina'];
+			$cargo = $x['v_cnmd06_fichas_datos_personales']['cod_cargo'];
+			$ficha = $x['v_cnmd06_fichas_datos_personales']['cod_ficha'];
+			if($nomina==$nomina1 && $cod_cargo==$cargo && $cod_ficha==$ficha){
+				$cedula = $x['v_cnmd06_fichas_datos_personales']['cedula_identidad'];
+				$primer_apellido = $x['v_cnmd06_fichas_datos_personales']['primer_apellido'];
+				$segundo_apellido= $x['v_cnmd06_fichas_datos_personales']['segundo_apellido'];
+				$primer_nombre = $x['v_cnmd06_fichas_datos_personales']['primer_nombre'];
+				$segundo_nombre = $x['v_cnmd06_fichas_datos_personales']['segundo_nombre'];
+				break;
+			}//fin if
+		}//fin foreach
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+
+		$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+?>
+<tr id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/cod_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3', 'readonly'=>'readonly', 'value'=>$sisap->AddCero3($cod_cargo) ), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/deno_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center', 'readonly'=>'readonly', 'value'=>$sisap->AddCero3($cod_ficha) ), false);?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/monto'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center','value'=>$cedula, 'readonly'=>'readonly'), false); ?>
+</td>
+<td class="td2center" >
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/monto'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center;','value'=>$primer_apellido, 'readonly'=>'readonly'), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/cod_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3', 'readonly'=>'readonly', 'value'=>$segundo_apellido ), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/deno_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center', 'readonly'=>'readonly', 'value'=>$primer_nombre ), false);?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/monto'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center','value'=>$segundo_nombre, 'readonly'=>'readonly'), false); ?>
+</td>
+<td class="td2center" >
+	<?= $html->input('cnmp10_asignacion_bolivares_escala_sueldo/monto'.$i, $htmlAttributes = array('style'=>'width:98%; text-align:right','value'=>$sisap->Formato2($cantidad), 'readonly'=>'readonly'), false); ?>
+</td>
+<td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp10_asignacion_individual_bolivares/eliminar/'.$nomina.'/'.$transaccion.'/'.$cod_cargo.'/'.$cod_ficha, array('update'=>'vacia','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+</tr>
+<?php
+$i++;
+$cedula="";
+$primer_apellido="";
+$segundo_apellido="";
+$primer_nombre="";
+$segundo_nombre="";
+}
+}else{
+
+
+?>
+<tr>
+<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/cargo', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'cargo1'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/ficha', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'ficha1'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/cedula', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'cedula1'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/primer_ape', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'primer_ape'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/segudo_ape', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'segudo_ape'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/primer_nombre', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'primer_nombre'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/segundo_nombre', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'segundo_nombre'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10_asignacion_individual_bolivares/cantidad', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'cantidad'), false); ?></td>
+			<td align='center'>---</td>
+</tr>
+<?php
+
+}
+?>
+</table>
+
+
+
+<?
+/*
+<?= $ajax->link($html->image('eye.png', array('border'=>'0')), '/cnmd10_comunes_escala_antiguedad_bolivares_ded_2/ver/'.$escala.'/'.$desde_ano.'/'.$hasta_ano, array('update'=>'principal_cnmp10_comunes_bolivares_asig', 'title'=>'Ver'), null, false, true); ?>
+	<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/zcnmd10_comunes_escala_antiguedad_bolivares_ded_2/eliminar/'.$escala.'/'.$desde_ano.'/'.$hasta_ano, array('update'=>'del', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$i');"), "Realmente desea Eliminar este escenario?", false, true); ?>
+*/
+?>
+
+
+
+

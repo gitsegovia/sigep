@@ -1,0 +1,246 @@
+<?php
+	if(isset($var) && $var=='no'){ ?>
+
+<?php
+if(isset($errorMessage)) {
+	echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<style type="text/css">
+.input_datopk{
+	border-top: 1px solid #000000;
+	border-bottom: 1px solid #003d4c;
+	border-left: 1px solid #000000;
+	border-right: 1px solid #003d4c;
+}
+</style>
+
+<? $sisap->Tabla("",true,"CERTIFICACI&Oacute;N DE DISPONIBILIDAD PRESUPUESTARIA","","950"); ?>
+<? $sisap->OpenTable("950"); ?>
+
+<form name='data[cnmp99_prenomina]'  method = "post" id='form' action="<?php echo $html->url('/cscd01_requisicion/certificacion_dispo/si'); ?>" onSubmit="javascript:report_cscd01_requisicion();">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+  <tr>
+    <td align="right" width="20%" class="tr_negro">A&ntilde;o&nbsp;&nbsp;</td>
+    <td width="80%"><? $sisap->selectTagRemote('cnmp99_prenomina/ano_requisicion', $anos, array(), $ano_ejec, array('onchange1'=>'/cscd01_requisicion/nrequisicion/', 'update1'=>'num_requisicion','id'=>'ano_requisicion','style'=>'width:10%;', true), null, true); ?></td>
+  </tr>
+  <tr>
+    <td align="right" class="tr_negro">N&uacute;mero de Certificaci&oacute;n&nbsp;&nbsp;</td>
+    <td id="num_requisicion"><? $sisap->selectTagRemote('cnmp99_prenomina/numero_requisicion', $requisicion, array(), null, array('onchange1'=>'/cscd01_requisicion/nusolic/'.$ano_ejec.'/', 'update1'=>'unidad_solic','id'=>'numero_requisicion', 'style'=>"width:35%;font-weight:bold;background-color:#e0ffff;color:#840000;font-size:12pt;text-align:left;", 'class'=>'input_datopk', true), null, true); ?></td>
+  </tr>
+  <tr>
+    <td align="right" class="tr_negro">Unidad Solicitante&nbsp;&nbsp;</td>
+    <td id="unidad_solic"><select style="font-weight:bold;background-color:#e0ffff;color:#840000;font-size:12pt;text-align:left;" class="inputtext input_datopk"></select></td>
+  </tr>
+</table>
+
+<br />
+
+	<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="20%" align="center">Firma</td>
+			<td width="40%" align="center">Nombres y apellidos</td>
+			<td width="40%" align="center">Cargo que ocupa</td>
+		</tr>
+		<tr>
+			<td width="20%" align="center">Firmante del oficio</td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" maxlength="100" id="nombre_primera_firma" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+			<td width="40%"><input type="text" name="data[cnmp99_prenomina][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" maxlength="100" id="cargo_primera_firma" "<?=$b_readonly=$b_readonly?>" class="inputtext" /></td>
+		</tr>
+	</table>
+<br />
+
+<input type="hidden" name="data[cnmp99_prenomina][tipo_doc_anul]" value="<?=$tipo_doc_anul?>" id="tipo_doc_anul" readonly="readonly" />
+
+<div id="save99_firmas">
+<?php if(isset($firma_existe) && $firma_existe=='no'){ ?>
+	<?= $sisap->submitTagRemote('Guardar Firmas', array('url1' => '/cscd01_requisicion/guardar_editar_firmas/si', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php }else if(isset($firma_existe) && $firma_existe=='si'){ ?>
+	<?= $sisap->submitTagRemote('Modificar Firmas', array('url1' => '/cscd01_requisicion/guardar_editar_firmas/no', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+<?php } ?>
+</div>
+
+	<?= $html->submit('Generar', array('id'=>'b_generar', 'disabled'=>'disabled')); ?>
+
+<?php if(isset($vara) && $vara=='a'){ ?>
+	<?= $sisap->submitTagRemote('Eliminar', array('url1' => '/cscd01_requisicion/delete_requisicion', 'update1'=>'principal', 'id'=>'bt_eliminar', 'disabled'=>'disabled')); ?>&nbsp;
+	<?= $sisap->buttonTagRemote('/cscd01_requisicion/', array ('type'=>'button', 'value'=>'Regresar'), array('url1' => '/cscd01_requisicion/index', 'update1'=>'principal')); ?>
+<?php } ?>
+
+</form>
+
+<?= $sisap->buttonTagRemote('cnmp99_cierre_nomina/principal', array ('value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<? $sisap->CloseTable(); ?>
+
+<?php
+
+}else{
+
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION["lista_campos"] = 1;
+
+if(!empty($firmantes)){
+	$_SESSION["enviado_por"] = $firmantes[0]['cugd07_firmas_oficio_anulacion']['nombre_primera_firma'];
+	$_SESSION["cargo_por"] = $firmantes[0]['cugd07_firmas_oficio_anulacion']['cargo_primera_firma'];
+}else{
+	$_SESSION["enviado_por"] = "";
+	$_SESSION["cargo_por"] = "";
+}
+
+
+	$_SESSION["fecha_requisicion"] = $sisap->cambia_fecha($req_cuerpo[0][0]['fecha_requisicion']);
+	$_SESSION["ciudad"] = $ciudad;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$_SESSION["lista_campos"] = 2;
+    	$this->SetY(-47);
+		$this->SetFont('vera', 'B', 9);
+		$this->Cell(0, 7, "ATENTAMENTE", '', 1, 'C'); // --------[FIRMA ENVIADO POR]
+		$this->Ln(12);
+		$this->Cell(1, 1, "", '', 0, 'C');
+		$this->Cell(0, 1, "_________________________________________", '', 1, 'C');
+		$this->Cell(0, 7, "".$_SESSION["enviado_por"], '', 1, 'C'); // --------[ENVIADO POR]
+		$this->Cell(0, 5, "".$_SESSION["cargo_por"], '', 1, 'C'); // --------[CARGO ENVIADO POR]
+		$this->SetFont('vera','',6);
+		$this->Ln(3);
+   		$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		$this->top_reporte($titulo_A = "", null, null, array("Y"=>"21", "X"=>"21", "Z"=>"12"), null);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,"".$_SESSION["ciudad"].", ".$_SESSION["fecha_requisicion"],'',1,'R');
+		if($_SESSION["lista_campos"] == 2){
+		$this->SetFont('vera', 'B', 12);
+		$this->Ln(10);
+		$this->Cell(0, 3, "CERTIFICACIÓN DE DISPONIBILIDAD PRESUPUESTARIA", '', 1, 'C');
+		$this->Ln(10);
+
+		$this->SetFont('vera', 'B', 7);
+		$this->Cell(13, 3, "", 'TRL', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "SUB", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(13, 3, "SUB", 'TR', 0, 'C');
+		$this->Cell(13, 3, "", 'TR', 0, 'C');
+		$this->Cell(0, 3, "", 'TR', 1, 'C');
+
+		$this->Cell(13, 3, "AÑO", 'RL', 0, 'C');
+		$this->Cell(13, 3, "SECTOR", 'R', 0, 'C');
+		$this->Cell(13, 3, "PROG", 'R', 0, 'C');
+		$this->Cell(13, 3, "PROG", 'R', 0, 'C');
+		$this->Cell(13, 3, "PROY", 'R', 0, 'C');
+		$this->Cell(13, 3, "OBRA", 'R', 0, 'C');
+		$this->Cell(13, 3, "PARTIDA", 'R', 0, 'C');
+		$this->Cell(13, 3, "GEN", 'R', 0, 'C');
+		$this->Cell(13, 3, "ESPEC", 'R', 0, 'C');
+		$this->Cell(13, 3, "ESPEC", 'R', 0, 'C');
+		$this->Cell(13, 3, "AUX", 'R', 0, 'C');
+		$this->Cell(0, 3, "DISPONIBILIDAD", 'R', 1, 'C');
+		}
+    }//fin funtion
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(20);
+$pdf->SetRightMargin(20);
+$pdf->SetAutoPageBreak(true, 50);
+$pdf->AddPage();
+
+
+	if(!empty($req_cuerpo)){
+		$pdf->SetFont('vera', 'B', 12);
+		$pdf->Ln(10);
+		$pdf->Cell(0, 3, "CERTIFICACIÓN DE DISPONIBILIDAD PRESUPUESTARIA", '', 1, 'C');
+		$pdf->Ln(10);
+		$pdf->SetFont('vera', '', 9);
+		$pdf->MultiCell(0, 5, "          Por  medio  del  presente,  se  certifica  a  través  del  SISAP,  sistema  utilizado  para  la Contratación de Órdenes de compras y/o Servicios hasta la presente fecha, la disponibilidad Presupuestaria requerida según Certificacón Nº ".$req_cuerpo[0][0]['numero_requisicion']." de fecha ".$sisap->cambia_fecha($req_cuerpo[0][0]['fecha_requisicion'])." emitida para la (".$req_cuerpo[0][0]['unidad_solicitante']."), para la adquisición de \"(".$req_cuerpo[0][0]['descripcion_adquisicion'].")\" para el procedimiento de contratación ".$req_cuerpo[0][0]['cod_consulta_precio'].", detallado a continuación.", '', 'J');
+
+		$pdf->SetFont('vera', 'B', 7);
+		$pdf->Ln(8);
+		$pdf->Cell(13, 3, "", 'TRL', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "SUB", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "SUB", 'TR', 0, 'C');
+		$pdf->Cell(13, 3, "", 'TR', 0, 'C');
+		$pdf->Cell(0, 3, "", 'TR', 1, 'C');
+
+		$pdf->Cell(13, 3, "AÑO", 'RL', 0, 'C');
+		$pdf->Cell(13, 3, "SECTOR", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "PROG", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "PROG", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "PROY", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "OBRA", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "PARTIDA", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "GEN", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "ESPEC", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "ESPEC", 'R', 0, 'C');
+		$pdf->Cell(13, 3, "AUX", 'R', 0, 'C');
+		$pdf->Cell(0, 3, "DISPONIBILIDAD", 'R', 1, 'C');
+
+	if(!empty($req_partida)){
+		$pdf->SetFont('vera', '', 7);
+	foreach($req_partida as $req_rpartida){
+		$pdf->Cell(13, 5, $req_rpartida[0]['ano_requisicion'], 'TRBL', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_sector'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_programa'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_sub_prog'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_proyecto'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_activ_obra'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_partida'],3), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_generica'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_especifica'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_sub_espec'],2), 'TRB', 0, 'C');
+		$pdf->Cell(13, 5, mascara($req_rpartida[0]['cod_auxiliar'],4), 'TRB', 0, 'C');
+		$pdf->Cell(0, 5, $sisap->Formato2($req_rpartida[0]['disponibilidad']), 'TRB', 1, 'R');
+	} // END FOREACH
+	}
+
+
+	}else{
+		$pdf->SetFont('vera', 'B', 14);
+		$pdf->Ln(8);
+		$pdf->Cell(0, 28, "NO SE ENCONTRARON DATOS ...", 'TRBL', 1, 'C');
+	} // END ELSE IF !EMPTY
+
+/*
+	unset($_SESSION["enviado_por"]);
+	unset($_SESSION["cargo_por"]);
+	unset($_SESSION["fecha_requisicion"]);
+*/
+
+	$pdf->Output('certif_disponibilidad.pdf','D');
+}//fin if
+?>

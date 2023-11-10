@@ -1,0 +1,158 @@
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+function Formato_4_out($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-5,1)=='.') {
+        $sents = '.'.substr($price,-4);
+        $price = substr($price,0,strlen($price)-5);
+    } elseif (substr($price,-4,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-4);
+    } else {
+        $sents = '.0000';
+    }
+
+   if($sents==".0000"){
+   	   	return number_format($price,4,',','.');
+   }else{
+     $price = preg_replace("/[^0-9]/", "", $price);
+     return number_format($price.$sents,4,',','.');
+   }//fin else
+}//fin function
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CLASIFICACIÓN DEL SERVICIO","","950");?>
+
+<form name='data[shp500_aseo_clasificacion]'  method = "post" id='form'>
+<?= $sisap->OpenTable("950")?>
+<div id="buscar">
+<table border="0" width="100%">
+
+
+<th colspan="4" align="center"><br></th>
+
+<tr>
+ 	<td colspan="4" align="center">
+	  <table width="100%" border="0" class="tablacompromiso tablacompromiso2">
+		  <tr>
+		    	<td width="10%" align="center">C&oacute;digo</td>
+		    	<td width="45%" align="center">Denominaci&oacute;n de la clasificaci&oacute;n</td>
+		    	<td width="10%" align="center">Valor<br />Unidad<br />Tributaria</td>
+		    	<td width="10%" align="center">Cantidad<br />Unidades<br />Tributarias</td>
+		    	<td width="15%" align="center">Monto mensual</td>
+		    	<td width="10%" align="center">Acci&oacute;n</td>
+		  </tr>
+		  <tr>
+		    	<td align="center"><input type="text" name="data[shp500_aseo_clasificacion][codigo]"               value="<?= $sisap->AddCero2($codigo) ?>"    id="codigo"           class="inputtext"  readonly style="text-align:center" /></td>
+		    	<td align="center"><input type="text" name="data[shp500_aseo_clasificacion][denominacion]"         value=""                                    id="denominacion"     class="inputtext"  /></td>
+		    	<td align="center"><input type="text" name="data[shp500_aseo_clasificacion][valor_ut]"             value="<?= $sisap->Formato2($vut) ?>"        style="text-align:center"   id="valor_ut"      class="inputtext"    onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('valor_ut');" readonly="readonly" /></td>
+		    	<td align="center"><input type="text" name="data[shp500_aseo_clasificacion][cantidad_ut]"          value=""        style="text-align:center"   id="cantidad_ut"      class="inputtext"    onKeyPress="return solonumeros_con_punto(event);" onChange="javascript:if(eval(this.value)>eval(0)){$('monto_mensual').value = redondear((reemplazarPC($('valor_ut').value) * reemplazarPC(this.value)),2); moneda('monto_mensual'); $('monto_mensual').readOnly=true;}else{$('monto_mensual').readOnly=false; $('monto_mensual').value='';}" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('cantidad_ut');" onfocus="javascript:if(this.value=='0,00'){this.value='';}" /></td>
+		    	<td align="center"><input type="text" name="data[shp500_aseo_clasificacion][monto_mensual]"           value=""                                    id="monto_mensual"       class="inputtext"    style="text-align:center"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('monto_mensual');" /></td>
+		    	<td align="center"><?= $sisap->submitTagRemote('+', array(null,'url1' => '/shp500_aseo_clasificacion/guardar/', 'update1'=>'principal','id'=>'plus')); ?></td>
+    	  </tr>
+		  <tr>
+		  </table>
+  </td>
+</tr>
+</table>
+
+
+<br>
+
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid"  CLASS="TR_NEGRO tablacompromiso tablacompromiso2">
+		<tr bgcolor="#333">
+		    	<td width="10%" align="center">C&oacute;digo</td>
+		    	<td width="45%" align="center">Denominaci&oacute;n de la clasificaci&oacute;n</td>
+		    	<td width="10%" align="center">Valor<br />Unidad<br />Tributaria</td>
+		    	<td width="10%" align="center">Cantidad<br />Unidades<br />Tributarias</td>
+		    	<td width="15%" align="center">Monto mensual</td>
+		    	<td width="10%" align="center">Acci&oacute;n</td>
+		</tr>
+
+<?php
+
+ 	$i=0;
+ 	$total=0;
+
+ if(isset($datos)){
+  if($datos!=null){
+    foreach($datos as $ve){
+
+    	if($i%2==0){ $color ="#CDF2FF";}else{$color="#DAEBFF";}
+?>
+
+<tr bgcolor="<?= $color ?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td align="center" class="td4"><?= $sisap->AddCero2($ve['shd500_aseo_clasificacion']['cod_clasificacion']) ?></td>
+    <td class="td2" align="left"  id="denominacion_<?= $ve['shd500_aseo_clasificacion']['cod_clasificacion']?>" ><?= $ve['shd500_aseo_clasificacion']['denominacion'] ?></td>
+
+    <td class="td2" align="center"  id="valor_ut_<?= $ve['shd500_aseo_clasificacion']['cod_clasificacion']?>" ><?= $sisap->Formato2($ve['shd500_aseo_clasificacion']['valor_ut']) ?></td>
+    <td class="td2" align="center"  id="cantidad_ut_<?= $ve['shd500_aseo_clasificacion']['cod_clasificacion']?>" ><?= $sisap->Formato2($ve['shd500_aseo_clasificacion']['cantidad_ut']) ?></td>
+
+    <td class="td2"  align="right"  id="monto_mensual_<?= $ve['shd500_aseo_clasificacion']['cod_clasificacion']?>" ><?= $sisap->Formato2($ve['shd500_aseo_clasificacion']['monto_mensual']) ?></td>
+
+    <td align="center" class="td4">
+		<?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/shp500_aseo_clasificacion/editar2/'.$ve['shd500_aseo_clasificacion']['cod_clasificacion'].'/'.$i, array('update'=>"fila_".$i,'title'=>'Editar'),false,false,true); ?>
+		<?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/shp500_aseo_clasificacion/eliminar/'.$ve['shd500_aseo_clasificacion']['cod_clasificacion'], array('update'=>'distribuir','title'=>'Eliminar'),'Realmente desea eliminar este Registro',false,true); ?>
+    </td>
+</tr>
+
+<?php $i++;
+
+	}//fin foreach
+
+ }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+</tr>
+
+<?
+ }
+?>
+
+<?
+
+ }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+    <td align="center" class="td4"><br></td>
+</tr>
+
+<?
+ }
+?>
+
+</table></div>
+
+
+<div id="funcion"></div>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'));?>
+</div>
+
+<?=$sisap->CloseTable()
+
+?>
+
+</form>

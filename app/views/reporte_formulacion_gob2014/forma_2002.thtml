@@ -1,0 +1,176 @@
+<?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"PRESUPUESTO DE INGRESOS ESTADALES",NULL,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion_gob2014/forma_2002/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('datos/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?> FORMA: 2002</td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+    function setup ($orientation='Landscape',$unit='mm',$format='EXTRAOFICE') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+
+	function Header(){
+    $this->top_reporte_formulacion(array("PRESUPUESTO DE INGRESOS ESTADALES"), array("Y"=>"6", "X"=>"30", "Z"=>"13"), array("Y"=>"20", "X"=>"354"));
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(81,5,'C Ó D I G O','TRBL',0,'C', true);
+	$this->Cell(240,5,'','TR',0,'C', true);
+	$this->Cell(0,5,'','TR',1,'C', true);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(15,4,'','RL',0,'C', true);
+	$this->Cell(15,4,'SUB','R',0,'C', true);
+	$this->Cell(18,4,'','R',0,'C', true);
+	$this->Cell(18,4,'SUB','R',0,'C', true);
+	$this->Cell(15,4,'','R',0,'C', true);
+	$this->Cell(240,4,'','R',0,'C', true);
+	$this->Cell(0,4,'','R',1,'C', true);
+
+	$this->Cell(15,5,'RAMO','RBL',0,'C', true);
+	$this->Cell(15,5,'RAMO','RB',0,'C', true);
+	$this->Cell(18,5,'ESPECÍFICA','RB',0,'C', true);
+	$this->Cell(18,5,'ESPECÍFICA','RB',0,'C', true);
+	$this->Cell(15,5,'AUXILIAR','RB',0,'C', true);
+	$this->Cell(240,5,'DENOMINACIÓN','RB',0,'C', true);
+	$this->Cell(0,5,'MONTO','RB',1,'C', true);
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2002','',1,'R');
+    }
+
+
+}//fin clases
+
+
+    $pdf = new fpdfview('L', 'mm', 'EXTRAOFICE');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(30);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+foreach($datos as $row){
+	$cod_partida     =  $row[$modelo]['cod_partida'];
+	$cod_generica    =  $row[$modelo]['cod_generica'];
+	$cod_especifica  =  $row[$modelo]['cod_especifica'];
+	$cod_sub_espec   =  $row[$modelo]['cod_sub_espec'];
+	$cod_auxiliar    =  $row[$modelo]['cod_auxiliar'];
+	$estimacion      =  $row[$modelo]['estimacion_inicial'];
+	$denominacion    =  $row[$modelo]['denominacion'];
+
+
+if ($cod_partida!=0 && $cod_generica==0){
+	        $pdf->SetFont('vera','B',8);
+	        $pdf->Cell(15,7,$sisap->AddCero3($cod_partida),'TLB',0,'C');
+			$pdf->Cell(15,7,"",'TLB',0,'C');
+			$pdf->Cell(18,7,"",'TLB',0,'C');
+			$pdf->Cell(18,7,"",'TLRB',0,'C');
+			$pdf->Cell(15,7,"",'TLRB',0,'C');
+
+	        $varX = $pdf->GetX();
+   			$varY = $pdf->GetY();
+    		$pdf->Cell(240,1,"",'T',2,'C');
+    		$pdf->MultiCell(239,3,$denominacion,'','J');
+    		$varX = $varX+240;
+    		$pdf->SetXY($varX,$varY);
+
+			$pdf->Cell(0,7,$sisap->Formato2($estimacion),'TLRB',1,'R');
+			$pdf->Cell(0,0,"",'T',1);
+		    $pdf->SetFont('vera','',8);
+			$total = $total + $estimacion;
+
+}else if ($cod_partida!=0 && $cod_generica!=0 && $cod_especifica==0){
+	        $pdf->SetFont('vera','',8);
+	        $pdf->Cell(15,7,$sisap->AddCero3($cod_partida),'TLB',0,'C');
+	        $pdf->SetFont('vera','B',7);
+	        $pdf->Cell(15,7,$sisap->AddCero2($cod_generica),'TLB',0,'C');
+			$pdf->Cell(18,7,"",'TLB',0,'C');
+			$pdf->Cell(18,7,"",'TLRB',0,'C');
+			$pdf->Cell(15,7,"",'TLRB',0,'C');
+
+	        $varX = $pdf->GetX();
+   			$varY = $pdf->GetY();
+    		$pdf->Cell(240,1,"",'T',2,'C');
+    		$pdf->MultiCell(239,3,$denominacion,'','J');
+    		$varX = $varX+240;
+    		$pdf->SetXY($varX,$varY);
+
+			$pdf->Cell(0,7,$sisap->Formato2($estimacion),'TLRB',1,'R');
+			$pdf->Cell(0,0,"",'T',1);
+		    $pdf->SetFont('vera','',8);
+}else{
+
+	        $pdf->SetFont('vera','',8);
+	        $pdf->Cell(15,7,$sisap->AddCero3($cod_partida),'TLB',0,'C'); // valor de RAMO
+			$pdf->Cell(15,7,$sisap->AddCero2($cod_generica),'TLB',0,'C'); // valor de GEN
+			$pdf->Cell(18,7,$sisap->AddCero2($cod_especifica),'TLB',0,'C'); // valor de ESP
+			$pdf->Cell(18,7,$sisap->AddCero2($cod_sub_espec),'TLRB',0,'C'); // valor de SUB-ESP
+			$pdf->Cell(15,7,$sisap->AddCero4($cod_auxiliar),'TLRB',0,'C'); // valor de ORDINARIO
+
+			$varX = $pdf->GetX();//asigno X
+   			$varY = $pdf->GetY();//asigno Y
+    		$pdf->Cell(240,1,"",'T',2,'C');
+    		$pdf->MultiCell(239,3,$denominacion,'','J');
+    		$varX = $varX+240;//le sumo a X 170 del Cell debido a que lo capture antes.
+    		$pdf->SetXY($varX,$varY);// cargo XY
+
+			$pdf->Cell(0,7,$sisap->Formato2($estimacion),'TLRB',1,'R'); // valor de MONTO
+			$pdf->Cell(0,0,"",'T',1);
+	}
+
+}//foreach
+
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(321,6,"T O T A L: ",'TLB',0,'R');
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(0,6,$sisap->Formato2($total),'TLRB',1,'R');
+			$pdf->SetFont('vera','B',8);
+
+$pdf->OutPut('forma_2002_'.date("d-m-Y").'.pdf','D');
+
+}//fin for
+
+
+
+
+?>

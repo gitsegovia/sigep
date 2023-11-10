@@ -1,0 +1,318 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Planillas por cobrar'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form onSubmit="return reporte_hacienda2_valida_recibos();" name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda2/recibos_por_cobrar/5/'); ?>" >
+	<table border="0">
+	<tr>
+		<td>
+		    <?= $sisap->radioTagRemote("reporte_hacienda2/tipo_year", array('1'=>'Todo','2'=>'Un año especifico'), array('url1'=>'/reporte_hacienda2/recibos_por_cobrar/4', 'update1'=>'select_year', 'id'=>'tipo_year'), null, $opc=1);  ?>
+	    </td>
+    </tr>
+</table>
+<div id="select_year"></div>
+<table border="0">
+	<tr>
+	   <td colspan="2"> <br>
+	      <?= $sisap->radioTagRemote("reporte_hacienda2/tipo_busqueda", array('1'=>'Todos los cobradores','2'=>'Uno especifico'), array('url1'=>'/reporte_hacienda2/ventana_cobradores_1/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+	      <input name="data[reporte_hacienda2][rif_ci]" type="hidden" id="rif_ci" />
+	      <div id="funcion"></div>
+	   </td>
+    </tr>
+    <tr>
+	   <td colspan="2"> <br>
+	      <? /* $sisap->radioTagRemote("reporte_hacienda2/tipo_impuesto", array('1'=>'Todos los impuestos','2'=>'Uno especifico'), array('url1'=>'/reporte_hacienda2/recibos_por_cobrar/3', 'update1'=>'select_impuesto', 'id'=>'tipo_impuesto'), null, $opc=1); */ ?>
+	      <input name="data[reporte_hacienda2][tipo_impuesto]" type="hidden" id="2" />
+	   </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+       <td width='50%' align='right' class='fila_titulos'>TIPO DE IMPUESTO:</td>
+	   <td id="select_impuesto" align="center">
+	     <?= $sisap->selectTagRemote('reporte_hacienda2/impuesto', $tipo_impuesto,  null,  null ,array('onChange'=>'vacio','id'=>'impuesto', 'style'=>'width:250px', 'maxlength'=>'8', true), null, true); ?>
+	   </td>
+    </tr>
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+    </table>
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+<?php }else if($opcion==2){ ?>
+
+<?= $sisap->selectTagRemote('reporte_hacienda2/mes', $lista_mes,  null,  null ,array('onChange'=>'vacio','id'=>'mes', 'style'=>'width:130px', 'maxlength'=>'8', true), null, true); ?>
+
+
+
+<?php }else if($opcion==3){
+if($opcion_impuesto!=1){
+?><br>
+<?= $sisap->selectTagRemote('reporte_hacienda2/impuesto', $tipo_impuesto,  null,  null ,array('onChange'=>'vacio','id'=>'impuesto', 'style'=>'width:250px', 'maxlength'=>'8', true), null, true); ?>
+<?php } ?>
+
+
+
+<?php }else if($opcion==4){
+if($opcion_year!=1){
+?><br>
+<table border="0">
+	<tr>
+		<td width='40%' align='right' class='fila_titulos'>Año:</td>
+		<td>
+		    <?= $sisap->selectTagRemote('reporte_hacienda2/ano', $lista_ano,  null,  null ,array('id'=>'ano', 'style'=>'width:130px', 'maxlength'=>'8', true), null, true); ?>
+	    </td>
+    </tr>
+    </table>
+<?php } ?>
+
+
+
+<?php }else if($opcion==5){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "PLANILLAS POR COBRAR", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+        $this->SetFont('vera','B',8);
+        $this->Cell(0,5,'COBRADOR','TRL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->Cell(30,3,' Rif','TRL',0,'C');
+		$this->Cell(138,3,'','TRL',0,'C');
+		$this->Cell(0,3,'Condición','TR',1,'C');
+
+		$this->Cell(30,3,'Cédula Identidad','RL',0,'C');
+		$this->Cell(138,3,'Nombres y Apellidos / Razón social','RL',0,'C');
+		$this->Cell(0,3,'Actividad','R',1,'C');
+        $this->SetFont('vera','',6);
+
+		$this->Cell(30,5,$_SESSION["rif_cobrador"],'TRL',0,'C');
+		$this->Cell(138,5,$_SESSION["nombre_cobrador"],'TRL',0,'L');
+		$this->Cell(0,5,$_SESSION["condicion_cobrador"],'TR',1,'C');
+
+        $this->SetFont('vera','B',8);
+        $this->Cell(0,5,'IMPUESTO','TRL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->Cell(53,4,'Código ingreso','TRL',0,'C');
+		$this->Cell(0,4,'Denominación del Ingreso','TR',1,'C');
+        $this->SetFont('vera','',6);
+		$this->Cell(53,5,$_SESSION["cod_impuesto"],'TRL',0,'C');
+		$this->Cell(0,5,$_SESSION["denominacion_impuesto"],'TR',1,'L');
+
+        $this->SetFont('vera','B',6);
+		$this->Cell(15,4,'','TRL',0,'C');
+		$this->Cell(15,4,'','TR',0,'C');
+		$this->Cell(23,4,'Número','TR',0,'C');
+		$this->Cell(25,4,'R.I.F','TR',0,'C');
+		$this->Cell(90,4,'Nombres y Apellidos','TR',0,'C');
+		$this->Cell(0,4,'','TR',1,'C');
+
+		$this->Cell(15,3,'Año','BRL',0,'C');
+		$this->Cell(15,3,'Mes','BR',0,'C');
+		$this->Cell(23,3,'Planilla','BR',0,'C');
+		$this->Cell(25,3,'Cédula identidad','BR',0,'C');
+        $this->Cell(90,3,'Razón Social Contribuyente','BR',0,'C');
+		$this->Cell(0,3,'Monto','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+$contador_1 = 0;
+$contador_2 = 0;
+
+$montos_1 = 0;
+$montos_2 = 0;
+
+    $rif_cobrador     = "";
+	$cod_ingreso      = "";
+
+	$cod_partida      = 0;
+    $cod_generica     = 0;
+    $cod_especifica   = 0;
+    $cod_sub_espec    = 0;
+    $cod_auxiliar     = 0;
+
+	$_SESSION["rif_cobrador"]        = "";
+	$_SESSION["condicion_cobrador"]  = "";
+	$_SESSION["nombre_cobrador"]     = "";
+
+	$_SESSION["cod_impuesto"]            = "";
+	$_SESSION["denominacion_impuesto"]   = "";
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+
+for($i=0;$i<count($datos);$i++){
+	if($rif_cobrador!=$datos[$i][0]['rif_cobrador'] ||
+	   $cod_ingreso!=$datos[$i][0]['cod_ingreso']   ||
+	   $cod_partida      != $datos[$i][0]['cod_partida']    ||
+       $cod_generica     != $datos[$i][0]['cod_generica']   ||
+       $cod_especifica   != $datos[$i][0]['cod_especifica'] ||
+       $cod_sub_espec    != $datos[$i][0]['cod_sub_espec']  ||
+       $cod_auxiliar     != $datos[$i][0]['cod_auxiliar']
+       ){
+        if($contador_1!=0){
+        	$pdf->SetFont('vera','B',6);
+            $pdf->Cell(30,6,"TOTALES:",'RBL',0,'R');
+			$pdf->Cell(48,6,$contador_2,'BR',0,'C');
+	        $pdf->Cell(45,6,"",'BR',0,'L');
+	        $pdf->Cell(45,6,"Monto de recibos",'BR',0,'R');
+			$pdf->Cell(0,6, $sisap->Formato2($montos_2),'BR',1,'R');
+			$pdf->SetFont('vera','',6);
+        }
+
+	         $rif_cobrador    = $datos[$i][0]['rif_cobrador'];
+	         $cod_ingreso     = $datos[$i][0]['cod_ingreso'];
+
+	         $cod_partida      = $datos[$i][0]['cod_partida'];
+		     $cod_generica     = $datos[$i][0]['cod_generica'];
+		     $cod_especifica   = $datos[$i][0]['cod_especifica'];
+		     $cod_sub_espec    = $datos[$i][0]['cod_sub_espec'];
+		     $cod_auxiliar     = $datos[$i][0]['cod_auxiliar'];
+
+		     $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+	         $contador_2      = 0;
+	         $montos_2        = 0;
+
+            if($datos[$i][0]['condicion_actividad_cobrador']==1){$condicion_actividad="Activo";
+      }else if($datos[$i][0]['condicion_actividad_cobrador']==2){$condicion_actividad="Retirado";}
+
+		  $deno_partida    = $datos[$i][0]['deno_partida'];
+		  $deno_generica   = $datos[$i][0]['deno_generica'];
+		  $deno_especifica = $datos[$i][0]['deno_especifica'];
+		  $deno_sub_espe   = $datos[$i][0]['deno_sub_espe'];
+		  $deno_auxiliar   = $datos[$i][0]['deno_auxiliar'];
+
+		  if($deno_auxiliar==null || $deno_auxiliar==""){
+		  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+		  	 	if($deno_especifica==null || $deno_especifica==""){
+		  	 		if($deno_generica==null || $deno_generica==""){
+		  	 			if($deno_partida==null || $deno_partida==""){
+                               $denominacion_impuesto = "";
+						  }else{
+						  	 $denominacion_impuesto = $datos[$i][0]['deno_partida'];
+						  }
+					  }else{
+					  	 $denominacion_impuesto = $datos[$i][0]['deno_generica'];
+					  }
+				  }else{
+				  	 $denominacion_impuesto = $datos[$i][0]['deno_especifica'];
+				  }
+			  }else{
+			  	 $denominacion_impuesto = $datos[$i][0]['deno_sub_espe'];
+			  }
+		  }else{
+		  	 $denominacion_impuesto = $datos[$i][0]['deno_auxiliar'];
+		  }
+
+         $_SESSION["rif_cobrador"]            = $datos[$i][0]['rif_cobrador'];
+		 $_SESSION["condicion_cobrador"]      = $condicion_actividad;
+		 $_SESSION["nombre_cobrador"]         = $datos[$i][0]['nombre_razon_cobrador'];
+		 $_SESSION["cod_impuesto"]            = $cod_ingreso;
+		 $_SESSION["denominacion_impuesto"]   = $denominacion_impuesto;
+
+
+         if($datos[$i][0]['personalidad_cobrador']==1){$personalidad='Natural'; }else{$personalidad='Juridica';}
+
+         $pdf->AddPage();
+	}
+       $monto = ($datos[$i][0]['deuda_vigente'] + $datos[$i][0]['monto_recargo'] + $datos[$i][0]['monto_multa'] + $datos[$i][0]['monto_intereses']) -  $datos[$i][0]['monto_descuento'];
+       $contador_1++;
+       $contador_2++;
+       $montos_2 += $monto;
+       $montos_1 += $monto;
+
+       $mes= array(1=>'ENERO',2=>'FEBRERO',3=>'MARZO',4=>'ABRIL',5=>'MAYO',6=>'JUNIO',7=>'JULIO',8=>'AGOSTO',9=>'SEPTIEMBRE',10=>'OCTUBRE',11=>'NOVIEMBRE',12=>'DICIEMBRE');
+
+		$pdf->Cell(15,6,$datos[$i][0]['ano'],'RBL',0,'C');
+		$pdf->Cell(15,6,$mes[$datos[$i][0]['mes']],'BR',0,'C');
+		$pdf->Cell(23,6,mascara_seis($datos[$i][0]['numero_planilla']),'BR',0,'C');
+		$pdf->Cell(25,6,$datos[$i][0]['rif_cedula'],'BR',0,'C');
+        $pdf->Cell(90,6,$datos[$i][0]['razon_social_nombres'],'BR',0,'L');
+		$pdf->Cell(0,6, $sisap->Formato2($monto),'BR',1,'R');
+
+
+
+}//fin for
+
+            $pdf->SetFont('vera','B',6);
+            $pdf->Cell(30,6,"TOTALES:",'RBL',0,'R');
+			$pdf->Cell(48,6,$contador_2,'BR',0,'C');
+	        $pdf->Cell(45,6,"",'BR',0,'L');
+	        $pdf->Cell(45,6,"Monto de recibos",'BR',0,'R');
+			$pdf->Cell(0,6, $sisap->Formato2($montos_2),'BR',1,'R');
+			$pdf->SetFont('vera','',6);
+
+
+}else{
+	$_SESSION["COBRADOR"] = "";
+    $_SESSION["RESPONSABILIDAD"] = "";
+    $pdf->AddPage();
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+}
+
+$pdf->Output('planillas_po_cobrar_'.date("d_m_Y_h"),'D');
+
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

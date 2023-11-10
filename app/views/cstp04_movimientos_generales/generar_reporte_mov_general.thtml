@@ -1,0 +1,880 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+$cuenta=$cuenta_bancaria;
+$cuenta_bancaria=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+$_SESSION['mov_entidad']  = $cod_entidad_bancaria." - ".$ent;
+$_SESSION['mov_sucursal'] = $cod_sucursal." - ".$suc;
+$_SESSION['mov_cuenta']   = $cuenta_bancaria."  -  ".$concepto_manejo_cuenta;
+$_SESSION['anterior'] = "no";
+$_SESSION['saldo_anterior'] = "";
+$_SESSION['saldo_actual'] = "";
+
+
+
+
+function mascara2($cod){
+	$opc = strlen($cod);
+	if($opc==1){
+		$cod = '0'.$cod;
+	}
+	return $cod;
+}
+
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+    function Footer(){
+    $this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	//$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+
+	function Header()
+	{
+		   $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=14;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION['titulo_inst'];
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11=$_SESSION['titulo_inst'];
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=13;
+        	$t2=13;
+        }
+
+		$this->Image($escudo,6,16,$t1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"REPORTE DE MOVIMIENTOS GENERALES",'RLB',1,'C');
+		$this->Ln(2);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(25,4,"ENTIDAD",'TL',0,'L');
+		$this->Cell(0,4,$_SESSION['mov_entidad'],'TR',1,'L');
+
+		$this->Cell(25,3,"SUCURSAL",'L',0,'L');
+		$this->Cell(0,3,$_SESSION['mov_sucursal'],'R',1,'L');
+
+		$this->Cell(25,4,"CUENTA BANCARIA",'LB',0,'L');
+		$this->Cell(0,4,$_SESSION['mov_cuenta'],'RB',1,'L');
+
+		$varX_aux = $this->GetX() + 186;
+		$varY_aux = $this->GetY() - 27;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+
+		$this->Ln(3);
+
+		if($_SESSION['anterior']=="si"){
+		   $_SESSION['anterior']="no";
+					$this->SetFont('vera','B',6);
+					$this->Cell(181,4,"SALDO MES ANTERIOR  ",'TRLB',0,'R');
+					$this->SetFont('vera','',6);
+					$this->Cell(0,4,$_SESSION['saldo_anterior'],'TRLB',1,'R');
+					$this->Ln(3);
+		}
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(18,5,"FECHA",'TRLB',0,'C');
+		$this->Cell(70,5,"BENEFICIARIO",'TRLB',0,'C');
+		$this->Cell(23,5,"TIPO DOCUMENTO",'TRLB',0,'C');
+		$this->Cell(20,5,"NÚMERO",'TRLB',0,'C');
+		$this->Cell(25,5,"DEBE",'TRLB',0,'C');
+		$this->Cell(25,5,"HABER",'TRLB',0,'C');
+		$this->Cell(0,5,"SALDO",'TRB',1,'C');
+		$this->SetFont('vera','',6);
+	}
+}//fin de la clase PDF
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+	$ii=0;
+	foreach($vista as $mg){
+		$ii++;
+	}
+
+// $selectmes
+// $por_ano
+
+
+$tipo_doc[1]="DEP.";
+$tipo_doc[2]="N/C.";
+$tipo_doc[3]="N/D.";
+$tipo_doc[4]="CHE.";
+
+$mes_ano[1] ="ENERO";
+$mes_ano[2] ="FEBRERO";
+$mes_ano[3] ="MARZO";
+$mes_ano[4] ="ABRIL";
+$mes_ano[5] ="MAYO";
+$mes_ano[6] ="JUNIO";
+$mes_ano[7] ="JULIO";
+$mes_ano[8] ="AGOSTO";
+$mes_ano[9] ="SEPTIEMBRE";
+$mes_ano[10]="OCTUBRE";
+$mes_ano[11]="NOVIEMBRE";
+$mes_ano[12]="DICIEMBRE";
+
+$total_depo=0;
+$total_ncre=0;
+$total_ndeb=0;
+$total_cheq=0;
+
+$total_depositos_2=0;
+$total_nota_cred_2=0;
+$total_nota_deb_2=0;
+$total_cheques_2=0;
+
+$total_depositos=0;
+$total_nota_cred=0;
+$total_nota_deb=0;
+$total_cheques=0;
+$disponibilidad_cuenta=0;
+
+$cont=0;
+$mes=date("n");
+
+if($por_ano==1){// El reporte es completo, por Ano //
+$pdf->AddPage();
+for($m=1;$m<=$mes;$m++){
+
+	$imprime="no";
+	foreach($vista as $manuales_generales){
+		if($manuales_generales['v_cstd_mov_gral']['mes']==$m){
+			$imprime="si";
+
+				switch($manuales_generales['v_cstd_mov_gral']['tipo_documento']){
+					case '1':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+		   						$pdf->SetXY($varX,$varY);
+		   						$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+								$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+							}else{
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+		   						$pdf->SetXY($varX,$varY);
+		   						$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+							$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+		   						$pdf->SetXY($varX,$varY);
+		   						$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+								$total_depositos=$total_depositos-$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							}
+								$total_depo++;
+								break;
+					case '2':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_cred=$total_nota_cred-$manuales_generales['v_cstd_mov_gral']['monto'];
+						}
+							$total_ncre++;
+							break;
+					case '3':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_deb=$total_nota_deb-$manuales_generales['v_cstd_mov_gral']['monto'];
+
+						}
+							$total_ndeb++;
+							break;
+					case '4':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+							$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_cheques=$total_cheques-$manuales_generales['v_cstd_mov_gral']['monto'];
+
+						}
+							$total_cheq++;
+							break;
+				}//fin switch
+		 }
+	}
+		if($imprime=="si"){
+			$disponibilidad_total_cuenta=($total_depositos+$total_nota_cred)-($total_nota_deb-$total_cheques);
+			$pdf->Ln(2);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(88,4,"MES:  ".$mes_ano[$m]." ".date("Y"),'TL',0,'L');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(23,4,"DEPOSITOS",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,$sisap->Formato2($total_depositos),'TRLB',0,'R');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(30,4,"NOTAS DE DEBITO",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,4,$sisap->Formato2($total_nota_deb),'TRLB',1,'R');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(88,4,"DISPONIBILIDAD CUENTA: ".$sisap->Formato2($disponibilidad_cuenta),'BL',0,'L');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(23,4,"NOTAS DE CREDITO",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,$sisap->Formato2($total_nota_cred),'TRLB',0,'R');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(30,4,"CHEQUES",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,4,$sisap->Formato2($total_cheques),'TRLB',1,'R');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(0,3,"",'',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE DEPOSITOS",'TRL',0,'L');
+			$pdf->Cell(15,4,$total_depo,'TRL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE NOTAS DE CRÉDITO",'RL',0,'L');
+			$pdf->Cell(15,4,$total_ncre,'RL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE NOTAS DE DÉBITO",'RL',0,'L');
+			$pdf->Cell(15,4,$total_ndeb,'RL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE CHEQUES",'RLB',0,'L');
+			$pdf->Cell(15,4,$total_cheq,'RLB',1,'R');
+			$total_depo=0;
+			$total_ncre=0;
+			$total_ndeb=0;
+			$total_cheq=0;
+
+			$total_depositos=0;
+			$total_nota_cred=0;
+			$total_nota_deb=0;
+			$total_cheques=0;
+			$pdf->AddPage();
+		}
+
+}
+
+}else{//El reporte es mensual, se hacen los calculos hasta el mes anterior y se imprime el mes elegido por el usuario
+	  //Estamos en la opcion de mes".$por_ano."     ".$selectmes,'TRLB',1,'C');
+	for($m=1;$m<$selectmes;$m++){
+
+		foreach($vista as $manuales_generales){
+			if($manuales_generales['v_cstd_mov_gral']['mes']==$m){
+				$imprime="si";
+
+					switch($manuales_generales['v_cstd_mov_gral']['tipo_documento']){
+						case '1':
+							if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+								}else{
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_depositos=$total_depositos-$manuales_generales['v_cstd_mov_gral']['monto'];
+								}
+							break;
+
+
+						case '2':
+							if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+							}else{
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_cred=$total_nota_cred-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+							break;
+
+
+
+						case '3':
+							if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+							}else{
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_deb=$total_nota_deb-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+							break;
+
+
+
+						case '4':
+							if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+							}else{
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_cheques=$total_cheques-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+								break;
+					}//fin switch
+			}
+		}
+	}//Fin del for mes que calcula la disponibilidad del mes anterior
+	//$pdf->Cell(0,4,"DISPONIBILIDAD CUENTA: ".$disponibilidad_cuenta,'TRLB',1,'C');
+	$disponibilidad_cuenta_2=$disponibilidad_cuenta;
+	$_SESSION['anterior'] = "si";
+	$_SESSION['saldo_anterior'] = $sisap->Formato2($disponibilidad_cuenta);
+	$pdf->AddPage();
+	foreach($vista as $manuales_generales){
+		if($manuales_generales['v_cstd_mov_gral']['mes']==$selectmes){
+			$imprime="si";
+
+				switch($manuales_generales['v_cstd_mov_gral']['tipo_documento']){
+					case '1':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+		   						$pdf->SetXY($varX,$varY);
+		   						$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+								$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_depositos_2=$total_depositos_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+		   						$pdf->SetXY($varX,$varY);
+		   						$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+							$total_depositos=$total_depositos+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_depositos_2=$total_depositos_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$cadena_fecha_anul = split('-',$manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']);
+							$dia_anul = (int) $cadena_fecha_anul[2];
+							$mes_anul = (int) $cadena_fecha_anul[1];
+							$ano_anul = (int) $cadena_fecha_anul[0];
+
+							if(($ano_anul==$ano_movimiento) && ($mes_anul==$selectmes)){
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+								 	$varX = $pdf->GetX();
+								    $varY = $pdf->GetY();
+								    $pdf->Cell(70,1,"",'T',2);
+								    $pdf->SetFont('vera','',5);
+									$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+									$varX = $varX+70;
+			   						$pdf->SetXY($varX,$varY);
+			   						$pdf->SetFont('vera','',6);
+									$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+									$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+									$pdf->Cell(25,5,"",'TRLB',0,'R');
+									$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+									$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+									$pdf->Cell(0,0,"",'T',1,'R');
+									$total_depositos=$total_depositos-$manuales_generales['v_cstd_mov_gral']['monto'];
+									$total_depositos_2=$total_depositos_2-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+					    }//fin else
+						$total_depo++;
+						break;
+					case '2':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_nota_cred_2=$total_nota_cred_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_cred=$total_nota_cred+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_nota_cred_2=$total_nota_cred_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							$cadena_fecha_anul = split('-',$manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']);
+							$dia_anul = (int) $cadena_fecha_anul[2];
+							$mes_anul = (int) $cadena_fecha_anul[1];
+							$ano_anul = (int) $cadena_fecha_anul[0];
+
+							if(($ano_anul==$ano_movimiento) && ($mes_anul==$selectmes)){
+								$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+								 	$varX = $pdf->GetX();
+								    $varY = $pdf->GetY();
+								    $pdf->Cell(70,1,"",'T',2);
+								    $pdf->SetFont('vera','',5);
+									$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+									$varX = $varX+70;
+									$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+								$total_nota_cred=$total_nota_cred-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_cred_2=$total_nota_cred_2-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+						}//fin else
+						$total_ncre++;
+						break;
+					case '3':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_nota_deb_2=$total_nota_deb_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_nota_deb=$total_nota_deb+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_nota_deb_2=$total_nota_deb_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+
+							$cadena_fecha_anul = split('-',$manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']);
+							$dia_anul = (int) $cadena_fecha_anul[2];
+							$mes_anul = (int) $cadena_fecha_anul[1];
+							$ano_anul = (int) $cadena_fecha_anul[0];
+
+							if(($ano_anul==$ano_movimiento) && ($mes_anul==$selectmes)){
+								$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+								$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+								 	$varX = $pdf->GetX();
+								    $varY = $pdf->GetY();
+								    $pdf->Cell(70,1,"",'T',2);
+								    $pdf->SetFont('vera','',5);
+									$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+									$varX = $varX+70;
+									$pdf->SetXY($varX,$varY);
+									$pdf->SetFont('vera','',6);
+								$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+								$pdf->Cell(20,5,$manuales_generales['v_cstd_mov_gral']['numero_documento'],'TRLB',0,'C');
+								$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+								$pdf->Cell(25,5,"",'TRLB',0,'R');
+								$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+								$pdf->Cell(0,0,"",'T',1,'R');
+								$total_nota_deb=$total_nota_deb-$manuales_generales['v_cstd_mov_gral']['monto'];
+								$total_nota_deb_2=$total_nota_deb_2-$manuales_generales['v_cstd_mov_gral']['monto'];
+							}
+						}//fin else
+						$total_ndeb++;
+						break;
+					case '4':
+						if($manuales_generales['v_cstd_mov_gral']['condicion_actividad']==1){
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_cheques_2=$total_cheques_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+						}else{
+							$disponibilidad_cuenta=$disponibilidad_cuenta-$manuales_generales['v_cstd_mov_gral']['monto'];
+							$pdf->Cell(18,5,mascara2($manuales_generales['v_cstd_mov_gral']['dia'])."/".mascara2($manuales_generales['v_cstd_mov_gral']['mes'])."/".$manuales_generales['v_cstd_mov_gral']['ano_movimiento'],'TRLB',0,'C');
+							 	$varX = $pdf->GetX();
+							    $varY = $pdf->GetY();
+							    $pdf->Cell(70,1,"",'T',2);
+							    $pdf->SetFont('vera','',5);
+								$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+								$varX = $varX+70;
+								$pdf->SetXY($varX,$varY);
+								$pdf->SetFont('vera','',6);
+							$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']],'TRLB',0,'C');
+							$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+							$pdf->Cell(25,5,"",'TRLB',0,'R');
+							$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+							$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+							$pdf->Cell(0,0,"",'T',1,'R');
+							$total_cheques=$total_cheques+$manuales_generales['v_cstd_mov_gral']['monto'];
+							$total_cheques_2=$total_cheques_2+$manuales_generales['v_cstd_mov_gral']['monto'];
+
+
+							$cadena_fecha_anul = split('-',$manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']);
+							$dia_anul = (int) $cadena_fecha_anul[2];
+							$mes_anul = (int) $cadena_fecha_anul[1];
+							$ano_anul = (int) $cadena_fecha_anul[0];
+
+							if(($ano_anul==$ano_movimiento) && ($mes_anul==$selectmes)){
+									$disponibilidad_cuenta=$disponibilidad_cuenta+$manuales_generales['v_cstd_mov_gral']['monto'];
+									$pdf->Cell(18,5,$sisap->cambia_fecha($manuales_generales['v_cstd_mov_gral']['fecha_proceso_anulacion']),'TRLB',0,'C');
+									 	$varX = $pdf->GetX();
+									    $varY = $pdf->GetY();
+									    $pdf->Cell(70,1,"",'T',2);
+									    $pdf->SetFont('vera','',5);
+										$pdf->MultiCell(69,2,$manuales_generales['v_cstd_mov_gral']['beneficiario'],'','L');
+										$varX = $varX+70;
+										$pdf->SetXY($varX,$varY);
+										$pdf->SetFont('vera','',6);
+									$pdf->Cell(23,5,$tipo_doc[$manuales_generales['v_cstd_mov_gral']['tipo_documento']]." ANULADO",'TRLB',0,'C');
+									$pdf->Cell(20,5,$sisap->mascara_ocho($manuales_generales['v_cstd_mov_gral']['numero_documento']),'TRLB',0,'C');
+									$pdf->Cell(25,5,$sisap->Formato2($manuales_generales['v_cstd_mov_gral']['monto']),'TRLB',0,'R');
+									$pdf->Cell(25,5,"",'TRLB',0,'R');
+									$pdf->Cell(0,5,$sisap->Formato2($disponibilidad_cuenta),'TRB',1,'R');
+									$pdf->Cell(0,0,"",'T',1,'R');
+									$total_cheques=$total_cheques-$manuales_generales['v_cstd_mov_gral']['monto'];
+									$total_cheques_2=$total_cheques_2-$manuales_generales['v_cstd_mov_gral']['monto'];
+
+							}
+						}//fin else
+						$total_cheq++;
+						break;
+				}//fin switch
+		 }
+	}//
+	$disponibilidad_total_cuenta = $disponibilidad_cuenta_2 + ($total_depositos_2+$total_nota_cred_2) - ($total_nota_deb_2+$total_cheques_2);
+			$pdf->Ln(2);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(88,4,"MES:  ".$mes_ano[$m]." ".date("Y"),'TL',0,'L');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(23,4,"DEPOSITOS",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,$sisap->Formato2($total_depositos_2),'TRLB',0,'R');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(30,4,"NOTAS DE DEBITO",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,4,$sisap->Formato2($total_nota_deb_2),'TRLB',1,'R');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(88,4,"DISPONIBILIDAD CUENTA: ".$sisap->Formato2($disponibilidad_total_cuenta),'BL',0,'L');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(23,4,"NOTAS DE CREDITO",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,4,$sisap->Formato2($total_nota_cred_2),'TRLB',0,'R');
+			$pdf->SetFont('vera','B',5);
+			$pdf->Cell(30,4,"CHEQUES",'TRLB',0,'R');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,4,$sisap->Formato2($total_cheques_2),'TRLB',1,'R');
+
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(0,3,"",'',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE DEPOSITOS",'TRL',0,'L');
+			$pdf->Cell(15,4,$total_depo,'TRL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE NOTAS DE CRÉDITO",'RL',0,'L');
+			$pdf->Cell(15,4,$total_ncre,'RL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE NOTAS DE DÉBITO",'RL',0,'L');
+			$pdf->Cell(15,4,$total_ndeb,'RL',1,'R');
+			$pdf->Cell(45,4,"CANTIDAD DE CHEQUES",'RLB',0,'L');
+			$pdf->Cell(15,4,$total_cheq,'RLB',1,'R');
+			$total_depo=0;
+			$total_ncre=0;
+			$total_ndeb=0;
+			$total_cheq=0;
+}
+$pdf->Output('reporte_libro_de_cuentas_'.date("d-m-Y"),'D');
+?>

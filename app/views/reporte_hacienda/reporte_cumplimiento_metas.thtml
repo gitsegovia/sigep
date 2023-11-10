@@ -1,0 +1,167 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"CUMPLIMIENTO DE METAS","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/reporte_cumplimiento_metas/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+
+<table width="20%">
+	<tr>
+		<td align="center"><b>Ano:</b></td>
+		<td align="center"><?= $html->selectTag('reporte_hacienda/ano', $ano, date('Y'), $selectAttr = array(),  $optionAttr = array(), $showEmpty = true, $return = false);  ?></td>
+	</tr>
+</table>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$titulo_A = "CUMPLIMIENTO DE METAS";
+		$titulo_B = "AÑO: ".$titulo_B = $_SESSION['ano_report'];
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"191"));
+
+       	$this->SetFont('vera','B',6);
+		$this->Cell(25,3,'Código','TRL',0,'C');
+		$this->Cell(85,3,'','TR',0,'C');
+		$this->Cell(24,3,'Monto','TR',0,'C');
+		$this->Cell(24,3,'Monto','TR',0,'C');
+		$this->Cell(24,3,'Monto por','TR',0,'C');
+		$this->Cell(0,3,'Monto','TR',1,'C');
+
+		$this->Cell(25,3,'Ingreso','RBL',0,'C');
+		$this->Cell(85,3,'Denominación del ingreso','RB',0,'C');
+		$this->Cell(24,3,'Estimado','RB',0,'C');
+		$this->Cell(24,3,'Recaudado','RB',0,'C');
+		$this->Cell(24,3,'Recaudar por','RB',0,'C');
+		$this->Cell(0,3,'Superávit','RB',1,'C');
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+$ii=0;
+
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+$total_d = 0;
+
+foreach($datos2 as $ve){
+
+   	    if($ii%2==0){ $color = "#CDF2FF"; }else{ $color = "#DAEBFF";  } $ii++;
+
+
+          $cod_partida      = $ve["v_cfpd03_denominacion_partida"]['cod_partida'];
+	      $cod_generica     = $ve["v_cfpd03_denominacion_partida"]['cod_generica'];
+	      $cod_especifica   = $ve["v_cfpd03_denominacion_partida"]['cod_especifica'];
+	      $cod_sub_espec    = $ve["v_cfpd03_denominacion_partida"]['cod_sub_espec'];
+	      $cod_auxiliar     = $ve["v_cfpd03_denominacion_partida"]['cod_auxiliar'];
+		  $cod_ingreso = $cod_partida.".".mascara2($cod_generica).".".mascara2($cod_especifica).".".mascara2($cod_sub_espec).".".mascara_cuatro($cod_auxiliar);
+
+		  $deno_partida    = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+		  $deno_generica   = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+		  $deno_especifica = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+		  $deno_sub_espe   = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+		  $deno_auxiliar   = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+
+		  $estimacion_inicial    = $ve["v_cfpd03_denominacion_partida"]['estimacion_inicial'];
+		  $ingresos_adicionales  = $ve["v_cfpd03_denominacion_partida"]['ingresos_adicionales'];
+		  $rebajas               = $ve["v_cfpd03_denominacion_partida"]['rebajas'];
+		  $monto_facturado       = $ve["v_cfpd03_denominacion_partida"]['monto_facturado'];
+		  $monto_cobrado         = $ve["v_cfpd03_denominacion_partida"]['monto_cobrado'];
+
+		  $monto_estimado     = ($estimacion_inicial+$ingresos_adicionales)-$rebajas;
+		  $monto_recaudado    = $monto_cobrado;
+
+
+
+
+		        if($monto_estimado > $monto_recaudado){
+		  	$monto_por_recaudar = $monto_estimado - $monto_recaudado;
+		    $monto_supervati    = 0;
+		  }else if ($monto_recaudado > $monto_estimado ){
+		  	$monto_por_recaudar = 0;
+		    $monto_supervati    = $monto_recaudado - $monto_estimado;
+		  }else{
+		  	$monto_por_recaudar = 0;
+		    $monto_supervati    = 0;
+		  }
+
+
+		  if($deno_auxiliar==null || $deno_auxiliar==""){
+		  	 if($deno_sub_espe==null || $deno_sub_espe==""){
+		  	 	if($deno_especifica==null || $deno_especifica==""){
+		  	 		if($deno_generica==null || $deno_generica==""){
+		  	 			if($deno_partida==null || $deno_partida==""){
+                               $denominacion_impuesto = "";
+						  }else{
+						  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_partida'];
+						  }
+					  }else{
+					  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_generica'];
+					  }
+				  }else{
+				  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_especifica'];
+				  }
+			  }else{
+			  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_sub_espe'];
+			  }
+		  }else{
+		  	 $denominacion_impuesto = $ve["v_cfpd03_denominacion_partida"]['deno_auxiliar'];
+		  }
+
+		$pdf->Cell(25,6,$cod_ingreso,'RL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(85,1,"",'',2,'C');
+		$pdf->MultiCell(84,2,cambiar_mayuscula_basic($denominacion_impuesto),'','L');
+		$varX = $varX+85;
+		$pdf->SetXY($varX,$varY);
+		//$pdf->Cell(85,6,cambiar_mayuscula_basic($denominacion_impuesto),'R',0,'L');
+		$pdf->Cell(24,6,$sisap->Formato2($monto_estimado),'RL',0,'R');
+		$pdf->Cell(24,6,$sisap->Formato2($monto_recaudado),'R',0,'R');
+		$pdf->Cell(24,6,$sisap->Formato2($monto_por_recaudar),'R',0,'R');
+		$pdf->Cell(0,6,$sisap->Formato2($monto_supervati),'R',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+
+		    $total_a += $monto_estimado;
+			$total_b += $monto_recaudado;
+			$total_c += $monto_por_recaudar;
+			$total_d += $monto_supervati;
+
+}//fin for
+
+        $pdf->SetFont('vera','B',6);
+        $pdf->Cell(110,6,cambiar_mayuscula_basic("TOTALES:"),'RL',0,'R');
+		$pdf->Cell(24,6,$sisap->Formato2($total_a),'RL',0,'R');
+		$pdf->Cell(24,6,$sisap->Formato2($total_b),'R',0,'R');
+		$pdf->Cell(24,6,$sisap->Formato2($total_c),'R',0,'R');
+		$pdf->Cell(0,6,$sisap->Formato2($total_d),'R',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+
+
+$pdf->Output('reporte_cumplimiento_de_metas_'.date('d-m-Y').'.pdf','D');
+}
+?>

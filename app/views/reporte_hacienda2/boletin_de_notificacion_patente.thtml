@@ -1,0 +1,535 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('BOLETÍN DE NOTIFICACIÓN DE COBRO'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form onSubmit="return reporte_hacienda2_boletin_not_pat_1();" name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda2/boletin_de_notificacion_patente/4/'); ?>" >
+   <table border="0">
+    <tr>
+        <td width='50%' align='right' class='fila_titulos'>Año:</td>
+		<td>
+	    <td align="center">
+        	<input type='text' name='data[reporte_hacienda2][ano]' size="4" maxlength="4" style="text-align:center" id='ano' value='<?= $ano_arranque ?>' class='inputtext' />
+	    </td>
+    </tr>
+    </table>
+<br>
+
+
+<?php
+
+if($articulos==""){
+	$readonly    = "readonly";
+	$disabled_1  = "";
+	$disabled_2  = "disabled";
+}else{
+	$readonly    = "";
+	$disabled_1  = "disabled";
+	$disabled_2  = "";
+}
+
+?>
+ <table border="0">
+<tr>
+  <td align="center"><b>ARTÍCULOS</b> <br> <br></td>
+</tr>
+<tr>
+  <td align="left" style="background:#F7F8FD; color:#000000;">
+	<?php echo "<textarea id='Contenido_FCK' name='contenido_FCK' value='".$articulos."' ".$readonly.">".$articulos."</textarea>"; ?>
+	<br /><br />
+	<?php /*echo $html->textarea('Contenido2', array('rows'=>'4',  'cols' => '126','', 'value'=>'contenido','id' =>'Contenido2', 'disabled'=>'false'),  false)*/?>
+	<?php echo $fck->load('Contenido_FCK', 'Default_2', 550, 400); ?>
+	<?php echo "<input type='hidden' name='control' id='control' value='0' />"?>
+	<?php echo "<input type='hidden' name='control' id='ano_arranque_aux' value='".$ano_arranque."' />"?>
+  </td>
+</tr>
+</table>
+
+
+<br>
+    <table border="0">
+    <tr>
+       <td  align="center">
+             <?= $sisap->submitTagRemote('guardar', array("funcion"=>"reporte_hacienda2_boletin_not_pat_2",'url1' => '/reporte_hacienda2/boletin_de_notificacion_patente/21', 'update1'=>'funcion','id'=>'plus2', $disabled_1=>$disabled_1)); ?>
+             <?= $sisap->submitTagRemote('guardar', array("funcion"=>"reporte_hacienda2_boletin_not_pat_2",'url1' => '/reporte_hacienda2/boletin_de_notificacion_patente/2',  'update1'=>'funcion','id'=>'plus',  $disabled_1=>$disabled_1)); ?>
+         	 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ($disabled_2=>$disabled_2,'type'=>'button', 'value'=>'modificar', 'id'=>'modificar'), array('url1'=>'/reporte_hacienda2/boletin_de_notificacion_patente/3', 'update1'=>'funcion'))?>
+         	 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('disabled'=>'disabled',  'type'=>'button', 'value'=>'regresar',  'id'=>'regresar'),  array('url1'=>'/reporte_hacienda2/boletin_de_notificacion_patente/1', 'update1'=>'principal'))?>
+
+             <div id="funcion"></div>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+    </tr>
+    </table>
+</form>
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+<?php }else if($opcion==2){?>
+
+<script>
+    $("plus2").click();
+</script>
+
+<?php }else if($opcion==21){
+
+       if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+?>
+
+<script>
+    bloqueo_de_fck_editor('Contenido_FCK', 1);
+	$("regresar").disabled=true;
+	$("modificar").disabled=false;
+	$("plus").disabled=true;
+	$("plus2").disabled=true;
+	$("Contenido_FCK").readOnly=true;
+</script>
+
+<?php }else if($opcion==3){ ?>
+
+<script>
+    bloqueo_de_fck_editor('Contenido_FCK', 2);
+	$("Contenido_FCK").readOnly=false;
+	$("regresar").disabled=false;
+	$("modificar").disabled=true;
+	$("plus").disabled=false;
+	$("plus2").disabled=false;
+</script>
+
+<?php }else if($opcion==4){
+
+
+
+vendor('tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header(){
+	$titulo_A = "BOLETIN DE NOTIFICACIÓN";
+//    $this->top_reporte($titulo_A, null, null, array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+//    $this->Ln(10);
+    }
+}//fin clase
+
+/*
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+
+*/
+$pdf = new fpdfview('P', PDF_UNIT, 'LETTER', true, 'UTF-8', false);
+$pdf->AliasNbPages('TPAG');
+// set document information
+$pdf->SetCreator(PDF_CREATOR);
+$pdf->SetAuthor('Gobernacion de falcon');
+$pdf->SetTitle('Oficio invitacion');
+$pdf->SetSubject('Oficio de invitacion');
+$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
+//$pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+//$pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+$pdf->SetMargins('5', '12', '5');//PDF_MARGIN_RIGHT
+//$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+//$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->SetAutoPageBreak(TRUE, '5');
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+ $pdf->Ln(10);
+
+if(isset($datos_1)){
+
+	for($i=0;$i<count($datos_1);$i++){
+
+		$pdf->AddPage();
+		$titulo_A = "BOLETÍN DE NOTIFICACIÓN";
+        $pdf->top_reporte($titulo_A, null, null, array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+		$pdf->SetFont('helvetica','B',7);
+		$mes= array('01'=>'ENERO','02'=>'FEBRERO','03'=>'MARZO','04'=>'ABRIL','05'=>'MAYO','06'=>'JUNIO','07'=>'JULIO','08'=>'AGOSTO','09'=>'SEPTIEMBRE','10'=>'OCTUBRE','11'=>'NOVIEMBRE','12'=>'DICIEMBRE');
+		$pdf->Cell(0,4,cambiar_mayuscula_basic($datos_1[$i][0]['conocido'].', '.date("d").' de '.$mes[date("m")].' de '.$year),'TRL',1,'R');
+
+        $pdf->Cell(0,6,"",'LR',1,'');
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(33,4,cambiar_mayuscula_basic('Nombre o Razón Social:'),'L',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(80,4,cambiar_mayuscula_basic($datos_1[$i][0]['razon_social_nombres']),'',0,'L');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(28,4,cambiar_mayuscula_basic('Rif o Cédula de Identidad:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(35,4,cambiar_mayuscula_basic($datos_1[$i][0]['rif_cedula']),'',0,'C');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(8,4,cambiar_mayuscula_basic('N. Patente:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(0,4,cambiar_mayuscula_basic($datos_1[$i][0]['numero_patente']),'R',1,'C');
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(11,4,cambiar_mayuscula_basic('Estado:'),'L',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(60,4,cambiar_mayuscula_basic($datos_1[$i][0]['deno_cod_estado']),'',0,'L');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(15,4,cambiar_mayuscula_basic('Municipio:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(60,4,cambiar_mayuscula_basic($datos_1[$i][0]['deno_cod_municipio']),'',0,'L');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(16,4,cambiar_mayuscula_basic('Parroquia:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(0,4,cambiar_mayuscula_basic($datos_1[$i][0]['deno_cod_parroquia']),'R',1,'L');
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(23,4,cambiar_mayuscula_basic('Centro poblado:'),'L',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(48,4,cambiar_mayuscula_basic($datos_1[$i][0]['deno_cod_centro']),'',0,'L');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(23,4,cambiar_mayuscula_basic('Calle o Avenida:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(52,4,cambiar_mayuscula_basic($datos_1[$i][0]['deno_cod_calle_avd']),'',0,'L');
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(22,4,cambiar_mayuscula_basic('Nº Casa o Local:'),'',0,'L');
+		$pdf->SetFont('helvetica','',6);
+		$pdf->Cell(0,4,cambiar_mayuscula_basic($datos_1[$i][0]['numero_vivienda_local']),'R',1,'L');
+
+		$pdf->Cell(0,3,'','RL',1);
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(10,4,cambiar_mayuscula_basic('Rubro'),'BL',0,'L');
+		$pdf->Cell(130,4,cambiar_mayuscula_basic('Actividad'),'B',0,'C');
+		$pdf->Cell(20,4,cambiar_mayuscula_basic('Ingreso Bs.'),'B',0,'C');
+		$pdf->Cell(20,4,cambiar_mayuscula_basic('%'),'B',0,'C');
+		$pdf->Cell(0,4,cambiar_mayuscula_basic('Impuesto Bs.'),'BR',1,'C');
+
+		$monto_a = 0;
+		$monto_b = 0;
+		$desde   = 0;
+
+if(isset($datos_2)){
+	for($j=0;$j<count($datos_2);$j++){
+			if($datos_1[$i][0]['rif_cedula']==$datos_2[$j][0]['rif_cedula'] &&  $datos_1[$i][0]['numero_declaracion']==$datos_2[$j][0]['numero_declaracion']){ $desde++;
+
+				$monto_a +=$datos_2[$j][0]['monto_impuesto'];
+				$pdf->SetFont('helvetica','B',6);
+				$pdf->Cell(20,4,cambiar_mayuscula_basic($datos_2[$j][0]['cod_actividad']),'L',0,'L');
+				$pdf->SetFont('helvetica','',6);
+//				$pdf->Cell(115,4,cambiar_mayuscula_basic($datos_2[$j][0]['denominacion_actividad']),'',0,'L');
+                    $datos_2[$j][0]['denominacion_actividad']=str_replace("\n","",  $datos_2[$j][0]['denominacion_actividad']);
+		            $varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$pdf->Cell(115,1,"",'',2,'C');
+					$pdf->SetXY($varX,$varY-1);
+					$pdf->MultiCell(114,2,cambiar_mayuscula_basic($datos_2[$j][0]['denominacion_actividad']),'','L');//--[DENOMINACIÓN]
+					$varX = $varX+115;
+					$pdf->SetXY($varX,$varY);
+
+				$pdf->Cell(25,4,$sisap->Formato2($datos_2[$j][0]['monto_ingresos']),'',0,'R');
+				$pdf->Cell(20,4,$sisap->Formato2($datos_2[$j][0]['alicuota_aplicada']),'',0,'C');
+				$pdf->Cell(0,4, $sisap->Formato2($datos_2[$j][0]['monto_impuesto']),'R',1,'R');
+			}else{
+				if($desde!=0){break;}
+			}
+		}//fin for
+}//fin if
+
+		for($ii=$desde; $ii<=9; $ii++){
+			$pdf->SetFont('helvetica','B',6);
+			$pdf->Cell(20,4,cambiar_mayuscula_basic(""),'L',0,'C');
+			$pdf->SetFont('helvetica','',6);
+			$pdf->Cell(115,4,cambiar_mayuscula_basic(''),'',0,'L');
+			$pdf->Cell(25,4,cambiar_mayuscula_basic(''),'',0,'R');
+			$pdf->Cell(20,4,cambiar_mayuscula_basic(''),'',0,'C');
+			$pdf->Cell(0,4,cambiar_mayuscula_basic(''),'R',1,'R');
+		}
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(180,5,cambiar_mayuscula_basic(" Fijación para el ejercicio: ".$year),'L',0,'L');
+		$pdf->Cell(0,5,$sisap->Formato2($monto_a),'RB',1,'R');
+
+		$divide  = 0;
+
+
+
+		      if($datos_1[$i][0]['frecuencia_pago']==1){  $frecuencia_pago_aux = "Mensual";    $frecuencia_pago_aux_2 = "MES";        $divide = 12;
+		}else if($datos_1[$i][0]['frecuencia_pago']==2){  $frecuencia_pago_aux = "Bimestral";  $frecuencia_pago_aux_2 = "DOS MESES";  $divide = 6;
+	    }else if($datos_1[$i][0]['frecuencia_pago']==3){  $frecuencia_pago_aux = "Trimestral"; $frecuencia_pago_aux_2 = "TRIMESTRE";  $divide = 4;
+	    }else if($datos_1[$i][0]['frecuencia_pago']==4){  $frecuencia_pago_aux = "Semestral";  $frecuencia_pago_aux_2 = "SEMESTRE";   $divide = 2;
+	    }else if($datos_1[$i][0]['frecuencia_pago']==5){  $frecuencia_pago_aux = "Anual";      $frecuencia_pago_aux_2 = "AÑO";        $divide = 1;
+		}
+
+         $monto_b = $monto_a/$divide;
+
+		$denominacion_liquidacion  = "Liquidación. Bs. ".$sisap->Formato2($monto_b)." Por cada ".$frecuencia_pago_aux_2.". Impuesto que ha de ser pagado por ante las Oficinas Recaudadoras de Hacienda Municipal, de la siguiente manera:";
+
+		$pdf->SetFont('helvetica','',7);
+		$pdf->Cell(1,11,"",'L',0);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(204,1,"",'',2,'C');
+			$pdf->MultiCell(203,3,cambiar_mayuscula_basic($denominacion_liquidacion),'','L');//--[Coor]
+			$varX = $varX+204;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,11,"",'R',1);
+		$pdf->Cell(0,1,"",'RLT',1);
+
+		$termina_1 = 0;
+
+		      if($datos_1[$i][0]['frecuencia_pago']==1){
+														    $pdf->SetFont('helvetica','B',6);
+															$pdf->Cell(20,4,'ENERO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'FEBRERO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'MARZO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'ABRIL','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'MAYO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'JUNIO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'JULIO','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'AGOSTE','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'SEPTIEMBRE','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'OCTUBRE','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'NOVIEMBRE','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DICIEMBRE','L',0,'L');
+															$pdf->Cell(10,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+		}else if($datos_1[$i][0]['frecuencia_pago']==2){
+			                                                $pdf->Cell(20,4,'DE: ENERO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'FEBRERO','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: MARZO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'ABRIL','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: MAYO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'JUNIO','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: JULIO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'AGOSTO:','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: SEPTIEMBRE','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'OCTUBRE','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: NOVIEMBRE','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'DICIEMBRE','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+
+	    }else if($datos_1[$i][0]['frecuencia_pago']==3){
+
+	    	                                                $pdf->Cell(20,4,'DE: ENERO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'MARZO','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: ABRIL','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'JUNIO','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: JULIO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'SEPTIEMBRE','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: OCTUBRE','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'DICIEMBRE:','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+	    }else if($datos_1[$i][0]['frecuencia_pago']==4){
+	    	                                                $pdf->Cell(20,4,'DE: ENERO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'JUNIO','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(20,4,'DE: JULIO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'DICIEMBRE','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+	    }else if($datos_1[$i][0]['frecuencia_pago']==5){
+	    	                                                $pdf->Cell(20,4,'DE: ENERO','L',0,'L');
+															$pdf->Cell(29,4,'A:','',0,'C');
+															$pdf->Cell(35,4,'DICIEMBRE','',0,'L');
+															$pdf->Cell(5,4,'BS','',0,'L');
+															$pdf->Cell(0,4,$sisap->Formato2($monto_b),'R',1,'L');
+
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+															$pdf->Cell(0,4,"",'RL',1,'L');
+		}
+
+
+
+
+		$pdf->SetFont('helvetica','B',7);
+		$pdf->Cell(0,1,"",'TRL',1,'C');
+
+
+        $denominacion_liquidacion  = "<table width='100%' ><tr><td valign='top'>".$articulos."</td></tr></table>";
+		$pdf->SetFont('helvetica','',12);
+		$pdf->Cell(1,80,"",'L',0);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+//			$pdf->Cell(204,1,"",'',2,'C');
+			//$pdf->MultiCell(203,3,$denominacion_liquidacion,'','L');//--[Coor]
+			$pdf->WriteHTML($denominacion_liquidacion, true, 0, true, true);
+			$varX = $varX+204;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,80,"",'R',1);
+		$pdf->Cell(0,0,"",'T',1);
+
+
+		$pdf->SetFont('helvetica','B',6);
+		$pdf->Cell(0,5,cambiar_mayuscula_basic('RECIBIDO POR'),'',1,'C');
+
+		$pdf->Ln(2);
+
+		$pdf->Cell(15,4,cambiar_mayuscula_basic('Nombre:'),'',0,'C');
+		$pdf->Cell(50,4,'','B',0,'L');
+		$pdf->Cell(10,4,cambiar_mayuscula_basic('C.I.'),'',0,'C');
+		$pdf->Cell(25,4,'','B',0,'C');
+		$pdf->Cell(15,4,cambiar_mayuscula_basic('Cargo:'),'',0,'C');
+		$pdf->Cell(55,4,'','B',0,'L');
+		$pdf->Cell(15,4,cambiar_mayuscula_basic('Fecha:'),'',0,'C');
+		$pdf->Cell(0,4,'','B',0,'C');
+
+	}//fin for
+
+}else{
+
+    $pdf->Ln(10);
+    $pdf->SetFont('helvetica','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+}
+
+
+$pdf->Output('boletin_notificacion_'.date("d_m_Y_h"),'D');
+
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

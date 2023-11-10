@@ -1,0 +1,391 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+	set_time_limit(0);
+
+	if(isset($datos_firmantes) && !empty($datos_firmantes)){
+		$_SESSION['contenido_pie_pag'] = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+	}else{
+		$_SESSION['contenido_pie_pag'] = "";
+	}
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,1,"",'TRL',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'RL',1,'C');
+	  //$this->Cell(0,3,"ESTADO ".$_SESSION['estado'],'RL',1,'C');
+		$this->Cell(0,3,"".$_SESSION['institucion'],'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,3,"".$_SESSION['dependencia'],'RL',1,'C');
+		$this->SetFont('vera','I',7);
+		$this->Cell(0,3,"DIRECCIÓN DE RECURSOS HUMANOS",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+		$this->SetFont('vera','BI',7);
+		$this->Cell(0,3,"INTERESES MORATORIOS PARA LAS PRESTACIONES SOCIALES",'RL',1,'C');
+		$this->Cell(0,1,"",'RL',1,'C');
+        $this->SetFont('vera','B',6);
+
+		$this->SetFont('vera','B',6);
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,"",'T',1,'C');
+
+if($_SESSION['lista_camposrp']!=1){
+
+
+
+		$pdf->Cell(30,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(35,4,"MONTO",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(25,4,"             MONTO ",'',0,'C');
+		$pdf->Cell(0,4,"",'',1,'C');
+
+        $pdf->Cell(30,1,"",'',0,'C');
+		$pdf->Cell(20,1,"DESDE",'',0,'C');
+		$pdf->Cell(20,1,"HASTA",'',0,'C');
+		$pdf->Cell(20,1,"DIAS",'',0,'C');
+		$pdf->Cell(35,1,"PRESTACIONES SOCIALES",'',0,'C');
+		$pdf->Cell(20,1,"TASA",'',0,'C');
+		$pdf->Cell(25,1,"INTERESES",'',0,'R');
+		$pdf->Cell(0,1,"",'',1,'R');
+
+        $pdf->Cell(30,3,"",'',0,'C');
+		$pdf->Cell(20,3,"---------",'',0,'C');
+		$pdf->Cell(20,3,"---------",'',0,'C');
+		$pdf->Cell(20,3,"------",'',0,'C');
+		$pdf->Cell(35,3,"----------------------------------",'',0,'C');
+		$pdf->Cell(20,3,"-------",'',0,'C');
+		$pdf->Cell(25,3,"---------------",'',0,'R');
+		$pdf->Cell(0,3,"",'',1,'R');
+}
+
+	}
+
+	function Footer(){
+		$this->SetY(-11);
+		$this->SetFont('vera','I',6);
+		$this->MultiCell(0,3,$_SESSION['contenido_pie_pag'],'','C');
+	}
+
+}
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+$_SESSION['lista_camposrp'] = 2;
+
+$motivo=$sisap->vtipo_motivo_retiro();
+
+if(isset($datos_personales) && !empty($datos_personales)){
+
+	$pdf->Cell(31,4,"TIPO DE NÓMINA: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->MultiCell(0,4,$denominacion,'','J');
+
+	$nombre_comp = $datos_personales[0][0]['primer_nombre']." ".$datos_personales[0][0]['segundo_nombre']." ".$datos_personales[0][0]['primer_apellido']." ".$datos_personales[0][0]['segundo_apellido'];
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,"NOMBRES Y APELLIDOS: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(75,4,$nombre_comp,'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(38,4,"ÚLTIMO SALARIO (LEY ANTERIOR): ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,4,$sisap->Formato2($sueldo_integral_anterior),'',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,"CÉDULA DE IDENTIDAD: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(75,4,$datos_personales[0][0]['cedula_identidad'],'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(38,4,"ÚLTIMO SALARIO (LEY ACTUAL): ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,4,$sisap->Formato2($sueldo_integral_actual),'',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,"CARGO: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(75,4,$datos_personales[0][0]['denominacion_cargo'],'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(38,4,"MOTIVO DE RETIRO: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,4,$motivo[$datos_personales[0][0]['motivo_retiro']],'',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,"INSTITUCIÓN: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(75,4,$datos_personales[0][0]['institucion'],'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(19,4,"FECHA INGRESO: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(16,4,$sisap->Cfecha($datos_personales[0][0]['fecha_ingreso'],'D/M/A'),'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(18,4,"FECHA EGRESO: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,4,$sisap->Cfecha($datos_personales[0][0]['fecha_egreso'],'D/M/A'),'',1,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(31,4,"SECRETARIA O DIRECCIÓN: ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(75,4,$datos_personales[0][0]['dependencia'],'',0,'L');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(32,4,"TIEMPO DE SERVICIO: Dias - ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(4,4,"".$dia,'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(7,4,"Mes - ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(4,4,"".$mes,'',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(7,4,"Año - ",'',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,4,"".$ano,'',1,'L');
+
+	$pdf->Ln(8);
+
+	if(isset($datos_intereses) && !empty($datos_intereses)){
+
+
+		$pdf->Cell(30,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(35,4,"MONTO",'',0,'C');
+		$pdf->Cell(20,4,"",'',0,'C');
+		$pdf->Cell(25,4,"             MONTO ",'',0,'C');
+		$pdf->Cell(0,4,"",'',1,'C');
+
+        $pdf->Cell(30,1,"",'',0,'C');
+		$pdf->Cell(20,1,"DESDE",'',0,'C');
+		$pdf->Cell(20,1,"HASTA",'',0,'C');
+		$pdf->Cell(20,1,"DIAS",'',0,'C');
+		$pdf->Cell(35,1,"PRESTACIONES SOCIALES",'',0,'C');
+		$pdf->Cell(20,1,"TASA",'',0,'C');
+		$pdf->Cell(25,1,"INTERESES",'',0,'R');
+		$pdf->Cell(0,1,"",'',1,'R');
+
+        $pdf->Cell(30,3,"",'',0,'C');
+		$pdf->Cell(20,3,"---------",'',0,'C');
+		$pdf->Cell(20,3,"---------",'',0,'C');
+		$pdf->Cell(20,3,"------",'',0,'C');
+		$pdf->Cell(35,3,"----------------------------------",'',0,'C');
+		$pdf->Cell(20,3,"-------",'',0,'C');
+		$pdf->Cell(25,3,"---------------",'',0,'R');
+		$pdf->Cell(0,3,"",'',1,'R');
+
+		$pdf->SetFont('vera','',7);
+
+		$total_registros = count($datos_intereses);
+		if ($total_registros>28){ $total_registros=($total_registros-2); }
+
+		$linea=8;
+		$registros=0;
+		$total_intereses=0;
+
+		foreach($datos_intereses as $datos_inte){
+			$total_intereses = ($total_intereses + $datos_inte[0]['monto_interes']);
+
+
+            $pdf->Cell(30,4,'','',0,'C');
+			$pdf->Cell(20,4,$sisap->Cfecha($datos_inte[0]['desde'],'D/M/A'),'',0,'C');
+			$pdf->Cell(20,4,$sisap->Cfecha($datos_inte[0]['hasta'],'D/M/A'),'',0,'C');
+			$pdf->Cell(20,4,$datos_inte[0]['dias'],'',0,'C');
+			$pdf->Cell(35,4,$sisap->Formato2($datos_inte[0]['monto_prestaciones']),'',0,'C');
+			$pdf->Cell(20,4,$sisap->Formato2($datos_inte[0]['tasa']),'',0,'C');
+			$pdf->Cell(25,4,$sisap->Formato2($datos_inte[0]['monto_interes']),'',0,'R');
+			$pdf->Cell(0,4,'','',1,'R');
+
+			if ($total_registros>28){
+				$linea++;
+				$registros++;
+				if ($linea>52 || ($total_registros==$registros && $linea>27)){
+				$linea=0;
+				$pdf->AddPage();
+				}
+			}
+
+		}
+    $pdf->Cell(170,4,'','',1,'R');
+	$pdf->Cell(170,4,"TOTAL INTERESES MORATORIOS: ".$sisap->Formato2($total_intereses),'',1,'R');
+
+				     /** *** PARA IMPRESION *** */
+	// ---------------- **** DATOS FIRMANTES **** -------------------
+
+if(isset($datos_firmantes) && !empty($datos_firmantes)){
+
+		$nombre_primera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_primera_firma']; $cargo_primera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_primera_firma'];
+		$nombre_segunda_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_segunda_firma']; $cargo_segunda_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_segunda_firma'];
+		$nombre_tercera_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_tercera_firma']; $cargo_tercera_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_tercera_firma'];
+		$nombre_cuarta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_cuarta_firma'];  $cargo_cuarta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_cuarta_firma'];
+		$nombre_quinta_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_quinta_firma'];  $cargo_quinta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_quinta_firma'];
+		$nombre_sexta_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_sexta_firma'];   $cargo_sexta_firma    = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_sexta_firma'];
+		$nombre_septima_firma = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_septima_firma']; $cargo_septima_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_septima_firma'];
+		$nombre_octava_firma  = $datos_firmantes[0]['cnmd15_firmas_informes']['nombre_octava_firma'];  $cargo_octava_firma   = $datos_firmantes[0]['cnmd15_firmas_informes']['cargo_octava_firma'];
+		$primera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['primera_copia'];  	   $segunda_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['segunda_copia'];
+		$tercera_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['tercera_copia']; 	   $cuarta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['cuarta_copia'];
+		$quinta_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['quinta_copia'];		   $sexta_copia          = $datos_firmantes[0]['cnmd15_firmas_informes']['sexta_copia'];
+		$septima_copia        = $datos_firmantes[0]['cnmd15_firmas_informes']['septima_copia'];		   $octava_copia         = $datos_firmantes[0]['cnmd15_firmas_informes']['octava_copia'];
+		$pie_pagina           = $datos_firmantes[0]['cnmd15_firmas_informes']['pie_pagina'];
+
+	}else{
+
+		$nombre_primera_firma = '';		$cargo_primera_firma  = '';
+		$nombre_segunda_firma = '';		$cargo_segunda_firma  = '';
+		$nombre_tercera_firma = '';		$cargo_tercera_firma  = '';
+		$nombre_cuarta_firma  = '';		$cargo_cuarta_firma   = '';
+		$nombre_quinta_firma  = '';		$cargo_quinta_firma   = '';
+		$nombre_sexta_firma   = '';		$cargo_sexta_firma    = '';
+		$nombre_septima_firma = '';		$cargo_septima_firma  = '';
+		$nombre_octava_firma  = '';		$cargo_octava_firma   = '';
+		$primera_copia        = '';		$segunda_copia        = '';
+		$tercera_copia        = '';		$cuarta_copia         = '';
+		$quinta_copia         = '';		$sexta_copia          = '';
+		$septima_copia        = '';		$octava_copia         = '';
+		$pie_pagina           = '';
+
+	}
+
+	$pdf->SetLeftMArgin(8);
+	$pdf->Cell(0,10,"",'',1,'C');
+
+	$pdf->SetFont('vera','B',5);
+
+	// BLOQUE DE FIRMAS: 1, 2, 3 Y 4:
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_primera_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_segunda_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_tercera_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,1,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_cuarta_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,1,"",'',1,'C');
+
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(0,20,"",'L',1,'C');
+
+	$pdf->Cell(50,4,$nombre_primera_firma,'RBL',0,'C');
+	$pdf->Cell(50,4,$nombre_segunda_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_tercera_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_cuarta_firma,'RB',1,'C');
+
+	// $pdf->Ln(8);
+
+	// $pdf->Cell(0,10,"",'',1,'C');
+
+	// BLOQUE DE FIRMAS: 5, 6, 7 Y 8:
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_quinta_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_sexta_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	$pdf->MultiCell(50,3,$cargo_septima_firma,'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,0,"",'',2,'C');
+	// $pdf->MultiCell(50,3,$cargo_octava_firma,'T','C');
+	$pdf->MultiCell(50,3,"BENEFICIARIO",'T','C');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,0,"",'',1,'C');
+
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(50,20,"",'L',0,'C');
+	$pdf->Cell(0,20,"",'L',1,'C');
+
+	$pdf->Cell(50,4,$nombre_quinta_firma,'RBL',0,'C');
+	$pdf->Cell(50,4,$nombre_sexta_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_septima_firma,'RB',0,'C');
+	$pdf->Cell(50,4,$nombre_comp,'RB',1,'C');
+	// $pdf->Cell(50,4,$datos_defirmas[0]['cnmd15_firmas_informes']['nombre_octava_firma'],'RB',1,'C');
+
+/*
+	$pdf->Ln(4);
+	$pdf->SetFont('vera','I',5);
+	$pdf->MultiCell(0,3,$pie_pagina,'','C');
+*/
+
+	}else{
+		$pdf->Ln(12);
+		$pdf->SetFont('vera','B',14);
+		$pdf->Cell(0,8,"NO SE ENCONTRARON DATOS",'',0,'C');
+	}
+
+}
+
+	$pdf->Output('intereses_detallados_'.date("d-m-Y_h_i_sa").".pdf",'D');
+
+?>

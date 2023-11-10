@@ -1,0 +1,263 @@
+<?php
+ if(isset($ir) && $ir=='no'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"COMUNICACIÓN",null,"750");?>
+<?= $sisap->OpenTable("750")?>
+ <form name='data[csrp01_solicitud1]' method = "post" id='form' action="<?php echo  $html->url('/reporte_e/casp01_comunicacion/si'); ?>">
+	<table width="30%">
+
+		<tr>
+    		<td  width="100" colspan="2" height="22" align="center">BUSCAR:  <?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar_datos1'),1,"Buscar Persona", "/reporte_e/casp01_comunicacion/buscar_datos/2", "750px", "400px" ); ?></td>
+
+		</tr>
+	</table>
+	<table width="100%">
+		<tr class="mensaje_resaltado" align="center">
+    		Solo apareceran las solicitudes no aprobadas al momento de evaluar
+		</tr>
+	</table>
+
+
+
+
+<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso_fi/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+<?=$sisap->CloseTable()?>
+<?php
+
+}else if(isset($buscar_datos)){ ?>
+
+	<table border="0" width="95%">
+			        <tr>
+			           <td valign="top">
+				              <table border="0" class="tablacompromiso tablacompromiso2" style="margin-left:1px; margin-top:1px;">
+									<tr align="center">
+									  <td id="input_busqueda"  ><br>
+									     Pista:
+									     <?= $sisap->inputTagRemote('cnmp09_deduccion/buscardatos', array('url'=>'/reporte_e/casp01_comunicacion/buscar_por_pista/'.$opcion, 'update'=>'grilla_busqueda', 'style'=>'text-align:left;',  'id'=>'input_buscar', 'size'=>'20'))?>
+									   <br>
+									  </td>
+									</tr>
+							</table>
+			           </td>
+
+			           <td id="input_busqueda2" align="right"><br>
+					     <?php echo $ajax->link($html->image('exit.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), ' ', array('update'=>'','title'=>'Regresar'),'',false,true); ?>
+					  </td>
+					</tr>
+			</table>
+
+
+
+
+	 <br>
+			<div id="grilla_busqueda">
+						<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+								<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist"> <?php $color = 0; if($color==1){$color=0;}else{$color=1;} ?>
+										 <tr>
+										    <th width="10%">Cédula</th>
+										    <th width="30%">Apellidos y Nombres</th>
+										    <th width="5%">ACCIÓN</th>
+								          </tr>
+									      <tr class="row<?php echo $color; ?>">
+										    <td>--</td>
+										    <td>--</td>
+										    <td>--</td>
+										  </tr>
+						         </table>
+						         <table class='adminlist' width='100%'>
+									<tr>
+											<th colspan='3'  width='100%' height='22'></th>
+								   </tr>
+								 </table>
+						 </div>
+			 </div>
+<? }else if(isset($buscar_pista)){
+
+	if(empty($datosFILAS)){ $errorMessage="no se encontraron datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+?>
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+ <tr>
+    <th width="10%">Cedula</th>
+    <th width="30%">Apellidos nombres</th>
+    <th width="5%">ACCIÓN</th>
+  </tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php
+//		        pr($datosFILAS);
+		        if(!empty($datosFILAS)){ $i=0; $color = 0; ?>
+		        	<?php foreach($datosFILAS as $ve){ ?>
+		        		<?php if($color==1){$color=0;}else{$color=1;} ?>
+
+					      <tr class="row<?php echo $color; ?>">
+						    <td class="" width="10%" align="center"><?=$sisap->zero($ve["v_casd01_comunicacion"]["cedula_identidad"]) ?></td>
+						    <td class="" width="30%" align="legth"><?= $ve["v_casd01_comunicacion"]["apellidos_nombres"] ?></td>
+						    <td class="" width="5%" align="center">
+						     <?php echo $html->link($html->image('pdf.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")),'/reporte_e/casp01_comunicacion/si/'.$opcion.'/'.$ve["v_casd01_comunicacion"]["cedula_identidad"],null,false,false); ?>
+                            </td>
+						  </tr>
+
+
+                     <?php } ?>
+				  <?php }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" height="22"  width="2">--</td>
+					    <td class="">--</td>
+					    <td class="">--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/reporte_e/casp01_comunicacion/buscar_por_pista/'.$opcion.'/a', 'grilla_busqueda', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+
+<? }else if(isset($ir) && $ir=='si'){
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',6);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		//$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        //if(file_exists($img_dependencia_o)){
+        //	$escudo=$img_dependencia_o;
+        //}else{
+       // 	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+       // }
+		//$this->Image($escudo,21,17,15);
+		$this->top_reporte($titulo_A = "", null, null, array("Y"=>"21", "X"=>"21", "Z"=>"12"), null);
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(20);
+$pdf->SetRightMargin(20);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+// Inicializacion de variables
+
+
+// Cuerpo de la carta de solicitud
+for($i=0;$i<count($datos);$i++){
+$pdf->AddPage();
+
+	$pdf->SetFont('vera','',12);
+$pdf->Cell(0,5,$datos[$i][0]['conocido'].", ".$dia." DE ".$mes." DE ".$ano,'',1,'R');
+//$pdf->Cell(0,5,"CORO, ".$sisap->fecha_alfabetico(date("d-m-Y")),'',1,'R');
+//$pdf->Cell(0,5,"CORO, ",'',1,'R');
+$pdf->Ln(8);
+
+$pdf->SetFont('vera','',12);
+$pdf->Cell(110,5,"",'',0,'R');
+$pdf->SetFont('vera','B',12);
+//$pdf->Cell(0,5,mascara_seis($numero_sol),'',1,'L');
+$pdf->Cell(0,5,'','',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','',12);
+if($datos[$i][0]['sexo']==1){
+	$pdf->Cell(0,5,"CIUDADANO:",'',1,'L');
+}else{
+	$pdf->Cell(0,5,"CIUDADANA:",'',1,'L');
+}
+$pdf->SetFont('vera','B',11);
+$pdf->Cell(0,5,$datos[$i][0]['apellidos_nombres'],'',1,'L');
+$pdf->SetFont('vera','',12);
+$pdf->Cell(0,5,"ciudad.-  ",'',1,'L');
+$pdf->Cell(0,5,"",'',1,'L');
+$pdf->Cell(0,5,"",'',1,'L');
+$pdf->Ln(7);
+
+$texto = "En respuesta a tu solicitud: ".$datos[$i][0]['ayuda_solicitada'].", me permito comunicarte las razones para no otorgate lo solicitado: ".$datos[$i][0]['evaluacion'];
+$pdf->MultiCell(0,6,$texto,'','J',0,true);
+$pdf->Ln(3);
+
+$pdf->Cell(0,5,"",'',1,'L');
+$pdf->Ln(30);
+
+$pdf->Cell(0,5,"ATENTAMENTE",'',1,'C');
+
+$pdf->Cell(25,14,"",'',0,'C');
+$pdf->Cell(38,14,"",'',0,'C');
+$pdf->Cell(50,10,"",'B',0,'C');
+$pdf->Cell(50,14,"",'',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(25,5,"",'',0,'C');
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(50,5,"",'',0,'C');
+$pdf->Cell(30,5,"",'',0,'C');
+$pdf->Cell(50,5,"",'',1,'C');
+
+$pdf->Ln(50);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(14,4,"ESTADO:",'',0,'L');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,4,$datos[$i][0]['denominacion_estado'],'',1,'L');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(19,4,"MUNICIPIO:",'',0,'L');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,4,$datos[$i][0]['denominacion_municipio'],'',1,'L');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(21,4,"PARROQUIA:",'',0,'L');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,4,$datos[$i][0]['denominacion_parroquia'],'',1,'L');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(31,4,"CENTRO POBLADO:",'',0,'L');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,4,$datos[$i][0]['denominacion_centro'],'',1,'L');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(19,4,"DIRECCIÓN:",'',0,'L');
+$pdf->SetFont('vera','',8);
+$pdf->Cell(0,4,$datos[$i][0]['direccion_habitacion'],'',1,'L');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,12,"",'',1,'C');
+//$pdf->Ln(5);
+
+
+}
+
+$pdf->Output('emision_solicitud_'.'.'.'pdf','D');//poner nombre y la opcion D: $pdf->Output('carta_solicitud_recursos.pdf','D');
+}//fin if
+?>

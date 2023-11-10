@@ -1,0 +1,114 @@
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+	if(isset($autor_valido) && $autor_valido==true){
+?>
+
+<?= $sisap->Tabla_modulos($entidad_federal,true,"RECURSOS HUMANOS<br>(CLASIFICADOS SEGÚN SU TIPO)", null ,"790","cnmp");?>
+
+<form name="data[cnmp04_tipo]" method="POST" id='form'>
+<?= $sisap->OpenTable("950")?>
+<div id="principal_cnmp04_tipo">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr>
+
+	<td width="10%" align="center">C&oacute;digo tipo</td>
+	<td width="80%" align="center">Denominación del tipo</td>
+	<td width="10%" align="center">&nbsp;</td>
+</tr>
+<tr>
+
+	<td align="center">
+		<?= $html->input('cnmp04_tipo/codigo', array("onKeyPress"=>"return solonumeros(event);", "value"=>mascara2($codigo), "style"=>"text-align:center", 'id'=>'codigo', 'size'=>'3', "class"=>"campoText"))?>
+	</td>
+	<td align="center">
+		<?= $html->input('cnmp04_tipo/deno', array('id'=>'denominacion', 'size'=>'45', "class"=>"campoText", 'maxlength'=>'50'))?>
+	</td>
+	<td align="center">
+		<?= $sisap->submitTagRemote('+', array('id'=>'agregar','url1' => '/cnmp04_tipo2/guardar', 'update1'=>'grilla')); ?>
+	</td>
+</tr>
+
+</table>
+<br><br>
+<div id="grilla">
+<div style="height:300px;overflow:auto;">
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" style:"position:fixed" align="center">
+		<td width="10%" align="center">Código tipo</td>
+		<td width="80%" align="center">Denominación del tipo</td>
+		<td width="10%"align="center">&nbsp;</td>
+	</tr>
+
+<?
+if($datos!=null){
+	$i=0;
+	foreach($datos as $row){
+		$cod=$row['cnmd04_tipo']['cod_nivel_i'];
+		$denominacion=$row['cnmd04_tipo']['denominacion'];
+
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+		$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+
+		?>
+		<tr id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+
+		<td class="td2center">
+			<?=$sisap->zero($cod); ?>
+		</td>
+		<td align="legth">
+			<?=$denominacion;?>
+		</td>
+
+		<td align="center"  id="<?= "li_".$i ?>">
+			<a href="javascript:ver_documento('/cnmp04_tipo2/modificar/<?=$cod?>/<?=$i?>','<?= $fila ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el tipo'))?></a>
+			<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp04_tipo2/eliminar/'.$cod, array('update'=>'vacio', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('$fila');"), "Realmente desea Eliminar este registro?", false, true); ?>
+		</td>
+
+		</tr>
+
+		<?
+		$i++;
+	}//fin foreach
+
+}else{
+?>
+<tr  class="textNegro2" bgcolor="#CDF2FF">
+	<td class="td2center">&nbsp;</td>
+	<td class="td2center">&nbsp;</td>
+	<td width="75" align="center">&nbsp;</td>
+</tr>
+
+
+<?php
+}
+?>
+</table>
+</div>
+
+</div>
+
+<div id="vacio"></div>
+
+<table border="0" width="100%">
+<tr  height="40px">
+	<td align="center">
+		<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal'))?></td>
+	</tr>
+</table>
+</div>
+<?= $sisap->CloseTable()?>
+
+</form>
+<?php
+}else{
+	echo "<br><br><br><br><br>";
+	$sisap->restriccion_programas_claves('cnmp04_tipo2', 'cnmp04_tipo2/entrar');
+}
+?>

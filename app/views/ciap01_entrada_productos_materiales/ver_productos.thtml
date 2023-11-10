@@ -1,0 +1,115 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+?>
+
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+		<tr align="center">
+			<td width="12%">Código Producto</td>
+			<td width="45%">Denominación del Producto</td>
+			<td width="10%">Cantidad</td>
+			<td width="12%">Precio Unitario</td>
+			<td width="15%">Total</td>
+			<td width="6%">Acción</td>
+		</tr>
+
+
+		<? if($productos!=null){
+			$_SESSION["items4"]=array();
+			$cont=0;
+			?>
+			<? for($i=0;$i<count($productos);$i++){
+
+			if($i%2 == 0){
+				$color = "tr_grid_c1";
+			}else{
+				$color = "tr_grid_c2";
+			}
+	    	$promedio=($productos[$i][0]['costo_maximo']+$productos[$i][0]['costo_minimo'])/2;
+	    	$total=($productos[$i][0]['cantidad']*$promedio);
+			?>
+
+			<tr class=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);">
+				<td align="center"><?= $productos[$i][0]['codigo_prod_serv'] ?></td>
+				<td ><?=$productos[$i][0]['denominacion'].' - '.deno_unidad2($cscd01_unidad_medida, $productos[$i][0]['cod_medida'])?></td>
+				<td align="center"><?=$sisap->Formato_6_out($productos[$i][0]['cantidad'])?></td>
+				<td align="right"><?=$sisap->Formato2($promedio)?></td>
+				<td align="right"><?=$sisap->Formato2($total)?></td>
+				<? if($productos[$i][0]['status']==null){
+		   		$cont++;
+		   		$status=2;
+		   		?>
+					<td align="center"><?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar_datos'),12,"Agregar Ubicación", "/ciap01_entrada_productos_materiales/ventana_transferir_ubicacion/$i", "750px", "350px" ); ?></td>
+				<? }else{
+					$status=1; ?>
+					<td align="center">&nbsp;</td>
+				<? } ?>
+			</tr>
+		<?
+			$vec[$i][0]=$productos[$i][0]['codigo_prod_serv'];
+			$vec[$i][1]=$productos[$i][0]['denominacion'];
+			$vec[$i][2]=$productos[$i][0]['cantidad'];
+			$vec[$i][3]=$promedio;
+			$vec[$i][4]=$dep_origen;
+			$vec[$i][5]=$almacen_origen;
+			$vec[$i][6]=$ano_origen;
+			$vec[$i][7]=$numero_origen;
+			$vec[$i][8]=$productos[$i][0]['cod_medida'];
+			$vec[$i][9]=0;
+			$vec[$i][10]=0;
+			$vec[$i][11]=0;
+			$vec[$i][12]=0;
+			$vec[$i][13]=0;
+			$vec[$i][14]=0;
+			$vec[$i][15]=0;
+			$vec[$i]['status']=$status;
+			$vec[$i]['id']=$i;
+
+			$_SESSION["items4"]=$_SESSION["items4"]+$vec;
+
+
+	} ?>
+
+<input name="data[ciap01][contador]" type="hidden" id="TI" value="<?=$cont?>"/>
+
+
+		<? }else{ ?>
+			<tr align="center">
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+			<td >&nbsp;</td>
+		</tr>
+
+		<? } ?>
+	</table>
+
+
+<script language="JavaScript" type="text/javascript">
+  ver_documento('/ciap01_entrada_productos_materiales/boton_guardar/2','guardar');
+  $('carga_nota').innerHTML='';
+  $('carga_producto').innerHTML='';
+  $('agregar').disabled='disabled';
+</script>

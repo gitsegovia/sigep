@@ -1,0 +1,220 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE CONTRIBUYENTES MOROSOS '),'','750');
+echo $sisap->OpenTable('750');
+$ano=array();
+for($i=2000;$i<2100;$i++){
+	$ano[$i]=$i;
+}
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd950_contribuyentes_morosos/2/'); ?>" onsubmit="return valida_shd950_contribuyentes_morosos()" >
+	 <center>
+	<table width="50%" border="0" align="center">
+			<tr>
+			   <td align="right">
+			       Año:
+			   </td>
+
+			   <td align="lefth">
+			        <?= $sisap->selectTagRemote('reporte_hacienda/ano', $ano,  null,  $ano1, array('onchange1'=>'/', 'update1'=>'vacio', 'id'=>'ano','style'=>'width:30%', 'onChange'=>'vacio'  , true), null, true);?>
+			   </td>
+		    </tr>
+
+
+		    <tr>
+		    	<td align="right">
+			       Seleccione:
+			   </td>
+
+			   <td align="lefth">
+			       <?=  $sisap->selectTagRemote('reporte_hacienda/codigo_impuesto', $tipo_impuesto, null, '', array('onchange1'=>'//', 'update1'=>'vacio','id'=>'cod_ingreso','style'=>'width:60%', 'onChange'=>'vacio',true), null, true); ?>
+			   </td>
+		    </tr>
+
+    </table>
+     </center>
+
+       <center>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </center>
+
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES MOROSOS - ".$_SESSION['titulo_impuesto'];
+	$titulo_B = "Año: ".$_SESSION['ano_report'];
+    $this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(20,3,"Número",'TRL',0,'C');
+		$this->Cell(15,3,"",'TR',0,'C');
+		$this->Cell(18,3,"",'TR',0,'C');
+		$this->Cell(50,3,"Nombres y Apellidos",'TR',0,'C');
+		$this->Cell(23,3,"",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(20,3,"Monto",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(20,3,"Planilla",'RBL',0,'C');
+		$this->Cell(15,3,"Mes",'RB',0,'C');
+		$this->Cell(18,3,"RIF / C.I.",'RB',0,'C');
+		$this->Cell(50,3,"Razón social",'RB',0,'C');
+		$this->Cell(23,3,"Teléfonos",'RB',0,'C');
+		$this->Cell(20,3,"Deuda Anterior",'RB',0,'C');
+		$this->Cell(20,3,"Deuda Vigente",'RB',0,'C');
+		$this->Cell(20,3,"Recargo",'RB',0,'C');
+		$this->Cell(20,3,"Multa",'RB',0,'C');
+		$this->Cell(20,3,"Intereses",'RB',0,'C');
+		$this->Cell(20,3,"Descuento",'RB',0,'C');
+		$this->Cell(0,3,"TOTAL",'RB',1,'C');
+
+
+
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+if($datos!=null){
+$meses= array('1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+
+	$total=0;
+	$pdf->SetFont('vera','',5);
+	for($i=0; $i<count($datos); $i++){
+
+
+		if($codigo_impuesto_1==1){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_1'];
+	}else if($codigo_impuesto_1==2){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_2'];
+	}else if($codigo_impuesto_1==3){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_3'];
+	}else if($codigo_impuesto_1==4){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_4'];
+	}else if($codigo_impuesto_1==5){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_5'];
+	}else if($codigo_impuesto_1==6){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_6'];
+	}else if($codigo_impuesto_1==7){ $datos[$i][0]['deuda_ano_anterior'] = $datos[$i][0]['deuda_ano_anterior_por_impuesto_7'];
+
+
+	}
+
+
+		$total+=$datos[$i][0]['total'];
+
+		$pdf->Cell(20,5,mascara_seis($datos[$i][0]['numero_planilla']),'RL',0,'C');//Planilla
+		$pdf->Cell(15,5,$meses[$datos[$i][0]['mes']],'R',0,'C');//Mes
+		$pdf->Cell(18,5,$datos[$i][0]['rif_cedula'],'R',0,'C');//RIF / C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(50,1,"",'',2,'C');
+		$pdf->MultiCell(49,2,$datos[$i][0]['razon_social_nombres'],'','L');//--[Razón social]
+		$varX = $varX+50;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,5,'','L',0,'C');//Teléfonos
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(1,1,"",'',2,'C');
+		   if($datos[$i][0]['telefonos_fijos']==0){$datos[$i][0]['telefonos_fijos']="";}
+		   if($datos[$i][0]['telefonos_celulares']==0){$datos[$i][0]['telefonos_celulares']="";}
+		$pdf->MultiCell(22,2,$datos[$i][0]['telefonos_fijos']."\n".$datos[$i][0]['telefonos_celulares'],'','L');//--[Razón social]
+		$varX = $varX+22;
+		$pdf->SetXY($varX,$varY);
+//		$pdf->Cell(23,5,"XXXXXXXXXXX",'RL',0,'C');//Teléfonos
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['deuda_ano_anterior']),'RL',0,'R');//Deuda Anterior
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['deuda_vigente']),'R',0,'R');//Deuda Vigente
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['monto_recargo']),'R',0,'R');//Recargo
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['monto_multa']),'R',0,'R');//Multa
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['monto_intereses']),'R',0,'R');//Intereses
+		$pdf->Cell(20,5,$sisap->Formato2($datos[$i][0]['monto_descuento']),'R',0,'R');//Descuento
+		$pdf->Cell(0,5,$sisap->Formato2($datos[$i][0]['total']),'R',1,'R');//TOTAL
+		$pdf->Cell(0,0,"",'T',1);
+	}
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(246,6,"TOTALES",'LRBT',0,'R');
+	$pdf->Cell(0,6,$sisap->Formato2($total),'TRB',1,'R');
+
+}else{
+
+
+		$pdf->Cell(20,5,"",'RL',0,'C');//Planilla
+		$pdf->Cell(15,5,"",'R',0,'C');//Mes
+		$pdf->Cell(18,5,"",'R',0,'C');//RIF / C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(50,1,"",'',2,'C');
+		$pdf->MultiCell(49,2,"",'','L');//--[Razón social]
+		$varX = $varX+50;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(23,5,"",'RL',0,'C');//Teléfonos
+		$pdf->Cell(20,5,"",'R',0,'C');//Deuda Anterior
+		$pdf->Cell(20,5,"",'R',0,'C');//Deuda Vigente
+		$pdf->Cell(20,5,"",'R',0,'C');//Recargo
+		$pdf->Cell(20,5,"",'R',0,'C');//Multa
+		$pdf->Cell(20,5,"",'R',0,'C');//Intereses
+		$pdf->Cell(20,5,"",'R',0,'C');//Descuento
+		$pdf->Cell(0,5,"",'R',1,'C');//TOTAL
+		$pdf->Cell(0,0,"",'T',1);
+
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(246,6,"TOTALES",'LRBT',0,'R');
+		$pdf->Cell(0,6,'','TRB',1);
+
+
+
+}
+
+$pdf->Output('relacion_contribuyentes_morosos_'.date("d_m_Y_h"), 'D');//Poner nombre y la opcion D
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

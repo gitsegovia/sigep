@@ -1,0 +1,144 @@
+<?php
+$_SESSION['cod_tipo_nomina'] = $historico_resumido[0][0]['cod_tipo_nomina'];
+$_SESSION['denominacion_nomina'] = $historico_resumido[0][0]['denominacion'];
+$_SESSION['TITULO'] = $titulo_reporte;
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'P', $unit = 'mm', $format = 'Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+
+     //   $this->SetY(-15);
+     //   $this->SetFont('vera', '', 8);
+        //  $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/TPAG', 0, 0, 'C');
+
+    }
+
+    function Header() {
+        $img_dependencia_o = '/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_' . $_SESSION['SScodinst'] . '_' . $_SESSION['SScoddep'] . '.jpg';
+        if (file_exists($img_dependencia_o)) {
+            $escudo = $img_dependencia_o;
+            $varTOPh1 = " ";
+            $varTOPh2 = "  ";
+            $varTOPh11 = " ";
+            $varTOPh22 = " ";
+            $t1 = 14;
+            $t2 = 14;
+        } else {
+            //$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+            $escudo = "/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+            $varTOPh1 = $_SESSION['entidad_federal'];
+            $varTOPh2 = $_SESSION['dependencia'];
+            $varTOPh11 = $_SESSION['entidad_federal'];
+            $varTOPh22 = $_SESSION['dependencia'];
+            $t1 = 13;
+            $t2 = 13;
+        }
+
+        $this->Image($escudo, 15, 12, $t1);
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(20, 6, "", 'TL', 0);
+        $this->Cell(170, 6, $varTOPh1, 'TR', 1);
+
+        $this->Cell(20, 6, "", 'L', 0);
+        $this->SetFont('vera', '', 7);
+        $this->Cell(170, 4, "", 'R', 1);
+
+
+        $this->SetFont('vera', 'B', 12);
+        $this->Cell(190, 6,$_SESSION['TITULO'] , 'RL', 1, 'C');
+
+        $this->SetFont('vera', 'R', 8);
+        $this->Cell(190, 6, $_SESSION['dependencia'], 'RLB', 1, 'L');
+        $this->Ln(5);
+
+        $varX_aux = $this->GetX() + 167;
+        $varY_aux = $this->GetY() - 23;
+        $this->SetFont('vera', 'B', 5);
+        $this->Text($varX_aux, $varY_aux, 'PÁGINA: ' . $this->PageNo() . '/TPAG');
+        $this->Text($varX_aux, $varY_aux + 3, 'FECHA: ' . date("d/m/Y"));
+        $this->Text($varX_aux, $varY_aux + 6, 'HORA: ' . date("h:i a"));
+
+        $this->SetFont('vera', 'B', 9);
+
+        $this->Cell(190, 0, "", 'B', 1, 'C');
+        $this->Cell(16, 6, "CÓDIGO", 'RL', 0, 'C');
+        $this->Cell(16, 6, mascara_tres($_SESSION['cod_tipo_nomina']), 'R', 0, 'C');
+        $this->Cell(158, 6, $_SESSION['denominacion_nomina'], 'R', 1, 'L');
+        $this->Cell(190, 0, "", 'T', 1, 'C');
+        $this->Ln(5);
+
+         //1era Linea
+
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(190, 0, "", 'T', 1, 'C');
+        $this->Cell(20, 3, "CEDULA", 'RL', 0, 'C');
+        $this->Cell(60, 3, "", 'R', 0, 'C');
+        $this->Cell(15, 3, "", 'R', 0, 'C');
+        $this->Cell(12, 3, "", 'R', 0, 'C');
+        $this->Cell(43, 3, "", 'R', 0, 'C');
+        $this->Cell(15, 3, "DIAS", 'R', 0, 'C');
+        $this->Cell(25, 3, "MONTO", 'R', 1, 'C');
+
+        //Segunda Linea
+
+        $this->Cell(20, 3, "IDENTIDAD", 'RL', 0, 'C');
+        $this->Cell(60, 3, "NOMBRES Y APELLIDOS", 'R', 0, 'C');
+        $this->Cell(15, 3, "AÑO", 'R', 0, 'C');
+        $this->Cell(12,  3, "TRIM", 'R', 0, 'C');
+        $this->Cell(43, 3, "DEPOSITO EN CUENTA", 'R', 0, 'C');
+        $this->Cell(15, 3, "FIDE", 'R', 0, 'C');
+        $this->Cell(25, 3, "FIDEICOMISO", 'R', 1, 'C');
+        $this->Cell(190, 0, "", 'T', 1, 'C');
+        }
+
+}
+
+//fin clase
+$pdf = new fpdfview('P', 'mm', 'Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(13);
+$pdf->SetAutoPageBreak(true, 10);
+
+$pdf->AddPage();
+$pdf->SetFont('vera', '', 8);
+$total_general = 0;
+
+foreach ($historico_resumido as $datos) {
+
+    if($datos[0]['cedula_identidad'] != $cedula ){
+        $cedula=number_format($datos[0]['cedula_identidad'],0,',','.');
+        $nombre=$datos[0]['primer_nombre']." ".$datos[0]['primer_apellido'];
+    }else {$cedula=""; $nombre=""; }
+	$total_general += $datos[0]['monto_fideicomiso'];
+
+        $pdf->Cell(20, 6, $cedula, 'RL', 0, 'C');
+        $pdf->Cell(60, 6, $nombre, 'R', 0, 'L');
+        $pdf->Cell(15, 6, $datos[0]['ano'], 'R', 0, 'C');
+        $pdf->Cell(12,  6, $datos[0]['trimestre'], 'R', 0, 'C');
+        $pdf->Cell(43, 6, $datos[0]['depositado_cuenta'], 'R', 0, 'C');
+        $pdf->Cell(15, 6, $datos[0]['dias_fideicomiso'], 'R', 0, 'C');
+        $pdf->Cell(25, 6, $sisap->Formato2($datos[0]['monto_fideicomiso']), 'R', 1, 'R');
+        $pdf->Cell(190,0, "", 'T', 1, 'C');
+
+		$cedula=$datos[0]['cedula_identidad'];
+ }
+          $pdf->SetFont('vera', 'B', 8);
+          $pdf->Cell(190, 6,"TOTAL : ".$sisap->Formato2($total_general) , 'TRLB', 1, 'R');
+
+//fin ciclo
+inicio_ventana_barra_proceso("Reporte Generado");
+fin_ventana_barra_proceso();
+$pdf->Output('reporte_depositar_resumido' . date("d-m-Y") . ".pdf", 'SISAP_AJAX');
+?>

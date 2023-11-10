@@ -1,0 +1,1202 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+$cuenta=$cuenta_bancaria;
+$cuenta_bancaria=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+$_SESSION['$denominación_banco']=$denominación_banco;
+$_SESSION['$fecha_conciliacion']=$fecha_conciliacion;
+$_SESSION['$cuenta_bancaria']=$cuenta_bancaria;
+$_SESSION['$fecha_conciliacion']=$fecha_conciliacion;
+
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		//$titulo_A = 'Deno entidad bancaria'//$_SESSION['deno_entidad_bancaria'];
+		//$titulo_B = "CONCILIACION BANCARIA AL ".$_SESSION['fecha_conciliacion'];
+		$titulo_A = $this->titulo_A;
+		$titulo_B = $this->titulo_B;
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+
+$this->SetFont('vera','B',6);
+$this->Cell(15,4,"BANCO: ",'TL',0);
+$this->SetFont('vera','',6);
+$this->Cell(135,4,$_SESSION['$denominación_banco'],'T',0);
+$this->SetFont('vera','B',6);
+$this->Cell(30,4,"FECHA CONCILIACIÓN: ",'T',0,'R');
+$this->SetFont('vera','',6);
+$this->Cell(0,4,$_SESSION['$fecha_conciliacion'],'TR',1,'C');
+$this->SetFont('vera','B',6);
+$this->Cell(15,4,"CUENTA: ",'BL',0);
+$this->SetFont('vera','',6);
+$this->Cell(135,4,$_SESSION['$cuenta_bancaria'],'B',0);
+$this->SetFont('vera','B',6);
+$this->Cell(30,4,"FECHA ELABORACIÓN: ",'B',0,'R');
+$this->SetFont('vera','',6);
+$this->Cell(0,4,$_SESSION['$fecha_conciliacion'],'RB',1,'C');
+
+
+       	switch($this->numeroAnexo){
+       		case 1:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,4,"FECHA",'TRBL',0,'C');
+				$this->Cell(20,4,"NÚMERO",'TRB',0,'C');
+				$this->Cell(130,4,"CONCEPTO",'TRB',0,'C');
+				$this->Cell(0,4,"MONTO (Bs.)",'TRB',1,'C');
+				break;
+
+			case 2:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO (Bs.)",'RB',1,'C');
+				break;
+
+			case 3:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,4,"FECHA",'TRBL',0,'C');
+				$this->Cell(20,4,"NÚMERO",'TRB',0,'C');
+				$this->Cell(130,4,"CONCEPTO",'TRB',0,'C');
+				$this->Cell(0,4,"MONTO (Bs.)",'TRB',1,'C');
+				break;
+
+			case 4:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO (Bs.)",'RB',1,'C');
+				break;
+
+			case 5:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO (Bs.)",'RB',1,'C');
+				break;
+
+			case 6:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO Bs.",'RB',1,'C');
+				break;
+
+			case 7:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO (Bs.)",'RB',1,'C');
+				break;
+
+			case 8:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(112,3,"",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(112,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(0,2,"MONTO Bs.",'RB',1,'C');
+				break;
+
+			case 9:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,4,"FECHA",'TRBL',0,'C');
+				$this->Cell(20,4,"NÚMERO",'TRB',0,'C');
+				$this->Cell(130,4,"CONCEPTO",'TRB',0,'C');
+				$this->Cell(0,4,"MONTO (Bs.)",'TRB',1,'C');
+				break;
+
+			case 10:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,4,"FECHA",'TRBL',0,'C');
+				$this->Cell(20,4,"NÚMERO",'TRB',0,'C');
+				$this->Cell(130,4,"CONCEPTO",'TRB',0,'C');
+				$this->Cell(0,4,"MONTO (Bs.)",'TRB',1,'C');
+				break;
+
+			case 11:
+				$this->SetFont('vera','B',7);
+				$this->Cell(20,3,"",'TRL',0,'C');
+				$this->Cell(20,3,"",'TR',0,'C');
+				$this->Cell(20,3,"TIPO",'TR',0,'C');
+				$this->Cell(70,3,"",'TR',0,'C');
+				$this->Cell(21,3,"MONTO",'TR',0,'C');
+				$this->Cell(21,3,"MONTO",'TR',0,'C');
+				$this->Cell(0,3,"",'TR',1,'C');
+
+				$this->Cell(20,2,"FECHA",'RBL',0,'C');
+				$this->Cell(20,2,"NÚMERO",'RB',0,'C');
+				$this->Cell(20,2,"DOCUMENTO",'RB',0,'C');
+				$this->Cell(70,2,"CONCEPTO",'RB',0,'C');
+				$this->Cell(21,2,"TESORERIA",'RB',0,'C');
+				$this->Cell(21,2,"BANCO",'RB',0,'C');
+				$this->Cell(0,2,"DIFERENCIA",'RB',1,'C');
+				break;
+
+			default: break;
+       	}
+
+
+
+
+        }
+
+	/*
+    function Footer(){
+
+    }
+    */
+
+    public $titulo_A = '';
+    public $titulo_B = '';
+    public $numeroAnexo  = 0;
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+$pdf->titulo_A = 'Conciliación bancaria';
+$pdf->titulo_B = 'Método: Saldos Encontrados';
+
+$tipo_documento = array('1'=>'DEPÓSITO', '2'=>'NOTA CRÉDITO', '3'=>'NOTA DÉBITO', '4'=>'CHEQUE');
+
+$pdf->AddPage();
+/*
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(15,4,"BANCO: ",'TL',0);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(135,4,$denominación_banco,'T',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,4,"FECHA CONCILIACIÓN: ",'T',0,'R');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$fecha_conciliacion,'TR',1,'C');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(15,4,"CUENTA: ",'BL',0);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(135,4,$cuenta_bancaria,'B',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,4,"FECHA ELABORACIÓN: ",'B',0,'R');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$fecha_conciliacion,'RB',1,'C');
+*/
+$f_conciliacion = split('/',$fecha_conciliacion);
+$f_conciliacion = $f_conciliacion[2].'-'.$f_conciliacion[1].'-'.$f_conciliacion[0];
+$fecha_conciliacion_2  = strtotime ($f_conciliacion);
+
+$pdf->Cell(0,8,"",'RL',1); // Espacio
+
+$saldo_estado_cuenta = ($suma_dep_nc - $suma_che_nd);
+$mov_banco = 0;
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(158,4,"1.- Saldo según Estado de Cuenta",'L',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($saldo_estado_cuenta),'BR',1,'R');
+$pdf->Cell(0,5,"",'RL',1); // Espacio
+$pdf->SetFont('vera','',6);
+
+
+
+
+//-------------------------------------------ESTADO DE CUENTA-------------------------------------------------
+
+
+// Depositos en transito
+$depositos = 0;
+foreach($depositos_transito AS $dep_trans){
+	$depositos += $dep_trans[0]['monto'];
+}
+$pdf->Cell(12,4,"Mas",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Depositos en transito \nFecha, concepto \nsegún anexo No. 01",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($depositos),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_estado_cuenta += $depositos;
+	$mov_banco += $depositos;
+
+
+// Notas de credito en transito
+$nota_credito = 0;
+foreach($notascred_transito AS $notascred_trans){
+		$nota_credito += $notascred_trans[0]['monto'];
+}
+	$pdf->Cell(12,4,"Mas",'L',0);
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+		$pdf->MultiCell(70,3,"Notas de crédito en transito \nFecha, concepto \nsegún anexo No. 01.  2",'','L');
+		$varX = $varX+70;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(23,4,"",'',0,'C');
+	$pdf->Cell(10,4,"Bs.",'',0,'C');
+	$pdf->Cell(25,4,$sisap->Formato2($nota_credito),'B',0,'R');
+	$pdf->Cell(20,4,"",'',0,'C');
+	$pdf->Cell(10,4,"",'',0,'C');
+	$pdf->Cell(0,4,"",'R',1,'R');
+	$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_estado_cuenta += $nota_credito;
+	$mov_banco += $nota_credito;
+
+
+
+// Cargos indebidos del banco
+$cargo_indedibo = 0;
+foreach($cargos_indebidos AS $cargos_indeb){
+		$cargo_indedibo += $cargos_indeb[0]['monto'];
+}
+	foreach($dif_cargos_indebidos AS $dif_cargos){
+		$cargo_indedibo += ($dif_cargos[0]['monto_estadocuenta'] - $dif_cargos[0]['monto_movgenerales']);
+	}
+
+$pdf->Cell(12,4,"Mas",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Cargos indebidos del banco \nFecha, concepto \nsegún anexo No. 02",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($cargo_indedibo),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+		$saldo_estado_cuenta += $cargo_indedibo;
+		$mov_banco += $cargo_indedibo;
+
+
+
+
+// Cheques en tránsito o sin cobrar
+$cheque_transito = 0;
+foreach($cheques_transito AS $cheque_trans){
+	$cheque_transito += $cheque_trans[0]['monto'];
+}
+$pdf->Cell(12,4,"Menos",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Cheques en tránsito o sin cobrar \nFecha, concepto \nsegún anexo No. 03",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($cheque_transito),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_estado_cuenta -= $cheque_transito;
+	$mov_banco -= $cheque_transito;
+
+
+// Notas de debito en tránsito o sin cobrar
+$monto_notadeb = 0;
+foreach($notadeb_transito AS $notadeb_trans){
+		$monto_notadeb += $notadeb_trans[0]['monto'];
+}
+	$pdf->Cell(12,4,"Menos",'L',0);
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+		$pdf->MultiCell(70,3,"Notas de débito en tránsito o sin cobrar \nFecha, concepto \nsegún anexo No. 03.2",'','L');
+		$varX = $varX+70;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(23,4,"",'',0,'C');
+	$pdf->Cell(10,4,"Bs.",'',0,'C');
+	$pdf->Cell(25,4,$sisap->Formato2($monto_notadeb),'B',0,'R');
+	$pdf->Cell(20,4,"",'',0,'C');
+	$pdf->Cell(10,4,"",'',0,'C');
+	$pdf->Cell(0,4,"",'R',1,'R');
+	$pdf->Cell(0,10,"",'RL',1); // Espacio
+		$saldo_estado_cuenta -= $monto_notadeb;
+		$mov_banco -=$monto_notadeb;
+
+
+
+// Abonos indebidos en banco
+$abono_banco = 0;
+foreach($abonos_indebidos AS $abonos_indeb){
+		$abono_banco += $abonos_indeb[0]['monto'];
+}
+	foreach($dif_abonos_indebidos AS $dif_abonos){
+		$abono_banco += ($dif_abonos[0]['monto_estadocuenta'] - $dif_abonos[0]['monto_movgenerales']);
+	}
+		$saldo_estado_cuenta -= $abono_banco;
+		$mov_banco -= $abono_banco;
+
+$pdf->Cell(12,4,"Menos",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Abonos indebidos del banco \nFecha, concepto \nsegún anexo No. 04",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($abono_banco),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($mov_banco),'BR',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+
+//-------------------------------------------------------------------------------------------------
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(158,4,"Saldo conciliado o disponible en libro",'L',0);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($saldo_estado_cuenta),'BR',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+
+
+
+$saldo_segun_libro_chequera = $total_anterior_tesoreria;
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(158,4,"1.- Saldo según Libro y chequera",'L',0);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($saldo_segun_libro_chequera),'BR',1,'R');
+
+$pdf->Cell(0,5,"",'RL',1); // Espacio
+
+
+
+
+
+//-----------------------------------------------------LIBRO TESORERIA------------------------------------------------------
+
+
+
+
+
+// Abonos indebidos en el libro
+$mov_banco = 0;
+$cargos = 0;
+foreach($abonos_indeb_libro AS $abonos_indebidos_libro){
+				$cargos += $abonos_indebidos_libro[0]['monto'];
+}
+$pdf->Cell(12,4,"Menos",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Abonos indebidos en libros \nFecha, concepto \nsegún anexo No. 05",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($cargos),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_segun_libro_chequera -= $cargos;
+	$mov_banco -= $cargos;
+
+
+
+
+// Depositos y notas de creditos no registradas
+$monto_dep_nc = 0;
+foreach($depositos_nc_noregistradas as $dep_nc_noregistradas){
+	$monto_dep_nc += $dep_nc_noregistradas[0]['monto'];
+}
+	foreach($dif_depositos_nc AS $dif_depo_nc){
+		$monto_dep_nc += ($dif_depo_nc[0]['monto_estadocuenta'] - $dif_depo_nc[0]['monto_movgenerales']);
+	}
+$pdf->Cell(12,4,"Mas",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Depósitos y Notas de Créditos no registradas \nFecha, concepto \nsegún anexo No. 06",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($monto_dep_nc),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_segun_libro_chequera += $monto_dep_nc;
+	$mov_banco += $monto_dep_nc;
+
+
+
+// Cargos indebidos en el libro
+$cargos = 0;
+foreach($cargos_indeb_libro AS $cargos_indebidos_libro){
+		$cargos += $cargos_indebidos_libro[0]['monto'];
+}
+$pdf->Cell(12,4,"Mas",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Cargos indebidos en libros \nFecha, concepto \nsegún anexo No. 07",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($cargos),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"",'',0,'C');
+$pdf->Cell(0,4,"",'R',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+	$saldo_segun_libro_chequera += $cargos;
+	$mov_banco += $cargos;
+
+
+
+
+// Cheques y notas de débito no registradas
+$monto_cheq_nd = 0;
+foreach($cheques_nd_noregistradas as $cheq_nd_noregistradas){
+	$monto_cheq_nd += $cheq_nd_noregistradas[0]['monto'];
+}
+	foreach($dif_cheques_nd AS $dif_cheq_nc){
+		$monto_cheq_nd += ($dif_cheq_nc[0]['monto_estadocuenta'] - $dif_cheq_nc[0]['monto_movgenerales']);
+	}
+	$saldo_segun_libro_chequera -= $monto_cheq_nd;
+	$mov_banco -= $monto_cheq_nd;
+$pdf->Cell(12,4,"Menos",'L',0);
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(70,3,"Cheques y notas de débito no registradas. \nFecha, concepto \nsegún anexo No. 08",'','L');
+	$varX = $varX+70;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(23,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(25,4,$sisap->Formato2($monto_cheq_nd),'B',0,'R');
+$pdf->Cell(20,4,"",'',0,'C');
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($mov_banco),'BR',1,'R');
+$pdf->Cell(0,10,"",'RL',1); // Espacio
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(158,4,"Saldo conciliado o disponible en banco",'L',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(10,4,"Bs.",'',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($saldo_segun_libro_chequera),'RB',1,'R');
+//-------------------------------------------------------------------------------------------------
+
+$pdf->Cell(0,4,"",'RBL',1); // Espacio
+
+$pdf->Cell(12,6,"",'',1); // Espacio
+
+// Firmantes
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(8,4,"",'',0,'C');
+$pdf->Cell(60,4,"Preparada por:",'TBLR',0,'C');
+$pdf->Cell(60,4,"Revisada por:",'TBR',0,'C');
+$pdf->Cell(60,4,"Aprobada por:",'TBR',1,'C');
+
+$pdf->Cell(8,10,"",'',0,'C');
+$pdf->Cell(60,10,"",'LR',0,'C');
+$pdf->Cell(60,10,"",'R',0,'C');
+$pdf->Cell(60,10,"",'R',1,'C');
+
+$pdf->Cell(8,2,"",'',0,'C');
+$pdf->Cell(60,2,"______________________________",'LR',0,'C');
+$pdf->Cell(60,2,"______________________________",'R',0,'C');
+$pdf->Cell(60,2,"______________________________",'R',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(8,5,'','',0,'C');
+$pdf->Cell(60,5,$firma1,'LR',0,'C');
+$pdf->Cell(60,5,$firma2,'R',0,'C');
+$pdf->Cell(60,5,$firma3,'R',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(8,5,'','',0,'C');
+$pdf->Cell(60,5,$cargo1,'BRL',0,'C');
+$pdf->Cell(60,5,$cargo2,'BR',0,'C');
+$pdf->Cell(60,5,$cargo3,'BR',1,'C');
+
+
+
+
+//-------- Anexo 01 -------------------------
+if($anexo == 0 || $anexo == 1){
+	$pdf->titulo_A = '01. DEPÓSITOS EN TRÁNSITO (REGISTRADOS EN LIBROS Y NO REGISTRADOS EN BANCOS)';
+	$pdf->titulo_B = '';
+	$pdf->numeroAnexo = 1;
+	$pdf->AddPage();
+	$pdf->SetFont('vera','',6);
+	$monto_depositos = 0;
+	foreach($depositos_transito AS $dep_trans){
+		$monto_depositos += $dep_trans[0]['monto'];
+		$str = strlen($dep_trans[0]['concepto']);
+		if($str <= 85){
+			$height = 5;
+		}else if($str > 85 && $str <= 170){
+			$height = 7;
+		}else if($str > 170 && $str <= 255){
+			$height = 9;
+		}else if($str > 255 && $str <= 340){
+			$height = 11;
+		}else if($str > 340 && $str <= 425){
+			$height = 13;
+		}else if($str > 425 && $str <= 510){
+			$height = 15;
+		}else if($str > 510 && $str <= 595){
+			$height = 17;
+		}else if($str > 595 && $str <= 680){
+			$height = 19;
+		}else if($str > 680 && $str <= 760){
+			$height = 21;
+		}else if($str > 760 && $str <= 840){
+			$height = 23;
+		}else if($str > 840 && $str <= 925){
+			$height = 25;
+		}else if($str > 925 && $str <= 1010){
+			$height = 27;
+		}else if($str > 1010 && $str <= 1095){
+			$height = 29;
+		}else if($str > 1095 && $str <= 1180){
+			$height = 31;
+		}else if($str > 1180){
+			$height = 33;
+		}
+
+		$pdf->Cell(20,$height,$sisap->cambia_fecha($dep_trans[0]['fecha_documento']),'RL',0,'C');
+		$pdf->Cell(20,$height,mascara($dep_trans[0]['numero_documento'], 8),'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(130,2.5,trim($dep_trans[0]['concepto']),'','L');
+		$varX = $varX+130;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,$height,$sisap->Formato2($dep_trans[0]['monto']),'RL',1,'R');
+		$pdf->Cell(0,0,'','T',1);// Linea
+	}
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(20,5,"",'RBL',0,'C');
+	$pdf->Cell(20,5,"",'RB',0,'C');
+	$pdf->Cell(130,5,"TOTAL Bs. ",'RB',0,'R');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,$sisap->Formato2($monto_depositos),'RB',1,'R');
+	$pdf->SetFont('vera','B',7);
+}
+
+
+
+
+//-------- Anexo 10 -------------------------
+if($anexo == 0 || $anexo == 10){
+		$pdf->titulo_A = '01.2 NOTAS DE CRÉDITO EN TRÁNSITO (REGISTRADAS EN LIBROS Y NO REGISTRADAS EN BANCOS)';
+		$pdf->titulo_B = '';
+		$pdf->numeroAnexo = 10;
+		$pdf->AddPage();
+		$pdf->SetFont('vera','',6);
+		$monto_notascred = 0;
+		foreach($notascred_transito AS $notascred_trans){
+			$monto_notascred += $notascred_trans[0]['monto'];
+			$str = strlen($notascred_trans[0]['concepto']);
+			if($str <= 85){
+				$height = 5;
+			}else if($str > 85 && $str <= 170){
+				$height = 7;
+			}else if($str > 170 && $str <= 255){
+				$height = 9;
+			}else if($str > 255 && $str <= 340){
+				$height = 11;
+			}else if($str > 340 && $str <= 425){
+				$height = 13;
+			}else if($str > 425 && $str <= 510){
+				$height = 15;
+			}else if($str > 510 && $str <= 595){
+				$height = 17;
+			}else if($str > 595 && $str <= 680){
+				$height = 19;
+			}else if($str > 680 && $str <= 760){
+				$height = 21;
+			}else if($str > 760 && $str <= 840){
+				$height = 23;
+			}else if($str > 840 && $str <= 925){
+				$height = 25;
+			}else if($str > 925 && $str <= 1010){
+				$height = 27;
+			}else if($str > 1010 && $str <= 1095){
+				$height = 29;
+			}else if($str > 1095 && $str <= 1180){
+				$height = 31;
+			}else if($str > 1180){
+				$height = 33;
+			}
+
+			$pdf->Cell(20,$height,$sisap->cambia_fecha($notascred_trans[0]['fecha_documento']),'RL',0,'C');
+			$pdf->Cell(20,$height,mascara($notascred_trans[0]['numero_documento'], 8),'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->MultiCell(130,2.5,trim($notascred_trans[0]['concepto']),'','L');
+			$varX = $varX+130;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,$height,$sisap->Formato2($notascred_trans[0]['monto']),'RL',1,'R');
+			$pdf->Cell(0,0,'','T',1);// Linea
+		}
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(20,5,"",'RBL',0,'C');
+		$pdf->Cell(20,5,"",'RB',0,'C');
+		$pdf->Cell(130,5,"TOTAL Bs. ",'RB',0,'R');
+		$pdf->SetFont('vera','B',6);
+		$pdf->Cell(0,5,$sisap->Formato2($monto_notascred),'RB',1,'R');
+		$pdf->SetFont('vera','B',7);
+	}//Fin anexo
+
+
+
+
+//-------- Anexo 02 -------------------------
+if($anexo == 0 || $anexo == 2){
+$pdf->titulo_A = '02. CARGOS INDEBIDOS DEL BANCO';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 2;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_estadocta = 0;
+$height = 6;
+foreach($cargos_indebidos AS $cargos_indeb){
+		$concepto='REGISTRADO EN BANCO Y NO REGISTRADO EN LIBRO';
+				$monto_estadocta += $cargos_indeb[0]['monto'];
+				$pdf->Cell(20,$height,$sisap->cambia_fecha($cargos_indeb[0]['fecha_documento']),'RL',0,'C');
+				$pdf->Cell(20,$height,mascara($cargos_indeb[0]['numero_documento'], 8),'R',0,'C');
+				$pdf->Cell(20,$height,$tipo_documento[$cargos_indeb[0]['tipo_documento']],'R',0,'C');
+				$pdf->Cell(112,$height,$concepto,'','L');
+				$pdf->Cell(0,$height,$sisap->Formato2($cargos_indeb[0]['monto']),'RL',1,'R');
+				$pdf->Cell(0,0,"",'B',1,'R');// Linea
+
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_estadocta),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+
+//-------- Anexo 03 -------------------------
+if($anexo == 0 || $anexo == 3){
+$pdf->titulo_A = '03. CHEQUES EN TRÁNSITO (REGISTRADOS EN LIBROS Y NO REGISTRADOS EN BANCOS)';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 3;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_cheques = 0;
+foreach($cheques_transito AS $cheque_trans){
+	$monto_cheques += $cheque_trans[0]['monto'];
+	$str = strlen($cheque_trans[0]['concepto']);
+	if($str <= 85){
+		$height = 5;
+	}else if($str > 85 && $str <= 170){
+		$height = 7;
+	}else if($str > 170 && $str <= 255){
+		$height = 9;
+	}else if($str > 255 && $str <= 340){
+		$height = 11;
+	}else if($str > 340 && $str <= 425){
+		$height = 13;
+	}else if($str > 425 && $str <= 510){
+		$height = 15;
+	}else if($str > 510 && $str <= 595){
+		$height = 17;
+	}else if($str > 595 && $str <= 680){
+		$height = 19;
+	}else if($str > 680 && $str <= 760){
+		$height = 21;
+	}else if($str > 760 && $str <= 840){
+		$height = 23;
+	}else if($str > 840 && $str <= 925){
+		$height = 25;
+	}else if($str > 925 && $str <= 1010){
+		$height = 27;
+	}else if($str > 1010 && $str <= 1095){
+		$height = 29;
+	}else if($str > 1095 && $str <= 1180){
+		$height = 31;
+	}else if($str > 1180){
+		$height = 33;
+	}
+
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($cheque_trans[0]['fecha_documento']),'RL',0,'C');
+	$pdf->Cell(20,$height,mascara($cheque_trans[0]['numero_documento'], 8),'R',0,'C');
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(130,2.5,trim($cheque_trans[0]['concepto']),'','L');
+	$varX = $varX+130;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,$height,$sisap->Formato2($cheque_trans[0]['monto']),'RL',1,'R');
+	$pdf->Cell(0,0,'','T',1);// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(130,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_cheques),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+
+// 03  1. NOTAS DE DÉBITO EN TRÁNSITO;
+	//-------- Anexo 09 -------------------------
+	if($anexo == 0 || $anexo == 9){
+	$pdf->titulo_A = '03.  2 NOTAS DE DÉBITO EN TRÁNSITO (REGISTRADAS EN LIBROS Y NO REGISTRADAS EN BANCOS)';
+	$pdf->titulo_B = '';
+	$pdf->numeroAnexo = 3;
+	$pdf->AddPage();
+	$pdf->SetFont('vera','',6);
+	$monto_notadeb = 0;
+	foreach($notadeb_transito AS $notadeb_trans){
+		$monto_notadeb += $notadeb_trans[0]['monto'];
+		$str = strlen($notadeb_trans[0]['concepto']);
+		if($str <= 85){
+			$height = 5;
+		}else if($str > 85 && $str <= 170){
+			$height = 7;
+		}else if($str > 170 && $str <= 255){
+			$height = 9;
+		}else if($str > 255 && $str <= 340){
+			$height = 11;
+		}else if($str > 340 && $str <= 425){
+			$height = 13;
+		}else if($str > 425 && $str <= 510){
+			$height = 15;
+		}else if($str > 510 && $str <= 595){
+			$height = 17;
+		}else if($str > 595 && $str <= 680){
+			$height = 19;
+		}else if($str > 680 && $str <= 760){
+			$height = 21;
+		}else if($str > 760 && $str <= 840){
+			$height = 23;
+		}else if($str > 840 && $str <= 925){
+			$height = 25;
+		}else if($str > 925 && $str <= 1010){
+			$height = 27;
+		}else if($str > 1010 && $str <= 1095){
+			$height = 29;
+		}else if($str > 1095 && $str <= 1180){
+			$height = 31;
+		}else if($str > 1180){
+			$height = 33;
+		}
+
+		$pdf->Cell(20,$height,$sisap->cambia_fecha($notadeb_trans[0]['fecha_documento']),'RL',0,'C');
+		$pdf->Cell(20,$height,mascara($notadeb_trans[0]['numero_documento'], 8),'R',0,'C');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+		$pdf->MultiCell(130,2.5,trim($notadeb_trans[0]['concepto']),'','L');
+		$varX = $varX+130;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,$height,$sisap->Formato2($notadeb_trans[0]['monto']),'RL',1,'R');
+		$pdf->Cell(0,0,'','T',1);// Linea
+	}
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(20,5,"",'RBL',0,'C');
+	$pdf->Cell(20,5,"",'RB',0,'C');
+	$pdf->Cell(130,5,"TOTAL Bs. ",'RB',0,'R');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(0,5,$sisap->Formato2($monto_notadeb),'RB',1,'R');
+	$pdf->SetFont('vera','B',7);
+	}// Fin anexo
+
+
+
+
+
+
+//-------- Anexo 04 -------------------------
+if($anexo == 0 || $anexo == 4){
+$pdf->titulo_A = '04. ABONOS INDEBIDOS DEL BANCOS';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 4;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_estadocta = 0;
+$height = 6;
+foreach($abonos_indebidos AS $abonos_indeb){
+		$concepto='REGISTRADO EN BANCO Y NO REGISTRADO EN LIBRO';
+				$monto_estadocta += $abonos_indeb[0]['monto'];
+				$pdf->Cell(20,$height,$sisap->cambia_fecha($abonos_indeb[0]['fecha_documento']),'RL',0,'C');
+				$pdf->Cell(20,$height,mascara($abonos_indeb[0]['numero_documento'], 8),'R',0,'C');
+				$pdf->Cell(20,$height,$tipo_documento[$abonos_indeb[0]['tipo_documento']],'R',0,'C');
+				$pdf->Cell(112,$height,$concepto,'','L');
+				$pdf->Cell(0,$height,$sisap->Formato2($abonos_indeb[0]['monto']),'RL',1,'R');
+				$pdf->Cell(0,0,"",'B',1,'R');// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_estadocta),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+
+//-------- Anexo 05 -------------------------
+if($anexo == 0 || $anexo == 5){
+$pdf->titulo_A = '05. ABONOS INDEBIDOS EN LIBROS';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 5;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_tesoreria = 0;
+	foreach($abonos_indeb_libro AS $abonos_indebidos_libro){
+	$concepto='REGISTRADO EN BANCO Y NO REGISTRADO EN LIBRO';
+
+		$str = strlen($notascred_trans[0]['concepto']);
+			if($str <= 85){
+				$height = 5;
+			}else if($str > 85 && $str <= 170){
+				$height = 7;
+			}else if($str > 170 && $str <= 255){
+				$height = 9;
+			}else if($str > 255 && $str <= 340){
+				$height = 11;
+			}else if($str > 340 && $str <= 425){
+				$height = 13;
+			}else if($str > 425 && $str <= 510){
+				$height = 15;
+			}else if($str > 510 && $str <= 595){
+				$height = 17;
+			}else if($str > 595 && $str <= 680){
+				$height = 19;
+			}else if($str > 680 && $str <= 760){
+				$height = 21;
+			}else if($str > 760 && $str <= 840){
+				$height = 23;
+			}else if($str > 840 && $str <= 925){
+				$height = 25;
+			}else if($str > 925 && $str <= 1010){
+				$height = 27;
+			}else if($str > 1010 && $str <= 1095){
+				$height = 29;
+			}else if($str > 1095 && $str <= 1180){
+				$height = 31;
+			}else if($str > 1180){
+				$height = 33;
+			}
+
+				$monto_tesoreria += $abonos_indebidos_libro[0]['monto'];
+				$pdf->Cell(20,$height,$sisap->cambia_fecha($abonos_indebidos_libro[0]['fecha_documento']),'RL',0,'C');
+				$pdf->Cell(20,$height,mascara($abonos_indebidos_libro[0]['numero_documento'], 8),'R',0,'C');
+				$pdf->Cell(20,$height,$tipo_documento[$abonos_indebidos_libro[0]['tipo_documento']],'R',0,'C');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->MultiCell(112,2.5,trim($abonos_indebidos_libro[0]['concepto']),'','L');
+				$varX = $varX+112;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(0,$height,$sisap->Formato2($abonos_indebidos_libro[0]['monto']),'RL',1,'R');
+				$pdf->Cell(0,0,"",'T',1);// Linea
+	}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_tesoreria),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+
+
+//-------- Anexo 06 -------------------------
+if($anexo == 0 || $anexo == 6){
+$pdf->titulo_A = '06. DEPÓSITOS Y NOTAS DE CRÉDITO (NO REGISTRADAS EN LIBROS)';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 6;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_dep_nc = 0;
+$height = 6;
+foreach($depositos_nc_noregistradas as $dep_nc_noregistradas){
+	$concepto='REGISTRADO EN BANCO Y NO REGISTRADO EN LIBRO';
+	$monto_dep_nc += $dep_nc_noregistradas[0]['monto'];
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($dep_nc_noregistradas[0]['fecha_documento']),'RL',0,'C');
+	$pdf->Cell(20,$height,mascara($dep_nc_noregistradas[0]['numero_documento'], 8),'R',0,'C');
+	$pdf->Cell(20,$height,$tipo_documento[$dep_nc_noregistradas[0]['tipo_documento']],'R',0,'C');
+	$pdf->Cell(112,$height,trim($concepto),'','L');
+	$pdf->Cell(0,$height,$sisap->Formato2($dep_nc_noregistradas[0]['monto']),'RL',1,'R');
+	$pdf->Cell(0,0,"",'T',1);// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_dep_nc),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}
+
+
+
+
+
+//-------- Anexo 07 -------------------------
+if($anexo == 0 || $anexo == 7){
+$pdf->titulo_A = '07. CARGOS INDEBIDOS EN LIBROS';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 7;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+$monto_indebido = 0;
+foreach($cargos_indeb_libro AS $cargos_indebidos_libro){
+	$monto_indebido += $cargos_indebidos_libro[0]['monto'];
+	$str = strlen($cargos_indebidos_libro[0]['concepto']);
+	if($str <= 85){
+		$height = 5;
+	}else if($str > 85 && $str <= 170){
+		$height = 7;
+	}else if($str > 170 && $str <= 255){
+		$height = 9;
+	}else if($str > 255 && $str <= 340){
+		$height = 11;
+	}else if($str > 340 && $str <= 425){
+		$height = 13;
+	}else if($str > 425 && $str <= 510){
+		$height = 15;
+	}else if($str > 510 && $str <= 595){
+		$height = 17;
+	}else if($str > 595 && $str <= 680){
+		$height = 19;
+	}else if($str > 680 && $str <= 760){
+		$height = 21;
+	}else if($str > 760 && $str <= 840){
+		$height = 23;
+	}else if($str > 840 && $str <= 925){
+		$height = 25;
+	}else if($str > 925 && $str <= 1010){
+		$height = 27;
+	}else if($str > 1010 && $str <= 1095){
+		$height = 29;
+	}else if($str > 1095 && $str <= 1180){
+		$height = 31;
+	}else if($str > 1180){
+		$height = 33;
+	}
+
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($cargos_indebidos_libro[0]['fecha_documento']),'RL',0,'C');
+	$pdf->Cell(20,$height,mascara($cargos_indebidos_libro[0]['numero_documento'], 8),'R',0,'C');
+	$pdf->Cell(20,$height,$tipo_documento[$cargos_indebidos_libro[0]['tipo_documento']],'R',0,'C');
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->MultiCell(112,2.5,trim($cargos_indebidos_libro[0]['concepto']),'','L');
+	$varX = $varX+112;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,$height,$sisap->Formato2($cargos_indebidos_libro[0]['monto']),'RL',1,'R');
+	$pdf->Cell(0,0,'','T',1);// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_indebido),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+//-------- Anexo 08 -------------------------
+if($anexo == 0 || $anexo == 8){
+$pdf->titulo_A = '08. CHEQUES Y NOTAS DE DÉBITO (NO REGISTRADAS EN LIBROS)';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 8;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$monto_cheq_nd = 0;
+$height = 6;
+foreach($cheques_nd_noregistradas as $cheq_nd_noregistradas){
+	$concepto='REGISTRADO EN BANCO Y NO REGISTRADO EN LIBRO';
+	$monto_cheq_nd += $cheq_nd_noregistradas[0]['monto'];
+
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($cheq_nd_noregistradas[0]['fecha_documento']),'RL',0,'C');
+	$pdf->Cell(20,$height,mascara($cheq_nd_noregistradas[0]['numero_documento'], 8),'R',0,'C');
+	$pdf->Cell(20,$height,$tipo_documento[$cheq_nd_noregistradas[0]['tipo_documento']],'R',0,'C');
+	$varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+	$pdf->Cell(112,$height,$concepto,'','L');
+	$varX = $varX+112;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,$height,$sisap->Formato2($cheq_nd_noregistradas[0]['monto']),'RL',1,'R');
+	$pdf->Cell(0,0,"",'T',1);// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(112,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,$sisap->Formato2($monto_cheq_nd),'RB',1,'R');
+}// Fin anexo
+
+
+
+
+//-------- Anexo 11 -------------------------
+if($anexo == 0 || $anexo ==11){
+$pdf->titulo_A = '09. DOCUMENTOS REGISTRADOS CON MONTOS DIFERENTES (BANCOS VS LIBROS)';
+$pdf->titulo_B = '';
+$pdf->numeroAnexo = 7;
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$cargo = 0;
+$monto_tesoreria = 0;
+$monto_estadocta = 0;
+$monto_diferencia= 0;
+foreach($dif_abonos_cargos AS $dif_abono_cargo){
+	$str = strlen($dif_abono_cargo[0]['concepto']);
+	if($str < 50){
+		$height = 7;
+	}else if($str > 50 && $str <= 100){
+		$height = 10.5;
+	}else if($str > 100 && $str <= 150){
+		$height = 12.5;
+	}else if($str > 150 && $str <= 200){
+		$height = 14.5;
+	}else if($str > 200 && $str <= 250){
+		$height = 16.5;
+	}else if($str > 250 && $str <= 300){
+		$height = 18.5;
+	}else if($str > 300 && $str <= 350){
+		$height = 20.5;
+	}else if($str > 350 && $str <= 400){
+		$height = 22.5;
+	}else if($str > 400 && $str <= 450){
+		$height = 24.5;
+	}else if($str > 450 && $str <= 500){
+		$height = 26.5;
+	}else if($str > 500 && $str <= 550){
+		$height = 28.5;
+	}else if($str > 550 && $str <= 600){
+		$height = 30.5;
+	}else if($str > 600 && $str <= 650){
+		$height = 32.5;
+	}else if($str > 650 && $str <= 700){
+		$height = 34.5;
+	}else if($str > 700){
+		$height = 38.5;
+	}
+
+			if($dif_abono_cargo[0]['monto_movgenerales'] >= $dif_abono_cargo[0]['monto_estadocuenta']){
+				$cargo = ($dif_abono_cargo[0]['monto_movgenerales'] - $dif_abono_cargo[0]['monto_estadocuenta']);
+			}else{
+				$cargo = ($dif_abono_cargo[0]['monto_estadocuenta'] - $dif_abono_cargo[0]['monto_movgenerales']);
+			}
+				$monto_tesoreria += $dif_abono_cargo[0]['monto_movgenerales'];
+				$monto_estadocta += $dif_abono_cargo[0]['monto_estadocuenta'];
+				$monto_diferencia+= $cargo;
+
+				$pdf->Cell(20,$height,$sisap->cambia_fecha($dif_abono_cargo[0]['fecha_documento']),'RL',0,'C');
+				$pdf->Cell(20,$height,mascara($dif_abono_cargo[0]['numero_documento'], 8),'R',0,'C');
+				$pdf->Cell(20,$height,$tipo_documento[$dif_abono_cargo[0]['tipo_documento']],'R',0,'C');
+				$varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+				$pdf->MultiCell(70,2.5,trim($dif_abono_cargo[0]['concepto']),'','L');
+				$varX = $varX+70;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(21,$height,$sisap->Formato2($dif_abono_cargo[0]['monto_movgenerales']),'RL',0,'R');
+				$pdf->Cell(21,$height,$sisap->Formato2($dif_abono_cargo[0]['monto_estadocuenta']),'R',0,'R');
+				$pdf->Cell(0,$height,$sisap->Formato2($cargo),'R',1,'R');
+				$pdf->Cell(0,0,"",'B',1,'R');// Linea
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,5,"",'RBL',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(20,5,"",'RB',0,'C');
+$pdf->Cell(70,5,"TOTAL Bs. ",'RB',0,'R');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(21,5,$sisap->Formato2($monto_tesoreria),'RB',0,'R');
+$pdf->Cell(21,5,$sisap->Formato2($monto_estadocta),'RB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($monto_diferencia),'RB',1,'R');
+$pdf->SetFont('vera','B',7);
+}// Fin anexo
+
+
+
+$pdf->Output('reporte_conciliacion_cuentas_bancarias_'.date("d-m-Y h:i:sa").'.pdf','D');
+?>

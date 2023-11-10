@@ -1,0 +1,205 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: tipo_recurso_proy_presu_pdf.thtml
+ * Fecha de creacion: 09/06/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+
+ vendor('utf8_tcpdf/tcpdf');
+
+
+$_SESSION['titulo_a'] = $titulo_a = "";
+$rdm = $_SESSION['rdm'];
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-10);
+    	//Select Arial italic 8
+	$this->SetFont('vera','',5);
+    	//Print current and total page numbers
+   	 //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+
+
+		$this->top_reporte("Recurso Asignado vs Presupuestado", "año recurso: ".$_SESSION['ano_recurso'], null, array("Y"=>"11", "X"=>"15", "Z"=>"14"), null, false);
+
+
+
+	}//fin funtion
+}//fin clase
+
+$_SESSION['opcion1_aux'] = $opcion1_aux="sdasdas";
+$_SESSION['opcion2_aux'] = $opcion2_aux = "adsfsf";
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+//for
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png',180,53,null);
+$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png',25,54,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto1_'.$user.'_'.$rdm.'.png',25,159,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto2_'.$user.'_'.$rdm.'.png',25,149,null);
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto3_'.$user.'_'.$rdm.'.png',25,169,null);
+$pdf->Cell(0,46,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',14);
+$pdf->Cell(0,20,"Leyenda: ",'',1,'L');//NOMBRE
+$pdf->Cell(0,3,"",'',1);//ESPACIO
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,8,"",'',0);//ESPACIO
+$pdf->Cell(0,8,"          Monto presupuestado: ".$sisap->get_porcentaje($asignacion_total, $monto_presupuestado)."% - ".$monto_presupuestado." Bs.",'',1);//Gasto Corriente
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,11,"",'',0);//ESPACIO
+$pdf->Cell(0,11,"          Monto No presupuestado: ".$sisap->get_porcentaje($asignacion_total, $monto_nopresupuestado)."% - ".$monto_nopresupuestado." Bs.",'',1);//Gasto de Inversion
+
+
+
+
+$_SESSION['ano_recurso'] = $ano_recurso;
+
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,9,"",'',0);//ESPACIO
+$pdf->Cell(0,9,"          Total Recursos Extraordinarios: ".$asignacion_total." Bs.",'',1);//Gasto Total
+//unlink('/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png');
+//unlink('/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png');
+/*
+//PAGINA 2 DEL REPORTE
+$_SESSION['titulo_a_b'] = "RECURSOS ".$ano_recurso;
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'2_'.$rdm.'.png',180,53,null);
+$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$user.'2_'.$rdm.'.png',25,58,null);
+if($_SESSION['ordinario'] != 0){
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto0_'.$user.'2_'.$rdm.'.png',25,153,null);
+}
+$h = 153;
+if($_SESSION['coordinado'] != 0){
+	$h += 10;
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto1_'.$user.'2_'.$rdm.'.png',25,$h,null);
+}
+
+if($_SESSION['laee'] != 0){
+	$h += 10;
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto2_'.$user.'2_'.$rdm.'.png',25,$h,null);
+}
+
+if($_SESSION['fides'] != 0){
+	$h += 10;
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto3_'.$user.'2_'.$rdm.'.png',25,$h,null);
+}
+
+if($_SESSION['ingreso_extraordinario'] != 0){
+	$h += 10;
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto4_'.$user.'2_'.$rdm.'.png',25,$h,null);
+}
+$h += 10;
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto5_'.$user.'2_'.$rdm.'.png',25,$h,null);
+
+$pdf->Cell(0,46,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',14);
+$pdf->Cell(0,20,"Leyenda: ",'',1,'L');//NOMBRE
+$pdf->Cell(0,3,"",'',1);//ESPACIO
+if($_SESSION['ordinario'] != 0){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,8,"",'',0);//ESPACIO
+	$pdf->Cell(0,8,"          ORDINARIO: ".$sisap->Formato2($_SESSION['ordinario'])." Bs.",'',1);//Gasto Corriente
+}
+if($_SESSION['coordinado'] != 0){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,11,"",'',0);//ESPACIO
+	$pdf->Cell(0,11,"          coordinado: ".$sisap->Formato2($_SESSION['coordinado'])." Bs.",'',1);//Gasto de Inversion
+}
+
+if($_SESSION['laee'] != 0){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,9,"",'',0);//ESPACIO
+	$pdf->Cell(0,9,"          LAEE: ".$sisap->Formato2($_SESSION['laee'])." Bs.",'',1);//Gasto Total
+}
+
+if($_SESSION['fides'] != 0){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,9,"",'',0);//ESPACIO
+	$pdf->Cell(0,9,"          FIDES: ".$sisap->Formato2($_SESSION['fides'])." Bs.",'',1);//Gasto Total
+}
+
+if($_SESSION['ingreso_extraordinario'] != 0){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,11,"",'',0);//ESPACIO
+	$pdf->Cell(0,11,"          Extraordinario: ".$sisap->Formato2($_SESSION['ingreso_extraordinario'])." Bs.",'',1);//Gasto Total
+}
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,9,"",'',0);//ESPACIO
+$pdf->Cell(0,9,"          Total Presupuestado: ".$monto_presupuestado." Bs.",'',1);//Gasto Total
+//unlink('/tmp/pastel_tipo_gasto_'.$user.'_'.$rdm.'.png');
+//unlink('/tmp/barra_tipo_gasto_'.$user.'_'.$rdm.'.png');
+
+//TERCERA PAGINA SI POSEE EXTRAORDINARIO
+if($_SESSION['ingreso_extraordinario'] != 0){
+$_SESSION['titulo_a_b'] = "RECURSOS EXTRAORDINARIOS ".$ano_recurso;
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$user.'3_'.$rdm.'.png',180,53,null);
+$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$user.'3_'.$rdm.'.png',25,58,null);
+$h = 153;
+for($i=0; $i<count($recurso);$i++){
+	$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$i.'_'.$user.'3_'.$rdm.'.png',25,$h,null);
+	$h +=10;
+}
+$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$i.'_'.$user.'3_'.$rdm.'.png',25,$h,null);
+$pdf->Cell(0,46,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',14);
+$pdf->Cell(0,20,"Leyenda: ",'',1,'L');//NOMBRE
+$pdf->Cell(0,3,"",'',1);//ESPACIO
+
+for($i=0; $i<count($recurso);$i++){
+	$pdf->SetFont('freeserif','BI',12);
+	$pdf->Cell(13,8,"",'',0);//ESPACIO
+	$pdf->Cell(0,8,"          $recurso[$i]: ".$sisap->Formato2($monto_recurso[$i])." Bs.",'',1);//Gasto Corriente
+}
+
+$pdf->SetFont('freeserif','BI',12);
+$pdf->Cell(13,10,"",'',0);//ESPACIO
+$pdf->Cell(0,9,"          Asignacion Total: ".$sisap->Formato2($_SESSION['ingreso_extraordinario'])." Bs.",'',1);//Gasto Total
+
+}
+*/
+
+$pdf->Output('tipo_recurso_'.date("d-m-Y").".pdf",'D');
+
+?>

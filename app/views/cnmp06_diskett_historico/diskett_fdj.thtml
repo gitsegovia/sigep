@@ -1,0 +1,227 @@
+<?php
+
+
+	if($opcion==1){
+
+
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<style>
+.ctipo_personal {
+ 	color:#FFF;
+ 	background-color:#003d4c;
+ 	font-family: arial, Helvetica, sans-serif;
+	line-height: normal;
+	white-space: normal;
+	font-weight: bold;
+        border-top:#000000 1px solid;
+        border-left:#000000 1px solid;
+        border-right:#000000 1px solid;
+        border-bottom:#000000 1px solid;
+        text-shadow: 0.07em 0.06em #900000;
+}
+</style>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"APORTES Y COTIZACI&Oacute;N AL FONDO DE JUBILACIONES Y PENSIONES","","800"); ?>
+
+<form name='data[cnmd17_fideicomiso]' method = "post" id='form' action="<?php echo $html->url('/cnmp06_diskett_historico/diskett_fdj/2/'.$formato);?>">
+<?= $sisap->OpenTable("800") ?>
+
+<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		 <tr class="tr_negro">
+		    <td width="18%" align="center">Seleccione</td>
+		    <td width="82%" align="center">Tipo de Personal</td>
+		 </tr>
+		 <tr>
+		    <td align="center">
+		    	<?= $sisap->selectTagRemote('cnmd17_fideicomiso/tipo_personal', array('1'=>'EMPLEADOS', '2'=>'OBREROS'), null, '', array('onchange1'=>'/cnmp06_diskett_historico/anos_nomina_fdj', 'update1'=>'anos_nomina', 'id'=>'tipo_personal', 'onchange'=>"vacio", true), null, true); ?>
+		    </td>
+			<td align="center" id="stipo_personal" class="ctipo_personal" style="font-size: 17pt;">&nbsp;
+			</td>
+		</tr>
+</table>
+
+<br /><br />
+
+<table width="40%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		 <tr class="tr_negro">
+		    <td width="50%" align="center">A&ntilde;o: N&oacute;mina</td>
+		    <td width="50%" align="center">Mes</td>
+		 </tr>
+		 <tr>
+		    <td align="center" id="anos_nomina">
+				<?= $html->selectTag('cnmd17_fideicomiso/ano_nomina', array(), null, array("id"=>"ano_nomina")) ?>
+		    </td>
+			<td align="center" id="mes_nomina">
+				<?= $html->selectTag('cnmd17_fideicomiso/mes_nomina', array(), null, array("id"=>"mes_nomina")) ?>
+			</td>
+		</tr>
+</table>
+
+<div id='funcion'></div>
+
+<br />
+
+<?php
+	if($formato==1){
+?>
+
+<br />
+
+<input type="submit" value="CREAR ARCHIVO" id="fcrear_archivo" title="CREAR ARCHIVO" disabled="disabled">
+
+<?php
+	}else if($formato==2){
+		echo $html->submit('Generar', array('id'=>'fcrear_archivo', 'disabled'=>'disabled'));
+	}
+?>
+
+<?= $sisap->buttonTagRemote('/cnmd17_fideicomiso/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+
+<?= $sisap->CloseTable() ?>
+
+<?php
+
+	}else if($opcion==2){
+
+		if((int)$formato==1){
+
+		// TXT
+
+			echo $filas_archivo;
+
+
+		}else if((int)$formato==2){
+
+		// PDF
+
+	if(!empty($datos_fdj)){
+		$_SESSION['periodo_cancelar'] = $datos_fdj[0]['v_cnmd08_fdj_historia']['periodo_cancelar'];
+	}else{
+		$_SESSION['periodo_cancelar'] = "";
+	}
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'P', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("RELACIÓN DE APORTES Y COTIZACIÓN AL FONDO DE JUBILACIONES Y PENSIONES"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"189"));
+
+            $this->SetFont('vera', 'B', 9);
+            $this->Cell(0, 7, "NÓMINA DEL: ".$_SESSION['periodo_cancelar'], 'TRBL', 1, 'L');
+
+			$this->SetFont('vera', 'B', 7);
+            $this->Cell(25, 5, 'CÉDULA', 'RBL', 0, 'C');
+            $this->Cell(91, 5, 'NOMBRES', 'RB', 0, 'C');
+            $this->Cell(30, 5, 'REMUNERACIÓN', 'RB', 0, 'C');
+            $this->Cell(30, 5, 'APORTE', 'RB', 0, 'C');
+            $this->Cell(0, 5, 'COTIZACIÓN', 'RB', 1, 'C');
+        }
+
+        function Footer() {
+        }
+
+    function tam_celda($total_char){
+		if($total_char<100){
+			$heigth = 6;
+		}elseif($total_char>=100 && $total_char<200){
+			$heigth = 12;
+		}elseif($total_char>=200 && $total_char<300){
+			$heigth = 18;
+		}elseif($total_char>=300 && $total_char<400){
+			$heigth = 24;
+		}elseif($total_char>=400 && $total_char<500){
+			$heigth = 30;
+		}elseif($total_char>=500 && $total_char<600){
+			$heigth = 36;
+		}elseif($total_char>=600 && $total_char<700){
+			$heigth = 42;
+		}elseif($total_char>=700 && $total_char<800){
+			$heigth = 48;
+		}elseif($total_char>=800 && $total_char<900){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+    } // End Of fpdfview ext. TCPDF Class
+
+    $pdf = new fpdfview('P', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+	if(!empty($datos_fdj)){
+
+		$tipo = $tipo_personal=='1'?'EMPLEADOS':'OBREROS';
+		$total_remuneracion = 0;
+		$total_aporte = 0;
+		$total_cotizacion = 0;
+
+	foreach($datos_fdj as $rdatos_fdj){
+		$nombres = str_replace("\n", "", $rdatos_fdj['v_cnmd08_fdj_historia']['nombre']);
+		$total_char = strlen($nombres);
+		$theigth = $pdf->tam_celda($total_char);
+
+		$pdf->Cell(25, $theigth, $rdatos_fdj['v_cnmd08_fdj_historia']['cedula_identidad'], 'LR', 0, 'C'); // --------[CEDULA IDENTIDAD]
+
+				$pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(90, 1, "", '', 2, '');
+                $pdf->MultiCell(90, 3, $nombres, '', 'L'); // --------[NOMBRES]
+                $varX = $varX + 90;
+                $pdf->SetXY($varX, $varY);
+
+		$pdf->Cell(30, $theigth, $sisap->Formato2($rdatos_fdj['v_cnmd08_fdj_historia']['sueldo']), 'RL', 0, 'R');    // ----[REMUNERACION]
+		$pdf->Cell(30, $theigth, $sisap->Formato2($rdatos_fdj['v_cnmd08_fdj_historia']['aporte']), 'R', 0, 'R');    // ----[   APORTE   ]
+		$pdf->Cell(0, $theigth, $sisap->Formato2($rdatos_fdj['v_cnmd08_fdj_historia']['cotizacion']), 'R', 1, 'R'); // ----[ COTIZACION ]
+		$pdf->Cell(0, 0, "", 'T', 1, 'L');
+
+		$total_remuneracion += $rdatos_fdj['v_cnmd08_fdj_historia']['sueldo'];
+		$total_aporte += $rdatos_fdj['v_cnmd08_fdj_historia']['aporte'];
+		$total_cotizacion += $rdatos_fdj['v_cnmd08_fdj_historia']['cotizacion'];
+	} // END FOREACH
+
+
+	$pdf->SetFont('vera', 'B', 9);
+	$pdf->Cell(116, 7, "Nº DE ($tipo) ".$sisap->zero(count($datos_fdj)), 'RBL', 0, 'L');
+	$pdf->SetFont('vera', 'B', 6);
+	$pdf->Cell(30, 7, $sisap->Formato2($total_remuneracion), 'RB', 0, 'R');
+	$pdf->Cell(30, 7, $sisap->Formato2($total_aporte), 'RB', 0, 'R');
+	$pdf->Cell(0, 7, $sisap->Formato2($total_cotizacion), 'RB', 1, 'R');
+
+
+	}else{
+
+		$pdf->SetFont('vera', 'B', 14);
+		$pdf->Ln(8);
+		$pdf->Cell(0, 28, "NO SE ENCONTRARON DATOS...", 'TRBL', 1, 'C');
+	} // END ELSE IF !EMPTY
+
+    $pdf->Output($nombre_archivo.'.pdf', 'D');
+
+	unset($_SESSION['periodo_cancelar']);
+}
+
+       } // fin else
+?>

@@ -1,0 +1,727 @@
+<?php
+
+	// **** PRE ****
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'L', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte2(array("PROCESOS PRE Y POST DE PRENOMINA"), array("Y"=>"6", "X"=>"15", "Z"=>"13"), array("Y"=>"20", "X"=>"252"));
+        }
+
+        function Footer() {
+        }
+
+    function tam_celda($total_char){
+		if($total_char<40){
+			$heigth = 6;
+		}elseif($total_char>=40 && $total_char<80){
+			$heigth = 12;
+		}elseif($total_char>=80 && $total_char<120){
+			$heigth = 18;
+		}elseif($total_char>=120 && $total_char<160){
+			$heigth = 24;
+		}elseif($total_char>=160 && $total_char<200){
+			$heigth = 30;
+		}elseif($total_char>=200 && $total_char<240){
+			$heigth = 36;
+		}elseif($total_char>=240 && $total_char<280){
+			$heigth = 42;
+		}elseif($total_char>=280 && $total_char<320){
+			$heigth = 48;
+		}elseif($total_char>=320 && $total_char<360){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+    } // End Of fpdfview ext. TCPDF Class
+
+    $pdf = new fpdfview('L', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+	$name_outp = 'vpprenomina';
+
+
+
+if(!empty($datos_pnomina_a)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "REGISTRE LOS SIGUIENTES BANCOS: EN BANCOS QUE CANCELAN NÓMINAS (FAVOR NO REGISTRAR DIFERENTES SUCURSALES DEL MISMO BANCO)", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RBL', 0, 'C');
+            $pdf->Cell(0, 5, 'ENTIDAD BANCARIA', 'RB', 1, 'C');
+
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_a as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$banco = str_replace("\n", "", $rdatos_pnomina[0]['banco']);
+		// $total_char = strlen($banco);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_entidad_bancaria'], 4), 'TLRB', 0, 'C'); // --------[Cod. Ent. BANC.]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $banco, '', 'L'); // --------[DENO. BANCO]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+                $pdf->Cell(0, $theigth, $banco, 'TRB', 1, 'L'); // --------[DENO. BANCO]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_a';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+if(!empty($datos_pnomina_b)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "REGISTRE LA FRECUENCIA DE LAS SIGUIENTES TRANSACCIONES (FAVOR REGISTRAR LAS FRECUENCIAS DE TODAS LAS TRANSACCIONES, LAS USE O NO)", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_b as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_b';
+	$pdf->AddPage();
+
+}
+
+
+
+
+
+
+
+
+	// **** POST ****
+
+if(!empty($datos_pnomina_c)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "REGISTRE LAS SIGUIENTES TRANSACCIONES (DEDUCCIONES) EN BANCOS QUE CANCELAN FONDOS DE TERCEROS", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RBL', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_c as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TLRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_c';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+
+if(!empty($datos_pnomina_d)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "CONECTE LAS PARTIDAS DE LAS SIGUIENTES TRANSACCIONES", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_d as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_d';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+
+
+if(!empty($datos_pnomina_e)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "LOS SIGUIENTES CARGOS CONTIENEN PARTIDAS NO FORMULADAS EN EL PRESUPUESTO", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'AÑO', 'RBL', 0, 'C');
+            $pdf->Cell(28, 5, 'CÓDIGO CARGO', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'SECTOR', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'PROG', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'SUB PROG', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'PROY', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'ACTIV OBRA', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'PART', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'GEN', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'ESPEC', 'RB', 0, 'C');
+            $pdf->Cell(22, 5, 'SUB ESPEC', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'AUX', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+	$theigth = 6;
+	foreach($datos_pnomina_e as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['ano'], 'TLRB', 0, 'C');
+				$pdf->Cell(28, $theigth, mascara($rdatos_pnomina[0]['cod_cargo'], 6), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_sector'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_programa'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_sub_prog'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_proyecto'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_activ_obra'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_partida'], 3), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_generica'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_especifica'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(22, $theigth, mascara($rdatos_pnomina[0]['cod_sub_espec'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(0, $theigth, mascara($rdatos_pnomina[0]['cod_auxiliar'], 4), 'TRB', 1, 'C');
+
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_e';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+if(!empty($datos_pnomina_l)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->MultiCell(0, 4, "LOS SIGUIENTES CÓDIGOS PRESUPUESTARIOS SON AQUELLOS DONDE SE OBLIGO AL SISTEMA A TOMARLOS AL MOMENTO DE LA CONEXIÓN PRESUPUESTARIA. POR LO GENERAL,  LO HACEN AL NO TENER EN EL PRESUPUESTO LA PARTIDA PRESUPUESTARIA CORRECTA, VIOLANDO EL ARTÍCULO 49 DE LA LEY DE ADMINISTRACIÓN FINANCIERA DEL SECTOR PÚBLICO.  O POR NO HABER REGISTRADO EN EL PROGRAMA: MÓDULO DE PERSONAL > APERTURA > REGISTROS > PARTIDA PRESUPUESTARIA SEGÚN LAS TRANSACCIONES, LA PARTIDA CORRESPONDIENTE. A LA CLASIFICACIÓN DE PERSONAL. FAVOR.....REGULARIZAR ESTA SITUACIÓN.....", 'TRBL', 1, 'C'); // --------[TITULO]
+
+            $pdf->Cell(20, 5, 'AÑO', 'RBL', 0, 'C');
+            $pdf->Cell(24, 5, 'SECTOR', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'PROG', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'SUB PROG', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'PROY', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'ACTIV OBRA', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'PART', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'GEN', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'ESPEC', 'RB', 0, 'C');
+            $pdf->Cell(24, 5, 'SUB ESPEC', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'AUX', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+	$theigth = 6;
+	foreach($datos_pnomina_l as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['ano'], 'TLRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_sector'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_programa'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_sub_prog'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_proyecto'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_activ_obra'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_partida'], 3), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_generica'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_especifica'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(24, $theigth, mascara($rdatos_pnomina[0]['cod_sub_espec'], 2), 'TRB', 0, 'C');
+				$pdf->Cell(0, $theigth, mascara($rdatos_pnomina[0]['cod_auxiliar'], 4), 'TRB', 1, 'C');
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_l';
+	$pdf->AddPage();
+}
+
+
+
+
+if(!empty($datos_pnomina_n)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "INFORMATIVO: TRANSACCIONES OCULTAS (SUSPENDIDAS) EN ESTA NÓMINA", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_n as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_d';
+	$pdf->AddPage();
+}
+
+
+
+
+if(!empty($datos_pnomina_m)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "INFORMATIVO: TRANSACCIONES EVENTUALES CON ESCENARIOS DESACTIVADOS. (SOLO DESACTIVE LOS QUE NECESITA QUE APAREZCAN EN ESTA NÓMINA)", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_m as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_d';
+	$pdf->AddPage();
+}
+
+
+if(!empty($datos_pnomina_s)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->MultiCell(0, 4, "INFORMATIVO: LOS SIGUIENTES TRABAJADORES REGISTRARON EN SU CURRICULUM VITAE,  COMO OTRAS EXPERIENCIAS EN LA ADMISTRACIÓN PÚBLICA EL CARGO QUE OCUPAN ACTUALMENTE O SU DEFECTO LA FECHA DE RETIRO EN ALGUNO DE ESTOS CARGOS FORMA PARTE DE LA FECHA DE INGRESO ACTUAL...FAVOR REVISE.... ESTA SITUACIÓN PUEDE GENERAR MONTOS INDEBIDOS EN CALCULOS BASADOS EN LA ANTIGUEDAD DEL TRABAJADOR", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 4, 'CÓDIGO', 'RL', 0, 'C');
+            $pdf->Cell(20, 4, 'CÓDIGO', 'R', 0, 'C');
+            $pdf->Cell(20, 4, 'CÉDULA', 'R', 0, 'C');
+            $pdf->Cell(175, 4, '', 'R', 0, 'C');
+            $pdf->Cell(0, 4, 'FECHA DE', 'R', 1, 'C');
+
+            $pdf->Cell(20, 3, 'CARGO', 'RBL', 0, 'C');
+            $pdf->Cell(20, 3, 'FICHA', 'RB', 0, 'C');
+            $pdf->Cell(20, 3, 'IDENTIDAD', 'RB', 0, 'C');
+            $pdf->Cell(175, 3, 'NOMBRES Y APELLIDOS', 'RB', 0, 'C');
+            $pdf->Cell(0, 3, 'INGRESO', 'RB', 1, 'C');
+
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_s as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$nombre = str_replace("\n", "", $rdatos_pnomina[0]['nombre']);
+		// $total_char = strlen($nombre);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_cargo'], 6), 'TLRB', 0, 'C');
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_ficha'], 6), 'TRB', 0, 'C');
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['cedula_identidad'], 'TRB', 0, 'C');
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(60, 1, "", '', 2, '');
+                $pdf->MultiCell(60, 3, $nombre, '', 'L'); // --------[NOMBRES Y APELLIDOS]
+                $varX = $varX + 60;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(175, $theigth, $nombre, 'TRB', 0, 'L'); // --------[NOMBRES Y APELLIDOS]
+				$pdf->Cell(0, $theigth, $rdatos_pnomina[0]['fecha_ingreso'], 'TRB', 1, 'C'); // --------[FECHA INGRESO]
+
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_f';
+	$pdf->AddPage();
+}
+
+
+
+if(!empty($datos_pnomina_f)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "FAVOR REVISE LA SITUACIÓN DE LOS SIGUIENTES TRABAJADORES", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 4, 'CÓDIGO', 'RL', 0, 'C');
+            $pdf->Cell(20, 4, 'CÓDIGO', 'R', 0, 'C');
+            $pdf->Cell(20, 4, 'CÉDULA', 'R', 0, 'C');
+            $pdf->Cell(175, 4, '', 'R', 0, 'C');
+            $pdf->Cell(0, 4, 'NETO', 'R', 1, 'C');
+
+            $pdf->Cell(20, 3, 'CARGO', 'RBL', 0, 'C');
+            $pdf->Cell(20, 3, 'FICHA', 'RB', 0, 'C');
+            $pdf->Cell(20, 3, 'IDENTIDAD', 'RB', 0, 'C');
+            $pdf->Cell(175, 3, 'NOMBRES Y APELLIDOS', 'RB', 0, 'C');
+            $pdf->Cell(0, 3, 'NEGATIVO', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_f as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$nombre = str_replace("\n", "", $rdatos_pnomina[0]['nombre']);
+		// $total_char = strlen($nombre);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_cargo'], 6), 'TLRB', 0, 'C');
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_ficha'], 6), 'TRB', 0, 'C');
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['cedula_identidad'], 'TRB', 0, 'C');
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(60, 1, "", '', 2, '');
+                $pdf->MultiCell(60, 3, $nombre, '', 'L'); // --------[NOMBRES Y APELLIDOS]
+                $varX = $varX + 60;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(175, $theigth, $nombre, 'TRB', 0, 'L'); // --------[NOMBRES Y APELLIDOS]
+				$pdf->Cell(0, $theigth, $sisap->Formato2($rdatos_pnomina[0]['neto_cobrar']), 'TRB', 1, 'R'); // --------[NETO COBRAR NEG.]
+
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_f';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+
+if(!empty($datos_pnomina_g)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "REGISTRE LAS SIGUIENTES TRANSACCIONES (ASIGNACIONES) EN ASIGNACIONES PARA CANCELAR UNA ASIGNACIÓN", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_g as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", '', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_g';
+	$pdf->AddPage();
+}
+
+
+
+
+
+
+
+if(!empty($datos_pnomina_h)){
+
+    $pdf->SetFont('vera', 'B', 7);
+
+	$pdf->Cell(0, 7, "REGISTRE LAS SIGUIENTES TRANSACCIONES (DEDUCCIONES) EN ASIGNACIONES PARA CANCELAR UNA DEDUCCIÓN", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 5, 'TIPO', 'RBL', 0, 'C');
+            $pdf->Cell(15, 5, 'CÓDIGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'DENOMINACIÓN', 'RB', 1, 'C');
+
+	$pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_h as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$transaccion = str_replace("\n", "", $rdatos_pnomina[0]['transaccion']);
+		// $total_char = strlen($transaccion);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['tipo'], 'TLRB', 0, 'C'); // --------[TIPO TRANSACCION]
+				$pdf->Cell(15, $theigth, mascara($rdatos_pnomina[0]['cod_transaccion'], 3), 'TRB', 0, 'C'); // --------[Cod. TRANSACCION]
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(0, 1, "", 'R', 2, '');
+                $pdf->MultiCell(0, 3, $transaccion, '', 'L'); // --------[DENO. TRANSACCION]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(0, $theigth, $transaccion, 'TRB', 1, 'L'); // --------[DENO. TRANSACCION]
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_h';
+	$pdf->AddPage();
+}
+
+
+
+if(!empty($datos_pnomina_k)){
+
+	$pdf->SetFont('vera', 'B', 7);
+	$pdf->Cell(0, 7, "INFORMATIVO: FAVOR REVISE LA FORMA DE PAGO DE LOS SIGUIENTES TRABAJADORES", 'TRBL', 1, 'C'); // --------[TITULO]
+            $pdf->Cell(20, 4, 'CÓDIGO', 'RL', 0, 'C');
+            $pdf->Cell(20, 4, 'CÓDIGO', 'R', 0, 'C');
+            $pdf->Cell(20, 4, 'CÉDULA', 'R', 0, 'C');
+            $pdf->Cell(145, 4, '', 'R', 0, 'C');
+            $pdf->Cell(30, 4, 'FORMA', 'R', 0, 'C');
+            $pdf->Cell(0, 4, 'NETO', 'R', 1, 'C');
+            $pdf->Cell(20, 3, 'CARGO', 'RBL', 0, 'C');
+            $pdf->Cell(20, 3, 'FICHA', 'RB', 0, 'C');
+            $pdf->Cell(20, 3, 'IDENTIDAD', 'RB', 0, 'C');
+            $pdf->Cell(145, 3, 'NOMBRES Y APELLIDOS', 'RB', 0, 'C');
+            $pdf->Cell(30, 3, 'DE PAGO', 'RB', 0, 'C');
+            $pdf->Cell(0, 3, 'A COBRAR', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_k as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$nombre = str_replace("\n", "", $rdatos_pnomina[0]['nombre']);
+
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_cargo'], 6), 'TLRB', 0, 'C');
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_ficha'], 6), 'TRB', 0, 'C');
+				$pdf->Cell(20, $theigth, $rdatos_pnomina[0]['cedula_identidad'], 'TRB', 0, 'C');
+				$pdf->Cell(145, $theigth, $nombre, 'TRB', 0, 'L'); // --------[NOMBRES Y APELLIDOS]
+				$pdf->Cell(30, $theigth, $rdatos_pnomina[0]['forma_pago'], 'TRB', 0, 'L'); // --------[FORMA DE PAGO]
+				$pdf->Cell(0, $theigth, $sisap->Formato2($rdatos_pnomina[0]['neto']), 'TRB', 1, 'R'); // --------[NETO COBRAR NEG.]
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_k';
+	$pdf->AddPage();
+	}
+
+
+
+
+if($finalizo == 1){
+	if(!empty($datos_pnomina_j)){
+
+    $pdf->SetFont('vera', 'B', 7);
+
+    $pdf->MultiCell(0, 4, "ANOTE EL MONTO NETO. UNA VEZ QUE IMPRIMA EL REPORTE DE DISTRIBUCIÓN DE ASIGNACIONES Y DEDUCCIONES COMPARE EL MONTO NETO DE ESE REPORTE CON ESTE MONTO, SI ESTOS SON  IGUALES  PUEDE CONTINUAR CON EL PROCESO DE NÓMINA, DE LO CONTRARIO REVISE EN BANCOS QUE CANCELAN NOMINAS SI FUE REGISTRADO UN BANCO CON SUCURSALES DIFERENTES", 'TRBL', 'C');
+            $pdf->Cell(20, 5, 'CÓDIGO', 'RBL', 0, 'C');
+            $pdf->Cell(210, 5, 'DENOMINACIÓN', 'RB', 0, 'C');
+            $pdf->Cell(0, 5, 'NETO', 'RB', 1, 'C');
+
+    $pdf->SetFont('vera', '', 7);
+
+	$theigth = 6;
+	foreach($datos_pnomina_j as $rdatos_pnomina){
+		if($rdatos_pnomina[0]['cod_presi']==$cod_presi && $rdatos_pnomina[0]['cod_entidad']==$cod_entidad && $rdatos_pnomina[0]['cod_tipo_inst']==$cod_tipo_inst && $rdatos_pnomina[0]['cod_inst']==$cod_inst && $rdatos_pnomina[0]['cod_dep']==$cod_dep && $rdatos_pnomina[0]['cod_tipo_nomina']==$cod_tipo_nomina){
+		$denomi = str_replace("\n", "", $rdatos_pnomina[0]['denominacion']);
+		// $total_char = strlen($denomi);
+		// $theigth = $pdf->tam_celda($total_char);
+
+				$pdf->Cell(20, $theigth, mascara($rdatos_pnomina[0]['cod_tipo_nomina'], 3), 'TLRB', 0, 'C');
+
+/*
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(100, 1, "", '', 2, '');
+                $pdf->MultiCell(100, 3, $denomi, '', 'L'); // --------[DENOMINACION]
+                $varX = $varX + 100;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(1, $theigth, "", '', 1, 'L');
+*/
+
+				$pdf->Cell(210, $theigth, $denomi, 'TRB', 0, 'L'); // --------[DENOMINACION]
+				$pdf->Cell(0, $theigth, $sisap->Formato2($rdatos_pnomina[0]['neto']), 'TRB', 1, 'R'); // --------[NETO]
+
+				// $pdf->Cell(0, 0, "", 'T', 1, 'L');
+		}
+	} // END FOREACH
+
+	$pdf->Ln(7);
+
+	$name_outp .= '_j';
+	$pdf->AddPage();
+	}
+}
+
+
+	$pdf->Output($name_outp.'.pdf', 'D');
+
+?>

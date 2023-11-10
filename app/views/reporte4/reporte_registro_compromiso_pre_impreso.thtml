@@ -1,0 +1,986 @@
+<? if(isset($ir) && $ir=='no'){ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"EMISIÓN OTROS COMPROMISOS EN FORMATO PRE-IMPRESO <br> <br>Usuario: ".$usuario,null,"850");?>
+
+
+ <form name='data[cepp01_compromiso]'  method = "post" id='form' action="<?php echo  $html->url('/reporte4/reporte_registro_compromiso_pre_impreso/si'); ?>" onSubmit="return cscp04_ordencompra_servicio_bienes();">
+
+
+<?= $sisap->OpenTable("850")?>
+
+<?= $sisap->radioTagRemote('cepp01_compromiso/radio', array('1'=>'Por rango', '2'=>'Una especifica'), array('url1'=>'/reporte4/reporte_registro_compromiso_pre_impreso/vista', 'update1'=>'opcion', 'id'=>'reporte_registro_compromiso_opcion'), NULL, null)?>
+<br><br>
+<div id="opcion"></div>
+
+<br>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cepp01_compromiso/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+</form>
+
+<? }else if(isset($vista)){
+	if($opcion==1){ ?>
+		Año: <input name="data[cepp01_compromiso][ano]"  value="<?= $year?>" id="ano"  size="3"     maxlength="4"  onKeyPress="return solonumeros(event);"  />
+		Número Desde:<input name="data[cepp01_compromiso][numero_a]"  value="" id="numero_a"  size="4"   onKeyPress="return solonumeros(event);"  />
+		Número Hasta:<input name="data[cepp01_compromiso][numero_b]"  value="" id="numero_b"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+
+	 <? }else if($opcion==2){ /* ?>
+			Año: <input name="data[cepp01_compromiso][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+			Número:<input name="data[cepp01_compromiso][numero_a]"  value="" id="numero_a"  size="4"    onKeyPress="return solonumeros(event);"  /><br><br>
+	<? */ }
+
+}else if(isset($ir) && $ir=='si'){
+
+//require_once('../tcpdf.php');
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+
+
+   function Header(){
+//		$this->Image('/var/www/sigep/app/webroot/img/registro_foto.jpg',0,0,217);
+//		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		/*$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"GOBERNACIÓN DEL ESTADO FALCÓN",'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,"DIRECCION GENERAL DE PRESUPUESTO",'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"REPORTE DE SALDOS POR PARTIDA",'RBL',1,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"GOBERNACIÓN DEL ESTADO FALCÓN",'TR',1);*/
+
+
+	}//fin funtion
+
+}//fin clase
+
+if($modo==2){
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(0);
+$pdf->SetRightMargin(0);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+if($tipo_1==1 && $tipo_2==1){
+	$marca='X';
+	$marca2='X';
+}else if($tipo_1==1 && $tipo_2==0){
+	$marca='X';
+	$marca2='';
+}else if($tipo_1==0 && $tipo_2==1){
+	$marca='';
+	$marca2='X';
+}else if($tipo_1==0 && $tipo_2==0){
+	$marca='';
+	$marca2='';
+}
+
+$pdf->Ln(4);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(83,5,"",'R',0);
+if($_SESSION['SScoddep']==1){
+	$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+	$pdf->Cell(56,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+	$pdf->Cell(0,4,"",'',1);
+}else{
+	$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+	$pdf->Cell(56,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+	$pdf->Cell(0,4,"",'',1);
+}
+
+$pdf->Ln(8);
+$pdf->Cell(25,4,"",'',0);
+$pdf->Cell(4,4,$marca,'',0,'C');///GASTOS CORRIENTES
+$pdf->Cell(0,4,"",'',1);
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+
+$pdf->Ln(1);
+$pdf->Cell(25,4,"",'R',0);
+$pdf->Cell(4,4,$marca2,'',0,'C');///GASTOS CAPITAL
+
+$varX =$varX+126;
+$varY=$varY-1;
+$pdf->SetXY($varX,$varY);// cargo XY
+/////////////////AQUI PODRE PONER UNA LETRA GRANDE PARA QUE ENCAJE BIEN EN EL FORMATO///////////////////////////
+$pdf->SetFont('vera','B',12);
+//$pdf->Cell(97,4,"",'R',0);
+$pdf->Cell(28,4,$sisap->mascara_ocho($cuerpo[0][0]['numero_documento']),'',0,'C');//AQUI NUMERO DE DOCUMENTO
+$pdf->Cell(30,4,$cuerpo[0][0]['cod_tipo_compromiso'],'',0,'C');//AQUI TIPO DE DOCUMENTO
+$pdf->Cell(28,4,$sisap->cambia_fecha($cuerpo[0][0]['fecha_documento']),'',0,'C');//AQUI fecha  date("d-m-Y")
+$pdf->Ln(14);
+
+///TIPOS DE RECURSOS
+$o='';
+$l='';
+$f='';
+$x='';
+if($cuerpo[0][0]['tipo_recurso']==1){
+	$o='x';
+}else if($cuerpo[0][0]['tipo_recurso']==4){
+	$l='x';
+}else if($cuerpo[0][0]['tipo_recurso']==3){
+	$f='x';
+}else{
+	$x='x';
+}
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(18,4,"",'',0);
+$pdf->Cell(4,4,$o,'',0,'C');///ORDINARIO///
+$pdf->Cell(129,4,"",'',0);
+$pdf->Cell(4,4,$l,'',0,'C');	//LAEE
+$pdf->Cell(0,4,"",'',1);
+$pdf->Cell(18,4,"",'',0);
+$pdf->Cell(4,4,$f,'',0,'C');///FIDES///
+$pdf->Cell(129,4,"",'',0);
+$pdf->Cell(4,4,$x,'',0,'C');	//OTROS
+$pdf->Cell(0,4,"",'',1);
+//RIF    /////C.I  ////
+if($cuerpo[0][0]['condicion_juridica']==1){
+	$pdf->Cell(167,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///   RIF
+	$pdf->Cell(31,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///   C.I
+	$pdf->Cell(0,5,"",'',1);
+}else{
+	$pdf->Cell(167,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///   RIF
+	$pdf->Cell(31,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///   C.I
+	$pdf->Cell(0,5,"",'',1);
+}
+
+
+///////////BENEFICIARIO  Y  NUMERO DE RIF O C.I////////
+$pdf->SetFont('vera','',8);
+$pdf->Cell(5,9,"",'',0);
+$pdf->Cell(152,1,"",'',2,'C');
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+$pdf->MultiCell(152,3,$cuerpo[0][0]['beneficiario'],'','');
+$varX =$varX+152;
+$varY=$varY-1;
+$pdf->SetXY($varX,$varY);// cargo XY
+
+$pdf->Cell(6,9,"",'',0);
+if($cuerpo[0][0]['condicion_juridica']==2){
+	$pdf->Cell(49,9,$cuerpo[0][0]['rif'],'',0);//NUMERO DE RIF O CEDULA
+}else{
+	$pdf->Cell(49,9,$cuerpo[0][0]['cedula_identidad'],'',0);//NUMERO DE RIF O CEDULA
+}
+$pdf->Cell(0,9,"",'',1);
+$pdf->Ln(6);
+
+//////IDENTIFICACION DEL ORGANISMO////////////////////
+$pdf->Cell(5,9,"",'',0);
+$pdf->Cell(207,9,$_SESSION['dependencia'],'',0,'L');///IDENTIFICACION DEL ORGANISMO
+$pdf->Cell(0,9,"",'',1);
+$pdf->Ln(5);
+
+//////DESCRIPCION/////////////////////
+$pdf->Cell(6,16,"",'',0);
+
+$pdf->Cell(205,1,"",'',2,'C');
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+$pdf->MultiCell(205,3,$cuerpo[0][0]['concepto'],'','');//Concepto Orden de Pago
+$varX =$varX+205;
+$varY=$varY+16;
+$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Ln(14);
+
+$fin=true;
+$num=count($cuerpo);
+if($num>13){
+	$fin=false;
+}
+$monto_total=0;
+//////////GRILLA/////////////////////////
+//pr($cuerpo);
+for($i=0;$i<=13;$i++){
+	if($i<$num){
+		if($cuerpo[$i][0]!=null){
+			$ano_documento=$cuerpo[$i][0]['ano_documento'];
+			$monto_cuerpo=$cuerpo[$i][0]['monto'];
+			$monto_partida=$cuerpo[$i][0]['monto_partidas'];
+
+			$monto_total+=$monto_partida;
+
+			$cod_sector=$cuerpo[$i][0]['cod_sector'];
+		    $cod_programa=$cuerpo[$i][0]['cod_programa'];
+		    $cod_sub_prog=$cuerpo[$i][0]['cod_sub_prog'];
+			$cod_proyecto=$cuerpo[$i][0]['cod_proyecto'];
+			$cod_activ_obra=$cuerpo[$i][0]['cod_activ_obra'];
+			$cod_partida=$cuerpo[$i][0]['cod_partida'];
+			$cod_generica=$cuerpo[$i][0]['cod_generica'];
+			$cod_especifica=$cuerpo[$i][0]['cod_especifica'];
+			$cod_sub_espec=$cuerpo[$i][0]['cod_sub_espec'];
+			$cod_auxiliar=$cuerpo[$i][0]['cod_auxiliar'];
+
+
+			$pdf->Cell(5,6,"",'',0);
+			$pdf->Cell(14,6,$ano_documento,'',0,'C');//////////AÑO///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_sector),'',0,'C');//////////SECTOR///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_programa),'',0,'C');//////////PROGRAMA///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_sub_prog),'',0,'C');//////////SUB_PROG///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_proyecto),'',0,'C');//////////PROYECTO///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_activ_obra),'',0,'C');//////////ACTIVIDAD///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_partida),'',0,'C');//////////PARTIDA///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_generica),'',0,'C');//////////GENERICA///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_especifica),'',0,'C');//////////ESPECIFICA///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_sub_espec),'',0,'C');//////////SUB_ESPECIFICA///
+			$pdf->Cell(21,6,$sisap->AddCero3($cod_auxiliar),'',0,'C');//////////AUXILIAR///
+			$pdf->Cell(40,6,$sisap->Formato2($monto_partida),'',0,'R');//////////MONTO///
+			$pdf->Cell(0,6,"",'',1,'C');
+		}
+	}else{
+
+		$pdf->Cell(5,6,"",'',0);
+		$pdf->Cell(14,6,"",'',0,'C');//////////AÑO///
+		$pdf->Cell(15,6,"",'',0,'C');//////////SECTOR///
+		$pdf->Cell(15,6,"",'',0,'C');//////////PROGRAMA///
+		$pdf->Cell(14,6,"",'',0,'C');//////////SUB_PROG///
+		$pdf->Cell(14,6,"",'',0,'C');//////////PROYECTO///
+		$pdf->Cell(15,6,"",'',0,'C');//////////ACTIVIDAD///
+		$pdf->Cell(15,6,"",'',0,'C');//////////PARTIDA///
+		$pdf->Cell(15,6,"",'',0,'C');//////////GENERICA///
+		$pdf->Cell(14,6,"",'',0,'C');//////////ESPECIFICA///
+		$pdf->Cell(15,6,"",'',0,'C');//////////SUB_ESPECIFICA///
+		$pdf->Cell(21,6,"",'',0,'C');//////////AUXILIAR///
+		$pdf->Cell(40,6,"",'',0,'L');//////////MONTO///
+		$pdf->Cell(0,6,"",'',1,'C');
+
+	}//fin vector not null
+
+}
+
+
+////////TOTAL/////////////
+$pdf->Cell(5,8,"",'',0);
+$pdf->Cell(167,8,"",'',0);
+$pdf->Cell(40,8,$sisap->Formato2($monto_total),'',1,'R');//////////MONTO_TOTAL///
+
+$pdf->Ln(4);
+////////////////NC/////////////PUEDE SER MONTO ESCRITO
+$pdf->Cell(5,9,"",'',0);
+//$pdf->Cell(207,9,"",'TBR',0,'L');////////////AQUI ESCRIBIR LO SEA
+$pdf->Cell(207,9,$sisap->convertir($monto_total),'',0,'L');////////////AQUI ESCRIBIR LO SEA
+$pdf->Cell(0,9,"",'',1);
+
+
+
+
+////////////////////////////////AQUI PARA GENERAR OTRA HOJA///////////////////////////////////////
+if($fin==false){
+
+
+
+$pdf->AddPage();
+$pdf->Ln(4);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(83,5,"",'',0);
+if($_SESSION['SScoddep']==1){
+	$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+	$pdf->Cell(56,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+	$pdf->Cell(0,4,"",'',1);
+}else{
+	$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+	$pdf->Cell(56,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+	$pdf->Cell(0,4,"",'',1);
+}
+
+$pdf->Ln(8);
+$pdf->Cell(25,4,"",'',0);
+$pdf->Cell(4,4,$marca,'',0,'C');///GASTOS CORRIENTES
+$pdf->Cell(0,4,"",'',1);
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+
+$pdf->Ln(1);
+$pdf->Cell(25,4,"",'',0);
+$pdf->Cell(4,4,$marca2,'',0,'C');///GASTOS CAPITAL
+
+$varX =$varX+126;
+$varY=$varY-1;
+$pdf->SetXY($varX,$varY);// cargo XY
+/////////////////AQUI PODRE PONER UNA LETRA GRANDE PARA QUE ENCAJE BIEN EN EL FORMATO///////////////////////////
+$pdf->SetFont('vera','B',12);
+//$pdf->Cell(97,4,"",'R',0);
+$pdf->Cell(28,4,$cuerpo[0][0]['numero_documento'],'',0,'C');//AQUI NUMERO DE DOCUMENTO
+$pdf->Cell(30,4,$cuerpo[0][0]['cod_tipo_compromiso'],'',0,'C');//AQUI TIPO DE DOCUMENTO
+$pdf->Cell(28,4,$sisap->cambia_fecha($cuerpo[0][0]['fecha_documento']),'',0,'C');//AQUI fecha  date("d-m-Y")
+$pdf->Ln(14);
+
+///TIPOS DE RECURSOS
+$o='';
+$l='';
+$f='';
+$x='';
+if($cuerpo[0][0]['tipo_recurso']==1){
+	$o='x';
+}else if($cuerpo[0][0]['tipo_recurso']==4){
+	$l='x';
+}else if($cuerpo[0][0]['tipo_recurso']==3){
+	$f='x';
+}else{
+	$x='x';
+}
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(18,4,"",'',0);
+$pdf->Cell(4,4,$o,'',0,'C');///ORDINARIO///
+$pdf->Cell(129,4,"",'',0);
+$pdf->Cell(4,4,$l,'',0,'C');	//LAEE
+$pdf->Cell(0,4,"",'',1);
+$pdf->Cell(18,4,"",'',0);
+$pdf->Cell(4,4,$f,'',0,'C');///FIDES///
+$pdf->Cell(129,4,"",'',0);
+$pdf->Cell(4,4,$x,'',0,'C');	//OTROS
+$pdf->Cell(0,4,"",'',1);
+//RIF    /////C.I  ////
+if($cuerpo[0][0]['condicion_juridica']==1){
+	$pdf->Cell(167,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///   RIF
+	$pdf->Cell(31,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///   C.I
+	$pdf->Cell(0,5,"",'',1);
+}else{
+	$pdf->Cell(167,5,"",'',0);
+	$pdf->Cell(4,5,"X",'',0,'C');///   RIF
+	$pdf->Cell(31,5,"",'',0);
+	$pdf->Cell(4,5,"",'',0,'C');///   C.I
+	$pdf->Cell(0,5,"",'',1);
+}
+
+
+///////////BENEFICIARIO  Y  NUMERO DE RIF O C.I////////
+$pdf->SetFont('vera','',8);
+$pdf->Cell(5,9,"",'',0);
+$pdf->Cell(152,1,"",'',2,'C');
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+$pdf->MultiCell(152,3,$cuerpo[0][0]['beneficiario'],'','');
+$varX =$varX+152;
+$varY=$varY-1;
+$pdf->SetXY($varX,$varY);// cargo XY
+
+$pdf->Cell(6,9,"",'',0);
+if($cuerpo[0][0]['condicion_juridica']==2){
+	$pdf->Cell(49,9,$cuerpo[0][0]['rif'],'',0);//NUMERO DE RIF O CEDULA
+}else{
+	$pdf->Cell(49,9,$cuerpo[0][0]['cedula_identidad'],'',0);//NUMERO DE RIF O CEDULA
+}
+$pdf->Cell(0,9,"",'',1);
+$pdf->Ln(6);
+
+//////IDENTIFICACION DEL ORGANISMO////////////////////
+$pdf->Cell(5,9,"",'',0);
+$pdf->Cell(207,9,$_SESSION['dependencia'],'',0,'L');///IDENTIFICACION DEL ORGANISMO
+$pdf->Cell(0,9,"",'',1);
+$pdf->Ln(5);
+
+//////DESCRIPCION/////////////////////
+$pdf->Cell(6,16,"",'',0);
+
+$pdf->Cell(205,1,"",'',2,'C');
+$varX = $pdf->GetX();//capturo X
+$varY = $pdf->GetY();//capturo Y
+$pdf->MultiCell(205,3,$cuerpo[0][0]['concepto'],'','');//Concepto Orden de Pago
+$varX =$varX+205;
+$varY=$varY+16;
+$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Ln(14);
+
+$num=count($cuerpo);
+if($num>13){
+	$fin=false;
+}
+$monto_total=0;
+//////////GRILLA/////////////////////////
+//pr($cuerpo);
+for($i=14;$i<=27;$i++){
+	if($i<$num){
+		if($cuerpo[$i][0]!=null){
+			$ano_documento=$cuerpo[$i][0]['ano_documento'];
+			$monto_cuerpo=$cuerpo[$i][0]['monto'];
+			$monto_partida=$cuerpo[$i][0]['monto_partidas'];
+
+			$monto_total+=$monto_partida;
+
+			$cod_sector=$cuerpo[$i][0]['cod_sector'];
+		    $cod_programa=$cuerpo[$i][0]['cod_programa'];
+		    $cod_sub_prog=$cuerpo[$i][0]['cod_sub_prog'];
+			$cod_proyecto=$cuerpo[$i][0]['cod_proyecto'];
+			$cod_activ_obra=$cuerpo[$i][0]['cod_activ_obra'];
+			$cod_partida=$cuerpo[$i][0]['cod_partida'];
+			$cod_generica=$cuerpo[$i][0]['cod_generica'];
+			$cod_especifica=$cuerpo[$i][0]['cod_especifica'];
+			$cod_sub_espec=$cuerpo[$i][0]['cod_sub_espec'];
+			$cod_auxiliar=$cuerpo[$i][0]['cod_auxiliar'];
+
+
+			$pdf->Cell(5,6,"",'',0);
+			$pdf->Cell(14,6,$ano_documento,'',0,'C');//////////AÑO///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_sector),'',0,'C');//////////SECTOR///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_programa),'',0,'C');//////////PROGRAMA///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_sub_prog),'',0,'C');//////////SUB_PROG///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_proyecto),'',0,'C');//////////PROYECTO///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_activ_obra),'',0,'C');//////////ACTIVIDAD///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_partida),'',0,'C');//////////PARTIDA///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_generica),'',0,'C');//////////GENERICA///
+			$pdf->Cell(14,6,$sisap->AddCero3($cod_especifica),'',0,'C');//////////ESPECIFICA///
+			$pdf->Cell(15,6,$sisap->AddCero3($cod_sub_espec),'',0,'C');//////////SUB_ESPECIFICA///
+			$pdf->Cell(21,6,$sisap->AddCero3($cod_auxiliar),'',0,'C');//////////AUXILIAR///
+			$pdf->Cell(40,6,$sisap->Formato2($monto_partida),'',0,'R');//////////MONTO///
+			$pdf->Cell(0,6,"",'',1,'C');
+		}
+	}else{
+
+		$pdf->Cell(5,6,"",'',0);
+		$pdf->Cell(14,6,"",'',0,'C');//////////AÑO///
+		$pdf->Cell(15,6,"",'',0,'C');//////////SECTOR///
+		$pdf->Cell(15,6,"",'',0,'C');//////////PROGRAMA///
+		$pdf->Cell(14,6,"",'',0,'C');//////////SUB_PROG///
+		$pdf->Cell(14,6,"",'',0,'C');//////////PROYECTO///
+		$pdf->Cell(15,6,"",'',0,'C');//////////ACTIVIDAD///
+		$pdf->Cell(15,6,"",'',0,'C');//////////PARTIDA///
+		$pdf->Cell(15,6,"",'',0,'C');//////////GENERICA///
+		$pdf->Cell(14,6,"",'',0,'C');//////////ESPECIFICA///
+		$pdf->Cell(15,6,"",'',0,'C');//////////SUB_ESPECIFICA///
+		$pdf->Cell(21,6,"",'',0,'C');//////////AUXILIAR///
+		$pdf->Cell(40,6,"",'',0,'L');//////////MONTO///
+		$pdf->Cell(0,6,"",'',1,'C');
+
+	}//fin vector not null
+
+}
+
+
+////////TOTAL/////////////
+$pdf->Cell(5,8,"",'',0);
+$pdf->Cell(167,8,"",'',0);
+$pdf->Cell(40,8,$sisap->Formato2($monto_total),'',1,'R');//////////MONTO_TOTAL///
+
+$pdf->Ln(4);
+////////////////NC/////////////PUEDE SER MONTO ESCRITO
+$pdf->Cell(5,9,"",'',0);
+//$pdf->Cell(207,9,"",'TBR',0,'L');////////////AQUI ESCRIBIR LO SEA
+$pdf->Cell(207,9,$sisap->convertir($monto_total),'',0,'L');////////////AQUI ESCRIBIR LO SEA
+$pdf->Cell(0,9,"",'',1);
+
+
+
+
+}//fin false
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////AQUI EMPIEZA EL OTRO MODO DEL REPORTE MODO 1
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+}else if($modo==1){
+$pdf = new fpdfview('P','mm','Letter');
+		$pdf->AliasNbPages('TPAG');
+		$pdf->SetTopMargin(15);
+		$pdf->SetLeftMArgin(0);
+		$pdf->SetRightMargin(0);
+		$pdf->SetAutoPageBreak(true, 5);
+//		$pdf->AddPage();
+for($i=0;$i<count($cuerpo);$i++){
+
+$pdf->AddPage();
+
+$partidacorriente=407120;
+$partidacapital=407220;
+//$tipo_1=0;
+//$tipo_2=0;
+//pr($cuerpo[$i]);
+//echo count($cuerpo[$i]);
+for($j=0;$j<count($cuerpo[$i]);$j++){
+
+					$cod_sector=$cuerpo[$i][$j][0]['cod_sector'];
+				    $cod_programa=$cuerpo[$i][$j][0]['cod_programa'];
+				    $cod_sub_prog=$cuerpo[$i][$j][0]['cod_sub_prog'];
+					$cod_proyecto=$cuerpo[$i][$j][0]['cod_proyecto'];
+					$cod_activ_obra=$cuerpo[$i][$j][0]['cod_activ_obra'];
+					$cod_partida=$cuerpo[$i][$j][0]['cod_partida'];
+					$cod_generica=$cuerpo[$i][$j][0]['cod_generica'];
+					$cod_especifica=$cuerpo[$i][$j][0]['cod_especifica'];
+					$cod_sub_espec=$cuerpo[$i][$j][0]['cod_sub_espec'];
+					$cod_auxiliar=$cuerpo[$i][$j][0]['cod_auxiliar'];
+
+					$cadena=$cod_partida.$cod_generica.$cod_especifica.$cod_sub_espec;
+
+
+					if($partidacorriente==$cadena){
+						//$tipo_1=1;
+					}
+				    if($partidacapital==$cadena){
+						//$tipo_2=1;
+					}
+}//fin for
+//echo $tipo_1."___".$tipo_2;
+if($tipo_1[$i]==1 && $tipo_2[$i]==1){
+	$marca='X';
+	$marca2='X';
+}else if($tipo_1[$i]==1 && $tipo_2[$i]==0){
+	$marca='X';
+	$marca2='';
+}else if($tipo_1[$i]==0 && $tipo_2[$i]==1){
+	$marca='';
+	$marca2='X';
+}else if($tipo_1[$i]==0 && $tipo_2[$i]==0){
+	$marca='';
+	$marca2='';
+}
+
+		$pdf->Ln(4);
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(83,5,"",'',0);
+		if($_SESSION['SScoddep']==1){
+			$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+			$pdf->Cell(56,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+			$pdf->Cell(0,4,"",'',1);
+		}else{
+			$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+			$pdf->Cell(56,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+			$pdf->Cell(0,4,"",'',1);
+		}
+
+		$pdf->Ln(8);
+		$pdf->Cell(25,4,"",'',0);
+		$pdf->Cell(4,4,$marca,'',0,'C');///GASTOS CORRIENTES
+		$pdf->Cell(0,4,"",'',1);
+		/*$pdf->Ln(1);
+		$pdf->Cell(25,4,"",'R',0);
+		$pdf->Cell(4,4,"X",'BRT',0,'C');///GASTOS CAPITAL
+
+		/////////////////AQUI PODRE PONER UNA LETRA GRANDE PARA QUE ENCAJE BIEN EN EL FORMATO///////////////////////////
+		$pdf->SetFont('vera','B',12);
+		$pdf->Cell(97,4,"",'R',0);
+		$pdf->Cell(28,4,$cuerpo[$i][0][0]['numero_documento'],'RTB',0,'C');//AQUI NUMERO DE DOCUMENTO
+		$pdf->Cell(30,4,$cuerpo[$i][0][0]['cod_tipo_compromiso'],'RTB',0,'C');//AQUI TIPO DE DOCUMENTO
+		$pdf->Cell(28,4,$sisap->cambia_fecha($cuerpo[$i][0][0]['fecha_documento']),'RTB',0,'C');//AQUI fecha  date("d-m-Y")
+		$pdf->Ln(12);*/
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+
+		$pdf->Ln(1);
+		$pdf->Cell(25,4,"",'',0);
+		$pdf->Cell(4,4,$marca2,'',0,'C');///GASTOS CAPITAL
+
+		$varX =$varX+126;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		/////////////////AQUI PODRE PONER UNA LETRA GRANDE PARA QUE ENCAJE BIEN EN EL FORMATO///////////////////////////
+		$pdf->SetFont('vera','B',12);
+		//$pdf->Cell(97,4,"",'R',0);
+		$pdf->Cell(28,4,$cuerpo[$i][0][0]['numero_documento'],'',0,'C');//AQUI NUMERO DE DOCUMENTO
+		$pdf->Cell(30,4,$cuerpo[$i][0][0]['cod_tipo_compromiso'],'',0,'C');//AQUI TIPO DE DOCUMENTO
+		$pdf->Cell(28,4,$sisap->cambia_fecha($cuerpo[$i][0][0]['fecha_documento']),'',0,'C');//AQUI fecha  date("d-m-Y")
+		$pdf->Ln(14);
+
+
+		///TIPOS DE RECURSOS
+		$o='';
+		$l='';
+		$f='';
+		$x='';
+		      if($cuerpo[$i][0][0]['tipo_recurso']==1){
+			$o='x';
+		}else if($cuerpo[$i][0][0]['tipo_recurso']==4){
+			$l='x';
+		}else if($cuerpo[$i][0][0]['tipo_recurso']==3){
+			$f='x';
+		}else{
+			$x='x';
+		}
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(18,4,"",'',0);
+		$pdf->Cell(4,4,$o,'',0,'C');///ORDINARIO///
+		$pdf->Cell(129,4,"",'',0);
+		$pdf->Cell(4,4,$l,'',0,'C');	//LAEE
+		$pdf->Cell(0,4,"",'',1);
+		$pdf->Cell(18,4,"",'',0);
+		$pdf->Cell(4,4,$f,'',0,'C');///FIDES///
+		$pdf->Cell(129,4,"",'',0);
+		$pdf->Cell(4,4,$x,'',0,'C');	//OTROS
+		$pdf->Cell(0,4,"",'',1);
+		//RIF    /////C.I  ////
+		if($cuerpo[$i][0][0]['condicion_juridica']==1){
+			$pdf->Cell(167,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///   RIF
+			$pdf->Cell(31,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///   C.I
+			$pdf->Cell(0,5,"",'',1);
+		}else{
+			$pdf->Cell(167,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///   RIF
+			$pdf->Cell(31,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///   C.I
+			$pdf->Cell(0,5,"",'',1);
+		}
+
+
+		///////////BENEFICIARIO  Y  NUMERO DE RIF O C.I////////
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(152,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(152,3,$cuerpo[$i][0][0]['beneficiario'],'','');
+		$varX =$varX+152;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+		$pdf->Cell(6,9,"",'',0);
+		if($cuerpo[$i][0][0]['condicion_juridica']==2){
+			$pdf->Cell(49,9,$cuerpo[$i][0][0]['rif'],'',0);//NUMERO DE RIF O CEDULA
+		}else{
+			$pdf->Cell(49,9,$cuerpo[$i][0][0]['cedula_identidad'],'',0);//NUMERO DE RIF O CEDULA
+		}
+		$pdf->Cell(0,9,"",'',1);
+		$pdf->Ln(6);
+
+		//////IDENTIFICACION DEL ORGANISMO////////////////////
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(207,9,$_SESSION['dependencia'],'',0,'L');///IDENTIFICACION DEL ORGANISMO
+		$pdf->Cell(0,9,"",'',1);
+		$pdf->Ln(5);
+
+		//////DESCRIPCION/////////////////////
+		$pdf->Cell(6,16,"",'',0);
+
+		$pdf->Cell(205,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(205,3,$cuerpo[$i][0][0]['concepto'],'','');//Concepto Orden de Pago
+		$varX =$varX+205;
+		$varY=$varY+16;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Ln(14);
+
+		$fin=true;
+		$num=count($cuerpo[$i]);
+		if($num>13){
+			$fin=false;
+		}
+		$monto_total=0;
+		//////////GRILLA/////////////////////////
+		//pr($cuerpo);
+		for($j=0;$j<=13;$j++){
+			if($j<$num){
+				if($cuerpo[$i][$j][0]!=null){
+					$ano_documento=$cuerpo[$i][$j][0]['ano_documento'];
+					$monto_cuerpo=$cuerpo[$i][$j][0]['monto'];
+					$monto_partida=$cuerpo[$i][$j][0]['monto_partidas'];
+
+					$monto_total+=$monto_partida;
+
+					$cod_sector=$cuerpo[$i][$j][0]['cod_sector'];
+				    $cod_programa=$cuerpo[$i][$j][0]['cod_programa'];
+				    $cod_sub_prog=$cuerpo[$i][$j][0]['cod_sub_prog'];
+					$cod_proyecto=$cuerpo[$i][$j][0]['cod_proyecto'];
+					$cod_activ_obra=$cuerpo[$i][$j][0]['cod_activ_obra'];
+					$cod_partida=$cuerpo[$i][$j][0]['cod_partida'];
+					$cod_generica=$cuerpo[$i][$j][0]['cod_generica'];
+					$cod_especifica=$cuerpo[$i][$j][0]['cod_especifica'];
+					$cod_sub_espec=$cuerpo[$i][$j][0]['cod_sub_espec'];
+					$cod_auxiliar=$cuerpo[$i][$j][0]['cod_auxiliar'];
+
+
+					$pdf->Cell(5,6,"",'',0);
+					$pdf->Cell(14,6,$ano_documento,'',0,'C');//////////AÑO///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_sector),'',0,'C');//////////SECTOR///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_programa),'',0,'C');//////////PROGRAMA///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_sub_prog),'',0,'C');//////////SUB_PROG///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_proyecto),'',0,'C');//////////PROYECTO///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_activ_obra),'',0,'C');//////////ACTIVIDAD///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_partida),'',0,'C');//////////PARTIDA///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_generica),'',0,'C');//////////GENERICA///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_especifica),'',0,'C');//////////ESPECIFICA///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_sub_espec),'',0,'C');//////////SUB_ESPECIFICA///
+					$pdf->Cell(21,6,$sisap->AddCero3($cod_auxiliar),'',0,'C');//////////AUXILIAR///
+					$pdf->Cell(40,6,$sisap->Formato2($monto_partida),'',0,'R');//////////MONTO///
+					$pdf->Cell(0,6,"",'',1,'C');
+				}
+			}else{
+
+				$pdf->Cell(5,6,"",'',0);
+				$pdf->Cell(14,6,"",'',0,'C');//////////AÑO///
+				$pdf->Cell(15,6,"",'',0,'C');//////////SECTOR///
+				$pdf->Cell(15,6,"",'',0,'C');//////////PROGRAMA///
+				$pdf->Cell(14,6,"",'',0,'C');//////////SUB_PROG///
+				$pdf->Cell(14,6,"",'',0,'C');//////////PROYECTO///
+				$pdf->Cell(15,6,"",'',0,'C');//////////ACTIVIDAD///
+				$pdf->Cell(15,6,"",'',0,'C');//////////PARTIDA///
+				$pdf->Cell(15,6,"",'',0,'C');//////////GENERICA///
+				$pdf->Cell(14,6,"",'',0,'C');//////////ESPECIFICA///
+				$pdf->Cell(15,6,"",'',0,'C');//////////SUB_ESPECIFICA///
+				$pdf->Cell(21,6,"",'',0,'C');//////////AUXILIAR///
+				$pdf->Cell(40,6,"",'',0,'L');//////////MONTO///
+				$pdf->Cell(0,6,"",'',1,'C');
+
+			}//fin vector not null
+
+		}
+
+
+		////////TOTAL/////////////
+		$pdf->Cell(5,8,"",'',0);
+		$pdf->Cell(167,8,"",'',0);
+		$pdf->Cell(40,8,$sisap->Formato2($monto_total),'',1,'R');//////////MONTO_TOTAL///
+
+		$pdf->Ln(4);
+		////////////////NC/////////////PUEDE SER MONTO ESCRITO
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(207,9,$sisap->convertir($monto_total),'',0,'L');
+//		$pdf->Cell(207,9,$sisap->convertir($monto_total),'TBR',0,'L');////////////AQUI ESCRIBIR LO SEA
+		$pdf->Cell(0,9,"",'',1);
+
+
+
+
+////////////////////////////////AQUI PARA GENERAR OTRA HOJA///////////////////////////////////////
+if($fin==false){
+	$pdf->AddPage();
+
+
+		$pdf->Ln(4);
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(83,5,"",'',0);
+		if($_SESSION['SScoddep']==1){
+			$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+			$pdf->Cell(56,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+			$pdf->Cell(0,4,"",'',1);
+		}else{
+			$pdf->Cell(4,5,"X",'',0,'C');///UNIDAD ADMINISTRADORA LOCAL
+			$pdf->Cell(56,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///UNIDAD ADMINISTRADORA CENTRAL
+			$pdf->Cell(0,4,"",'',1);
+		}
+
+		$pdf->Ln(8);
+		$pdf->Cell(25,4,"",'',0);
+		$pdf->Cell(4,4,$marca,'',0,'C');///GASTOS CORRIENTES
+		$pdf->Cell(0,4,"",'',1);
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+
+		$pdf->Ln(1);
+		$pdf->Cell(25,4,"",'R',0);
+		$pdf->Cell(4,4,$marca2,'BRT',0,'C');///GASTOS CAPITAL
+
+		$varX =$varX+126;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		/////////////////AQUI PODRE PONER UNA LETRA GRANDE PARA QUE ENCAJE BIEN EN EL FORMATO///////////////////////////
+		$pdf->SetFont('vera','B',12);
+		//$pdf->Cell(97,4,"",'R',0);
+		$pdf->Cell(28,4,$cuerpo[$i][0][0]['numero_documento'],'',0,'C');//AQUI NUMERO DE DOCUMENTO
+		$pdf->Cell(30,4,$cuerpo[$i][0][0]['cod_tipo_compromiso'],'',0,'C');//AQUI TIPO DE DOCUMENTO
+		$pdf->Cell(28,4,$sisap->cambia_fecha($cuerpo[$i][0][0]['fecha_documento']),'',0,'C');//AQUI fecha  date("d-m-Y")
+		$pdf->Ln(14);
+
+		///TIPOS DE RECURSOS
+		$o='';
+		$l='';
+		$f='';
+		$x='';
+		if($cuerpo[$i][0][0]['tipo_recurso']==1){
+			$o='x';
+		}else if($cuerpo[$i][0][0]['tipo_recurso']==4){
+			$l='x';
+		}else if($cuerpo[$i][0][0]['tipo_recurso']==3){
+			$f='x';
+		}else{
+			$x='x';
+		}
+		$pdf->SetFont('vera','B',8);
+		$pdf->Cell(18,4,"",'',0);
+		$pdf->Cell(4,4,$o,'',0,'C');///ORDINARIO///
+		$pdf->Cell(129,4,"",'',0);
+		$pdf->Cell(4,4,$l,'',0,'C');	//LAEE
+		$pdf->Cell(0,4,"",'',1);
+		$pdf->Cell(18,4,"",'',0);
+		$pdf->Cell(4,4,$f,'',0,'C');///FIDES///
+		$pdf->Cell(129,4,"",'',0);
+		$pdf->Cell(4,4,$x,'',0,'C');	//OTROS
+		$pdf->Cell(0,4,"",'',1);
+		//RIF    /////C.I  ////
+		if($cuerpo[$i][0][0]['condicion_juridica']==1){
+			$pdf->Cell(167,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///   RIF
+			$pdf->Cell(31,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///   C.I
+			$pdf->Cell(0,5,"",'',1);
+		}else{
+			$pdf->Cell(167,5,"",'',0);
+			$pdf->Cell(4,5,"X",'',0,'C');///   RIF
+			$pdf->Cell(31,5,"",'',0);
+			$pdf->Cell(4,5,"",'',0,'C');///   C.I
+			$pdf->Cell(0,5,"",'',1);
+		}
+
+
+		///////////BENEFICIARIO  Y  NUMERO DE RIF O C.I////////
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(152,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(152,3,$cuerpo[$i][0][0]['beneficiario'],'','');
+		$varX =$varX+152;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+		$pdf->Cell(6,9,"",'',0);
+		if($cuerpo[$i][0][0]['condicion_juridica']==2){
+			$pdf->Cell(49,9,$cuerpo[$i][0][0]['rif'],'',0);//NUMERO DE RIF O CEDULA
+		}else{
+			$pdf->Cell(49,9,$cuerpo[$i][0][0]['cedula_identidad'],'',0);//NUMERO DE RIF O CEDULA
+		}
+		$pdf->Cell(0,9,"",'',1);
+		$pdf->Ln(6);
+
+		//////IDENTIFICACION DEL ORGANISMO////////////////////
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(207,9,$_SESSION['dependencia'],'',0,'L');///IDENTIFICACION DEL ORGANISMO
+		$pdf->Cell(0,9,"",'',1);
+		$pdf->Ln(5);
+
+		//////DESCRIPCION/////////////////////
+		$pdf->Cell(6,16,"",'',0);
+
+		$pdf->Cell(205,1,"",'',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(205,3,$cuerpo[$i][0][0]['concepto'],'','');//Concepto Orden de Pago
+		$varX =$varX+205;
+		$varY=$varY+16;
+		$pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Ln(14);
+
+		$fin=true;
+		$num=count($cuerpo[$i]);
+		if($num>13){
+			$fin=false;
+		}
+		$monto_total=0;
+		//////////GRILLA/////////////////////////
+		//pr($cuerpo);
+		for($j=14;$j<=27;$j++){
+			if($j<$num){
+				if($cuerpo[$i][$j][0]!=null){
+					$ano_documento=$cuerpo[$i][$j][0]['ano_documento'];
+					$monto_cuerpo=$cuerpo[$i][$j][0]['monto'];
+					$monto_partida=$cuerpo[$i][$j][0]['monto_partidas'];
+
+					$monto_total+=$monto_partida;
+
+					$cod_sector=$cuerpo[$i][$j][0]['cod_sector'];
+				    $cod_programa=$cuerpo[$i][$j][0]['cod_programa'];
+				    $cod_sub_prog=$cuerpo[$i][$j][0]['cod_sub_prog'];
+					$cod_proyecto=$cuerpo[$i][$j][0]['cod_proyecto'];
+					$cod_activ_obra=$cuerpo[$i][$j][0]['cod_activ_obra'];
+					$cod_partida=$cuerpo[$i][$j][0]['cod_partida'];
+					$cod_generica=$cuerpo[$i][$j][0]['cod_generica'];
+					$cod_especifica=$cuerpo[$i][$j][0]['cod_especifica'];
+					$cod_sub_espec=$cuerpo[$i][$j][0]['cod_sub_espec'];
+					$cod_auxiliar=$cuerpo[$i][$j][0]['cod_auxiliar'];
+
+
+					$pdf->Cell(5,6,"",'',0);
+					$pdf->Cell(14,6,$ano_documento,'',0,'C');//////////AÑO///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_sector),'',0,'C');//////////SECTOR///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_programa),'',0,'C');//////////PROGRAMA///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_sub_prog),'',0,'C');//////////SUB_PROG///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_proyecto),'',0,'C');//////////PROYECTO///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_activ_obra),'',0,'C');//////////ACTIVIDAD///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_partida),'',0,'C');//////////PARTIDA///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_generica),'',0,'C');//////////GENERICA///
+					$pdf->Cell(14,6,$sisap->AddCero3($cod_especifica),'',0,'C');//////////ESPECIFICA///
+					$pdf->Cell(15,6,$sisap->AddCero3($cod_sub_espec),'',0,'C');//////////SUB_ESPECIFICA///
+					$pdf->Cell(21,6,$sisap->AddCero3($cod_auxiliar),'',0,'C');//////////AUXILIAR///
+					$pdf->Cell(40,6,$sisap->Formato2($monto_partida),'',0,'R');//////////MONTO///
+					$pdf->Cell(0,6,"",'',1,'C');
+				}
+			}else{
+
+				$pdf->Cell(5,6,"",'',0);
+				$pdf->Cell(14,6,"",'',0,'C');//////////AÑO///
+				$pdf->Cell(15,6,"",'',0,'C');//////////SECTOR///
+				$pdf->Cell(15,6,"",'',0,'C');//////////PROGRAMA///
+				$pdf->Cell(14,6,"",'',0,'C');//////////SUB_PROG///
+				$pdf->Cell(14,6,"",'',0,'C');//////////PROYECTO///
+				$pdf->Cell(15,6,"",'',0,'C');//////////ACTIVIDAD///
+				$pdf->Cell(15,6,"",'',0,'C');//////////PARTIDA///
+				$pdf->Cell(15,6,"",'',0,'C');//////////GENERICA///
+				$pdf->Cell(14,6,"",'',0,'C');//////////ESPECIFICA///
+				$pdf->Cell(15,6,"",'',0,'C');//////////SUB_ESPECIFICA///
+				$pdf->Cell(21,6,"",'',0,'C');//////////AUXILIAR///
+				$pdf->Cell(40,6,"",'',0,'L');//////////MONTO///
+				$pdf->Cell(0,6,"",'',1,'C');
+
+			}//fin vector not null
+
+		}
+
+
+		////////TOTAL/////////////
+		$pdf->Cell(5,8,"",'',0);
+		$pdf->Cell(167,8,"",'',0);
+		$pdf->Cell(40,8,$sisap->Formato2($monto_total),'',1,'R');//////////MONTO_TOTAL///
+
+		$pdf->Ln(4);
+		////////////////NC/////////////PUEDE SER MONTO ESCRITO
+		$pdf->Cell(5,9,"",'',0);
+		$pdf->Cell(207,9,$sisap->convertir($monto_total),'',0,'L');
+//		$pdf->Cell(207,9,$sisap->convertir($monto_total),'TBR',0,'L');////////////AQUI ESCRIBIR LO SEA
+		$pdf->Cell(0,9,"",'',1);
+		}//fin false
+
+
+
+
+		}//fin for grande
+}//fi
+
+$pdf->Output('Registro_compromiso_'.date('d-m-Y').'.pdf','D');
+
+ } ?>

@@ -1,0 +1,244 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla_modulos($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE INVENTARIO'),'','950',"ciap");
+echo $sisap->OpenTable('950');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/ciap01_productos_materiales/reporte_inventario/2'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          <? if($_SESSION['SScoddep']==1){ ?>
+					<?= $sisap->radioTagRemote("inventario/tipo_busqueda", array('1'=>'Institución','2'=>'Dependencia','3'=>'Almacén'), array('url1'=>'/ciap01_productos_materiales/reporte_radio', 'update1'=>'carga', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+	          <? }else{ ?>
+						<?if($readonly=='readonly'){ ?>
+							<?= $sisap->selectTagRemote('inventario/cod_almacen',$almacenes,  array('value1'=>'otros'),$almacen, array('onchange1'=>'//', 'update1'=>'','id'=>'select_1' ,'readonly'=>$readonly ,'style'=>'width:30%', 'onchange'=>'vacio', true), null, true);?>
+						<? }else{ ?>
+							<?= $sisap->selectTagRemote('inventario/cod_almacen',$almacenes,  array('value1'=>'otros'),$almacen, array('onchange1'=>'//', 'update1'=>'','id'=>'select_1' ,'style'=>'width:30%', 'onchange'=>'vacio', true), null, true);?>
+						<? } ?>
+
+	          <? } ?>
+	          <div id="carga"></div>
+	    </td>
+	</tr>
+</table>
+
+<br><br>
+<?= $sisap->radioTagRemote("inventario/tipo_orden", array('1'=>'denominación de productos','2'=>'Código de productos','3'=>'Clasificador S.N.C'), array('url1'=>'//', 'update1'=>'', 'id'=>'tipo_orden'), null, $opc=1); ?>
+<br><br>
+<div id="funcion"></div>
+
+
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE INVENTARIO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"21", "Z"=>"13"), array("Y"=>"22", "X"=>"255"));
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['top_ano'],'TRBL',1);
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(30,3,'Código','RL',0,'C');
+	$this->Cell(0,3,' ','R',1);
+	$this->Cell(30,3,'Dependencia','RL',0,'C');
+	$this->Cell(0,3,' Denominación de la Dependencia','R',1);
+
+	$this->SetFont('vera','',6);
+	$this->Cell(30,5,$_SESSION['top_dep'],'TRL',0,'C');// Código de Dependencia
+	$this->Cell(0,5,$_SESSION['top_dep_deno'],'TR',1);// Denominación del Dependencia
+
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(30,3,'Código','TRL',0,'C');
+	$this->Cell(0,3,'','TR',1);
+	$this->Cell(30,3,'Almacén','RL',0,'C');
+	$this->Cell(0,3,' Denominación del Almacén','R',1);
+
+	$this->SetFont('vera','',6);
+	$this->Cell(30,5,$_SESSION['top_almacen'],'TRL',0,'C');// Código de Almacén
+	$this->Cell(0,5,$_SESSION['top_almacen_deno'],'TR',1);// Denominación del Almacén
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(15,4,'Código','TRL',0,'C');
+	$this->Cell(15,4,'Código','TR',0,'C');
+	$this->Cell(55,4,'','TR',0,'C');
+	$this->Cell(15,4,'','TR',0,'C');
+	$this->Cell(13,4,'','TR',0,'C');
+	$this->Cell(16,4,'Existencia','TR',0,'C');
+	$this->Cell(15,4,'Costo','TR',0,'C');
+	$this->Cell(15,4,'Costo','TR',0,'C');
+	$this->Cell(12,4,'Stock','TR',0,'C');
+	$this->Cell(12,4,'Stock','TR',0,'C');
+	$this->Cell(14,4,'Punto','TR',0,'C');
+	$this->Cell(14,4,'','TR',0,'C');
+	$this->Cell(12,4,'','TR',0,'C');
+	$this->Cell(15,4,'','TR',0,'C');
+	$this->Cell(0,4,'Complemento','TR',1,'C');
+
+	$this->Cell(15,3,'SNC','RBL',0,'C');
+	$this->Cell(15,3,'Producto','RB',0,'C');
+	$this->Cell(55,3,'Denominación del Producto','RB',0,'C');
+	$this->Cell(15,3,'Entradas','RB',0,'C');
+	$this->Cell(13,3,'Salidas','RB',0,'C');
+	$this->Cell(16,3,'Actual','RB',0,'C');
+	$this->Cell(15,3,'Máximo','RB',0,'C');
+	$this->Cell(15,3,'Mínimo','RB',0,'C');
+	$this->Cell(12,3,'Máximo','RB',0,'C');
+	$this->Cell(12,3,'Mínimo','RB',0,'C');
+	$this->Cell(14,3,'Pedido','RB',0,'C');
+	$this->Cell(14,3,'Estante','RB',0,'C');
+	$this->Cell(12,3,'Fila','RB',0,'C');
+	$this->Cell(15,3,'Columna','RB',0,'C');
+	$this->Cell(0,3,'Sitio Almacenaje','RB',1,'C');
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+//$pdf->AddPage();
+
+
+$pdf->SetFont('vera','',6);
+
+$_SESSION['top_dep']='';
+$_SESSION['top_almacen']='';
+$_SESSION['top_dep_deno']='';
+$_SESSION['top_almacen_deno']='';
+if($datos!=null){
+		$almacen=0;
+		$dep=0;
+		for($i=0; $i<count($datos); $i++){
+
+			$dep1=$datos[$i][0]['cod_dep'];
+			$almacen1=$datos[$i][0]['cod_almacen'];
+			if($dep!=$dep1 || $almacen!=$almacen1){
+				$almacen=$almacen1;
+				$dep=$dep1;
+				$_SESSION['top_dep']=mascara($datos[$i][0]['cod_dep'],4);
+				$_SESSION['top_almacen']=mascara($datos[$i][0]['cod_almacen'],2);
+				$_SESSION['top_dep_deno']=$datos[$i][0]['deno_dependencia'];
+				$_SESSION['top_almacen_deno']=$datos[$i][0]['deno_almacen'];
+				$pdf->AddPage();
+
+			}
+
+					$pdf->Cell(15,7,$datos[$i][0]['cod_snc'],'RL',0,'C');// Código SNC
+					$pdf->Cell(15,7,$datos[$i][0]['cod_prod_serv'],'R',0,'C');// Código Producto
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(55,1,"",'',2,'C');
+						$pdf->MultiCell(54,2,$datos[$i][0]['denominacion'],'','L');// Denominación del Producto
+						$varX = $varX+55;
+						$pdf->SetXY($varX,$varY);
+					$pdf->Cell(15,7,$sisap->Formato_6_out($datos[$i][0]['numero_entradas']),'RL',0,'C');// Entradas
+					$pdf->Cell(13,7,$sisap->Formato_6_out($datos[$i][0]['numero_salidas']),'R',0,'C');// Salidas
+					$existencia=($datos[$i][0]['numero_entradas']-$datos[$i][0]['numero_salidas']);
+					$pdf->Cell(16,7,$sisap->Formato_6_out($existencia),'R',0,'C');// Existencia Actual
+					$pdf->Cell(15,7,$sisap->Formato2($datos[$i][0]['costo_maximo']),'R',0,'R');// Costo Máximo
+					$pdf->Cell(15,7,$sisap->Formato2($datos[$i][0]['costo_minimo']),'R',0,'R');// Costo Mínimo
+					$pdf->Cell(12,7,$sisap->Formato_6_out($datos[$i][0]['stock_maximo']),'R',0,'C');// Costo Máximo
+					$pdf->Cell(12,7,$sisap->Formato_6_out($datos[$i][0]['stock_minimo']),'R',0,'C');// Costo Mínimo
+					$pdf->Cell(14,7,$sisap->Formato_6_out($datos[$i][0]['punto_pedido']),'R',0,'C');// Punto Pedido
+
+					$estante=($datos[$i][0]['estante_numero']==0 ? '' :$datos[$i][0]['estante_numero']);
+					$fila=($datos[$i][0]['fila_numero']==0 ? '' :$datos[$i][0]['fila_numero']);
+					$columna=($datos[$i][0]['columna_numero']==0 ? '' :$datos[$i][0]['columna_numero']);
+
+					$pdf->Cell(14,7,$estante,'R',0,'C');// Estante
+					$pdf->Cell(12,7,$fila,'R',0,'C');// Fila
+					$pdf->Cell(15,7,$columna,'R',0,'C');// Columna
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(31,1,"",'',2,'C');
+						$pdf->MultiCell(30,2,$datos[$i][0]['complemento_sitio_almacenaje'],'','L');// Complemento Sitio Almacenaje
+						$varX = $varX+31;
+						$pdf->SetXY($varX,$varY);
+					$pdf->Cell(0,7,'','R',1);
+					$pdf->Cell(0,0,'','T',1);
+		}
+
+}else{
+	$pdf->Cell(15,7,'','RL',0,'C');// Código SNC
+	$pdf->Cell(15,7,'','R',0,'C');// Código Producto
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(55,1,"",'',2,'C');
+		$pdf->MultiCell(54,2,"",'','L');// Denominación del Producto
+		$varX = $varX+55;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(15,7,'','RL',0,'C');// Entradas
+	$pdf->Cell(13,7,'','R',0,'C');// Salidas
+	$pdf->Cell(16,7,'','R',0,'C');// Existencia Actual
+	$pdf->Cell(15,7,'','R',0,'R');// Costo Máximo
+	$pdf->Cell(15,7,'','R',0,'R');// Costo Mínimo
+	$pdf->Cell(12,7,'','R',0,'C');// Costo Máximo
+	$pdf->Cell(12,7,'','R',0,'C');// Costo Mínimo
+	$pdf->Cell(14,7,'','R',0,'C');// Punto Pedido
+	$pdf->Cell(14,7,'','R',0,'C');// Estante
+	$pdf->Cell(12,7,'','R',0,'C');// Fila
+	$pdf->Cell(15,7,'','R',0,'C');// Columna
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(31,1,"",'',2,'C');
+		$pdf->MultiCell(30,2,"",'','L');// Complemento Sitio Almacenaje
+		$varX = $varX+31;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,7,'','R',1);
+	$pdf->Cell(0,0,'','T',1);
+
+}
+
+
+
+$pdf->Output('relacion_inventario.pdf','D');
+
+}//fin function
+
+
+?>

@@ -1,0 +1,321 @@
+<?php
+if(isset($ir)){
+?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DEL COSTO DE LOS RECURSOS HUMANOS DE LA INSTITUCIÓN, CLASIFICADOS <BR> SEGÚN TIPO Y GENERO",NULL,"950"); ?>
+<div id="actualizar"></div>
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion/forma_2106/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cnmp05][ano]"  value="<?= $year ?>" id="ano_formular" style="text-align:center" style="text-align:center" size="3" readonly  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+<?php $d=$session->read('SScoddep');
+if($d==1){
+?>
+<?= $sisap->radio_consolidado('cnmp05/consolidacion', array(), '', true)  ?>
+<br><br>
+<?  } ?>
+<?= $html->submit('Generar'); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+<?
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	    $titulo_A = "RESUMEN DEL COSTO DE LOS RECURSOS HUMANOS DE LA INSTITUCIÓN, CLASIFICADOS SEGÚN TIPO Y GENERO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO:'.$_SESSION['ano_presupuesto'],'TRL',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(27,5,'','TRL',0,'C');
+	$this->Cell(159,5,'PRESUPUESTO AÑO ACTUAL: '.$_SESSION['ano_presupuesto'],'TR',0,'C');
+	$this->Cell(0,5,'PRESUPUESTO AÑO ANTERIOR: '.($_SESSION['ano_presupuesto'] - 1),'TR',1,'C');
+
+	$this->Cell(27,5,'','TRL',0,'C');
+	$this->Cell(46,5,'GÉNERO','TR',0,'C');
+	$this->Cell(113,5,'','TR',0,'C');
+	$this->Cell(46,5,'GÉNERO','TR',0,'C');
+	$this->Cell(0,5,'','TR',1,'C');
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(27,4,'','TRL',0,'C');
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(13,4,'','TR',0,'C');
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(23,4,'SUELDOS','TR',0,'C');
+	$this->Cell(21,4,'','TR',0,'C');
+	$this->Cell(20,4,'','TR',0,'C');
+	$this->Cell(22,4,'TRANSF.','TR',0,'C');
+	$this->Cell(27,4,'','TR',0,'C');
+
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(13,4,'','TR',0,'C');
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(11,4,'','TR',0,'C');
+	$this->Cell(23,4,'SUELDOS','TR',0,'C');
+	$this->Cell(21,4,'','TR',0,'C');
+	$this->Cell(20,4,'','TR',0,'C');
+	$this->Cell(22,4,'TRANSF.','TR',0,'C');
+	$this->Cell(0,4,'','TR',1,'C');
+
+
+	$this->Cell(27,3,'','RL',0,'C');
+	$this->Cell(11,3,'','R',0,'C');
+	$this->Cell(13,3,'','R',0,'C');
+	$this->Cell(11,3,'','R',0,'C');
+	$this->SetFont('vera','B',5);
+	$this->Cell(11,3,'Nº DE','R',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(23,3,'Y','R',0,'C');
+	$this->Cell(21,3,'','R',0,'C');
+	$this->Cell(20,3,'','R',0,'C');
+	$this->Cell(22,3,'PERSONAS','R',0,'C');
+	$this->Cell(27,3,'','R',0,'C');
+
+	$this->Cell(11,3,'','R',0,'C');
+	$this->Cell(13,3,'','R',0,'C');
+	$this->Cell(11,3,'','R',0,'C');
+	$this->SetFont('vera','B',5);
+	$this->Cell(11,3,'Nº DE','R',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(23,3,'Y','R',0,'C');
+	$this->Cell(21,3,'','R',0,'C');
+	$this->Cell(20,3,'','R',0,'C');
+	$this->Cell(22,3,'PERSONAS','R',0,'C');
+	$this->Cell(0,3,'','R',1,'C');
+
+	$this->Cell(27,3,'TIPO PERSONAL','RBL',0,'C');
+	$this->SetFont('vera','B',5);
+	$this->Cell(11,3,'FEMENINO','RB',0,'C');
+	$this->Cell(13,3,'MASCULINO','RB',0,'C');
+	$this->Cell(11,3,'VACANTE','RB',0,'C');
+	$this->Cell(11,3,'CARGOS','RB',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(23,3,'SALARIOS','RB',0,'C');
+	$this->Cell(21,3,'COMPENS.','RB',0,'C');
+	$this->Cell(20,3,'PRIMAS','RB',0,'C');
+	$this->Cell(22,3,'PASIVOS','RB',0,'C');
+	$this->Cell(27,3,'TOTAL','RB',0,'C');
+
+	$this->SetFont('vera','B',5);
+	$this->Cell(11,3,'FEMENINO','RB',0,'C');
+	$this->Cell(13,3,'MASCULINO','RB',0,'C');
+	$this->Cell(11,3,'VACANTE','RB',0,'C');
+	$this->Cell(11,3,'CARGOS','RB',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(23,3,'SALARIOS','RB',0,'C');
+	$this->Cell(21,3,'COMPENS.','RB',0,'C');
+	$this->Cell(20,3,'PRIMAS','RB',0,'C');
+	$this->Cell(22,3,'PASIVOS','RB',0,'C');
+	$this->Cell(0,3,'TOTAL','RB',1,'C');
+
+    }
+
+    function Footer(){
+		$this->setY(-10);
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,7,'FORMA: 2106','',1,'R');
+    }
+
+
+}//fin clase
+
+$_SESSION['ano_presupuesto'] = $ano_presupuesto;
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true,10);
+$pdf->AddPage();
+
+
+if(count($data)>0){
+	$s1=0;
+	$s2=0;
+	$s3=0;
+	$s4=0;
+	$s5=0;
+	$s6=0;
+	$s7=0;
+	$s8=0;
+	$s9=0;
+	$s10=0;
+	$s11=0;
+	$s12=0;
+	$s13=0;
+	$s14=0;
+	$s15=0;
+	$s16=0;
+	$s17=0;
+	$s18=0;
+	$VECTOR = array();
+foreach($ocupacion as $ocu){
+	 extract($ocu['v_cnmd04_ocupacion']);
+           if($cod_nivel_ii==0){
+                $denominacion_t = "".$ocu['v_cnmd04_ocupacion']['denominacion'];
+			}else{
+				$denominacion_t = "  ".$ocu['v_cnmd04_ocupacion']['denominacion'];
+			}
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['denominacion']=$denominacion_t;
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['femenino_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['masculino_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['vacante_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['tca']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['sueldo_basico_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['compesanciones_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['primas_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['transferencia_actual']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['total1']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['femenino_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['masculino_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['vacante_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['tca2']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['sueldo_basico_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['compensaciones_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['primas_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['transferencia_anterior']='';
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['total2']='';
+	}//fin ocupacion
+
+foreach($data as $r){
+        	    extract($r[$modelo]);
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['femenino_actual']=(int) $femenino_actual;// -- FEMENINO
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['masculino_actual']=(int) $masculino_actual;// -- MASCULINO
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['vacante_actual']=(int) $vacante_actual;// -- VACANTE
+				$tca = (int) ($femenino_actual+$masculino_actual+$vacante_actual);
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['tca']=$tca;// -- No DE CARGOS
+				$sueldo_basico_actual = $sueldo_basico_actual - $transferencia_actual;
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['sueldo_basico_actual']=$sisap->Formato2($sueldo_basico_actual);// -- SUELDOS Y SALARIOS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['compesanciones_actual']=$sisap->Formato2($compesanciones_actual);// -- COMPENS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['primas_actual']=$sisap->Formato2($primas_actual);// -- PRIMAS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['transferencia_actual']=$sisap->Formato2($transferencia_actual);// -- TRANSF. PERSONAS PASIVOS
+				$total1=$sueldo_basico_actual+$compesanciones_actual+$primas_actual+$transferencia_actual;
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['total1']=$sisap->Formato2($total1);// -- TOTAL
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['femenino_anterior']=(int) $femenino_anterior;// -- FEMENINO
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['masculino_anterior']=(int) $masculino_anterior;// -- MASCULINO
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['vacante_anterior']=(int) $vacante_anterior;// -- VACANTE
+				$tca2 = (int) ($femenino_anterior+$masculino_anterior+$vacante_anterior);
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['tca2']=$tca2;// -- No DE CARGOS
+				$sueldo_basico_anterior = $sueldo_basico_anterior - $transferencia_anterior;
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['sueldo_basico_anterior']=$sisap->Formato2($sueldo_basico_anterior);// -- SUELDOS Y SALARIOS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['compensaciones_anterior']=$sisap->Formato2($compensaciones_anterior);// -- COMPENS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['primas_anterior']=$sisap->Formato2($primas_anterior);// -- PRIMAS
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['transferencia_anterior']=$sisap->Formato2($transferencia_anterior);// -- TRANSF. PERSONAS PASIVOS
+				$total2=$sueldo_basico_anterior+$compensaciones_anterior+$primas_anterior+$transferencia_anterior;
+				$VECTOR[$cod_nivel_i][$cod_nivel_ii]['total2']=$sisap->Formato2($total2);// -- TOTAL
+				if($cod_nivel_ii==0){
+					$s1 += $femenino_actual;
+					$s2 += $masculino_actual;
+					$s3 += $vacante_actual;
+					$s4 += $tca;
+					$s5 += $sueldo_basico_actual;
+					$s6 += $compesanciones_actual;
+					$s7 += $primas_actual;
+					$s8 += $transferencia_actual;
+					$s9 += $total1;
+					$s10+= $femenino_anterior;
+					$s11+= $masculino_anterior;
+					$s12+= $vacante_anterior;
+					$s13+= $tca2;
+					$s14+= $sueldo_basico_anterior;
+					$s15+= $compensaciones_anterior;
+					$s16+= $primas_anterior;
+					$s17+= $transferencia_anterior;
+					$s18+= $total2;
+				}
+}//fin foreach
+
+foreach($ocupacion as $ocu){
+	 extract($ocu['v_cnmd04_ocupacion']);
+           if($cod_nivel_ii==0){
+				$pdf->SetFont('vera','B',5);
+			}else{
+				$pdf->SetFont('vera','',5);
+			}
+			    extract($VECTOR[$cod_nivel_i][$cod_nivel_ii]);
+				$pdf->Cell(1,8,'','L',0,'C');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(26,1,"",'',2,'C');
+				$pdf->MultiCell(25,2,$denominacion,'','L');
+				$varX = $varX+26;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(11,8,$femenino_actual,'RL',0,'C');// -- FEMENINO
+				$pdf->Cell(13,8,$masculino_actual,'R',0,'C');// -- MASCULINO
+				$pdf->Cell(11,8,$vacante_actual,'R',0,'C');// -- VACANTE
+				$pdf->Cell(11,8,$tca,'R',0,'C');// -- No DE CARGOS
+				$pdf->Cell(23,8,$sueldo_basico_actual,'R',0,'R');// -- SUELDOS Y SALARIOS
+				$pdf->Cell(21,8,$compesanciones_actual,'R',0,'R');// -- COMPENS
+				$pdf->Cell(20,8,$primas_actual,'R',0,'R');// -- PRIMAS
+				$pdf->Cell(22,8,$transferencia_actual,'R',0,'R');// -- TRANSF. PERSONAS PASIVOS
+				$pdf->Cell(27,8,$total1,'R',0,'R');// -- TOTAL
+				$pdf->Cell(11,8,$femenino_anterior,'R',0,'C');// -- FEMENINO
+				$pdf->Cell(13,8,$masculino_anterior,'R',0,'C');// -- MASCULINO
+				$pdf->Cell(11,8,$vacante_anterior,'R',0,'C');// -- VACANTE
+				$pdf->Cell(11,8,$tca2,'R',0,'C');// -- No DE CARGOS
+				$pdf->Cell(23,8,$sueldo_basico_anterior,'R',0,'R');// -- SUELDOS Y SALARIOS
+				$pdf->Cell(21,8,$compensaciones_anterior,'R',0,'R');// -- COMPENS
+				$pdf->Cell(20,8,$primas_anterior,'R',0,'R');// -- PRIMAS
+				$pdf->Cell(22,8,$transferencia_anterior,'R',0,'R');// -- TRANSF. PERSONAS PASIVOS
+				$pdf->Cell(0,8,$total2,'R',1,'R');// -- TOTAL
+				$pdf->Cell(0,0,'','T',1);
+
+	}//fin ocupacion*/
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(27,8,'TOTALES','L',0,'C');
+$pdf->SetFont('vera','B',5);
+
+	// TOTALES ACTUALES:
+$pdf->Cell(11,8,$s1,'RL',0,'C');// -- TOTALES FEMENINO
+$pdf->Cell(13,8,$s2,'R',0,'C');// -- TOTALES MASCULINO
+$pdf->Cell(11,8,$s3,'R',0,'C');// -- TOTALES VACANTE
+$pdf->Cell(11,8,$s4,'R',0,'C');// -- TOTALES No DE CARGOS
+$pdf->Cell(23,8,$sisap->Formato2($s5),'R',0,'R');// -- TOTALES SUELDOS Y SALARIOS
+$pdf->Cell(21,8,$sisap->Formato2($s6),'R',0,'R');// -- TOTALES COMPENS
+$pdf->Cell(20,8,$sisap->Formato2($s7),'R',0,'R');// -- TOTALES PRIMAS
+$pdf->Cell(22,8,$sisap->Formato2($s8),'R',0,'R');// -- TOTALES TRANSF. PERSONAS PASIVOS
+$pdf->Cell(27,8,$sisap->Formato2($s9),'R',0,'R');// -- TOTAL
+
+	// TOTALES ANTERIORES:
+$pdf->Cell(11,8,$s10,'R',0,'C');// -- TOTALES FEMENINO
+$pdf->Cell(13,8,$s11,'R',0,'C');// -- TOTALES MASCULINO
+$pdf->Cell(11,8,$s12,'R',0,'C');// -- TOTALES VACANTE
+$pdf->Cell(11,8,$s13,'R',0,'C');// -- TOTALES No DE CARGOS
+$pdf->Cell(23,8,$sisap->Formato2($s14),'R',0,'R');// -- TOTALES SUELDOS Y SALARIOS
+$pdf->Cell(21,8,$sisap->Formato2($s15),'R',0,'R');// -- TOTALES COMPENS
+$pdf->Cell(20,8,$sisap->Formato2($s16),'R',0,'R');// -- TOTALES PRIMAS
+$pdf->Cell(22,8,$sisap->Formato2($s17),'R',0,'R');// -- TOTALES TRANSF. PERSONAS PASIVOS
+$pdf->Cell(0,8,$sisap->Formato2($s18),'R',1,'R');// -- TOTAL
+
+$pdf->Cell(0,7,'','T',1,'R');
+
+}
+
+$pdf->Output('forma_2106_'.date("d_m_Y").'.pdf','D');//Poner nombre y la opcion D
+
+}
+
+?>

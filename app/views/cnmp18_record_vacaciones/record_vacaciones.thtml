@@ -1,0 +1,107 @@
+<style type="text/css">
+	.fila_titulos {
+	    height: 20px;
+	    font-family: Arial, Helvetica, sans-serif;
+	    font-size: 11px;
+	    line-height: normal;
+	    color: #FFF;
+	    white-space: normal;
+	    text-transform: uppercase;
+	    font-weight: bold;
+	    background-color: #328AA4;
+	}
+
+	.input_number{
+		width: 70px;
+    	text-align: center;
+	}
+</style>
+<p class="fila_titulos" style="border: 1px solid #000; padding-top:5px;">
+	RECORD DE VACACIONES
+</p>
+<form name="data[cnmp18_record_vacaciones]" method="post" action="<?php echo $html->url("/cnmp18_record_vacaciones/update_record_vacaciones/$ci");?>">
+	<table  width="100%" border="0" cellspacing="0" cellpadding="0"  class="tablacompromiso tablacompromiso2">
+			<tr class="fila_titulos" style="text-align:center;">
+				<td colspan="2">PERIODO</td>
+				<td>CAMBIO CARGO</td>
+				<td>DIAS CORRESPONDIENTES</td>
+				<td>VAC. DISFRUTADAS</td>
+				<td>VAC. PENDIENTE</td>
+				<td>DIAS DE VAC. DIF DE MAS</td>
+				<td>DIAS PENDIENTES</td>
+				<td># FOLIO</td>
+			</tr>
+			<?php 
+				$cantidad_dias_pendientes = 0;
+				$deno = '';
+				if(!empty($records)){
+					$i=0;
+						foreach ($records as $record){
+			?>
+							<tr style="text-align:center;">
+								<td>
+									<?= $record['cnmd18_record_vacaciones']['periodo_inicio'] ?>
+									<input type="hidden" value="<?= $record['cnmd18_record_vacaciones']['periodo_inicio']?>" name="data[<?= $i?>][periodo_inicio]">
+									<input type="hidden" value="<?= $record['cnmd18_record_vacaciones']['periodo_fin']?>" name="data[<?= $i?>][periodo_fin]">
+								</td>
+								<td><?= $record['cnmd18_record_vacaciones']['periodo_fin'] ?></td>
+								<td>
+									<?php 
+										foreach ($data as $data1):
+	                            			if($record['cnmd18_record_vacaciones']['periodo_inicio'] < date('Y', strtotime($data1[0]['fecha_condicion'])))
+	                            			{
+	                            					if($deno != $data1[0]['demonimacion_puesto']){
+	                            						$deno = $data1[0]['demonimacion_puesto']; 
+													
+	                            						echo $data1[0]['demonimacion_puesto']; 
+	                            					}
+														break;
+											}
+										endforeach;
+									?>
+								</td>
+								<td><?= $record['cnmd18_record_vacaciones']['dias_correspondientes'] ?></td>
+
+								<?php if($record['cnmd18_record_vacaciones']['vac_disfrutadas'] == 1){?>
+									<td>SI</td>
+									<td>NO</td>
+									<td><?= $record['cnmd18_record_vacaciones']['dias_vac_disf_mas'] ?></td>
+									<td><?= $record['cnmd18_record_vacaciones']['dias_pendientes'] ?></td>
+									<td><?= $record['cnmd18_record_vacaciones']['num_folio'] ?></td>
+								<?php } else {  ?>
+									<td>NO</td>
+									<td><input type="checkbox" name="data[<?= $i?>][vac_pendiente]" value="2"></td>
+									<td><input class="input_number" type="text" name="data[<?= $i?>][dias_vac_disf_mas]" onkeypress="return solonumeros(event);" id="dias_vac_disf_mas"></td>
+									<td><input class="input_number" type="text" name="data[<?= $i?>][dias_pendientes]" onkeypress="return solonumeros(event);" id="dias_pendientes"></td>
+									<td><input class="input_number" type="text "name="data[<?= $i?>][num_folio]" value="" id="num_folio"></td>
+								<?php 
+									} 
+									$cantidad_dias_pendientes = $cantidad_dias_pendientes + $record['cnmd18_record_vacaciones']['dias_pendientes']; 
+								?>
+							</tr>							
+			<?php
+							$i++;
+						}
+			?>
+				<tr style="text-align:center;">
+					<td colspan="7">
+						TOTAL DE D&Iacute;AS DE VACACIONES PENDIENTES
+					</td>
+					<td><?= $cantidad_dias_pendientes?></td>
+					<td>--</td>
+				</tr>
+			<?php
+				}else{
+			?>
+				<tr>
+					<td colspan="9" style="text-align:center;">
+						Usted no tiene record de vacaciones en esta Intitución...
+					</td>
+				</tr>
+			<?php } ?>
+	</table>
+	<br>
+	<?= ($cantidad > 0) ? $sisap->submitTagRemote('Registrar', array('id' => 'record', 'url1' => '/cnmp18_record_vacaciones/update_record_vacaciones/'.$ci, 'update1'=>'record_vacaciones')) : ''; 
+	?>
+</form>
+

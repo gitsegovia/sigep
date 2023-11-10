@@ -1,0 +1,205 @@
+<?
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+function meses($mes){
+switch($mes){
+	case 0:
+		$mes='liberado';
+	break;
+	case 1:
+		$mes='enero';
+	break;
+	case 2:
+		$mes='febrero';
+	break;
+	case 3:
+		$mes='marzo';
+	break;
+	case 4:
+		$mes='abril';
+	break;
+	case 5:
+		$mes='mayo';
+	break;
+	case 6:
+		$mes='junio';
+	break;
+	case 7:
+		$mes='julio';
+	break;
+	case 8:
+		$mes='agosto';
+	break;
+	case 9:
+		$mes='septiembre';
+	break;
+	case 10:
+		$mes='octubre';
+	break;
+	case 11:
+		$mes='noviembre';
+	break;
+	case 12:
+		$mes='diciembre';
+	break;
+	case 13:
+	break;
+}
+return $mes;
+}
+ if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+ if(isset($validado) && $validado==true){
+?>
+<?= $sisap->Tabla($entidad_federal,true,"CIERRE MENSUAL PRESUPUESTARIO", null ,"900");?>
+
+
+<form name="data[cnmp04_tipo]" method="POST" id='form'>
+<?= $sisap->OpenTable("900")?>
+<div id="principal_cnmp04_tipo">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr>
+	<td width="10%" align="center">Seleccione:</td>
+	<td width="40%" align="center">Denominación</td>
+	<td width="7%" align="center">Año</td>
+	<td width="13%" align="center">Mes</td>
+	<td width="20%" align="center">Responsable del cierre</td>
+	<td width="10%" align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">
+		<div id="st_tipo">
+		<?=  $sisap->selectTagRemote('cnmp04_tipo/select',isset($tipo)?$tipo:array(''),array('value1'=>'agregar'),'',array('onchange1'=>'/ccfp04_cierre_presupuestario_contable/select_tipo/deno/', 'update1'=>'deno','id'=>'select_1'  , true), null, true); ?>
+	</td>
+	<td align="center" id="deno">
+		<?= $html->input('cnmp04_tipo/denominacion', array('id'=>'denominacion', 'readonly'=>'readonly','style'=>'width:98%'))?>
+	</td>
+	<td align="center" id="codigo">
+		<?= $html->input('cnmp04_tipo/ano', array('value'=>$ano,'id'=>'ano', 'readonly'=>'readonly','style'=>'width:98%;text-align:center'))?>
+	</td>
+	<td>
+		<?= $sisap->selectTagRemote('cnmp04_tipo/mes_solicitud', $mes,  null,  null, array('onchange1'=>'/csrp01_solicitud_recurso/mostrar/select', 'update1'=>'vacio', 'id'=>'mes_1', 'onChange'=>'si'  , true), null, true);?>
+	</td>
+	<td align="center">
+		<?= $html->input('cnmp04_tipo/funcionario', array('id'=>'denominacion','style'=>'width:98%'))?>
+	</td>
+	<td align="center">
+		<?= $sisap->submitTagRemote('AGREGAR', array('funcion'=>'valida_cierre_presupuestario','id'=>'agregar','url1' => '/ccfp04_cierre_presupuestario_contable/guardar', 'update1'=>'grilla')); ?>
+	</td>
+</tr>
+
+</table>
+<br><br>
+<div id="grilla">
+<div style="height:300px;overflow:auto;">
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" style:"position:fixed" align="center">
+		<td width="10%" align="center">Código dep</td>
+		<td width="40%" align="center">Denominación</td>
+		<td width="5%"align="center">Año</td>
+		<td width="10%"align="center">Mes</td>
+		<td width="25%"align="center">Responsable del cierre</td>
+		<td width="10%"align="center">&nbsp;</td>
+	</tr>
+
+<?
+if($datos!=null){
+	$i=0;
+	$j=0;
+	foreach($datos1 as $x){
+		$deno[$j] = $x['arrd05']['denominacion'];
+		$codigo[$j] = $x['arrd05']['cod_dep'];
+		$j++;
+	}
+	foreach($datos as $row){
+		$cod=$row['ccfd03_instalacion']['cod_dep'];
+		$ano_cierre=$row['ccfd03_instalacion']['ano_cierre_mensual'];
+		$mes_cierre=$row['ccfd03_instalacion']['mes_cierre_mensual'];
+		$responsable=$row['ccfd03_instalacion']['responsable_cierre_mensual'];
+
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+
+		?>
+		<tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+
+		<td class="td2center">
+			<?=$sisap->zero($cod); ?>
+		</td>
+		<td align="legth">
+			<?=denominacion($deno, $codigo,$cod);?>
+		</td>
+		<td align="center">
+			<?=$ano_cierre;?>
+		</td>
+		<td align="center">
+			<?=meses($mes_cierre);?>
+		</td>
+		<td align="legth">
+			<?=$responsable;?>
+		</td>
+
+		<td align="center"  id="<?= "li_".$i ?>">
+		<a href="javascript:ver_documento('/ccfp04_cierre_presupuestario_contable/modificar/<?=$cod?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el tipo'))?></a>
+		</td>
+		</tr>
+
+		<?
+		$i++;
+	}//fin foreach
+
+}else{
+?>
+<tr  class="textNegro2" bgcolor="#CDF2FF">
+
+<td class="td2center">&nbsp;</td>
+<td class="td2center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+<td width="75" align="center">&nbsp;</td>
+</tr>
+
+
+<?php
+}
+?>
+</table>
+</div>
+
+</div>
+
+<div id="vacio"></div>
+<?= $sisap->CloseTable()?>
+
+<?= $sisap->OpenTable("900")?>
+<table border="0" width="100%">
+<tr  height="40px">
+	<td align="center">
+		<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal'))?></td>
+	</tr>
+</table>
+</div>
+<?= $sisap->CloseTable()?>
+
+</form>
+<?
+
+}else{
+	echo "<br><br><br><br><br>";
+	$sisap->restriccion_programas_claves('csrp01_solicitud_recurso_aprobacion', 'ccfp04_cierre_presupuestario_contable/entrar');
+}
+?>

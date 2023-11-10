@@ -1,0 +1,396 @@
+<?php
+
+if(isset($errorMessage)) {
+					echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}?>
+
+
+
+<form>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RETENCIÓN ORDEN DE COMPRAS",null,"950");?>
+
+
+
+<?php
+
+if(isset($datos_orden_compra)){
+ if($datos_orden_compra!=null){
+	 foreach($datos_orden_compra as $aux_datos_orden_compra){
+
+
+?>
+
+
+
+<?= $sisap->OpenTable("950")?>
+
+
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro"><td colspan="4" align="center"><b>DETALLES DE LA ORDEN DE COMPRA</b></td></tr>
+	<tr align="center">
+		<td>A&ntilde;o</td>
+		<td>N&uacute;mero</td>
+		<td>Fecha</td>
+		<td>Tipo de orden</td>
+	</tr>
+	<tr align="center">
+		<td id="year_cotizacion"><?= $html ->input('cscp04_ordencompra_retencion/ano_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['ano_orden_compra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4', 'style'=>'text-align:center;'), false); ?></td>
+		<td id="num_orden_compra"><?= $html ->input('cscp04_ordencompra_retencion/num_orden_compra', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['numero_orden_compra'].'', 'readonly'=>'readonly', 'onKeyPress'=>'return solonumeros(event);', 'maxlength'=>'4', 'style'=>'text-align:center; font-weight:bold; font-size:18;'), false); ?></td>
+		<td id="fecha_cotizacion"><?= $html ->input('cscp04_ordencompra_retencion/fecha_cotizacion', $htmlAttributes = array('size'=>'11', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'].'', 'readonly'=>'readonly', 'style'=>'text-align:center;'), false); ?></td>
+		<td><?= $html->radio('cscp04_ordencompra_retencion/tipo_ordencompra', $options = array('1'=>'Bienes', '2'=>'Servicios'), $inbetween = null, $htmlAttributes = array('value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['tipo_orden'].'', 'disabled'=>'disabled'), $return = false); ?></td>
+	</tr>
+
+	<tr align="center">
+		<td>Rif del Proveedor</td>
+		<td colspan="2">Nombre de Proveedor o Raz&oacute;n Social</td>
+		<td>Direcci&oacute;n</td>
+	</tr>
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_retencion/rif', $htmlAttributes = array('style'=>'width:98%;text-align:center;font-weight:bold;', 'readonly'=>'readonly', 'value'=>''.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'].''), false); ?></td>
+		<td colspan="2"><?= $html->input('cscp04_ordencompra_retencion/nom_prov', $htmlAttributes = array('style'=>'width:98%;font-weight:bold;', 'readonly'=>'readonly', 'value'=>''.$denominacion_rif.''), false); ?></td>
+		<td><?= $html->textarea('cscp04_ordencompra_retencion/dir_prov', $htmlAttributes = array('rows'=>'2', 'style'=>'width:98%', 'readonly'=>'readonly', 'value'=>''.$direccion_comercial_rif.''), false); ?></td>
+   </tr>
+
+	<tr align="center">
+		<td width="25%" rowspan="2" style="font-size:14px;font-weight:bold;">Situaci&oacute;n de la Orden</td>
+		<td width="25%">Monto Original</td>
+		<td width="25%">Modificaciones</td>
+		<td width="25%">Monto Actual</td>
+	</tr>
+
+
+	<tr align="center">
+		<td><?= $html->input('cscp04_ordencompra_retencion/monto_original', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td>
+		<?php
+			$disminucion = ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion']);
+		?>
+			<?= $html->input('cscp04_ordencompra_retencion/modificaciones', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($disminucion).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+		<td>
+		<?php
+    		$monto_actual = (($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento']) - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion']);
+    	?>
+			<?= $html->input('cscp04_ordencompra_retencion/monto_actual', $htmlAttributes = array('class'=>'inputtext', 'id'=>'monto_actual', 'size'=>'16', 'value'=>''.$sisap->Formato2($monto_actual).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+
+
+	<tr>
+		<td align="center">Retención Laboral</td>
+		<td align="center">Fiel Cumplimiento</td>
+		<td align="center">Monto Retenciones</td>
+		<td align="center">Monto Cancelado</td>
+	</tr>
+
+
+	<tr>
+		<td align="center" ><?php if($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['laboral_cancelado']==0 && $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_laboral']!=0){$color_a = "background-color:#ffccca; text-align:center;font-weight:bold; font-size:14;"; }else{$color_a="text-align:center;font-weight:bold; font-size:14;";}   ?>
+			<?= $html->input('cscp04_ordencompra_retencion/retencion_laboral', $htmlAttributes = array('style'=>'text-align:center; font-weight:bold; font-size:14;', 'class'=>'inputtext','size'=>'18', 'style'=>$color_a,  'readonly'=>'readonly', 'value'=>$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_laboral'])), false); ?>
+		</td>
+		<td align="center" ><?php if($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fielcumplimiento_cancelado']==0 && $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_fielcumplimiento']!=0){$color_b = "background-color:#ffccca; text-align:center;font-weight:bold; font-size:14;"; }else{$color_b="text-align:center;font-weight:bold; font-size:14;";}   ?>
+			<?= $html->input('cscp04_ordencompra_retencion/fiel_cumplimiento', $htmlAttributes = array('class'=>'inputtext','size'=>'18', 'style'=>$color_b, 'readonly'=>'readonly', 'value'=>$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_fielcumplimiento'])), false); ?>
+		</td>
+		<td align="center" >
+         <?= $html->input('cscp04_ordencompra_retencion/monto_rentenciones', $htmlAttributes = array('style'=>'text-align:center; font-weight:bold; font-size:14;', 'class'=>'inputtext','size'=>'18', 'readonly'=>'readonly', 'value'=>$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_fielcumplimiento'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_laboral'])), false); ?>
+		</td>
+		<td align="center" >
+           <?= $html->input('cscp04_ordencompra_retencion/monto_cancelado', $htmlAttributes = array('style'=>'text-align:center; font-weight:bold; font-size:14;', 'class'=>'inputtext','size'=>'18', 'readonly'=>'readonly', 'value'=>$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado'])), false); ?>
+		</td>
+	</tr>
+
+
+	<tr align="center">
+		<td>Monto Anticipo</td>
+		<td>Amortizaciones</td>
+		<td>Saldo Anticipo</td>
+		<td>Saldo de la Orden</td>
+	</tr>
+
+	<tr align="center">
+		<td>
+			<?= $html->input('cscp04_ordencompra_retencion/monto_anticipo', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+
+		    <input name="data[cscp04_ordencompra_retencion][monto_orden]" type="hidden" size="25"  id="monto_orden" value="<?= $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] ?>"/>
+		</td>
+		<td><?= $html->input('cscp04_ordencompra_retencion/monto_amortizacion', $htmlAttributes = array('class'=>'inputtext', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td><?= $html->input('cscp04_ordencompra_retencion/monto_amortizacion2', $htmlAttributes = array('class'=>'inputtext', 'id'=>'saldo_anticipo', 'size'=>'16', 'value'=>''.$sisap->Formato2($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_anticipo'] - $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion']).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?></td>
+		<td>
+		<?php
+			$saldo_orden = (($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_orden'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_aumento']) - ($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['modificacion_disminucion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_amortizacion'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_laboral']+ $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_retencion_fielcumplimiento'] + $aux_datos_orden_compra['cscd04_ordencompra_encabezado']['monto_cancelado']));
+		    $saldo_orden = $sisap->Formato2($saldo_orden);
+            $saldo_orden = $sisap->Formato1($saldo_orden);
+		?>
+			<?= $html->input('cscp04_ordencompra_retencion/saldo_orden', $htmlAttributes = array('class'=>'inputtext', 'id'=>'saldo_orden', 'size'=>'16', 'value'=>''.$sisap->Formato2($saldo_orden).'', 'style'=>'text-align:center; font-weight:bold; font-size:14;', 'readonly'=> 'readonly'), false); ?>
+		</td>
+	</tr>
+</table> <br>
+
+
+
+
+<table  width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<th colspan="5">DETALLES DE ESTE PAGO</th>
+
+		<tr>
+				<td align="center" width="15%">Tipo de    <br> Retención</td>
+				<td align="center" width="20%">Número    Retención</td>
+				<td align="center" width="15%">Fecha de  <br> Retención</td>
+				<td align="center" width="20%">Número de Aprobación</td>
+				<td align="center" width="15%">Fecha de  <br> Aprobación</td>
+		</tr>
+
+		<tr>
+				<td><?php if($tipo_selecion_value!=""){$disabled="disabled"; $nombre=""; $nombre2="tipo_retencion";}else{$disabled=""; $nombre="tipo_retencion"; $nombre2="";}  ?>
+				  <?= $sisap->radioTagRemote('cscp04_ordencompra_retencion/'.$nombre, array('1'=>'Laboral','2'=>'Fiel cumplimiento'), array('url1'=>'/cscp04_ordencompra_retencion/tipo_retencion/'.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['ano_orden_compra'].'/'.$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['numero_orden_compra'], 'update1'=>'funcion', 'id'=>'tipo_retencion', $disabled=>$disabled), '<br>', $tipo_selecion_value)?>
+				  <input type="hidden" value='<?= $tipo_selecion_value ?>'  style="text-align:right;" name="data[cscp04_ordencompra_retencion][<?= $nombre2 ?>]"   id="tipo_retencion2" class="inputtext80" >
+				</td>
+
+
+				<td align="center"><?= $html->input('cscp04_ordencompra_retencion/numero_retencion', $htmlAttributes = array('id'=>'numero_retencion',"class"=>"inputtext", 'readonly'=>'readonly', 'value'=>$sisap->AddCero2($numero_retencion), 'style'=>'text-align:center; font-size:25;'), false); ?></td>
+				<td align="center">
+				     <? $sisap->input_fecha("cscp04_ordencompra_retencion","fecha_retencion","fecha_retencion", date('d/m/Y')); ?>
+				</td>
+
+
+				<td align="center"><input type="text" value='' style="font-weight:bold; font-size:14; text-align:center;" name="data[cscp04_ordencompra_retencion][numero_aprobacion]"   id="numero_aprobacion" class="inputtext" ></td>
+				<td align="center">
+				     <? $sisap->input_fecha("cscp04_ordencompra_retencion","fecha_aprobacion","fecha_aprobacion", date('d/m/Y')); ?>
+				</td>
+		</tr>
+
+
+</table> <br>
+<table  width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+		<th colspan="3">RETENCIONES REALIZADAS</th>
+		<tr>
+				<td align="center" width="20%">Monto Retención con I.V.A</td>
+				<td align="center" width="20%">Monto Retención sin I.V.A</td>
+				<td align="center" width="20%">Monto Total Retenido</td>
+		</tr>
+		<tr>
+				<td align="center"><input type="text" value='' style="text-align:center;font-weight:bold; font-size:14" name="data[cscp04_ordencompra_retencion][monto_retencion_iva]"     id="monto_retencion_iva"     class="inputtext" readonly></td>
+				<td align="center"><input type="text" value='' style="text-align:center;font-weight:bold; font-size:14" name="data[cscp04_ordencompra_retencion][monto_retencion_sin_iva]" id="monto_retencion_sin_iva" class="inputtext" readonly></td>
+				<td align="center"><input type="text" value='' style="text-align:center;font-weight:bold; font-size:14" name="data[cscp04_ordencompra_retencion][monto_total_retencion]"   id="monto_total_retencion"   class="inputtext" readonly></td>
+		</tr>
+		</table>
+<br>
+
+
+
+
+<table width="100%" border="0">
+ <th colspan="5">IMPUTACIÓN PRESUPUESTARIA</th>
+</table>
+
+<div id="cotizacion"><?php include("datos.thtml");?></div>
+<div id="funcion"></div>
+<br>
+
+
+
+
+
+
+
+
+<table  width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+					<th align="center" width="65%" height="22">CONCEPTOS</th>
+					<th align="center" width="18%">&nbsp;&nbsp;&nbsp;% APLICADO&nbsp;&nbsp;&nbsp;</th>
+					<th align="center" width="17%">MONTO</th>
+			</tr>
+
+
+			<tr>
+					<td height="22"><b>TOTAL A CANCELAR</b></td>
+					<td align="center"><br></td>
+					<td align="center"><input name="data[cscp04_ordencompra_retencion][monto_a_pagar_con_iva]"  disabled style="font-weight:bold;text-align:right"  type="text" class="inputtext"  id="monto_a_pagar_con_iva" value="0,00" onfocus="javascript:if(this.value=='0,00'){this.value='';}"  onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('monto_a_pagar_con_iva');" /></td>
+			</tr>
+
+
+			<tr>
+					<td>Monto del I.V.A</td>
+					<td align="center" width="110"><input name="data[cscp04_ordencompra_retencion][porcentaje_iva]"  disabled  readOnly  style="text-align:right"  type="text" size="10"  id="porcentaje_iva" value="<?= $sisap->Formato2($porcentaje_iva) ?>" class="inputtext80" onKeyPress="return solonumeros_con_punto(event);" onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('porcentaje_iva');" /> %</td>
+					<td align="center" ><input name="data[cscp04_ordencompra_retencion][monto_iva]"  disabled='disabled' readonly='readonly' style="text-align:right"  type="text"  class="inputtext" id="monto_iva" value="0,00" onKeyPress="return solonumeros_con_punto(event); " onblur="javascript:if(this.value==''){this.value='0,00';}  moneda('monto_iva');" /></td>
+			</tr>
+
+
+			 <tr height="22">
+					<td><b>MONTO A DESCONTAR IMPUESTO</b></td>
+					<td align="center" width="110"><br></td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/total_retencion_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'total_retencion_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'font-weight:bold;text-align:right;  background-color:#ffffca', 'readonly'=>'readonly', 'type'=>'text'), false); ?>
+										 <?= $html->input('cscp04_ordencompra_retencion/objeto_rif',      $htmlAttributes = array('id'=>'objeto_rif','size'=>'15', 'value'=>$objeto_rif, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false)?>
+               	   						 <?= $html->input('cscp04_ordencompra_retencion/desde_monto_islr',      $htmlAttributes = array('id'=>'desde_monto_islr','size'=>'25', 'value'=>$desde_monto_islr, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false)?>
+			   	   						 <?= $html->input('cscp04_ordencompra_retencion/desde_monto_timbre',      $htmlAttributes = array('id'=>'desde_monto_timbre','size'=>'25', 'value'=>$desde_monto_timbre, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false)?>
+			   	   						 <?= $html->input('cscp04_ordencompra_retencion/desde_monto_impuesto_municipal',      $htmlAttributes = array('id'=>'desde_monto_impuesto_municipal','size'=>'25', 'value'=>$desde_monto_impuesto_municipal, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false)?>
+			   	   						 <?= $html->input('cscp04_ordencompra_retencion/exento_islr_cooperativa',      $htmlAttributes = array('id'=>'exento_islr_cooperativa','size'=>'25', 'value'=>$exento_islr_cooperativa, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false)?>
+					</td>
+			</tr>
+
+
+		  <tr height="22">
+					<td><b>MONTO DE LA ORDEN DE PAGO</b></td>
+					<td align="center" width="110"><br></td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/monto_orden_de_pago_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'monto_orden_de_pago_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'font-weight:bold;text-align:right;  background-color:#DAEBFF', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+
+
+<?= $html->input('cscp04_ordencompra_retencion/monto_sin_iva', $htmlAttributes = array('type'=>'hidden',  'disabled'=>'disabled', 'id'=>'monto_sin_iva',"class"=>"inputtext", 'value'=>'0,00', 'style'=>'text-align:right;', 'readonly'=>'readonly'), false); ?>
+
+			<tr>
+					<td >Retención I.V.A.</td>
+					<td align="center" width="110">
+						 <select name="data[cscp04_ordencompra_retencion][retencion_incluye_iva]" id="retencion_incluye_iva" disabled style="text-align:right" class="inputtext80" onchange='cobp01_contratoobras_retencion_detalles_del_pago()' >
+								<option value="0"  <?php if($sisap->Formato_redondear_input($porcentaje_retencion_iva)=='0'){echo' selected';}?>>0</option>
+								<option value="75"  <?php echo $sisap->Formato_redondear_input($porcentaje_retencion_iva); if($sisap->Formato_redondear_input($porcentaje_retencion_iva)=='75'){echo' selected';}?> >75</option>
+								<option value="100" <?php if($sisap->Formato_redondear_input($porcentaje_retencion_iva)=='100'){echo' selected';}?> >100</option>
+						 </select> %
+					</td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/retencion_incluye_iva_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'retencion_incluye_iva_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'text-align:right;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+			<tr>
+					<td >Retención de I.S.L.R</td>
+					<?php if($impuesto_sobre_la_renta=="0.00"){$impuesto_sobre_la_renta="0";}?>
+					<?php if($impuesto_sobre_la_renta==""){$impuesto_sobre_la_renta="0";} ?>
+					<td align="center" width="110">
+					<?php $_SESSION["ventana_islr"]               = 0; ?>
+		            <?php $_SESSION["ventana_impuesto_municipal"] = 0; ?>
+		            <?php $impuesto_sobre_la_renta = 0; ?>
+		            <?= $sisap->input_buscar('cscp04_ordencompra_retencion/impuesto_sobre_la_renta',array("value"=>"0,00", 'disabled'=>'disabled', 'size'=>'14', 'id'=>'impuesto_sobre_la_renta','style'=>'text-align:center'),1,"Buscar", "/ventana_islr/buscar_actividadx/5/", "750px", "333px" ); ?>
+					<? /* $html->input('cscp04_ordencompra_retencion/impuesto_sobre_la_renta', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_sobre_la_renta',"class"=>"inputtext80", 'value'=>$sisap->Formato2($impuesto_sobre_la_renta), 'style'=>'text-align:right;', 'onblur'=>'cobp01_contratoobras_retencion_detalles_del_pago()', "onKeyPress"=>"return solonumeros_con_punto(event);"), false); */ ?> %
+				    </td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/impuesto_sobre_la_renta_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_sobre_la_renta_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+			 <tr>
+					<td >Sustraendo</td>
+					<td  width="110"><?php if($sustraendo==""){$sustraendo="0";} ?>
+                         <?= $html->input('cscp04_ordencompra_retencion/sustraendo_neto', $htmlAttributes = array('class'=>"inputtext80", 'id'=>'sustraendo_neto','size'=>'10', 'value'=>$sustraendo_neto, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false);?>
+              			 <?= $html->input('cscp04_ordencompra_retencion/sustraendo', $htmlAttributes = array(     'class'=>"inputtext80", 'id'=>'sustraendo','size'=>'10', 'value'=>$sustraendo, 'style'=>'text-align:right;', 'type'=>'text', 'readonly'=>'readonly', 'disabled'=>'disabled'), false);?> Bs.</td>
+              			 <?= $html->input('cscp04_ordencompra_retencion/sustraendo_tresporciento',      $htmlAttributes = array('id'=>'sustraendo_tresporciento','size'=>'25', 'value'=>$sustraendo_tresporciento, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false);?>
+				 		</td>
+					<td align="center" ><br> </td>
+			</tr>
+
+			<tr>
+					<td >Retención de timbre fiscal</td>
+					<?php if($desde_monto_timbre_fiscal=="0.00"){$desde_monto_timbre_fiscal="0";}?>
+					<?php if($desde_monto_timbre_fiscal==""){$desde_monto_timbre_fiscal="0";} ?>
+					<?= $html->input('cscp04_ordencompra_retencion/desde_monto_timbre_fiscal', $htmlAttributes = array('id'=>'desde_monto_timbre_fiscal','size'=>'10', 'value'=>$desde_monto_timbre_fiscal, 'style'=>'text-align:right;', 'type'=>'hidden', 'readonly'=>'readonly', 'disabled'=>'disabled'), false); ?>
+					<?php if($timbre_fiscal=="0.00"){$timbre_fiscal="0";}?>
+					<?php if($timbre_fiscal==""){$timbre_fiscal="0";} ?>
+					<td align="center" width="110"><?= $html->input('cscp04_ordencompra_retencion/timbre_fiscal', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'timbre_fiscal',"class"=>"inputtext80", 'size'=>'10', 'value'=>$sisap->Formato2($timbre_fiscal), 'style'=>'text-align:right;', 'onblur'=>'cobp01_contratoobras_retencion_detalles_del_pago()', "onKeyPress"=>"return solonumeros_con_punto(event);"), false); ?>&nbsp;&nbsp;&nbsp;</td>
+					<td align="right" ><?= $html->input('cscp04_ordencompra_retencion/timbre_fiscal_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'timbre_fiscal_monto_iva', 'value'=>'', "class"=>"inputtext",'style'=>'text-align:right;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+<?php if($_SESSION["SScodtipoinst"]==50){ ?>
+			<tr>
+					<td >Retención de Impuesto Municipal</td>
+					<td align="center" width="110">
+					<?php if($impuesto_municipal=="0.00"){$impuesto_municipal="0";}?>
+					<?= $sisap->input_buscar('cscp04_ordencompra_retencion/impuesto_municipal',array("value"=>"0,00", 'disabled'=>'disabled', 'size'=>'14', 'id'=>'impuesto_municipal','style'=>'text-align:center'),1,"Buscar", "/ventana_impuesto_municipal/buscar_actividades_pista/5/".$aux_datos_orden_compra['cscd04_ordencompra_encabezado']['rif'], "750px", "333px" ); ?>
+					<? /* $html->input('cscp04_ordencompra_retencion/impuesto_municipal', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_municipal',"class"=>"inputtext80", 'value'=>$sisap->Formato2($impuesto_municipal), 'style'=>'text-align:right;', 'onblur'=>'cobp01_contratoobras_retencion_detalles_del_pago()', "onKeyPress"=>"return solonumeros_con_punto(event);"), false); */?> %
+				    </td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/impuesto_municipal_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_municipal_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'text-align:right; color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+<?php }else{ ?>
+
+			<tr>
+					<td >Retención de Impuesto Municipal</td>
+					<td align="center" width="110">
+					<?php if($impuesto_municipal=="0.00"){$impuesto_municipal="0";}?>
+					<?= $html->input('cscp04_ordencompra_retencion/impuesto_municipal', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_municipal',"class"=>"inputtext80", 'value'=>$sisap->Formato2($impuesto_municipal), 'style'=>'text-align:right;', 'onblur'=>'cobp01_contratoobras_retencion_detalles_del_pago()', "onKeyPress"=>"return solonumeros_con_punto(event);"), false); ?> %</td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/impuesto_municipal_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'impuesto_municipal_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'text-align:right;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+			</tr>
+<?php } ?>
+
+      		<tr>
+          			<td >Retención de responsabilidad civil</td>
+          			<td align="center" width="110"><?=$html->selectTag('cscp04_ordencompra_retencion/rcivil',array('0'=>'0,00','1'=>'1,00','2'=>'2,00','3'=>'3,00','4'=>'4,00','5'=>'5,00','6'=>'6,00','7'=>'7,00','8'=>'8,00','9'=>'9,00','10'=>'10,00'),'0',array('id'=>'rcivil',"class"=>"inputtext80", 'onchange'=>'cobp01_contratoobras_retencion_detalles_del_pago();',"style"=>"text-align:right;width:130px", 'disabled'=>'disabled','class'=>"seleccion_monto"))?> %</td>
+          			<td ><?= $html->input('cscp04_ordencompra_retencion/retencion_multa_monto', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'retencion_multa_monto', 'class'=>"inputtext", 'size'=>'25', 'value'=>'0,00', 'style'=>'text-align:right;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      		</tr>
+
+      		<tr>
+          			<td >Retención de responsabilidad social</td>
+          			<td  align="center" width="110"><?=$html->selectTag('cscp04_ordencompra_retencion/rsocial',array('0'=>'0,00','1'=>'1,00','2'=>'2,00','3'=>'3,00','4'=>'4,00','5'=>'5,00'),'0',array('id'=>'rsocial',"class"=>"inputtext80", 'disabled'=>'disabled', 'onchange'=>'cobp01_contratoobras_retencion_detalles_del_pago();',"style"=>"text-align:right;width:130px",'class'=>"seleccion_monto"))?> %</td>
+          			<td ><?= $html->input('cscp04_ordencompra_retencion/retencion_responsabilidad_social', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'retencion_responsabilidad_social', 'class'=>"inputtext", 'size'=>'25', 'value'=>'0,00', 'style'=>'text-align:right;color:#DF0101;', 'readonly'=>'readonly'), false); ?></td>
+      		</tr>
+
+			 <tr>
+					<td ><b>NETO A COBRAR EN EL CHEQUE</b></td>
+					<td align="center" width="110"><br></td>
+					<td align="center" ><?= $html->input('cscp04_ordencompra_retencion/monto_a_pagar_monto_iva', $htmlAttributes = array('disabled'=>'disabled', 'id'=>'monto_a_pagar_monto_iva',"class"=>"inputtext", 'value'=>'', 'style'=>'font-weight:bold;text-align:right;  background-color:#CDF2FF', 'readonly'=>'readonly'), false); ?></td>
+			</tr>
+
+
+		 </table>
+<br>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr align="center">
+		<th>CONCEPTO</th>
+	</tr>
+	<tr>
+		<td align="center">
+			<?= $html->textarea('cscp04_ordencompra_retencion/concepto', $htmlAttributes = array("class"=>"inputtext", 'id'=>'concepto', 'value'=>'Retención Nº:'.$numero_retencion.' de Fecha:'.date('d/m/Y').' Orden de compras Nº:'.$numero_orden_compra.' de Fecha:'.$sisap->cambia_fecha($aux_datos_orden_compra['cscd04_ordencompra_encabezado']['fecha_orden_compra'])), false); ?>
+		</td>
+	</tr>
+</table>
+
+<br>
+<div style="display:none;">
+<?
+ $caja['fecha_registro'] = 0;
+ $caja['dia_asiento_registro'] = 0;
+ $caja['mes_asiento_registro'] = 0;
+ $caja['ano_asiento_registro'] = 0;
+ $caja['numero_asiento_registro'] = 0;
+ $caja['username_registro'] = 0;
+ $caja['ano_anulacion'] = 0;
+ $caja['numero_acta_anulacion'] = 0;
+ $caja['fecha_proceso_anulacion'] = 0;
+ $caja['dia_asiento_anulacion'] = 0;
+ $caja['mes_asiento_anulacion'] = 0;
+ $caja['ano_asiento_anulacion'] = 0;
+ $caja['numero_asiento_anulacion'] = 0;
+ $caja['username_anulacion'] = 0;
+ $caja['radio'] = 'cscp04_ordencompra_retencion/condicion_orden';
+ $caja['condicion_actividad'] = 1;
+ echo $this->renderElement('caja_asiento',$caja);
+?>
+</div>
+<br>
+
+<?= $sisap->submitTagRemote('Guardar', array('funcion'=>'cobp01_contratoobras_retencion_valida', 'url1' => '/cscp04_ordencompra_retencion/guardar', 'update1'=>'principal', 'id'=>'guardar')); ?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_retencion/consultar', array ('value'=>'Modificar', 'disabled'=>'disabled'), array('url1' => '/cscp04_ordencompra_retencion/consulta/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_retencion/anular', array ('value'=>'Anular',  'disabled'=>'disabled'), array('funcion'=>'verifica_cierre_ano_ejecucion_msj', 'url1' => '/cscp04_ordencompra_retencion/anular/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('cscp04_ordencompra_retencion/consultar', array ('value'=>'buscar'), array('url1' => '/cscp04_ordencompra_retencion/consulta_index/', 'update1'=>'principal'))?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+		 }//fin
+	}//fin
+}//fin
+?>
+
+<br>
+
+</form>

@@ -1,0 +1,348 @@
+<?php
+/*
+ * Creado el 12/07/2008 a las 10:49:41 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+if(isset($ir) && $ir=='si'){ ?>
+<?php $sisap->CssSelect();?>
+<?= $sisap->Tabla_modulos("",true,"FICHA DE PROVEEDORES Y CONTRATISTAS","","950","csip");?>
+
+<form name="data[cpcp02]" method="POST" id='form' action="<?php echo  $html->url('/reporte2/ficha_proveedores_contratistas/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+<div id="cpcp02_principal">
+<br />
+<table width="600" border="0" cellspacing="0">
+<tr>
+	<td width="300" align="right">&nbsp;<b>PROVEEDOR:&nbsp;</b></td>
+	<td width="300">
+		<?= $sisap->input_buscar('ciap01/cod_producto',array( 'id'=>'buscar1','style'=>'text-align:center'),1,"Buscar", "/reporte2/ventana_busqueda_proveedor/1", "750px", "333px" ); ?>
+	</td>
+	<td width="" align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?/* = $html->submit('GENERAR', array('id'=>'enviar', 'disabled'=>'enabled')); */ ?>&nbsp;&nbsp;&nbsp;&nbsp;
+						      <?= $sisap->buttonTagRemote('/cpcp02/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?></td>
+</tr>
+</table>
+<br />
+</div>
+<?= $sisap->CloseTable()?>
+</div>
+</form>
+
+<?php }elseif(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		/*
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$t1=15;
+        	$t2=15;
+        }else{
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$t1=13;
+        	$t2=13;
+        }
+		$this->Image($escudo,11,16,$t1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"FICHA DE PROVEEDORES Y CONTRATISTAS",'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+		*/
+		$this->top_reporte("FICHA DE PROVEEDORES Y CONTRATISTAS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), array("Y"=>"17", "X"=>"186"));
+	}//fin funtion
+}//fin de la clase PDF
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+for($i=0; $i<count($datos); $i++){
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,6,"DATOS DE LA EMPRESA",'TRBL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,5,"RIF",'RBL',0,'C');
+$pdf->Cell(130,5,"NOMBRE Y APELLIDOS / RAZÓN SOCIAL",'RB',0,'L');
+$pdf->Cell(0,5,"NÚMERO DE EXPEDIENTE",'RB',1,'C');
+
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(30,6,$datos[$i][0]['rif'],'RBL',0,'C');//--[RIF]
+$pdf->Cell(130,6,$datos[$i][0]['denominacion'],'RB',0,'L');
+$pdf->Cell(0,6,$datos[$i][0]['numero_expediente'],'RB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"OBJETO",'RBL',1,'C');
+
+
+
+switch($datos[$i][0]['objeto']){
+	case '1':
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+	case '2':
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+	case '3':
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+	case '4':
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+	case '5':
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+	case '6':
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(10,5,"",'BL',0,'C');
+			$pdf->Cell(30,5,"O Proveedor",'B',0,'C');
+			$pdf->Cell(30,5,"O Contratista",'B',0,'C');
+			$pdf->Cell(30,5,"O Cooperativa",'B',0,'C');
+			$pdf->Cell(30,5,"O Persona Natural",'B',0,'C');
+			$pdf->Cell(30,5,"O Concejo comunal",'B',0,'C');
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(30,5,"O Alcaldia",'B',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,5,"",'RB',1,'C');
+			break;
+}
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(65,5,"RAMO COMERCIAL",'RL',0,'C');
+$pdf->Cell(65,5,"DIRECCIÓN DE LA SEDE",'R',0,'C');
+$pdf->Cell(0,5,"DESCRIPCIÓN BREVE DEL OBJETO",'R',1,'C');
+
+$pdf->Cell(1,15,"",'TL',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',5);
+    $pdf->Cell(64,1,"",'T',2,'C');
+    $pdf->MultiCell(63,2,$datos[$i][0]['ramo_comercial'],'','L');//---[Ramo comercial]
+    $varX = $varX+64;
+    $pdf->SetXY($varX,$varY);
+$pdf->Cell(1,15,"",'TLB',0,'C');
+    $pdf->Cell(65,1,"",'T',2,'C');
+    $pdf->MultiCell(65,2,$datos[$i][0]['direccion_comercial'],'','L');//---[Direccion de la sede]
+    $varX = $varX+65;
+    $pdf->SetXY($varX,$varY);
+$pdf->Cell(1,15,"",'TLB',0,'C');
+    $pdf->Cell(65,1,"",'T',2,'C');
+    $pdf->MultiCell(65,2,$datos[$i][0]['actividades_principales'],'','L');//---[Beneficiario]
+    $varX = $varX+65;
+    $pdf->SetXY($varX,$varY);
+$pdf->Cell(0,15,"",'TRB',1,'C');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(40,5,"ESTADO",'TRBL',0,'C');
+$pdf->Cell(40,5,"MUNICIPIO",'TRB',0,'C');
+$pdf->Cell(40,5,"TELÉFONOS",'TRB',0,'C');
+$pdf->Cell(19,5,"ZONA POSTAL",'TRB',0,'C');
+$pdf->Cell(0,5,"CORREO ELECTRÓNICO",'TRB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(40,5,$datos[$i][0]['estado'],'RBL',0,'L');
+$pdf->Cell(40,5,$datos[$i][0]['municipio'],'RB',0,'L');
+$pdf->Cell(40,5,$datos[$i][0]['codigo_area_empresa']."-".$datos[$i][0]['telefonos'],'RB',0,'L');
+$pdf->Cell(19,5,$datos[$i][0]['codigo_postal'],'RB',0,'C');
+$pdf->Cell(0,5,$datos[$i][0]['correo_electronico_empresa'],'RB',1,'C');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(120,5,"EQUIPOS Y/O MATERIALES DISPONIBLES ",'RL',0,'C');
+$pdf->Cell(40,5,"NÚMERO SUNACOOP",'RL',0,'C');
+$pdf->Cell(0,5,"EXENTO I.S.L.R",'R',1,'C');
+
+$pdf->Cell(1,15,"",'TL',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',5);
+    $pdf->Cell(119,1,"",'T',2,'C');
+    $pdf->MultiCell(119,2,$datos[$i][0]['equipos_disponibles'],'','L');//---[Beneficiario]
+    $varX = $varX+119;
+    $pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(40,15,$datos[$i][0]['inscripcion_sunacoop'],'TRL',0,'C');
+$pdf->Cell(0,15,$datos[$i][0]['exento_islr_cooperativa'],'TR',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(80,5,"REGISTRO MERCANTIL",'TRLB',0,'C');
+$pdf->Cell(60,5,"SOCIOS",'TRB',0,'C');
+$pdf->Cell(0,5,"CAPACIDAD FINANCIERA",'TRB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(80,5,$datos[$i][0]['registro_mercantil'],'RLB',0,'L');
+$pdf->Cell(60,5,$datos[$i][0]['socios'],'RB',0,'L');
+$pdf->Cell(0,5,$datos[$i][0]['capacidad_financiera'],'RB',1,'R');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"DATOS DEL REPRESENTANTE LEGAL",'RBL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(30,5,"CÉDULA DE IDENTIDAD",'RL',0,'C');
+$pdf->Cell(70,5,"NOMBRE Y APELLIDOS",'R',0,'C');
+$pdf->Cell(0,5,"DIRECCIÓN",'R',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(30,8,$datos[$i][0]['cedula_identidad'],'TRL',0,'C');
+$pdf->Cell(70,8,$datos[$i][0]['representante_legal'],'TR',0,'L');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',6);
+    $pdf->Cell(95,1,"",'T',2,'C');
+    $pdf->MultiCell(94,3,$datos[$i][0]['direccion_representante'],'','L');//---[DIRECCION]
+    $varX = $varX+95;
+    $pdf->SetXY($varX,$varY);
+$pdf->Cell(1,8,"",'TRB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(65,5,"TELÉFONOS FIJOS",'TRL',0,'C');
+$pdf->Cell(65,5,"TELÉFONOS CELULARES",'TR',0,'C');
+$pdf->Cell(0,5,"CORREO ELECTRÓNICO",'TR',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(65,5,$datos[$i][0]['telefonos_fijos_representante'],'TRBL',0,'L');
+$pdf->Cell(65,5,$datos[$i][0]['telefonos_moviles_representante'],'TRB',0,'L');
+$pdf->Cell(0,5,$datos[$i][0]['correo_electronico_representante'],'TRB',1,'L');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"SOLVENCIAS",'RBL',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(100,5,"RCN: ".$datos[$i][0]['numero_ocei'],'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+$pdf->Cell(100,5,"LABORAL: ".$datos[$i][0]['numero_solvencia_laboral'],'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+$pdf->Cell(100,5,"SSO: ".$datos[$i][0]['numero_solvencia_seguro'],'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+$pdf->Cell(100,5,"INCE: ".$datos[$i][0]['numero_solvencia_ince'],'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+$pdf->Cell(100,5,"MUNICIPAL: ".$datos[$i][0]['numero_solvencia_municipal'],'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+$pdf->Cell(100,5,"COLEGIO DE INGENIEROS",'RBL',0,'L');
+$pdf->Cell(0,5,"",'RB',1,'L');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"OBSERVACIONES",'RL',1,'C');
+
+$pdf->Cell(1,20,"",'TL',0,'C');
+    $varX = $pdf->GetX();
+    $varY = $pdf->GetY();
+    $pdf->SetFont('vera','',6);
+    $pdf->Cell(194,1,"",'T',2,'C');
+    $pdf->MultiCell(194,2,$datos[$i][0]['observacion'],'','L');//---[Observaciones]
+    $varX = $varX+194;
+    $pdf->SetXY($varX,$varY);
+$pdf->SetFont('vera','',6);
+$pdf->Cell(1,20,"",'TRB',1,'C');
+
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(100,5,"FECHA DE INSCRIPCIÓN",'TRBL',0,'C');
+$pdf->Cell(0,5,"FECHA DE ACTUALIZACIÓN",'TRB',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(100,5,$sisap->cambia_fecha($datos[$i][0]['fecha_inscripcion']),'RBL',0,'C');
+$pdf->Cell(0,5,$sisap->cambia_fecha($datos[$i][0]['fecha_actualizacion']),'RB',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(100,5,"ELABORADO POR:",'RBL',0,'C');
+$pdf->Cell(0,5,"JEFE DE COMPRAS",'RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(100,20,"",'RBL',0,'C');
+$pdf->Cell(0,20,"",'RB',1,'C');
+}//fin for
+
+$pdf->Output('Proveedores_y_contratista.pdf','D');
+}
+?>

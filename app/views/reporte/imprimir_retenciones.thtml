@@ -1,0 +1,1686 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		//$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',14,11,13);
+		//$this->SetFont('vera','B',9);
+		//$this->Cell(0,6,"",'TRL',1);
+		//$this->Cell(100,6,"             ".$_SESSION['entidad_federal']."",'L',0);
+		//$this->Cell(0,6,"",'R',1,'L');
+		//$this->SetFont('vera','',8);
+		//$this->Cell(100,6,"                DIRECCION GENERAL DE PRESUPUESTO",'LB',0);
+		//$this->Cell(0,6,"",'RB',1);
+	}//fin funtion
+}//fin de la clase PDF
+
+if(isset($ir)){ ?>
+
+
+
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"Emisión de comprobantes <br> <br>Usuario: ".$usuario,null,"950");?>
+<form name='data[generar_cheque]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/imprimir_retenciones/si'); ?>">
+
+
+<?= $sisap->OpenTable("950")?>
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid" CLASS="TR_NEGRO">
+<tr bgcolor="#333"><td colspan="5" class="td2center" height="22">COLA DE IMPRESIÓN</td></tr>
+<tr bgcolor="#333">
+    <td class="td4"  height="22">A&ntilde;o movimiento</td>
+    <td class="td4" >Código Entidad Bancaria</td>
+    <td class="td4" >Cuenta Bancaria</td>
+    <td class="td4" >Número cheque</td>
+</tr>
+<?php
+
+$i = 0;
+
+ if(isset($datos_cstd03_cheque_poremitir)){
+  if($datos_cstd03_cheque_poremitir!=null){
+    foreach($datos_cstd03_cheque_poremitir as $ve){
+
+
+  foreach($cod_entidad_bancaria as $ve1){
+       if($ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] == $ve1['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] =  $ve1['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+
+
+foreach($cod_sucursal as $ve2){
+       if(($ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] == $ve2['cstd01_sucursales_bancarias']['cod_entidad_bancaria']) &&  ($ve['cstd03_cheque_poremitir']['cod_sucursal'] == $ve2['cstd01_sucursales_bancarias']['cod_sucursal'])){
+       	   $ve['cstd03_cheque_poremitir']['cod_sucursal'] =  $ve2['cstd01_sucursales_bancarias']['denominacion'];
+          break;}
+  }//fin for
+
+
+
+foreach($cuenta_bancaria as $ve3){
+       if(($ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] == $ve3['cstd02_cuentas_bancarias']['cod_entidad_bancaria']) &&  ($ve['cstd03_cheque_poremitir']['cod_sucursal'] == $ve3['cstd02_cuentas_bancarias']['cod_sucursal'])){
+       	   $ve['cstd03_cheque_poremitir']['cuenta_bancaria'] =  $ve3['cstd02_cuentas_bancarias']['denominacion'];
+          break;}
+  }//fin for
+
+
+
+
+
+
+if($i%2==0){ ?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $ve['cstd03_cheque_poremitir']['ano_movimiento'] ?></td>
+    <td class="td2center"><?= $ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] ?></td>
+    <td class="td2center"><?= $ve['cstd03_cheque_poremitir']['cuenta_bancaria'] ?></td>
+    <td class="td2center"><?= $sisap->mascara_ocho($ve['cstd03_cheque_poremitir']['numero_cheque']) ?></td>
+</tr>
+
+<?php }else{ ?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $ve['cstd03_cheque_poremitir']['ano_movimiento'] ?></td>
+   <td class="td2center"><?= $ve['cstd03_cheque_poremitir']['cod_entidad_bancaria'] ?></td>
+   <td class="td2center"><?= $ve['cstd03_cheque_poremitir']['cuenta_bancaria'] ?></td>
+   <td class="td2center"><?= $sisap->mascara_ocho($ve['cstd03_cheque_poremitir']['numero_cheque']) ?></td>
+
+</tr>
+
+<?php }//fine
+
+    	$i++;
+
+}//fin foreach
+
+
+if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+ <?php }else{ ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+<?php
+      }//fin
+   }//fin
+ }//fin
+?>
+</table>
+</div>
+
+<br>
+<table width="100" border="0" cellspacing="1">
+<tr>
+	<td width="10" align="cd"><b>Año:</b>&nbsp;</td>
+   	<td width="80" ><input name="data[generar_cheque][ano]"  size="5"  value="<?= $year ?>" id="ano" maxlength="4" onKeyPress="return solonumeros(event);" class="inputtext" style="text-align:center" /></td>
+</tr>
+</table>
+<br>
+<?= $html->submit('Generar'); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php }else{
+
+
+
+
+$comprobante_egreso = 0;
+
+if(isset($datos_cstd06_comprobante_cuerpo_egreso)){
+
+
+
+$aux_c = 0;
+
+foreach($datos_cstd06_comprobante_poremitir_egreso as $aux_cstd06_comprobante_poremitir_egreso){
+
+
+if($aux_c != $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['numero_comprobante_egreso']){
+ $aux_c    = $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['numero_comprobante_egreso'];
+ $comprobante_egreso++;
+ $i[$comprobante_egreso] = 0;
+}//fin if
+
+
+$ano_comprobante_egreso[$comprobante_egreso]       =     $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['ano_comprobante_egreso'];
+$numero_comprobante_egreso[$comprobante_egreso]    =     $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['numero_comprobante_egreso'];
+$ano_orden_pago[$comprobante_egreso]               =     $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['ano_orden_pago'];
+$clase_orden[$comprobante_egreso]                  =     $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['clase_orden'];
+$numero_orden_pago22[$comprobante_egreso]          =     $aux_cstd06_comprobante_poremitir_egreso['cstd06_comprobante_poremitir_egreso']['numero_orden_pago'];
+
+
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+//  if($numero_comprobante_egreso[$comprobante_egreso] == $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_comprobante_egreso']){
+  if($numero_orden_pago22[$comprobante_egreso] == $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+    $i[$comprobante_egreso]++;
+    $numero_orden_pago[$comprobante_egreso][$i[$comprobante_egreso]]   =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+    $numero_orden_pago_egreso[$comprobante_egreso][$i[$comprobante_egreso]]   =     $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+    $fecha_orden_pago[$comprobante_egreso][$i[$comprobante_egreso]]   = $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['fecha_orden_pago'];
+    $monto_neto_cobrar[$comprobante_egreso][$i[$comprobante_egreso]]  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_neto_cobrar'];
+    $cod_tipo_documento = $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_documento'];
+    $beneficiario_pago[$comprobante_egreso]    =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+    //$tipo_documento[$comprobante_egreso][$i[$comprobante_egreso]] = $tipodocu[$aux_aux][0]['cepd03_tipo_documento']['denominacion'];
+      foreach($tipodocu as $vera){
+    	if($cod_tipo_documento==$vera['cepd03_tipo_documento']['cod_tipo_documento']){
+            $tipo_documento[$comprobante_egreso][$i[$comprobante_egreso]] =  $vera['cepd03_tipo_documento']['denominacion'];
+    	}//fin foreach
+      }//fin foreach
+  }//fin if
+}//fin for
+
+
+foreach($datos_cstd06_comprobante_cuerpo_egreso  as $aux_cstd06_comprobante_cuerpo_egreso){
+
+if($ano_comprobante_egreso[$comprobante_egreso] == $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['ano_comprobante_egreso']  &&  $numero_comprobante_egreso[$comprobante_egreso] == $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['numero_comprobante_egreso']){
+
+$ano_movimiento              =     $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['ano_movimiento'];
+$cod_entidad_bancaria3        =     $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['cod_entidad_bancaria'];
+$cod_sucursal3                =     $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['cod_sucursal'];
+$cuenta_bancaria3            =     $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['cuenta_bancaria'];
+$numero_cheque3               =     $aux_cstd06_comprobante_cuerpo_egreso['cstd06_comprobante_cuerpo_egreso']['numero_cheque'];
+
+ foreach($datos_cstd03_cheque_cuerpo as $aux_cstd03_cheque_cuerpo){
+     if(($ano_movimiento == $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['ano_movimiento'])  && ($cod_entidad_bancaria3 == $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['cod_entidad_bancaria'])  && ($cod_sucursal3 == $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['cod_sucursal'])  && ($cuenta_bancaria3 == $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['cuenta_bancaria'])  && ($numero_cheque3 == $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['numero_cheque'])){
+         $concepto[$comprobante_egreso]               =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['concepto'];
+         $monto[$comprobante_egreso]                  =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['monto'];
+         $cod_entidad_bancaria2[$comprobante_egreso]  =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['cod_entidad_bancaria'];
+         $fecha_cheque[$comprobante_egreso]           =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['fecha_cheque'];
+         $cuenta_bancaria2[$comprobante_egreso]       =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['cuenta_bancaria'];
+         $numero_cheque2[$comprobante_egreso]         =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['numero_cheque'];
+         $beneficiario[$comprobante_egreso]           =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['beneficiario'];
+         $rif_cedula[$comprobante_egreso]             =  $aux_cstd03_cheque_cuerpo['cstd03_cheque_cuerpo']['rif_cedula'];
+
+//echo $numero_cheque2[$comprobante_egreso].'<br>';
+
+             }//finf
+       }//fin if
+    }//fin for
+}//fin for
+
+
+if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria2[$comprobante_egreso] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria2[$comprobante_egreso] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+
+   }//fin for
+}//fin if
+
+
+
+
+
+
+$comprobante_iva = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_iva)){
+
+foreach($datos_cstd06_comprobante_poremitir_iva as $aux_cstd06_comprobante_poremitir_iva){$comprobante_iva++;
+
+$ano_comprobante_iva[$comprobante_iva]       =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['ano_comprobante_iva'];
+$numero_comprobante_iva[$comprobante_iva]    =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['numero_comprobante_iva'];
+$cod_tipo_inst[$comprobante_iva]    =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['cod_tipo_inst'];
+$cod_inst[$comprobante_iva]         =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['cod_inst'];
+$cod_dep[$comprobante_iva]          =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['cod_dep'];
+
+
+$ano_orden_pago[$comprobante_iva]          =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['ano_orden_pago'];
+$numero_orden_pago[$comprobante_iva]          =     $aux_cstd06_comprobante_poremitir_iva['cstd06_comprobante_poremitir_iva']['numero_orden_pago'];
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+
+if($cod_tipo_inst[$comprobante_iva]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst[$comprobante_iva]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep[$comprobante_iva]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+
+$denominacion[$comprobante_iva]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable[$comprobante_iva]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion[$comprobante_iva]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos[$comprobante_iva]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif[$comprobante_iva]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion[$comprobante_iva]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion[$comprobante_iva]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas[$comprobante_iva]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha[$comprobante_iva]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+
+    }//fin if
+}//fin if
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago[$comprobante_iva]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago[$comprobante_iva]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+    $rif_pago[$comprobante_iva]             =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+    $beneficiario_pago[$comprobante_iva]    =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+    $porcentaje_retencion_iva_pago[$comprobante_iva]  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_retencion_iva'];
+    $porcentaje_iva_pago[$comprobante_iva]            =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_iva'];
+
+  }//fin if
+}//fin function
+
+
+
+
+
+$ii_iva[$comprobante_iva] = 0;
+foreach($datos_cepd03_ordenpago_facturas as $aux_cepd03_ordenpago_facturas){
+
+            if($ano_orden_pago[$comprobante_iva] ==  $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['ano_orden_pago']   &&   $numero_orden_pago[$comprobante_iva] ==  $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_orden_pago']){
+    $ii_iva[$comprobante_iva]++;
+    $numero_factura[$comprobante_iva][$ii_iva[$comprobante_iva]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_factura'];
+    $numero_control[$comprobante_iva][$ii_iva[$comprobante_iva]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_control'];
+    $fecha_factura[$comprobante_iva][$ii_iva[$comprobante_iva]]         =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['fecha_factura'];
+    $monto_total_factura[$comprobante_iva][$ii_iva[$comprobante_iva]]   =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_total_factura'];
+    $monto_sub_total[$comprobante_iva][$ii_iva[$comprobante_iva]]       =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_sub_total'];
+    $porcentaje_iva[$comprobante_iva][$ii_iva[$comprobante_iva]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['porcentaje_iva'];
+    $monto_exento[$comprobante_iva][$ii_iva[$comprobante_iva]]          =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_exento'];
+    $monto_iva[$comprobante_iva][$ii_iva[$comprobante_iva]]             =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_iva'];
+    $monto_retencion_iva[$comprobante_iva][$ii_iva[$comprobante_iva]]   =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_retencion_iva'];
+
+
+     }//fin if
+   }//fin for
+
+
+
+
+}//fin for
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$comprobante_iva2 = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_islr)){
+
+foreach($datos_cstd06_comprobante_poremitir_islr as $aux_cstd06_comprobante_poremitir_islr){$comprobante_iva2++;
+
+$ano_comprobante_islr[$comprobante_iva2]       =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['ano_comprobante_islr'];
+$numero_comprobante_islr[$comprobante_iva2]    =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['numero_comprobante_islr'];
+$cod_tipo_inst_islr[$comprobante_iva2]    =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['cod_tipo_inst'];
+$cod_inst_islr[$comprobante_iva2]         =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['cod_inst'];
+$cod_dep_islr[$comprobante_iva2]          =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['cod_dep'];
+$ano_orden_pago_islr[$comprobante_iva2]          =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['ano_orden_pago'];
+$numero_orden_pago_islr[$comprobante_iva2]          =     $aux_cstd06_comprobante_poremitir_islr['cstd06_comprobante_poremitir_islr']['numero_orden_pago'];
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago_islr[$comprobante_iva2]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago_islr[$comprobante_iva2]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+               $monto_islr[$comprobante_iva2]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_islr'];
+               $numero_cheque_islr[$comprobante_iva2]  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+               $autorizado_islr[$comprobante_iva2]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+               $beneficiario_islr[$comprobante_iva2]   =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+               $rif_islr[$comprobante_iva2]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+               $cuenta_bancaria_islr[$comprobante_iva2]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+               $cod_entidad_bancaria_islr[$comprobante_iva2] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+
+               $porcentaje_islr[$comprobante_iva2] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_islr'];
+               $fecha_cheque_islr[$comprobante_iva2] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['fecha_cheque'];
+               $monto_descontar_impuesto_islr[$comprobante_iva2] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_descontar_impuesto'];
+
+
+ if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria_islr[$comprobante_iva2] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria_islr[$comprobante_iva2] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+
+
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+if($cod_tipo_inst_islr[$comprobante_iva2]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst_islr[$comprobante_iva2]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep_islr[$comprobante_iva2]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+$denominacion_islr_dependencia[$comprobante_iva2]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable_islr_dependencia[$comprobante_iva2]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion_islr_dependencia[$comprobante_iva2]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos_islr_dependencia[$comprobante_iva2]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif_islr_dependencia[$comprobante_iva2]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion_islr_dependencia[$comprobante_iva2]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion_islr_dependencia[$comprobante_iva2]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas_islr_dependencia[$comprobante_iva2]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha_islr_dependencia[$comprobante_iva2]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+    }//fin if
+}//fin if
+
+
+
+	$ii[$comprobante_iva2] = 0;
+	 foreach($datos_cepd03_ordenpago_facturas as $aux_cepd03_ordenpago_facturas){
+	       if($ano_orden_pago_islr[$comprobante_iva2] ==  $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['ano_orden_pago']   &&   $numero_orden_pago_islr[$comprobante_iva2] ==  $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_orden_pago']){
+			    $ii[$comprobante_iva2]++;
+			    $numero_factura_islr[$comprobante_iva2][$ii[$comprobante_iva2]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_factura'];
+			    $numero_control_islr[$comprobante_iva2][$ii[$comprobante_iva2]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['numero_control'];
+
+			    $fecha_factura_islr[$comprobante_iva2][$ii[$comprobante_iva2]]         =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['fecha_factura'];
+			    $monto_total_factura_islr[$comprobante_iva2][$ii[$comprobante_iva2]]   =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_total_factura'];
+			    $monto_sub_total_islr[$comprobante_iva2][$ii[$comprobante_iva2]]       =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_sub_total'];
+			    //$porcentaje_iva_islr[$comprobante_iva2][$ii[$comprobante_iva2]]        =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['porcentaje_iva'];
+			    $monto_exento_islr[$comprobante_iva2][$ii[$comprobante_iva2]]          =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_exento'];
+			    //$monto_iva_islr[$comprobante_iva2][$ii[$comprobante_iva2]]             =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_iva'];
+			    //$monto_retencion_iva[$comprobante_iva2][$ii[$comprobante_iva2]]   =     $aux_cepd03_ordenpago_facturas['cepd03_ordenpago_facturas']['monto_retencion_iva'];
+	  		}//fin if
+      }//fin for
+
+
+     }//fin if
+
+
+   }//fin function
+
+
+ }//fin for
+}//fin for
+
+
+
+
+
+
+
+
+
+
+
+$comprobante_iva3 = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_municipal)){
+
+foreach($datos_cstd06_comprobante_poremitir_municipal as $aux_cstd06_comprobante_poremitir_municipal){$comprobante_iva3++;
+
+$ano_comprobante_municipal[$comprobante_iva3]       =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['ano_comprobante_municip'];
+$numero_comprobante_municipal[$comprobante_iva3]    =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['numero_comprobante_muni'];
+$ano_orden_pago_municipal[$comprobante_iva3]        =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['ano_orden_pago'];
+$numero_orden_pago_municipal[$comprobante_iva3]     =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['numero_orden_pago'];
+$cod_tipo_inst_municipal[$comprobante_iva3]    =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['cod_tipo_inst'];
+$cod_inst_municipal[$comprobante_iva3]         =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['cod_inst'];
+$cod_dep_municipal[$comprobante_iva3]          =     $aux_cstd06_comprobante_poremitir_municipal['cstd06_comprobante_poremitir_municipal']['cod_dep'];
+
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago_municipal[$comprobante_iva3]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago_municipal[$comprobante_iva3]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+                $monto_impuesto_municipal[$comprobante_iva3] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_impuesto_municipal'];
+                $numero_cheque_municipal[$comprobante_iva3]            =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+                $autorizado_municipal[$comprobante_iva3]               =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+                $beneficiario_municipal[$comprobante_iva3]             =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+                $rif_municipal[$comprobante_iva3]            =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+                $cuenta_bancaria_municipal[$comprobante_iva3]          =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+                $cod_entidad_bancaria_municipal[$comprobante_iva3]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+
+ if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria_municipal[$comprobante_iva3] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria_municipal[$comprobante_iva3] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+if($cod_tipo_inst_municipal[$comprobante_iva3]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst_municipal[$comprobante_iva3]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep_municipal[$comprobante_iva3]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+$denominacion_municipal_dependencia[$comprobante_iva3]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable_municipal_dependencia[$comprobante_iva3]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion_municipal_dependencia[$comprobante_iva3]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos_municipal_dependencia[$comprobante_iva3]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif_municipal_dependencia[$comprobante_iva3]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion_municipal_dependencia[$comprobante_iva3]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion_municipal_dependencia[$comprobante_iva3]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas_municipal_dependencia[$comprobante_iva3]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha_municipal_dependencia[$comprobante_iva3]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+    }//fin if
+}//fin if
+
+
+     }//fin if
+   }//fin function
+ }//fin for
+}//fin for
+
+
+
+
+
+
+
+$comprobante_iva4 = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_timbre)){
+
+foreach($datos_cstd06_comprobante_poremitir_timbre as $aux_cstd06_comprobante_poremitir_timbre){$comprobante_iva4++;
+
+$ano_comprobante_timbre[$comprobante_iva4]       =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['ano_comprobante_timbre'];
+$numero_comprobante_timbre[$comprobante_iva4]    =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['numero_comprobante_timbre'];
+$ano_orden_pago_timbre[$comprobante_iva4]             =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['ano_orden_pago'];
+$numero_orden_pago_timbre[$comprobante_iva4]          =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['numero_orden_pago'];
+$cod_tipo_inst_timbre[$comprobante_iva4]    =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['cod_tipo_inst'];
+$cod_inst_timbre[$comprobante_iva4]         =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['cod_inst'];
+$cod_dep_timbre[$comprobante_iva4]          =     $aux_cstd06_comprobante_poremitir_timbre['cstd06_comprobante_poremitir_timbre']['cod_dep'];
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago_timbre[$comprobante_iva4]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago_timbre[$comprobante_iva4]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+            $monto_timbre_fiscal[$comprobante_iva4] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['monto_timbre_fiscal'];
+            $numero_cheque_timbre_fiscal[$comprobante_iva4]  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+            $autorizado_timbre_fiscal[$comprobante_iva4]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+            $beneficiario_timbre_fiscal[$comprobante_iva4]   =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+            $rif_timbre_fiscal[$comprobante_iva4]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+            $cuenta_bancaria_timbre_fiscal[$comprobante_iva4]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+            $cod_entidad_bancaria_timbre_fiscal[$comprobante_iva4] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+
+ if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria_timbre_fiscal[$comprobante_iva4] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria_timbre_fiscal[$comprobante_iva4] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+if($cod_tipo_inst_timbre[$comprobante_iva4]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst_timbre[$comprobante_iva4]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep_timbre[$comprobante_iva4]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+$denominacion_timbre_dependencia[$comprobante_iva4]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable_timbre_dependencia[$comprobante_iva4]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion_timbre_dependencia[$comprobante_iva4]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos_timbre_dependencia[$comprobante_iva4]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif_timbre_dependencia[$comprobante_iva4]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion_timbre_dependencia[$comprobante_iva4]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion_timbre_dependencia[$comprobante_iva4]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas_timbre_dependencia[$comprobante_iva4]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha_timbre_dependencia[$comprobante_iva4]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+    }//fin if
+}//fin if
+
+
+
+     }//fin if
+   }//fin function
+ }//fin for
+}//fin for
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$comprobante_iva5 = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_multa)){
+
+foreach($datos_cstd06_comprobante_poremitir_multa as $aux_cstd06_comprobante_poremitir_multa){$comprobante_iva5++;
+
+$ano_comprobante_multa[$comprobante_iva5]       =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['ano_comprobante_multa'];
+$numero_comprobante_multa[$comprobante_iva5]    =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['numero_comprobante_multa'];
+$ano_orden_pago_multa[$comprobante_iva5]             =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['ano_orden_pago'];
+$numero_orden_pago_multa[$comprobante_iva5]          =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['numero_orden_pago'];
+$cod_tipo_inst_multa[$comprobante_iva5]    =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['cod_tipo_inst'];
+$cod_inst_multa[$comprobante_iva5]         =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['cod_inst'];
+$cod_dep_multa[$comprobante_iva5]          =     $aux_cstd06_comprobante_poremitir_multa['cstd06_comprobante_poremitir_multa']['cod_dep'];
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago_multa[$comprobante_iva5]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago_multa[$comprobante_iva5]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+            $monto_multa_fiscal[$comprobante_iva5] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['retencion_multa'];
+            $numero_cheque_multa[$comprobante_iva5]  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+            $autorizado_multa[$comprobante_iva5]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+            $beneficiario_multa[$comprobante_iva5]   =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+            $rif_multa_fiscal[$comprobante_iva5]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+            $cuenta_bancaria_multa[$comprobante_iva5]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+            $cod_entidad_bancaria_multa[$comprobante_iva5] =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+
+ if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria_multa[$comprobante_iva5] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria_multa[$comprobante_iva5] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+if($cod_tipo_inst_multa[$comprobante_iva5]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst_multa[$comprobante_iva5]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep_multa[$comprobante_iva5]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+$denominacion_multa_dependencia[$comprobante_iva5]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable_multa_dependencia[$comprobante_iva5]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion_multa_dependencia[$comprobante_iva5]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos_multa_dependencia[$comprobante_iva5]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif_multa_dependencia[$comprobante_iva5]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion_multa_dependencia[$comprobante_iva5]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion_multa_dependencia[$comprobante_iva5]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas_multa_dependencia[$comprobante_iva5]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha_multa_dependencia[$comprobante_iva5]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+    }//fin if
+}//fin if
+
+
+
+     }//fin if
+   }//fin function
+ }//fin for
+}//fin for
+
+
+
+
+
+
+
+
+
+
+$comprobante_iva6 = 0;
+
+if(isset($datos_cstd06_comprobante_poremitir_responsabilidad)){
+
+foreach($datos_cstd06_comprobante_poremitir_responsabilidad as $aux_cstd06_comprobante_poremitir_responsabilidad){$comprobante_iva6++;
+
+$ano_comprobante_responsabilidad[$comprobante_iva6]            =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['ano_comprobante_r'];
+$numero_comprobante_responsabilidad[$comprobante_iva6]         =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['numero_comprobant'];
+$ano_orden_pago_responsabilidad[$comprobante_iva6]             =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['ano_orden_pago'];
+$numero_orden_pago_responsabilidad[$comprobante_iva6]          =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['numero_orden_pago'];
+$cod_tipo_inst_responsabilidad[$comprobante_iva6]              =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['cod_tipo_inst'];
+$cod_inst_responsabilidad[$comprobante_iva6]                   =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['cod_inst'];
+$cod_dep_responsabilidad[$comprobante_iva6]                    =     $aux_cstd06_comprobante_poremitir_responsabilidad['cstd06_comprobante_poremitir_responsabilidad']['cod_dep'];
+
+
+
+foreach($datos_cepd03_ordenpago_cuerpo as $aux_cepd03_ordenpago_cuerpo){
+  if($ano_orden_pago_responsabilidad[$comprobante_iva6]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago']  &&  $numero_orden_pago_responsabilidad[$comprobante_iva6]== $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago']){
+
+            $monto_responsabilidad_fiscal[$comprobante_iva6]     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['retencion_responsabilidad'];
+            $numero_cheque_responsabilidad_fiscal[$comprobante_iva6]                    =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['numero_cheque'];
+            $autorizado_responsabilidad_fiscal[$comprobante_iva6]                       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+            $beneficiario_responsabilidad_fiscal[$comprobante_iva6]                     =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+            $rif_responsabilidad_fiscal[$comprobante_iva6]       =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+            $cuenta_bancaria_responsabilidad_fiscal[$comprobante_iva6]                  =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+            $cod_entidad_bancaria_responsabilidad_fiscal[$comprobante_iva6]             =  $aux_cepd03_ordenpago_cuerpo['cepd03_ordenpago_cuerpo']['cod_entidad_bancaria'];
+
+ if(isset($cod_entidad_bancaria22)){
+ foreach($cod_entidad_bancaria22 as $ve11){
+       if($cod_entidad_bancaria_responsabilidad_fiscal[$comprobante_iva6] == $ve11['cstd01_entidades_bancarias']['cod_entidad_bancaria']){
+       	  $cod_entidad_bancaria_responsabilidad_fiscal[$comprobante_iva6] =  $ve11['cstd01_entidades_bancarias']['denominacion'];
+          break;}
+  }//fin for
+}//fin if
+
+
+foreach($datos_cugd02_dependencias as $aux_cugd02_dependencias){
+if($cod_tipo_inst_responsabilidad[$comprobante_iva6]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_tipo_institucion']  &&  $cod_inst_responsabilidad[$comprobante_iva6]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_institucion']  &&  $cod_dep_responsabilidad[$comprobante_iva6]==$aux_cugd02_dependencias['cugd02_dependencia']['cod_dependencia'] ){
+$denominacion_responsabilidad_dependencia[$comprobante_iva6]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$funcionario_responsable_responsabilidad_dependencia[$comprobante_iva6]    =   $aux_cugd02_dependencias['cugd02_dependencia']['funcionario_responsable'];
+$direccion_responsabilidad_dependencia[$comprobante_iva6]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['direccion'];
+$telefonos_responsabilidad_dependencia[$comprobante_iva6]                  =   $aux_cugd02_dependencias['cugd02_dependencia']['telefonos'];
+$rif_responsabilidad_dependencia[$comprobante_iva6]                        =   $aux_cugd02_dependencias['cugd02_dependencia']['rif'];
+$agente_retencion_responsabilidad_dependencia[$comprobante_iva6]           =   $aux_cugd02_dependencias['cugd02_dependencia']['agente_retencion'];
+$denominacion_responsabilidad_dependencia[$comprobante_iva6]               =   $aux_cugd02_dependencias['cugd02_dependencia']['denominacion'];
+$fiscal_rentas_responsabilidad_dependencia[$comprobante_iva6]              =   $aux_cugd02_dependencias['cugd02_dependencia']['fiscal_rentas'];
+$fecha_responsabilidad_dependencia[$comprobante_iva6]                      =   $aux_cugd02_dependencias['cugd02_dependencia']['fecha'];
+    }//fin if
+}//fin if
+
+
+
+     }//fin if
+   }//fin function
+ }//fin for
+}//fin for
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(8);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+//$_SESSION['entidad_federal_aux'] = $entidad_federal;   // estas son las variables de seccion
+//$_SESSION['ejercicio'] = $ANO;                         // estas son las variables de seccion
+//$_SESSION['titulo'] = $titulo_a;                       // estas son las variables de seccion
+
+
+
+for($aux_aux=1; $aux_aux<=$comprobante_egreso; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+
+$pdf->AddPage();
+
+
+        $pdf->image_escudo_sin_consolidado(14,11,13);
+		$pdf->SetFont('vera','B',9);
+		$pdf->Cell(0,6,"",'TRL',1);
+		$pdf->Cell(100,6,"             ".$_SESSION["entidad_federal"],'L',0);
+		$pdf->Cell(0,6,"",'R',1,'L');
+		$pdf->SetFont('vera','',8);
+		$pdf->Cell(100,6,"                ".$_SESSION['dependencia'],'LB',0);
+		$pdf->Cell(0,6,"",'RB',1);
+
+
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,5,"COMPROBANTE DE EGRESO NÚMERO: ".$sisap->mascara_ocho($numero_comprobante_egreso[$aux_aux]),'B',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(20,9,"AÑO",'RL',0,'C');
+$pdf->Cell(20,9,"ORDEN",'R',0,'C');
+$pdf->Cell(28,9,"FECHA",'R',0,'C');
+$pdf->Cell(51,9,"MONTO",'R',0,'C');
+$pdf->Cell(0,9,"MOTIVO DE LA ORDEN",'R',1,'C');
+
+
+
+for($i=1;$i<=9;$i++){
+
+if(isset($fecha_orden_pago[$aux_aux][$i])){
+
+	$pdf->Cell(20,7,$ano_orden_pago[$aux_aux],'TRL',0,'C');
+	$pdf->Cell(20,7,$numero_orden_pago_egreso[$aux_aux][$i],'TR',0,'C');
+	$pdf->Cell(28,7,$sisap->cambia_fecha($fecha_orden_pago[$aux_aux][$i]),'TR',0,'C');
+	$pdf->Cell(51,7,$sisap->Formato2($monto_neto_cobrar[$aux_aux][$i]),'TRL',0,'R');
+	$pdf->Cell(0,7,$tipo_documento[$aux_aux][$i],'TR',1,'L');
+
+}else{
+
+	$pdf->Cell(20,7,"",'TRL',0,'C');
+	$pdf->Cell(20,7,"",'TR',0,'C');
+	$pdf->Cell(28,7,"",'TR',0,'C');
+	$pdf->Cell(51,7,"",'TRL',0,'R');
+	$pdf->Cell(0,7,"",'TR',1,'L');
+
+   }//fin else
+
+}//fin for
+
+
+
+$pdf->Cell(0,4,"",'T',1);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"CONCEPTO",'TRBL',1,'C');
+
+$pdf->SetFont('vera','',8);
+$pdf->Cell(1,42,"",'LB',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+
+	$pdf->MultiCell(195,4,$concepto[$aux_aux],'','L');//Concepto Orden de Pago
+
+	$varX = $varX+195;//le sumo a X ---> 148.
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,42,"",'RB',1,'L');
+$pdf->Cell(0,2,"",'TRL',1);
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(25,3,"BANCO:",'L',0,'L');
+$pdf->Cell(0,3,$cod_entidad_bancaria2[$aux_aux],'R',1,'L');
+
+$pdf->Cell(25,4,"CUENTA No.",'L',0,'L');
+$pdf->Cell(120,4,$cuenta_bancaria2[$aux_aux],'',0,'L');
+$pdf->Cell(20,4,"FECHA:",'',0,'L');
+$pdf->Cell(0,4,$sisap->cambia_fecha($fecha_cheque[$aux_aux]),'R',1,'L');
+
+$pdf->Cell(25,4,"CHEQUE No.",'L',0,'L');
+$pdf->Cell(120,4,$numero_cheque2[$aux_aux],'',0,'L');
+$pdf->Cell(20,4,"MONTO:",'',0,'L');
+$pdf->Cell(0,4,$sisap->Formato2($monto[$aux_aux]),'R',1,'L');
+$pdf->Cell(0,2,"",'T',1,'L');
+//$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"A P R O B A C I O N",'TRBL',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(48,10,"",'L',0,'C');
+$pdf->Cell(50,10,"",'',0,'C');
+$pdf->Cell(51,10,"",'',0,'C');
+$pdf->Cell(0,10,"",'R',1,'C');
+
+$pdf->Cell(65,3,"_______________________",'L',0,'C');
+$pdf->Cell(65,3,"_______________________",'',0,'C');
+$pdf->Cell(0,3, "_______________________",'R',1,'C');
+
+$pdf->Cell(65,5,"REVISADO POR:",'L',0,'C');
+$pdf->Cell(65,5,"AUTORIZADO POR:",'',0,'C');
+$pdf->Cell(0,5,"PAGADO POR:",'R',1,'C');
+
+$pdf->Cell(0,2,"",'TB',1,'L');
+
+$pdf->Cell(26,9,"",'LR',0,'L');
+$pdf->Cell(100,9,"",'R',0,'L');
+$pdf->Cell(45,9,"",'R',0,'L');
+$pdf->Cell(0,9,"",'R',1,'L');
+
+$pdf->Cell(26,5,"BENEFICIARIO",'LR',0,'L');
+$pdf->Cell(100,5,$beneficiario[$aux_aux],'R',0,'L');
+$pdf->Cell(45,5,"_____________________________",'R',0,'C');
+$pdf->Cell(0,5,"________________",'R',1,'C');
+
+$pdf->Cell(26,5,"C.I. / R.I.F:",'RLB',0,'L');
+$pdf->Cell(100,5,$rif_cedula[$aux_aux],'RB',0,'L');
+$pdf->Cell(45,5,"FIRMA",'RB',0,'C');
+$pdf->Cell(0,5,"FECHA",'RB',1,'C');
+$pdf->Cell(0,5,"",'',1);
+
+//---------------Impresion del Cheque-------------------//
+$pdf->Cell(150,4,$numero_cheque2[$aux_aux],'',0,'R');
+$pdf->Cell(0,4,"       ".$sisap->Formato2($monto[$aux_aux]),'',1,'R');
+$pdf->Ln(2);
+
+$pdf->SetFont('vera','',9);
+$pdf->Cell(0,5,"NO ENDOSABLE",'',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(60,4,"",'',0);
+$pdf->Cell(0,4,$beneficiario[$aux_aux],'',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(60,4,"",'',0);
+$pdf->Cell(0,4,$sisap->convertir($monto[$aux_aux]).'----------------','',1,'L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(60,4,"",'',0);
+$pdf->Cell(0,4,$sisap->fecha_alfabetico($fecha_cheque[$aux_aux]),'',0,'L');
+
+//PARA LA GOB DE APURE
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+	$pdf->Ln(6);
+	$pdf->Cell(100,"",'',0,'R');
+	$pdf->Cell(0,5,$cheque[$numero_cheque[$aux_aux]]['coletilla'],'',0,'L');
+}
+
+}//fin for
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+
+for($aux_aux=1; $aux_aux<=$comprobante_iva; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+
+$pdf->AddPage();
+
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,date('d/m/Y')."  ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,10,"COMPROBANTE DE RETENCION DEL IMPUESTO AL VALOR AGREGADO",'RLB',0,'C');
+$pdf->Ln(13);
+
+$pdf->SetFont('vera','',5);
+$pdf->MultiCell(135,2,"LEY IVA - ART.11 SERAN RESPONSABLES DEL PAGO DEL IMPUESTO EN CALIDAD DE AGENTES DE RETENCIÓN, LOS COMPRADORES O ADQUIRIENTES DE DETERMINADOS MUEBLES Y LOS RECEPTORES DE CIERTOS SERVICIOS, A QUIENES LA ADMINISTRACION TRIBUTARIA DESIGNE COMO TAL",'','L');
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(95,4,"NÚMERO DE COMPROBANTE",'TRLB',0,'C');
+$pdf->Cell(0,4,"FECHA DE EMISIÓN",'TRB',1,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(95,5,$ano_comprobante_iva[$aux_aux].'-'.date('m').'-'.$sisap->mascara_ocho($numero_comprobante_iva[$aux_aux]),'TRLB',0,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,date('d/m/Y'),'TRB',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Ln(1);
+
+
+$pdf->Cell(0,4,"DATOS DEL AGENTE DE RETENCIÓN",'TRBL',1,'C');
+$pdf->Cell(120,4,"NOMBRE - RAZÓN SOCIAL",'LBR',0,'C');
+$pdf->Cell(40,4,"NÚMERO R.I.F",'RB',0,'C');
+$pdf->Cell(0,4,"PERIODO FISCAL",'RB',1,'C');
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->Cell(120,5,$denominacion_institucion,'',1);// NOMBRE / RAZON SOCIAL
+	$pdf->Cell(40,5,$rif_institucion,'',1);// NUMERO RIF
+	$rifxxyy = $rif_institucion;
+}else{
+	$pdf->Cell(120,5,$denominacion[$aux_aux],'RBL',0,'C');
+    $pdf->Cell(40,5,$rif[$aux_aux],'RB',0,'C');
+    $rifxxyy = $rif[$aux_aux];
+}
+$pdf->Cell(0,5,"Año: ".date('Y').' / Mes: '.date('m'),'RB',1,'C');
+
+$pdf->SetFont('vera','B',7);
+
+$pdf->Cell(0,4,"DIRECCIÓN",'TRBL',1,'C');
+$pdf->Cell(1,10,"",'LB',0);//margen izquierdo
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->SetFont('vera','',7);
+	$pdf->MultiCell(194,4,$direccion[$aux_aux] ,'','L');//Concepto Orden de Pago
+	$varX = $varX+194;//le sumo a X ---> 180.
+	$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(0,10,"",'RB',1);//margen derecho
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Ln(1);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"DATOS DEL PROVEEDOR",'TRBL',1,'C');
+$pdf->Cell(150,4,"NOMBRE - RAZÓN SOCIAL ",'TRLB',0,'C');
+$pdf->Cell(0,4,"NÚMERO R.I.F",'TRB',1,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(150,5,$beneficiario_pago[$aux_aux],'TRLB',0,'C');
+$pdf->Cell(0,5,$rif_pago[$aux_aux],'TRB',1,'C');
+$pdf->Ln(1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"DATOS DE LA FACTURA",'TRBL',1,'C');
+$pdf->Cell(80,4,"NÚMERO DE LA FACTURA",'LBR',0,'C');
+$pdf->Cell(80,4,"NÚMERO DE CONTROL",'RB',0,'C');
+$pdf->Cell(0,4,"FECHA DE EMISIÓN",'RB',1,'C');
+
+$pdf->SetFont('vera','',7);
+
+for($iii=1;$iii<=15; $iii++){  //$var[$aux_aux][$j][$iii]
+
+
+if(isset($numero_factura[$aux_aux][$iii])){
+
+$pdf->Cell(80,5,$numero_factura[$aux_aux][$iii],'LBR',0,'C');
+$pdf->Cell(80,5,$numero_control[$aux_aux][$iii],'RB',0,'C');
+$pdf->Cell(0,5,date('d/m/Y'),'RB',1,'C');
+
+}else{
+
+
+$pdf->Cell(80,5,"",'LBR',0,'C');
+$pdf->Cell(80,5,"",'RB',0,'C');
+$pdf->Cell(0,5,"",'RB',1,'C');
+
+}//fin else
+
+}//fin for
+
+
+
+$pdf->SetFont('vera','B',7);
+
+$pdf->Ln(1);
+
+$pdf->Cell(0,4,"DETALLE DEL CALCULO DE LA RETENCIÓN",'TRBL',1,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"PORCENTAJE RETENCIÓN:   ".$sisap->Formato2($porcentaje_retencion_iva_pago[$aux_aux])." %",'TRBL',1,'L');
+$pdf->Ln(1);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,3,"",'TLBR',0,'C');
+$pdf->Cell(30,3,"TOTAL COMPRA CON IVA",'TRB',0,'C');
+$pdf->Cell(30,3,"SIN DERECHO A CRÉDITO",'TRB',0,'C');
+$pdf->Cell(30,3,"BASE IMPONIBLE",'TBR',0,'C');
+$pdf->Cell(30,3,"IMPUESTO IVA",'TRB',0,'C');
+$pdf->Cell(0,3,"IVA RETENIDO",'TRB',1,'C');
+
+  $total_a = 0;
+  $total_b = 0;
+  $total_c = 0;
+  $total_d = 0;
+  $total_e = 0;
+
+
+$pdf->SetFont('vera','',7);
+
+for($iii=1;$iii<=$ii_iva[$aux_aux];$iii++){
+
+  $total_a += $monto_total_factura[$aux_aux][$iii];
+  $total_b += $monto_exento[$aux_aux][$iii];
+  $total_c += $monto_sub_total[$aux_aux][$iii];
+  $total_d += $monto_iva[$aux_aux][$iii];
+  $total_e += $monto_retencion_iva[$aux_aux][$iii];
+
+
+}//fin for
+
+$pdf->SetFont('vera','',7);
+
+$pdf->Cell(40,4,"I.V.A. ".$sisap->Formato2($porcentaje_iva_pago[$aux_aux]).' %','LBR',0,'C');
+$pdf->Cell(30,4,$sisap->Formato2($total_a),'RB',0,'C');
+$pdf->Cell(30,4,$sisap->Formato2($total_b),'RB',0,'C');
+$pdf->Cell(30,4,$sisap->Formato2($total_c),'BR',0,'C');
+$pdf->Cell(30,4,$sisap->Formato2($total_d),'RB',0,'C');
+$pdf->Cell(0,4,$sisap->Formato2($total_e),'RB',1,'C');
+
+
+$pdf->Ln(40);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"FIRMA Y SELLO: AGENTE DE RETENCIÓN",'',1,'C');
+$pdf->Cell(0,4,"R.I.F. NRO: ".$rifxxyy,'',1,'C');
+
+
+
+  }//fin for  se retenciones IVA
+
+
+}//fin for  se retenciones IVA
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+for($aux_aux=1; $aux_aux<=$comprobante_iva2; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE IMPUESTO SOBRE LA RENTAL NRO: ".$sisap->mascara_ocho($numero_comprobante_islr[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+//PARA LA ALCALDIA DE ROSCIO
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==12 && $_SESSION['SScodtipoinst']==50 && $_SESSION['SScodinst']==143){
+	$pdf->Ln(6);
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,3,'LEY DE TIMBRE FISCAL DEL ESTADO GUARICO','',1,'C');
+	$pdf->Cell(0,3,'GACETA EXTRAORDINARIA NRO. 121 DEL 08 DE OCTUBRE DE 2009','',1,'C');
+	$pdf->Ln(6);
+}
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"COMPROBANTE DE RETENCIÓN",'',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+
+$pdf->Cell(30,5,"NRO. COMPROBANTE",'',0);
+$pdf->Cell(0,5,$sisap->mascara_ocho($numero_comprobante_islr[$aux_aux]),'',1);// NUMERO COMPROBANTE
+
+$pdf->Cell(25,5,"FECHA EMISIÓN",'',0);
+$pdf->Cell(0,5,date('d/m/Y'),'',1);// NUMERO COMPROBANTE
+
+$array_mes = array('01'=>'Enero', '02'=>'Febrero', '03'=>'Marzo', '04'=>'Abril', '05'=>'Mayo', '06'=>'Junio', '07'=>'Julio', '08'=>'Agosto', '09'=>'Septiembre', '10'=>'Octubre', '11'=>'Noviembre', '12'=>'Diciembre');
+
+$pdf->Cell(30,5,"PERIODO FISCAL:",'',0);
+$pdf->Cell(0,5,'Mes: '.$array_mes[date('m')]."            Año: ".date('Y'),'',1);// PERIODO FISCAL
+
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','BU',7);
+$pdf->Cell(0,5,"DATOS AGENTE DE RETENCIÓN",'',1);
+$pdf->SetFont('vera','',7);
+
+if($_SESSION['SScoddep']=="1"){
+	$pdf->Cell(35,5,"NOMBRE / RAZÓN SOCIAL:",'',0);
+	$pdf->Cell(0,5,$denominacion_institucion,'',1);// NOMBRE / RAZON SOCIAL
+
+	$pdf->Cell(25,5,"NUMERO RIF:",'',0);
+	$pdf->Cell(0,5,$rif_institucion,'',1);// NUMERO RIF
+
+	$pdf->Cell(25,5,"DOMICILIO FISCAL",'',0);
+	$pdf->Cell(0,5,$direccion_islr_dependencia[$aux_aux],'',1);// DOMICILIO FISCAL
+}else{
+	$pdf->Cell(35,5,"NOMBRE / RAZÓN SOCIAL:",'',0);
+	$pdf->Cell(0,5,$denominacion_islr_dependencia[$aux_aux],'',1,'R');// NOMBRE / RAZON SOCIAL
+
+	$pdf->Cell(25,5,"NUMERO RIF:",'',0);
+	$pdf->Cell(0,5,$rif_islr_dependencia[$aux_aux],'',1);// NUMERO RIF
+
+	$pdf->Cell(25,5,"DOMICILIO FISCAL",'',0);
+	$pdf->Cell(0,5,$direccion_islr_dependencia[$aux_aux],'',1);// DOMICILIO FISCAL
+}
+
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','BU',7);
+$pdf->Cell(0,5,"DATOS DEL SUJETO OBJETO DE RETENCIÓN",'',1);
+$pdf->SetFont('vera','',7);
+
+$pdf->Cell(35,5,"NOMBRE / RAZÓN SOCIAL:",'',0);
+$pdf->Cell(0,5,$autorizado[$aux_aux],'',1);// NOMBRE / RAZON SOCIAL OBJETO RETENCION
+
+$pdf->Cell(25,5,"NUMERO RIF:",'',0);
+$pdf->Cell(0,5,$rif_islr[$aux_aux],'',1);// NUMERO RIF OBJETO RETENCION
+
+$pdf->Ln(7);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(20,3,"NUMERO",'TRL',0,'C');
+$pdf->Cell(20,3,"Nro. CONTROL",'TR',0,'C');
+$pdf->Cell(20,3,"NUMERO",'TR',0,'C');
+$pdf->Cell(20,3,"",'TR',0,'C');
+$pdf->Cell(45,3,"",'TR',0,'C');
+$pdf->Cell(25,3,"MONTO SUJETO A",'TR',0,'C');
+$pdf->Cell(25,3,"PORCENTAJE",'TR',0,'C');
+$pdf->Cell(0,3,"MONTO",'TR',1,'C');
+
+$pdf->Cell(20,3,"FACTURA",'BRL',0,'C');
+$pdf->Cell(20,3,"FACTURA",'BR',0,'C');
+$pdf->Cell(20,3,"CHEQUE",'BR',0,'C');
+$pdf->Cell(20,3,"FECHA CHEQUE",'BR',0,'C');
+$pdf->Cell(45,3,"ENTIDAD BANCARIA",'BR',0,'C');
+$pdf->Cell(25,3,"RETENCION",'BR',0,'C');
+$pdf->Cell(25,3,"RETENCION",'BR',0,'C');
+$pdf->Cell(0,3,"RETENIDO",'BR',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(20,6,isset($numero_factura_islr[$aux_aux][1]) ? $numero_factura_islr[$aux_aux][1] : '','RL',0,'C');
+$pdf->Cell(20,6,isset($numero_control_islr[$aux_aux][1]) ? $numero_control_islr[$aux_aux][1] : '','R',0,'C');
+$pdf->Cell(20,6,mascara($numero_cheque_islr[$aux_aux], 8),'R',0,'C');
+$pdf->Cell(20,6,$sisap->cambia_fecha($fecha_cheque_islr[$aux_aux]),'R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->MultiCell(45,3,$cod_entidad_bancaria_islr[$aux_aux],'','L');
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(25,6,$sisap->Formato2($monto_descontar_impuesto_islr[$aux_aux]),'RL',0,'R');
+$pdf->Cell(25,6,$porcentaje_islr[$aux_aux].'%','R',0,'C');
+$pdf->Cell(0,6,$sisap->Formato2($monto_islr[$aux_aux]),'R',1,'R');
+
+$pdf->Cell(0,0,'','T',1);
+
+$pdf->Ln(25);
+
+$pdf->Cell(100,5,'Firma y sello del agente de retencion:','',0,'C');
+$pdf->Cell(0,5,'Recibido por:','',1,'C');
+
+$pdf->Cell(100,15,'','',0,'C');
+$pdf->Cell(0,15,'','',1,'C');
+
+$pdf->Cell(100,3,'__________________________________________________','',0,'C');
+$pdf->Cell(0,3,'__________________________________________________','',1,'C');
+
+$pdf->Cell(100,3,'','',0,'C');
+$pdf->Cell(0,3,'FIRMA Y SELLO','',1,'C');
+
+
+/*
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE IMPUESTO SOBRE LA RENTAL NRO: ".$sisap->mascara_ocho($numero_comprobante_islr[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"( BS: ".$sisap->Formato2($monto_islr[$aux_aux]).')','',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, LA ".$_SESSION['entidad_federal']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}else{
+    $pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, ".$_SESSION['dependencia']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}//fin else
+$pdf->SetFont('vera','I',6);
+$pdf->MultiCell(0,3,$sisap->convertir($monto_islr[$aux_aux])."... POR CONCEPTO DE  - - - IMPUESTO SOBRE LA RENTAL - - - DEL CHEQUE QUE A CONTINUACIÓN SE ESPECIFICA",'','L');
+$pdf->Ln();
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,8,"",'',1,'C');
+$pdf->MultiCell(194,4,"CHEQUE NRO: ".$numero_cheque[$aux_aux]."_________________________________________________CUENTA CORRIENTE NRO. ".$cuenta_bancaria[$aux_aux]."________________________________
+BANCO: ".$cod_entidad_bancaria[$aux_aux]."______________________________________________________________________",'','L');
+$pdf->Ln(25);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+
+
+
+if($_SESSION['SScoddep']=="1"){
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_institucion,'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_institucion,'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_institucion."",'',1,'C');
+
+
+}else{
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_islr_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_islr_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_islr_dependencia[$aux_aux]."",'',1,'C');
+
+}//fin else
+
+
+
+$pdf->Ln(20);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$autorizado[$aux_aux],'',1,'C');
+$pdf->Cell(0,3,$rif_islr[$aux_aux],'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico(date('Y-m-d')),'',1,'C');
+$pdf->Cell(0,6,"",'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DIRECCION DE LA INSTITUCION",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$direccion_islr_dependencia[$aux_aux],'',1,'L');
+$pdf->Ln();
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"TELÉFONOS",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$telefonos_islr_dependencia[$aux_aux],'',1,'L');
+*/
+
+}//fin for
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+for($aux_aux=1; $aux_aux<=$comprobante_iva3; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE IMPUESTO MUNICIPAL NRO: ".$sisap->mascara_ocho($numero_comprobante_municipal[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"( BS: ".$sisap->Formato2($monto_impuesto_municipal[$aux_aux]).')','',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, LA ".$_SESSION['entidad_federal']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}else{
+    $pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, ".$_SESSION['dependencia']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}//fin else
+$pdf->SetFont('vera','I',6);
+$pdf->MultiCell(0,3,$sisap->convertir($monto_impuesto_municipal[$aux_aux])."... POR CONCEPTO DE  - - - IMPUESTO MUNICIPAL - - - DEL CHEQUE QUE A CONTINUACIÓN SE ESPECIFICA",'','L');
+$pdf->Ln();
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,8,"",'',1,'C');
+$pdf->MultiCell(194,4,"CHEQUE NRO: ".$numero_cheque_municipal[$aux_aux]."_________________________________________________CUENTA CORRIENTE NRO. ".$cuenta_bancaria_municipal[$aux_aux]."________________________________
+BANCO: ".$cod_entidad_bancaria_municipal[$aux_aux]."______________________________________________________________________",'','L');
+$pdf->Ln(25);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+
+
+
+if($_SESSION['SScoddep']=="1"){
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_institucion,'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_institucion,'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_institucion."",'',1,'C');
+
+
+}else{
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_municipal_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_municipal_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_municipal_dependencia[$aux_aux]."",'',1,'C');
+
+}//fin else
+
+
+
+$pdf->Ln(20);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$autorizado_municipal[$aux_aux],'',1,'C');
+$pdf->Cell(0,3,$rif_municipal[$aux_aux],'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico(date('Y-m-d')),'',1,'C');
+$pdf->Cell(0,6,"",'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DIRECCION DE LA INSTITUCION",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$direccion_municipal_dependencia[$aux_aux],'',1,'L');
+$pdf->Ln();
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"TELÉFONOS",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$telefonos_islr_dependencia[$aux_aux],'',1,'L');
+}//fin for
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+for($aux_aux=1; $aux_aux<=$comprobante_iva4; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE TIMBRE FISCAL NRO: ".$sisap->mascara_ocho($numero_comprobante_timbre[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"( BS: ".$sisap->Formato2($monto_timbre_fiscal[$aux_aux]).')','',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, LA ".$_SESSION['entidad_federal']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}else{
+    $pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, ".$_SESSION['dependencia']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}//fin else
+$pdf->SetFont('vera','I',6);
+$pdf->MultiCell(0,3,$sisap->convertir($monto_timbre_fiscal[$aux_aux])."... POR CONCEPTO DE  - - - TIMBRE FISCAL - - - DEL CHEQUE QUE A CONTINUACIÓN SE ESPECIFICA",'','L');
+$pdf->Ln();
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,8,"",'',1,'C');
+$pdf->MultiCell(194,4,"CHEQUE NRO: ".$numero_cheque_timbre_fiscal[$aux_aux]."_________________________________________________CUENTA CORRIENTE NRO. ".$cuenta_bancaria_timbre_fiscal[$aux_aux]."________________________________
+BANCO: ".$cod_entidad_bancaria_timbre_fiscal[$aux_aux]."______________________________________________________________________",'','L');
+$pdf->Ln(25);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+
+
+
+if($_SESSION['SScoddep']=="1"){
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_institucion,'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_institucion,'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_institucion."",'',1,'C');
+
+
+}else{
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_timbre_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_timbre_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_timbre_dependencia[$aux_aux]."",'',1,'C');
+
+}//fin else
+
+
+
+$pdf->Ln(20);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$autorizado_timbre_fiscal[$aux_aux],'',1,'C');
+$pdf->Cell(0,3,$rif_timbre_fiscal[$aux_aux],'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico(date('Y-m-d')),'',1,'C');
+$pdf->Cell(0,6,"",'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DIRECCION DE LA INSTITUCION",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$direccion_timbre_dependencia[$aux_aux],'',1,'L');
+$pdf->Ln();
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"TELÉFONOS",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$telefonos_timbre_dependencia[$aux_aux],'',1,'L');
+}//fin for
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+for($aux_aux=1; $aux_aux<=$comprobante_iva5; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE RESPONSABILIDAD CIVIL NRO: ".$sisap->mascara_ocho($numero_comprobante_multa[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"( BS: ".$sisap->Formato2($monto_multa_fiscal[$aux_aux]).')','',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, LA ".$_SESSION['entidad_federal']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}else{
+    $pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, ".$_SESSION['dependencia']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}//fin else
+$pdf->SetFont('vera','I',6);
+$pdf->MultiCell(0,3,$sisap->convertir($monto_multa_fiscal[$aux_aux])."... POR CONCEPTO DE  - - - R. CIVIL - - - DEL CHEQUE QUE A CONTINUACIÓN SE ESPECIFICA",'','L');
+$pdf->Ln();
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,8,"",'',1,'C');
+$pdf->MultiCell(194,4,"CHEQUE NRO: ".$numero_cheque_multa[$aux_aux]."_________________________________________________CUENTA CORRIENTE NRO. ".$cuenta_bancaria_multa[$aux_aux]."________________________________
+BANCO: ".$cod_entidad_bancaria_multa[$aux_aux]."______________________________________________________________________",'','L');
+$pdf->Ln(25);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+
+
+
+if($_SESSION['SScoddep']=="1"){
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_institucion,'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_institucion,'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_institucion."",'',1,'C');
+
+
+}else{
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_multa_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_multa_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_multa_dependencia[$aux_aux]."",'',1,'C');
+
+}//fin else
+
+
+
+$pdf->Ln(20);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$autorizado_multa[$aux_aux],'',1,'C');
+$pdf->Cell(0,3,$rif_multa_fiscal[$aux_aux],'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico(date('Y-m-d')),'',1,'C');
+$pdf->Cell(0,6,"",'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DIRECCION DE LA INSTITUCION",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$direccion_multa_dependencia[$aux_aux],'',1,'L');
+$pdf->Ln();
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"TELÉFONOS",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$telefonos_multa_dependencia[$aux_aux],'',1,'L');
+}//fin for
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+for($aux_aux=1; $aux_aux<=$comprobante_iva6; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+$pdf->AddPage();
+$pdf->image_escudo_sin_consolidado(12,16,15);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(150,6,"                ".$_SESSION["entidad_federal"],'TL',0);
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(0,5,"12/12/2008   ",'TR',1,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,3,"                   ".$_SESSION['dependencia'],'RL',1);//$_SESSION['titulo_a']
+$pdf->SetFont('vera','BU',9);
+$pdf->Cell(0,15,"COMPROBANTE DE RETENCIÓN DE RESPONSABILIDAD SOCIAL NRO: ".$sisap->mascara_ocho($numero_comprobante_responsabilidad[$aux_aux]),'RLB',0,'C');
+$pdf->Ln(16);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,8,"( BS: ".$sisap->Formato2($monto_responsabilidad_fiscal[$aux_aux]).')','',0,'C');
+$pdf->Ln(10);
+$pdf->SetFont('vera','',7);
+if($_SESSION['SScoddep']=="1"){
+	$pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, LA ".$_SESSION['entidad_federal']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}else{
+    $pdf->MultiCell(0,4,"POR MEDIO DE LA PRESENTE, ".$_SESSION['dependencia']." LE ESTA RETENIENDO LA CANTIDAD DE: BOLIVARES - - - - - - - - - - - -  -",'','L');
+}//fin else
+$pdf->SetFont('vera','I',6);
+$pdf->MultiCell(0,3,$sisap->convertir($monto_responsabilidad_fiscal[$aux_aux])."... POR CONCEPTO DE  - - - R. SOCIAL - - - DEL CHEQUE QUE A CONTINUACIÓN SE ESPECIFICA",'','L');
+$pdf->Ln();
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,8,"",'',1,'C');
+$pdf->MultiCell(194,4,"CHEQUE NRO: ".$numero_cheque_responsabilidad_fiscal[$aux_aux]."_________________________________________________CUENTA CORRIENTE NRO. ".$cuenta_bancaria_responsabilidad_fiscal[$aux_aux]."________________________________
+BANCO: ".$cod_entidad_bancaria_responsabilidad_fiscal[$aux_aux]."______________________________________________________________________",'','L');
+$pdf->Ln(25);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+
+
+
+if($_SESSION['SScoddep']=="1"){
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_institucion,'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_institucion,'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_institucion."",'',1,'C');
+
+
+}else{
+
+
+$pdf->Cell(0,5,"POR: ".$denominacion_responsabilidad_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,$agente_retencion_responsabilidad_dependencia[$aux_aux],'',1,'C');
+$pdf->Cell(0,4,"RIF: ".$rif_responsabilidad_dependencia[$aux_aux]."",'',1,'C');
+
+}//fin else
+
+
+
+$pdf->Ln(20);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,5,"____________________________________________________",'',1,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,$autorizado_responsabilidad_fiscal[$aux_aux],'',1,'C');
+$pdf->Cell(0,3,$rif_responsabilidad_fiscal[$aux_aux],'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,6,$sisap->fecha_alfabetico(date('Y-m-d')),'',1,'C');
+$pdf->Cell(0,6,"",'',1,'C');
+$pdf->Ln(15);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DIRECCION DE LA INSTITUCIÓN",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$direccion_responsabilidad_dependencia[$aux_aux],'',1,'L');
+$pdf->Ln();
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"TELÉFONOS",'',1,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,3,"       ".$telefonos_responsabilidad_dependencia[$aux_aux],'',1,'L');
+}//fin for
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+$pdf->Output('retencion_iva'.date("d-m-Y"),'D');
+
+
+
+
+
+}//FIN ELSE

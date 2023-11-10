@@ -1,0 +1,189 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}//fin else
+
+?>
+
+<table width="99%" cellspacing="0" cellpadding="0" id="grid" >
+  <tr class="textNegro2">
+     <td class="td2" width="210"><span id="partida_producto" class="mensaje_resaltado"> BENEFICIARIO DEL CHEQUE: <?php if(isset($_SESSION['ORDEN_PAGO_TOTAL']['autorizado'])){echo $_SESSION['ORDEN_PAGO_TOTAL']['autorizado'];} ?></span></td>
+  </tr>
+</table>
+
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+<table width="99%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso2">
+  <tr class="tr_negro">
+  <td class="td4" width="20" height="30">Nº</td>
+   <td class="td4" width="70" height="30">A&ntilde;o</td>
+    <td class="td4" width="90" >Tipo de Orden</td>
+    <td class="td4" width="90">Orden Número</td>
+    <td class="td4" width="200">Beneficiario</td>
+    <td class="td4" width="90">Monto</td>
+</tr>
+
+<?php
+
+ 	$i=0;
+ 	$total=0;
+ 	$_SESSION['ORDEN_PAGO_TOTAL']['monto'] = 0;
+
+ if(isset($datos)){
+  if($datos!=null){
+    foreach($datos as $ve2){
+    	//print_r($ve);
+
+    	$monto = 0;
+
+
+$ve2[0]['beneficiario'] = $ve2[0]['autorizado'];
+
+
+    	if($ve2[0]['clase_orden']=="1"){
+                $ve2[0]['clase_orden'] = "Interna";
+}else if($ve2[0]['clase_orden']=="2"){
+                $ve2[0]['clase_orden'] = "Especial";
+}//fin else
+
+
+//$ve2[0]['beneficiario'] = $beneficiario;
+
+
+?>
+
+
+<input name="data[cstp07_cancelaciones_iva][<?= "ano_orden_pago_".$i ?>]"    type="hidden"  value="<?= $ve2[0]['ano_orden_pago']; ?>" />
+<input name="data[cstp07_cancelaciones_iva][<?= "numero_orden_pago_".$i ?>]" type="hidden"  value="<?= $ve2[0]['numero_orden_pago']; ?>" />
+
+
+<?php
+
+
+    	if($i%2==0){ 		// onclick="new Effect.Highlight(this);"
+?>
+
+<tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td class="td2center" height="22"><?= $i+1;  ?></td>
+    <td class="td2center" height="22"><?= $ve2[0]['ano_orden_pago'];  ?></td>
+    <td class="td2center"><?= $ve2[0]['clase_orden'];  ?></td>
+    <td class="td2center"><?= $sisap->mascara_ocho($ve2[0]['numero_orden_pago']);  ?></td>
+    <td class="td2center"><?= $ve2[0]['beneficiario'];  ?></td>
+    <td class="td2" style="padding-right:5px; text-align:right"> <?= $sisap->Formato2($ve2[0]['monto_cuerpo_retencion']);  ?></td>
+</tr>
+
+<?php
+
+      }else{
+
+?>
+
+<tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+   <td class="td2center" height="22"><?= $i+1;  ?></td>
+   <td class="td2center" height="22"><?= $ve2[0]['ano_orden_pago'];  ?></td>
+   <td class="td2center"><?= $ve2[0]['clase_orden'];  ?></td>
+   <td class="td2center"><?= $sisap->mascara_ocho($ve2[0]['numero_orden_pago']);  ?></td>
+   <td class="td2center"><?= $ve2[0]['beneficiario'];  ?></td>
+   <td class="td2" style="padding-right:5px; text-align:right"><?= $sisap->Formato2($ve2[0]['monto_cuerpo_retencion']);  ?></td>
+</tr>
+
+       <?php
+
+    	}//fine
+
+    	$i++; $total += $ve2[0]['monto_cuerpo_retencion'];
+    	$_SESSION['ORDEN_PAGO_TOTAL']['monto'] += $ve2[0]['monto_cuerpo_retencion'];
+
+}//fin foreach
+
+
+     if($i%2==0){
+     ?>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td colspan="5" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total); ?></td>
+</tr>
+     <?
+    }else{
+        ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="5" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+    }
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="5" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+}
+ }else{
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="5" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS2"><?= $sisap->Formato2($total); ?></td>
+</tr>
+        <?
+ }
+
+ //$i--;
+
+?>
+
+<input type="hidden" name="data[cobp01_contratoobras][cuenta_i_orden_pago]" id="cuenta_i_orden_pago" value="<?= $i ?>" />
+<input type="hidden" name="data[cobp01_contratoobras][estimado_presu]" id="estimado_presu" value="<?= $estimado_presu ?>" />
+
+</table>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

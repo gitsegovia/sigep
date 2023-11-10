@@ -1,0 +1,241 @@
+<?php
+if(isset($msg_error)) {
+          echo $sisap->mensajes_error($msg_error);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+?>
+<script>
+		if($('codigo_obra')){$('codigo_obra').value='<?=$var?>'; }
+		if($('concepto')){$('concepto').value='<?=$denominacion_obra?>';  }
+</script>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	<tr>
+	 <td align="right">
+	  <?php echo $sisap->buttonTagRemote('cepp01_compromiso/continuar', array ( 'value'=>'Finalizar selección','id'=>'limpiar'), array('url1' => '/caop01_compromiso/limpiar_no_disponible/', 'update1'=>'distribuir'));?>
+	  </td>
+	</tr>
+</table>
+<br><br>
+<div id="distribuir" style="height:200px; overflow:auto;">
+			<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+			<tr class="tr_negro" align="center">
+			    <td width="50">A&ntilde;o</td>
+			    <td width="50">Sector</td>
+			    <td width="50">Prog</td>
+			    <td width="50">Sub<br>Prog</td>
+			    <td width="50">Proy</td>
+			    <td width="90">Actividad<br> u Obra</td>
+			    <td width="50">Partida</td>
+			    <td width="50">Gener</td>
+			    <td width="50">Espec</td>
+			    <td width="50">Sub<br>Espec</td>
+			    <td width="90">Auxiliar</td>
+			    <td width="120">Monto</td>
+			    <td width="6%">--</td>
+			</tr>
+
+			<?php
+
+			 	$i=0;
+			 	$total=0;
+
+			 	        if(!isset($_SESSION["cuenta_fila"])){
+						    $_SESSION["cuenta_fila"] = 0;
+						 }
+
+						 $cuenta_fila = $_SESSION["cuenta_fila"];
+			 if(isset($cfpd07_obras_partidas)){
+			  if($cfpd07_obras_partidas!=null){
+			    foreach($cfpd07_obras_partidas as $ve){
+			    	    $monto = 0;
+			    	    $cod[0]=$ve['cfpd07_obras_partidas']['ano_estimacion'];
+						$cod[1]=$ve['cfpd07_obras_partidas']["cod_sector"];
+						$cod[2]=$ve['cfpd07_obras_partidas']["cod_programa"];
+						$cod[3]=$ve['cfpd07_obras_partidas']["cod_sub_prog"];
+						$cod[4]=$ve['cfpd07_obras_partidas']["cod_proyecto"];
+						$cod[5]=$ve['cfpd07_obras_partidas']["cod_activ_obra"];
+						$cod[6]=$ve['cfpd07_obras_partidas']['cod_partida'];
+						$cod[7]=$ve['cfpd07_obras_partidas']["cod_generica"];
+						$cod[8]=$ve['cfpd07_obras_partidas']["cod_especifica"];
+						$cod[9]=$ve['cfpd07_obras_partidas']["cod_sub_espec"];
+						$cod[10]=$ve['cfpd07_obras_partidas']["cod_auxiliar"];
+						$cod[11]=$sisap->Formato2(($ve['cfpd07_obras_partidas']["monto"]+$ve['cfpd07_obras_partidas']["aumento_obras"])-($ve['cfpd07_obras_partidas']["disminucion_obras"]+$ve['cfpd07_obras_partidas']["monto_contratado"]));
+
+			$concate  = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1 )).'.'.$sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_generica']).'.'.$sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_especifica']).'.'.$sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_espec']);
+			$concate2 = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1 ));
+            $codigo   = $cod[1].'/'.$cod[2].'/'.$cod[3].'/'.$cod[4].'/'.$cod[5].'/'.$cod[6].'/'.$cod[7].'/'.$cod[8].'/'.$cod[9].'/'.$cod[10].'/';
+
+
+			if($cod[11]!=0){
+
+			   $class_color = $i%2==0 ? 'tr_grid_c1':'tr_grid_c2';
+
+			?>
+
+			<tr class="<?=$class_color?>" id="<?= "fila2_".$cuenta_fila ?>" onclick="new Effect.Highlight(this);" align="center">
+			    <td><?= $ve['cfpd07_obras_partidas']['ano_estimacion'] ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sector']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_programa']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_prog']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_proyecto']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_activ_obra']) ?></td>
+			    <td><?= $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1 )) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_generica']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_especifica']) ?></td>
+			    <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_espec']) ?></td>
+			    <td><?= $sisap->mascara_cuatro($ve['cfpd07_obras_partidas']['cod_auxiliar']) ?></td>
+
+			    <?php $monto = ($ve['cfpd07_obras_partidas']['monto'] + $ve['cfpd07_obras_partidas']['aumento_obras']) - ($ve['cfpd07_obras_partidas']['disminucion_obras']+$ve['cfpd07_obras_partidas']['monto_contratado']); ?>
+			    <td style="padding-right:5px; text-align:right"><?= $sisap->Formato2($monto) ?></td>
+					    <td height="22"  width="2">
+					      <?= $ajax->link($html->image('edit_add_2.png',array('border'=>0, "onclick"=>"javascript:$('partida_op_$i').value='0'")), '/caop01_compromiso/mostrar_partidas_obra2/'.$ve['cfpd07_obras_partidas']['cod_obra']."/".$codigo."/".$monto, array('update'=>'distribuir2','title'=>'agregar',"after"=>"new Effect.DropOut('fila2_$cuenta_fila');"),'',false,true) ?>
+					    </td>
+
+			</tr>
+
+			<?php
+
+
+
+			    	$i++;
+			    	$total += $monto;
+			    	$cuenta_fila ++;
+			    	$_SESSION["cuenta_fila"]++;
+
+			  }//fin if
+			}//fin foreach
+
+			$class_color = $i%2==0 ? 'tr_grid_c1':'tr_grid_c2';
+
+			     ?>
+			<tr class="<?=$class_color?>">
+			    <td height="22"  width="2">--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>---------</td>
+			    <td>--</td>
+			</tr>
+			<tr bgcolor="#DAEBFF" class="textNegro2">
+			    <td colspan="11" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+			    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+			    <td>--</td>
+			</tr>
+			     <?
+
+			}else{
+				 ?>
+			<tr class="tr_grid_c1" align="center">
+			     <td height="22"  width="2">--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>---------</td>
+			    <td>--</td>
+			</tr>
+			<tr class="tr_grid_c2">
+			    <td colspan="11" style="padding-right:5px; text-align:right;"  height="22">TOTAL <?=MONEDA2?>: </td>
+			    <td style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+			    <td>--</td>
+			</tr>
+			        <?
+			}
+			 }else{$total = 0;
+			 	 ?>
+			<tr class="tr_grid_c1"  align="center">
+			    <td height="22"  width="2">--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>--</td>
+			    <td>---------</td>
+			    <td>--</td>
+			</tr>
+			<tr class="tr_grid_c2" align="center">
+			    <td colspan="11" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+			    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><?= $sisap->Formato2($total); ?></td>
+			    <td>--</td>
+			</tr>
+			        <?
+			 }
+
+			 //$i--;
+
+			?>
+			<input type="hidden" name="data[cobp01_contratoobras][cuenta_i]" id="lista_partidas" value="<?= $i ?>" />
+			<input type="hidden" name="data[cobp01_contratoobras][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+			<input type="hidden" name="data[cobp01_contratoobras][estimado_presu]" id="estimado_presu" value="<?=$estimado_presu?>" />
+
+
+			</table>
+			<div id="del2"></div>
+</div>
+<br><br>
+
+<div id="distribuir2" style="height:200px; overflow:auto;">
+	<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+		<tr class="tr_negro" align="center">
+		    <td width="50">A&ntilde;o</td>
+		    <td width="50">Sector</td>
+		    <td width="50">Prog</td>
+		    <td width="50">Sub<br>Prog</td>
+		    <td width="50">Proy</td>
+		    <td width="90">Actividad<br> u Obra</td>
+		    <td width="50">Partida</td>
+		    <td width="50">Gener</td>
+		    <td width="50">Espec</td>
+		    <td width="50">Sub<br>Espec</td>
+		    <td width="90">Auxiliar</td>
+		    <td width="120">Monto</td>
+		    <td width="150">Monto a Contratar</td>
+		    <td width="6%">--</td>
+		</tr>
+		<tr class="tr_grid_c1"  align="center">
+		    <td height="22"  width="2">--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>--</td>
+		    <td>---------</td>
+		    <td>--</td>
+		    <td>--</td>
+		</tr>
+		<tr class="tr_grid_c2" align="center">
+		    <td colspan="12" style="padding-right:5px; text-align:right;" height="22">TOTAL <?=MONEDA2?>: </td>
+		    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"><?= $sisap->Formato2(0); ?></td>
+		    <td>--</td>
+		</tr>
+	</table>
+</div>
+
+
+
+

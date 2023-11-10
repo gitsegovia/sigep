@@ -1,0 +1,274 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla("",true,"BALANCE DE COMPROBACIÓN A NIVEL DE MAYOR","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_contabilidad/balance_comprobacion_cuentas_mayor/si'); ?>"  onsubmit="return valida_reporte_contabilidad()"  >
+
+
+
+
+	<?=$sisap->radio_consolidado('cfpp00/peticion', array('1'=>'institucion', '2'=>'dependencia'),null,false)?>
+
+
+<br>
+
+<center>Año:<input name="data[cfpp00][ano]"  value="<?= $year?>" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  /></center>
+
+<br>
+
+<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+	<tr>
+		<td width="10%" align="center">Mes:</td>
+		<td width="15%">
+			<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,  $m, array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+		</td>
+	</tr>
+</table>
+
+<br>
+<div id="capita">
+<table width="600" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+<input type="hidden" name="[cugp03_acta_anulacion][tipo_doc_anul]" id="firma" value="<?=$firma?>">
+	<tr>
+		<td width="70" align="center">Firma<input type="hidden" name="data[cugp03_acta_anulacion][tipo_doc_anul]" value="<?=$tipo_doc_anul?>" maxlength="4" id="tipo_doc_anul" class="inputtext" /></td>
+		<td align="center">Nombre Firmante</td>
+		<td align="center">Cargo Firmante</td>
+	</tr>
+	<tr>
+		<td width="70" align="center">1</td>
+		<td><input type="text" name="data[cfpp00][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" maxlength="100" id="nombre_primera_firma"  class="inputtext" /></td>
+		<td><input type="text" name="data[cfpp00][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" maxlength="100" id="cargo_primera_firma"  class="inputtext" /></td>
+	</tr>
+	<tr>
+		<td width="70" align="center">2</td>
+		<td><input type="text" name="data[cfpp00][nombre_segunda_firma]" value="<?=$nombre_segunda_firma?>" maxlength="100" id="nombre_segunda_firma"  class="inputtext" /></td>
+		<td><input type="text" name="data[cfpp00][cargo_segunda_firma]" value="<?=$cargo_segunda_firma?>" maxlength="100" id="cargo_segunda_firma" class="inputtext" /></td>
+	</tr>
+</table>
+</div>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+<br><br>
+<span id="mostOc" >
+    <?= $sisap->submitTagRemote('  Guardar Firmas  ', array( 'funcion'=>'valida_firmas_contabilidad','url1'=>'/reporte_contabilidad/guardar_firmas_balance_mayor/1', 'update1'=>'capita', 'id'=>'b_modificar_firmas', 'disabled'=>'enable')); ?>
+</span>
+
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+//    	$this->top_reporte($titulo_A = "BALANCE DE COMPROBACIÓN – MOVIMIENTO MENSUAL DE LAS CUENTAS DEL MAYOR", null, null, array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"255", "Z"=>"12"));
+//		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',6,11,13);
+//		$this->Image('/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg',6,11,13);
+
+    	/*
+    	$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=$_SESSION["entidad_federal"];
+        	$varTOPh11=$_SESSION["dependencia"];
+        	$t1=6;
+        	$t2=16;
+        }else{
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION["entidad_federal"];
+        	$varTOPh11=$_SESSION["dependencia"];
+        	$t1=6;
+        	$t2=16;
+        }
+        $this->Image($escudo,6,11,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$varTOPh11,'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"BALANCE DE COMPROBACIÓN – MOVIMIENTO MENSUAL DE LAS CUENTAS DEL MAYOR",'RL',1,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(123,3,"",'L',0,'C');
+		$this->Cell(0,3,"ANO: ".$_SESSION['valor_ano'],'R',1,'L');
+		$this->Cell(0,3,"MES: ".$_SESSION['name_mes'],'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 249;
+		$varY_aux = $this->GetY() - 17;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(5);
+		*/
+    	$titulo_A = "BALANCE DE COMPROBACIÓN – MOVIMIENTO MENSUAL DE LAS CUENTAS DEL MAYOR";
+		$titulo_B = "ANO: ".$_SESSION['valor_ano'];
+		$titulo_C = "MES: ".$_SESSION['name_mes'];
+		$this->top_reporte2(array($titulo_A,$titulo_B,$titulo_C), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"255"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,4,'CÓDIGO','TLR',0,'C');
+		$this->Cell(50,4,'CUENTA','TR',0,'C');
+		$this->Cell(54,4,'SALDOS ANTERIORES','TRB',0,'C');
+		$this->Cell(50,4,'MOVIMIENTO DEL MES','TRB',0,'C');
+		$this->Cell(52,4,'TOTALES','TRB',0,'C');
+		$this->Cell(0,4,'SALDO','TRB',1,'C');
+
+		$this->Cell(15,6,'','RBL',0,'C');
+		$this->Cell(50,6,'','RB',0,'C');
+		$this->Cell(27,6,'DEBE ','RB',0,'C');
+		$this->Cell(27,6,'HABER ','RB',0,'C');
+		$this->Cell(25,6,'DEBE ','RB',0,'C');
+		$this->Cell(25,6,'HABER ','RB',0,'C');
+		$this->Cell(26,6,'DEBE ','RB',0,'C');
+		$this->Cell(26,6,'HABER ','RB',0,'C');
+		$this->Cell(25,6,'DEBE ','RB',0,'C');
+		$this->Cell(0,6,'HABER ','RB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+	$this->setY(-30);
+		$this->Cell(50,3,'','',0,'C');
+		$this->Cell(80,3,'','TRL',0,'C');
+		$this->Cell(80,3,'','TRL',0,'C');
+		$this->Cell(0,3,'','',1,'C');
+
+		$this->Cell(50,3,'','',0,'C');
+		$this->Cell(80,3,$_SESSION['firma1'],'RL',0,'C');
+		$this->Cell(80,3,$_SESSION['firma2'],'RL',0,'C');
+		$this->Cell(0,3,'','',1,'C');
+
+		$this->Cell(50,12,'','',0,'C');
+		$this->Cell(80,12,'','TRL',0,'C');
+		$this->Cell(80,12,'','TRL',0,'C');
+		$this->Cell(0,12,'','',1,'C');
+
+		$this->Cell(50,4,'','R',0,'C');
+		$this->Cell(80,4,'_____________________________________','R',0,'C');
+		$this->Cell(80,4,'_____________________________________','R',0,'C');
+		$this->Cell(0,4,'','',1,'C');
+
+		$this->Cell(50,3,'','',0,'C');
+		$this->Cell(80,3,$_SESSION['firma3'],'BL',0,'C');
+		$this->Cell(80,3,$_SESSION['firma4'],'BRL',0,'C');
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+$debe_anterior=0;
+$haber_anterior=0;
+$debe_mes=0;
+$haber_mes=0;
+$debe_total=0;
+$haber_total=0;
+$debe_saldo=0;
+$haber_saldo=0;
+//echo "<br><br><br>fjdskakla";
+if($datos!=null){
+for($i=0; $i<count($datos); $i++){
+	$pdf->Cell(15,6,mascara_tres($datos[$i][0]['cod_cuenta']),'RBL',0,'C');//--[CODIGO]
+
+		$pdf->Cell(50,1,"",'T',2,'C');
+		$varX = $pdf->GetX();//capturo X
+		$varY = $pdf->GetY();//capturo Y
+		$pdf->MultiCell(50,3,$datos[$i][0]['denominacion_cuenta'],'','L');//DENOMINACION
+		$varX =$varX+50;
+		$varY=$varY-1;
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+	$debe=$datos[$i][0][$debito_total];
+	$haber=$datos[$i][0][$credito_total];
+if($debe>$haber){
+	$saldo=($debe-$haber);
+	$saldo_debito_total=$sisap->Formato2($saldo);
+	$saldo_credito_total='';
+	$debe_saldo+=$saldo;
+}else if($haber>$debe){
+	$saldo=($haber-$debe);
+	$saldo_debito_total='';
+	$saldo_credito_total=$sisap->Formato2($saldo);
+	$haber_saldo+=$saldo;
+}else if($debe==$haber){
+	$saldo_debito_total='';
+	$saldo_credito_total='';
+}
+	$pdf->Cell(27,6,$sisap->Formato2($datos[$i][0][$debito_anterior]),'RBL',0,'R');//---[DEBE BS.]
+	$pdf->Cell(27,6,$sisap->Formato2($datos[$i][0][$credito_anterior]),'RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,6,$sisap->Formato2($datos[$i][0][$debito_mes]),'RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(25,6,$sisap->Formato2($datos[$i][0][$credito_mes]),'RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(26,6,$sisap->Formato2($datos[$i][0][$debito_total]),'RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(26,6,$sisap->Formato2($datos[$i][0][$credito_total]),'RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,6,$saldo_debito_total,'RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(0,6,$saldo_credito_total,'RB',1,'R');//---[HABER BS.]
+
+
+$debe_anterior+=$datos[$i][0][$debito_anterior];
+$haber_anterior+=$datos[$i][0][$credito_anterior];
+$debe_mes+=$datos[$i][0][$debito_mes];
+$haber_mes+=$datos[$i][0][$credito_mes];
+$debe_total+=$datos[$i][0][$debito_total];
+$haber_total+=$datos[$i][0][$credito_total];
+
+}
+
+//	$pdf->Cell(0,1,'','T',1,'R');
+}else{
+
+	$pdf->Cell(15,7,'','RBL',0,'C');//--[CODIGO]
+	$pdf->Cell(50,7,'','RBL',0,'C');//--[CODIGO]
+	$pdf->Cell(27,7,'','RBL',0,'R');//---[DEBE BS.]
+	$pdf->Cell(27,7,'','RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,7,'','RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(25,7,'','RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(26,7,'','RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(26,7,'','RB',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,7,'','RB',0,'R');//---[DEBE BS.]
+	$pdf->Cell(0,7,'','RB',1,'R');//---[HABER BS.]
+
+}
+$pdf->SetFont('vera','B',6);
+	$pdf->Cell(65,7,'totales:','RBLT',0,'R');//--[CODIGO]
+	$pdf->Cell(27,7,$sisap->Formato2($debe_anterior),'RBLT',0,'R');//---[DEBE BS.]
+	$pdf->Cell(27,7,$sisap->Formato2($haber_anterior),'RBT',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,7,$sisap->Formato2($debe_mes),'RBT',0,'R');//---[DEBE BS.]
+	$pdf->Cell(25,7,$sisap->Formato2($haber_mes),'RBT',0,'R');//--[HABER BS.]
+	$pdf->Cell(26,7,$sisap->Formato2($debe_total),'RBT',0,'R');//---[DEBE BS.]
+	$pdf->Cell(26,7,$sisap->Formato2($haber_total),'RBT',0,'R');//--[HABER BS.]
+	$pdf->Cell(25,7,$sisap->Formato2($debe_saldo),'RBT',0,'R');//---[DEBE BS.]
+	$pdf->Cell(0,7,$sisap->Formato2($haber_saldo),'RBT',1,'R');//---[HABER BS.]
+
+//	echo "<br>a";
+$pdf->Output('Balance_Comprobacion_Movimientos_Mensual_Cuentas_Mayor_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

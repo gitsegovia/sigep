@@ -1,0 +1,206 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+//$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+    $this->SetY(-10);
+    $this->SetFont('vera','',6);
+    $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+
+		    $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+
+        	$escudo_array      = top_reporte_escudo(false);
+			$escudo            = $escudo_array["escudo"];
+		    $entidad_federal   = $escudo_array["entidad_federal"];
+		    $dependencia       = $escudo_array["dependencia"];
+
+
+        	$varTOPh1=$entidad_federal;
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11=$entidad_federal;
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,9,"RETENCIÓN DE RESPONSABILIDAD ACUMULADO PENDIENTE DE RENDICIÓN",'RLB',1,'C');
+		$this->Ln(2);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(18,5,"",'TRL',0,'C');
+		$this->Cell(13,5,"",'TR',0,'C');
+		$this->Cell(25,5,"",'TRL',0,'C');
+		$this->Cell(75,5,"",'TR',0,'C');
+		$this->Cell(25,5,"BASE",'TR',0,'C');
+		$this->Cell(20,5,"PORCENTAJE",'TR',0,'C');
+		$this->Cell(0,5,"MONTO",'TR',1,'C');
+
+		$this->Cell(18,5,"FECHA",'RLB',0,'C');
+		$this->Cell(13,5,"AÑ0",'RB',0,'C');
+		$this->Cell(25,5,"ORDEN DE PAGO",'RLB',0,'C');
+		$this->Cell(75,5,"BENEFICIARIO",'RB',0,'C');
+		$this->Cell(25,5,"IMPONIBLE",'RB',0,'C');
+		$this->Cell(20,5,"RETENCIÓN",'RB',0,'C');
+		$this->Cell(0,5,"RETENCIÓN",'RB',1,'C');
+
+	}//fin funtion Header
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+if(isset($vacio) && $vacio=='si' && isset($mensaje)){
+   $pdf->Ln(8);
+   $pdf->SetFont('vera','BU',11);
+   $pdf->Cell(0,10,$mensaje,'',0,'C');
+}elseif(isset($vacio) && $vacio=='no'){
+
+$total=0;
+
+
+$aux   = "";
+$aux_2 = "";
+$aux_3 = "";
+
+
+$total_monto       = 0;
+$total_total_monto = 0;
+
+$total_partida_monto       = 0;
+$total_paritda_total_monto = 0;
+
+$ver_cuenta_bancaria = "";
+$ver_numero_cheque = "";
+$cuenta_bancaria = "";
+$cuenta_bancaria_monto = 0;
+
+
+
+$pdf->SetFont('vera','',7);
+foreach($datos_cuerpo_responsabilidad as $responsabilidad){
+
+
+if($cuenta_bancaria.'a'!=$responsabilidad[0]['cuenta_bancaria'].'a'){
+	    if($cuenta_bancaria_monto!=0){
+			    $pdf->SetFont('vera','B',6);
+				$pdf->Cell(170,7,"Total Cuenta: ",'TLBR',0,'R');
+				$pdf->Cell(0,7,$sisap->Formato2($cuenta_bancaria_monto),'TRLB',1,'R');
+				$cuenta_bancaria_monto = 0;
+	   }//fin if
+}//fin if
+
+$pdf->SetFont('vera','B',7);
+if($global=='si'){
+       if($aux!=$responsabilidad[0]['cod_dep']){
+          $aux = $responsabilidad[0]['cod_dep'];
+          if($total_monto!=0){
+			        $pdf->SetFont('vera','B',6);
+					$pdf->Cell(170,7,"Total Dependencia: ",'TLBR',0,'R');
+					$pdf->Cell(0,7,$sisap->Formato2($total_monto),'TRLB',1,'R');
+			}//fin
+          $total_total_monto         +=  $total_monto;
+          $total_monto           = 0;
+          $pdf->SetFont('vera','B',7);
+       	  $pdf->Cell(0,8,$responsabilidad[0]['denominacion'],'RLB',1,'C');
+       }//fin else
+}//fin if
+$total_monto               += $responsabilidad[0]['monto'];
+
+if($cuenta_bancaria.'a'!=$responsabilidad[0]['cuenta_bancaria'].'a'){
+
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(0,8,'Cuenta Bancaria: '.$responsabilidad[0]['cuenta_bancaria'],'TRLB',1,'L');
+		$cuenta_bancaria=$responsabilidad[0]['cuenta_bancaria'];
+}//fin if
+
+
+$pdf->SetFont('vera','',7);
+
+
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Cell(18,10,$sisap->cambia_fecha($responsabilidad[0]['fecha_proceso_registro']),'TRL',0,'C');
+$pdf->Cell(13,10,$responsabilidad[0]['ano_orden_pago'],'TR',0,'C');
+$pdf->Cell(25,10,$sisap->mascara_ocho($responsabilidad[0]['numero_orden_pago']),'TRL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(75,2,"",'T',2);
+		$pdf->MultiCell(74,2,$responsabilidad[0]['beneficiario'],'','L');
+		$varX = $varX+75;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(25,10,$sisap->Formato2($responsabilidad[0]['monto_descontar_impuesto']),'TRL',0,'R');
+        $pdf->Cell(20,10,$sisap->Formato2(0),'TRL',0,'R');
+$pdf->Cell(0,10,$sisap->Formato2($responsabilidad[0]['monto']),'TRL',1,'R');
+$total=$total+$responsabilidad[0]['monto'];
+$cuenta_bancaria_monto += $responsabilidad[0]['monto'];
+}//fin for
+
+
+ if($cuenta_bancaria_monto!=0){
+			    $pdf->SetFont('vera','B',6);
+				$pdf->Cell(170,7,"Total Cuenta: ",'TLBR',0,'R');
+				$pdf->Cell(0,7,$sisap->Formato2($cuenta_bancaria_monto),'TRLB',1,'R');
+				$cuenta_bancaria_monto = 0;
+}//fin if
+
+ if($total_monto!=0){
+			        $pdf->SetFont('vera','B',6);
+					$pdf->Cell(170,7,"Total Dependencia: ",'TLBR',0,'R');
+					$pdf->Cell(0,7,$sisap->Formato2($total_monto),'TRLB',1,'R');
+          if($global=='si'){
+					$pdf->SetFont('vera','B',6);
+					$pdf->Cell(170,7,"Total Institución: ",'LBR',0,'R');
+					$pdf->Cell(0,7,$sisap->Formato2($total),'TRLB',1,'R');
+          }//fin if
+}//fin
+
+
+/*
+$pdf->Cell(0,0,"",'T',1);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(160,5,"T O T A L ",'TRBL',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total),'TRB',1,'R');*/
+}
+$pdf->Output('Retencion_responsabilidad_acumulado_pendiente_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

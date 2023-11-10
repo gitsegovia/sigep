@@ -1,0 +1,122 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<div id="distribuir" style="height:250px; overflow:auto;">
+<table width="100%" cellspacing="0" cellpadding="0" id="grid"  class="tablacompromiso tablacompromiso2">
+<tr class="tr_negro" style="text-align:center;">
+    <td width="50"  height="30">Código</td>
+    <td>Denominación de la Transacción</td>
+    <td width="100">Monto <br/>de Asignación</td>
+    <td width="100">Monto <br/>de Deducción</td>
+    <td width="100">Saldo</td>
+    <td width="110">Frecuencia</td>
+</tr>
+<?php
+$asignacion = 0;
+$deduccion = 0;
+
+ 	$i=0;
+ 	$total=0;
+ 	$var = 0;
+
+ if(isset($datos_cnmd07_transacciones_actuales)){
+  if($datos_cnmd07_transacciones_actuales!=null){
+    foreach($datos_cnmd07_transacciones_actuales as $ve){
+    	$color = $i%2==0?"#CDF2FF": "#DAEBFF";
+?>
+
+<tr style="background-color:<?php echo $color;?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td style="padding-right:5px; text-align:center" height="22"><?= mascara_tres($ve['v_cnmd07_transacciones_actuales_frecuencias2']['cod_transaccion']); ?></td>
+    <td style="padding-right:5px; text-align:left"><?php echo $ve['v_cnmd07_transacciones_actuales_frecuencias2']['denominacion']?></td>
+    <td style="padding-right:5px; text-align:right"><?php if($ve['v_cnmd07_transacciones_actuales_frecuencias2']['cod_tipo_transacc']=="1"){
+							    	                               echo $sisap->Formato2($ve['v_cnmd07_transacciones_actuales_frecuencias2']['monto_cuota']);
+							    	                               $asignacion += $ve['v_cnmd07_transacciones_actuales_frecuencias2']['monto_cuota'];
+							    	                       }else{  echo "<br>"; } ?> </td>
+    <td style="padding-right:5px; text-align:right"><?php if($ve['v_cnmd07_transacciones_actuales_frecuencias2']['cod_tipo_transacc']=="2"){
+    	                                                          $var = $ve['v_cnmd07_transacciones_actuales_frecuencias2']['uso_transaccion'];
+    	                                                          if($var!=6 && $var!=9){
+    	                                                          	$deduccion += $ve['v_cnmd07_transacciones_actuales_frecuencias2']['monto_cuota'];
+    	                                                          	echo $sisap->Formato2($ve['v_cnmd07_transacciones_actuales_frecuencias2']['monto_cuota']);
+    	                                                          }else{
+    	                                                          	echo $sisap->Formato2($ve['v_cnmd07_transacciones_actuales_frecuencias2']['monto_cuota'])." * ";
+    	                                                          }
+    	                                                  }else{  echo "<br>"; } ?> </td>
+    <td style="padding-right:5px; text-align:right"><?= $sisap->Formato2($ve['v_cnmd07_transacciones_actuales_frecuencias2']['saldo']); ?></td>
+    <td style="text-align:center;font-size:7pt;"><?= $sisap->frecuencia($ve['v_cnmd07_transacciones_actuales_frecuencias2']['cod_frecuencia']); ?></td>
+</tr>
+<?php
+    	$i++;
+}//fin foreach
+$total = $asignacion - $deduccion;
+$color = $i%2==0?"#CDF2FF": "#DAEBFF";
+$color1 = $i%2==0?"#DAEBFF": "#CDF2FF";
+?>
+<tr style="background-color:<?php echo $color;?>" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+<tr style="background-color:<?php echo $color1;?>" class="textNegro2">
+    <td colspan="4" style="padding-right:5px; text-align:right;" class="td2" height="22">NETO A COBRAR: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><?= $sisap->Formato2($total) ?></td>
+    <td class="td2center">--</td>
+</tr>
+     <?
+}else{
+	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+     <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+
+</tr>
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="4" style="padding-right:5px; text-align:right;" class="td2" height="22">NETO A COBRAR: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><?= $sisap->Formato2($total) ?></td>
+    <td class="td2center">--</td>
+</tr>
+        <?
+}
+ }else{$total = 0;
+ 	 ?>
+<tr bgcolor="#DAEBFF" class="textNegro2">
+    <td class="td2center" height="22"  width="2">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+    <td class="td2center">--</td>
+</tr>
+
+<tr bgcolor="#CDF2FF" class="textNegro2">
+    <td colspan="4" style="padding-right:5px; text-align:right;" class="td2" height="22">NETO A COBRAR: </td>
+    <td  style="padding-right:5px; text-align:right" class="td2" id="TOTALINGRESOS"><?= $sisap->Formato2($total) ?></td>
+    <td class="td2center">--</td>
+</tr>
+        <?
+ }
+
+ //$i--;
+
+?>
+</table>
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+</div>
+
+
+
+
+
+

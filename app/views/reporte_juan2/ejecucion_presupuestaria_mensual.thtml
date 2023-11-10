@@ -1,0 +1,137 @@
+<?php
+
+if(isset($ELFORM) && $ELFORM==true){
+	?>
+<?= $sisap->Tabla('',true,'EJECUCIÓN PRESUPUESTARIA MENSUAL','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_juan2/ejecucion_presupuestaria_mensual/GENERAR'); ?>">
+
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '<br>', true)  ?>
+
+
+
+
+<center>Indique Año de Ejecuci&oacute;n:
+<?
+// $sisap->inputTagRemote('reporte/ano', array('url'=>'/reporte2/escribir_ano', 'update'=>'st_seleccion_1','id'=>'ano', 'size'=>'6','value'=>$ano,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);"))
+?>
+<?= $html->input('reporte/ano',array('id'=>'ano', 'size'=>'6','value'=>$ANO,'maxlength'=>4, "style"=>"text-align:center;", "onKeyPress"=>"return solonumeros(event);"));?>
+<br>
+</center>
+<br>
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+<br><br>
+</form>
+<?=$sisap->CloseTable()?>
+<?
+}else if(isset($ELFORM) && $ELFORM==false){
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+
+		$this->top_reporte("EJECUCIÓN PRESUPUESTARIA MENSUAL", null, null, array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"190"));
+
+
+
+    }//fin funtion
+}//fin clase
+
+
+$fpdf = new fpdfview('P','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(5);
+$fpdf->SetRightMargin(5);
+$fpdf->SetAutoPageBreak(true, 5);
+foreach($DATA as $rs){
+$total_aumento=0;
+$total_disminucion=0;
+$total_compromiso=0;
+$fpdf->AddPage();
+//******************************* PRIMER BLOQUE **************************************//
+$fpdf->SetFont('vera','B',5);
+$fpdf->Cell(10,5,"CÓDIGO",'TRL',0,'C');
+$fpdf->Cell(0,5," DENOMINACIÓN ",'TRL',1,'L');
+$fpdf->SetFont('vera','',6);
+$fpdf->Cell(10,10,$sisap->mascara_cuatro($rs[0]["cod_dep"]),'TRLB',0,'C');
+$fpdf->Cell(0,10,$rs[0]["dependencia"],'TRLB',1,'J');
+$fpdf->Cell(0,3,"",'',1,'C');
+$fpdf->SetFont('vera','B',5);
+//$fpdf->Cell(10,3,"",'TRL',0,'C');
+//$fpdf->Cell(50,3,"",'TRL',0,'C');
+$fpdf->Cell(10,3,"",'TRL',0,'C');
+$fpdf->Cell(32,3,"",'TRL',0,'C');
+$fpdf->Cell(32,3,"",'TRL',0,'C');
+$fpdf->Cell(32,3,"",'TRL',0,'C');
+$fpdf->Cell(32,3,"",'TRL',0,'C');
+$fpdf->Cell(32,3,"",'TRL',0,'C');
+$fpdf->Cell(0,3,"",'TRL',1,'C');
+//$fpdf->Cell(0,3,"",'L',1,'C');
+
+//$fpdf->Cell(10,3,"CÓDIGO",'RLB',0,'C');
+//$fpdf->Cell(50,3,"DENOMINACIÓN DEPENDENCIA",'RB',0,'C');
+$fpdf->Cell(10,3,"MESES",'LRB',0,'C');
+$fpdf->Cell(32,3,"ASIGNACIÓN ANUAL",'RB',0,'C');
+$fpdf->Cell(32,3,"AUMENTO",'RB',0,'C');
+$fpdf->Cell(32,3,"DISMINUCIÓN",'RB',0,'C');
+$fpdf->Cell(32,3,"TOTAL",'RB',0,'C');
+$fpdf->Cell(32,3,"COMPROMISOS",'RB',0,'C');
+$fpdf->Cell(0,3,"DISPONIBILIDAD",'RB',1,'C');
+//$fpdf->Cell(0,3,"",'R',1,'C');
+
+$fpdf->SetFont('vera','',6);
+$mes=array(1=>"ENE",2=>"FEB",3=>"MAR",4=>"ABR",5=>"MAY",6=>"JUN",7=>"JUL",8=>"AGO",9=>"SEP",10=>"OCT",11=>"NOV",12=>"DIC");
+
+	 for($i=1; $i<=12; $i++){
+	    //$fpdf->Cell(10,5,$sisap->mascara_cuatro($rs[0]["cod_dep"]),'RL',0,'C');
+	    //$varX = $fpdf->GetX();
+	    //$varY = $fpdf->GetY();
+	    //$fpdf->Cell(50,1,"",'',2,'R');
+	    //$fpdf->MultiCell(50,2,$rs[0]["dependencia"],'','J');//---[DENOMINACION]
+	    //$varX = $varX+50;
+	    //$varY = $varY;
+	    //$fpdf->SetXY($varX,$varY);
+	    $fpdf->Cell(10,6,$mes[$i],'LBR',0,'C');
+		$fpdf->Cell(32,6,$sisap->Formato2($rs[0]["asignacion_anual"]),'BR',0,'R');
+		$fpdf->Cell(32,6,$sisap->Formato2($rs[0]["aumento_".strtolower($mes[$i])]),'BR',0,'R');
+		$fpdf->Cell(32,6,$sisap->Formato2($rs[0]["disminucion_".strtolower($mes[$i])]),'BR',0,'R');
+		$fpdf->Cell(32,6,$sisap->Formato2($rs[0]["total_".strtolower($mes[$i])]),'BR',0,'R');
+
+		$fpdf->Cell(32,6,$sisap->Formato2($rs[0]["compromiso_".strtolower($mes[$i])]),'BR',0,'R');
+		$fpdf->Cell(0,6,$sisap->Formato2($rs[0]["disponibilidad_".strtolower($mes[$i])]),'BR',1,'R');
+                $total_aumento +=$rs[0]["aumento_".strtolower($mes[$i])];
+                $total_disminucion +=$rs[0]["disminucion_".strtolower($mes[$i])];
+                $total_compromiso +=$rs[0]["compromiso_".strtolower($mes[$i])];
+//$fpdf->Cell(0,5,"",'L',1,'R');
+		//$fpdf->Cell(0,0,"",'T',1);
+  }//fin for
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(10,5," ",'LRB',0,'C');
+$fpdf->Cell(32,5,$sisap->Formato2($rs[0]["asignacion_anual"]),'RB',0,'R');
+$fpdf->Cell(32,5,$sisap->Formato2($total_aumento),'RB',0,'R');
+$fpdf->Cell(32,5,$sisap->Formato2($total_disminucion),'RB',0,'R');
+$fpdf->Cell(32,5,$sisap->Formato2($rs[0]["total_dic"]),'RB',0,'R');
+$fpdf->Cell(32,5,$sisap->Formato2($total_compromiso),'RB',0,'R');
+$fpdf->Cell(0,5,$sisap->Formato2($rs[0]["disponibilidad_dic"]),'RB',1,'R');
+}
+
+$fpdf->Output('ejecucion_presupuestaria_mensual_'.date("d-m-Y").".pdf",'D');
+
+
+
+}//fin else if
+?>

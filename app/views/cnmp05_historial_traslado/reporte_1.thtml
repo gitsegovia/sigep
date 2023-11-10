@@ -1,0 +1,373 @@
+<?php
+/*
+ * Created on 20/01/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ if($opcion==1){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"TRANSLADO DE PERSONAL","","850");?>
+
+<form name="data[reporte_personal]" method="post" id='form' action="<?php echo $html->url('/cnmp05_historial_traslado/reporte_1/2'); ?>">
+<?= $sisap->OpenTable("850")?>
+
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td width="10%" align="center" align='center'>Seleccione</td>
+	    <td width="10%" align="center" align='center'>C&oacute;digo</td>
+	    <td width="80%" align="center" align='center'>Denominaci&oacute;n tipo n&oacute;mina</td>
+	</tr>
+	<tr>
+	    <td width="10%" align="center"><?=  $sisap->selectTagRemote('cnmp05_historial_traslado/cod_tipo_nomina', $cod_tipo_nomina , array(null),  null, array('onchange1'=>'/cnmp05_historial_traslado/codigo_nomina', 'update1'=>'codigo_nomi','onchange2'=>'/cnmp05_historial_traslado/denominacion_nomina', 'update2'=>'denominacion_nomi', 'id'=>'select_nomina'  , true), null, true); ?></td>
+		<td width="10%" align="center"><div id="codigo_nomi">      <input type="text"  name="data[cnmp05_historial_traslado][codigo]"        value="" size="33"  readonly="readonly" class="inputtext" style="text-align:center"/></div></td>
+		<td width="80%" align="center"><div id="denominacion_nomi"><input type="text"  name="data[cnmp05_historial_traslado][denominacion]"  value="" size="45"  readonly="readonly" class="inputtext"/></div></td>
+	</tr>
+</table>
+
+<br>
+
+<?= $sisap->radioTagRemote('/cnmp05_historial_traslado/opcion_busqueda1', array('1'=>'Todos los funcionarios', '2'=>'Uno en particular'), array('url1'=>'/cnmp05_historial_traslado/funcion_1/', 'update1'=>'funcion_1', "id"=>"opcion_busqueda1"),"", 1);?>
+
+<br><br>
+
+<?= $sisap->radioTagRemote('/cnmp05_historial_traslado/opcion_busqueda2', array('1'=>'Todo', '2'=>'Una de fecha de traslado en particular'), array('url1'=>'/cnmp05_historial_traslado/funcion_2/', 'update1'=>'funcion_2', "id"=>"opcion_busqueda2"),"", 1);?>
+
+
+
+<div id="funcion_1"></div>
+<div id="funcion_2"></div>
+
+<input type="hidden"  name="data[cnmp05_historial_traslado][cedula_identidad]" id="cedula_id"  value="" size="45"  readonly="readonly" class="inputtext"/>
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/reporte_personal/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}else  if($opcion==2){
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+
+	function Footer(){
+	}
+
+
+	function Header()
+	{
+        $this->top_reporte("TRANSLADO DE PERSONAL", $_SESSION["OPCION_DESDE_HASTA"], null, array("Y"=>"12", "X"=>"15", "Z"=>"12"), array("Y"=>"15", "X"=>"245"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(60,3,"",'TR',0,'C');
+		$this->Cell(20,3,"CÓDIGO",'TR',0,'C');
+		$this->Cell(20,3,"CEDÚLA",'TR',0,'C');
+		$this->Cell(45,3,"",'TR',0,'C');
+		$this->Cell(40,3,"UBICACIÓN",'TR',0,'C');
+		$this->Cell(40,3,"UBICACIÓN",'TR',0,'C');
+		$this->Cell(0,3,"FECHA DE",'TR',1,'C');
+
+		$this->Cell(20,3,"CARGO",'BRL',0,'C');
+		$this->Cell(60,3,"DEMONINACIÓN PUESTO",'BR',0,'C');
+		$this->Cell(20,3,"FICHA",'BR',0,'C');
+		$this->Cell(20,3,"IDENTIDAD",'BR',0,'C');
+		$this->Cell(45,3,"APELLIDOS Y NOMBRES",'BR',0,'C');
+		$this->Cell(40,3,"ANTERIOR",'BR',0,'C');
+		$this->Cell(40,3,"ACTUAL",'BR',0,'C');
+		$this->Cell(0,3,"TRASLADO",'BR',1,'C');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}//fin funtion
+}//fin clase
+
+
+
+
+
+
+//Creaci�n del objeto de la clase heredada
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 7);
+
+
+
+
+
+if($opcion_busqueda2==2 && $fecha_desde!=0 && $fecha_hasta!=0){
+    $_SESSION["OPCION_DESDE_HASTA"] = " FECHA DESDE ".$fecha_desde."  FECHA HASTA ".$fecha_hasta." ";
+}else{
+	$_SESSION["OPCION_DESDE_HASTA"]="";
+}
+
+
+
+
+$pdf->AddPage();
+
+
+
+
+
+$pdf->SetFont('vera','',6);
+
+
+
+        $cod_cargo_aux          = "";
+        $denominacion_clase_aux = "";
+        $cod_ficha_aux          = "";
+        $cedula_identidad_aux   = "";
+        $nombre_union_aux       = "";
+
+
+foreach($datos as $datos_aux){
+
+                    $cod_tipo_nomina    = $datos_aux["v_cnmd05_historial_traslado"]["cod_tipo_nomina"];
+                    $tipo_nomina        = $datos_aux["v_cnmd05_historial_traslado"]["tipo_nomina"];
+                    $cod_cargo          = $datos_aux["v_cnmd05_historial_traslado"]["cod_cargo"];
+                    $denominacion_clase = $datos_aux["v_cnmd05_historial_traslado"]["denominacion_clase"];
+                    $cod_ficha          = $datos_aux["v_cnmd05_historial_traslado"]["cod_ficha"];
+                    $cedula_identidad   = $datos_aux["v_cnmd05_historial_traslado"]["cedula_identidad"];
+                    $nacionalidad       = $datos_aux["v_cnmd05_historial_traslado"]["nacionalidad"];
+                    $primer_apellido    = $datos_aux["v_cnmd05_historial_traslado"]["primer_apellido"];
+                    $segundo_apellido   = $datos_aux["v_cnmd05_historial_traslado"]["segundo_apellido"];
+                    $primer_nombre      = $datos_aux["v_cnmd05_historial_traslado"]["primer_nombre"];
+                    $segundo_nombre     = $datos_aux["v_cnmd05_historial_traslado"]["segundo_nombre"];
+                    $secuencia          = $datos_aux["v_cnmd05_historial_traslado"]["secuencia"];
+                    $nombre_union       = $primer_apellido." ".$segundo_apellido." ".$primer_nombre." ".$segundo_nombre;
+
+                    $cod_dir_superior_anterior = $datos_aux["v_cnmd05_historial_traslado"]["cod_dir_superior_anterior"];
+                    $cod_coordinacion_anterior = $datos_aux["v_cnmd05_historial_traslado"]["cod_coordinacion_anterior"];
+                    $cod_secretaria_anterior   = $datos_aux["v_cnmd05_historial_traslado"]["cod_secretaria_anterior"];
+                    $cod_direccion_anterior    = $datos_aux["v_cnmd05_historial_traslado"]["cod_direccion_anterior"];
+                    $cod_division_anterior     = $datos_aux["v_cnmd05_historial_traslado"]["cod_division_anterior"];
+                    $cod_departamento_anterior = $datos_aux["v_cnmd05_historial_traslado"]["cod_departamento_anterior"];
+                    $cod_oficina_anterior      = $datos_aux["v_cnmd05_historial_traslado"]["cod_oficina_anterior"];
+
+                    $deno_cod_dir_superior_anterior = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_dir_superior_anterior"];
+                    $deno_cod_coordinacion_anterior = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_coordinacion_anterior"];
+                    $deno_cod_secretaria_anterior   = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_secretaria_anterior"];
+                    $deno_cod_direccion_anterior    = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_direccion_anterior"];
+                    $deno_cod_division_anterior     = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_division_anterior"];
+                    $deno_cod_departamento_anterior = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_departamento_anterior"];
+                    $deno_cod_oficina_anterior      = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_oficina_anterior"];
+
+                    $cod_dir_superior_actual = $datos_aux["v_cnmd05_historial_traslado"]["cod_dir_superior_actual"];
+                    $cod_coordinacion_actual = $datos_aux["v_cnmd05_historial_traslado"]["cod_coordinacion_actual"];
+                    $cod_secretaria_actual   = $datos_aux["v_cnmd05_historial_traslado"]["cod_secretaria_actual"];
+                    $cod_direccion_actual    = $datos_aux["v_cnmd05_historial_traslado"]["cod_direccion_actual"];
+                    $cod_division_actual     = $datos_aux["v_cnmd05_historial_traslado"]["cod_division_actual"];
+                    $cod_departamento_actual = $datos_aux["v_cnmd05_historial_traslado"]["cod_departamento_actual"];
+                    $cod_oficina_actual      = $datos_aux["v_cnmd05_historial_traslado"]["cod_oficina_actual"];
+
+                    $deno_cod_dir_superior_actual = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_dir_superior_actual"];
+                    $deno_cod_coordinacion_actual = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_coordinacion_actual"];
+                    $deno_cod_secretaria_actual   = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_secretaria_actual"];
+                    $deno_cod_direccion_actual    = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_direccion_actual"];
+                    $deno_cod_division_actual     = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_division_actual"];
+                    $deno_cod_departamento_actual = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_departamento_actual"];
+                    $deno_cod_oficina_actual      = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_oficina_actual"];
+
+                    $fecha_traslado  = $datos_aux["v_cnmd05_historial_traslado"]["fecha_traslado"];
+
+
+
+
+                    $deno_anterior[1] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_dir_superior_anterior"];
+                    $deno_anterior[2] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_coordinacion_anterior"];
+                    $deno_anterior[3] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_secretaria_anterior"];
+                    $deno_anterior[4] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_direccion_anterior"];
+                    $deno_anterior[5] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_division_anterior"];
+                    $deno_anterior[6] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_departamento_anterior"];
+                    $deno_anterior[7] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_oficina_anterior"];
+                    $deno_anterior[8] = "";
+
+
+                    $deno_actual[1] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_dir_superior_actual"];
+                    $deno_actual[2] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_coordinacion_actual"];
+                    $deno_actual[3] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_secretaria_actual"];
+                    $deno_actual[4] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_direccion_actual"];
+                    $deno_actual[5] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_division_actual"];
+                    $deno_actual[6] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_departamento_actual"];
+                    $deno_actual[7] = $datos_aux["v_cnmd05_historial_traslado"]["deno_cod_oficina_actual"];
+                    $deno_actual[8] = "";
+
+
+        if($cod_cargo_aux          != $cod_cargo          ||
+           $denominacion_clase_aux != $denominacion_clase ||
+           $cod_ficha              != $cod_ficha          ||
+           $cedula_identidad_aux   != $cedula_identidad   ||
+           $nombre_union_aux       != $nombre_union){
+
+                    $cod_cargo_aux          = $cod_cargo;
+			        $denominacion_clase_aux = $denominacion_clase;
+			        $cod_ficha_aux          = $cod_ficha;
+			        $cedula_identidad_aux   = $cedula_identidad;
+			        $nombre_union_aux       = $nombre_union;
+
+			        $cod_cargo          = mascara($cod_cargo,6);
+			        $denominacion_clase = $denominacion_clase;
+			        $cod_ficha          = mascara($cod_ficha,6);
+			        $cedula_identidad   = $cedula_identidad;
+			        $nombre_union       = $nombre_union;
+        }else{
+                    $cod_cargo          = "";
+			        $denominacion_clase = "";
+			        $cod_ficha          = "";
+			        $cedula_identidad   = "";
+			        $nombre_union       = "";
+        }//fin else
+
+
+        $pdf->SetFont('vera','',6);
+
+		$pdf->Cell(20,10,$cod_cargo,'BRL',0,'C');/////////////////////DATOS//////////////////7
+						$varX = $pdf->GetX();
+					    $varY = $pdf->GetY();
+					    $pdf->Cell(60,2,"",'',2,'C');
+					    $pdf->MultiCell(59,3,$denominacion_clase,'','J');/////////////////////DATOS//////////////////7
+					    $varX = $varX+60;
+					    $pdf->SetXY($varX,$varY);// cargo XY
+		$pdf->Cell(20,10,$cod_ficha,'BRL',0,'C');/////////////////////DATOS//////////////////7
+		$pdf->Cell(20,10,$cedula_identidad,'BR',0,'C');/////////////////////DATOS//////////////////7
+						$varX = $pdf->GetX();
+					    $varY = $pdf->GetY();
+					    $pdf->Cell(45,2,"",'',2,'C');
+					    $pdf->MultiCell(44,3,$nombre_union,'','J');/////////////////////DATOS//////////////////7
+					    $varX = $varX+45;
+					    $pdf->SetXY($varX,$varY);// cargo XY
+
+
+		$pdf->SetFont('vera','',5);
+		    $pdf->Cell(1,10,"",'LB',0,'C');
+						$varX = $pdf->GetX();
+					    $varY = $pdf->GetY();
+					    $pdf->Cell(39,1,"",'',2,'C');
+					    $pdf->MultiCell(38,3,$deno_cod_dir_superior_anterior,'','J');/////////////////////DATOS//////////////////7
+					    $varX = $varX+39;
+					    $pdf->SetXY($varX,$varY);// cargo XY
+					    $pdf->Cell(1,10,"",'LB',0,'C');
+					    $varX = $pdf->GetX();
+					    $varY = $pdf->GetY();
+					    $pdf->Cell(39,1,"",'',2,'C');
+					    $pdf->MultiCell(38,3,$deno_cod_dir_superior_actual,'','J');/////////////////////DATOS//////////////////7
+					    $varX = $varX+39;
+					    $pdf->SetXY($varX,$varY);// cargo XY
+	    $pdf->SetFont('vera','',6);
+
+
+		$pdf->Cell(0,10,cambiar_formato_fecha($fecha_traslado),'BLR',1,'C');/////////////////////DATOS//////////////////7
+		$pdf->Cell(0,0,"",'T',1,'C');
+
+
+
+
+
+		/////////////////////////////////////
+		for($contar=2; $contar<=8; $contar++){
+			if($contar==8 || $deno_anterior[$contar]!="" || $deno_actual[$contar]!=""){
+								        $pdf->Cell(20,10,"",'BRL',0,'C');/////////////////////DATOS//////////////////7
+														$varX = $pdf->GetX();
+													    $varY = $pdf->GetY();
+													    $pdf->Cell(60,2,"",'',2,'C');
+													    $pdf->MultiCell(59,3,"",'','J');/////////////////////DATOS//////////////////7
+													    $varX = $varX+60;
+													    $pdf->SetXY($varX,$varY);// cargo XY
+										$pdf->Cell(20,10,"",'BRL',0,'C');/////////////////////DATOS//////////////////7
+										$pdf->Cell(20,10,"",'BR',0,'C');/////////////////////DATOS//////////////////7
+														$varX = $pdf->GetX();
+													    $varY = $pdf->GetY();
+													    $pdf->Cell(45,2,"",'',2,'C');
+													    $pdf->MultiCell(44,3,"",'','J');/////////////////////DATOS//////////////////7
+													    $varX = $varX+45;
+													    $pdf->SetXY($varX,$varY);// cargo XY
+
+										$pdf->SetFont('vera','',5);
+										    $pdf->Cell(1,10,"",'LB',0,'C');
+														$varX = $pdf->GetX();
+													    $varY = $pdf->GetY();
+													    $pdf->Cell(39,1,"",'',2,'C');
+													    $pdf->MultiCell(38,3,$deno_anterior[$contar],'','J');/////////////////////DATOS//////////////////7
+													    $varX = $varX+39;
+													    $pdf->SetXY($varX,$varY);// cargo XY
+													    $pdf->Cell(1,10,"",'LB',0,'C');
+													    $varX = $pdf->GetX();
+													    $varY = $pdf->GetY();
+													    $pdf->Cell(39,1,"",'',2,'C');
+													    $pdf->MultiCell(38,3,$deno_actual[$contar],'','J');/////////////////////DATOS//////////////////7
+													    $varX = $varX+39;
+													    $pdf->SetXY($varX,$varY);// cargo XY
+
+										$pdf->SetFont('vera','',6);
+
+										$pdf->Cell(0,10,"",'BLR',1,'C');/////////////////////DATOS//////////////////7
+										$pdf->Cell(0,0,"",'T',1,'C');
+			}
+		}
+		////////////////////////////////////
+
+
+
+
+
+
+
+}
+
+
+
+$pdf->OutPut('historia_traslado_'.date("d-m-Y").".pdf",'D');
+
+
+
+
+}
+?>

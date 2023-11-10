@@ -1,0 +1,424 @@
+<?php
+
+ if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	      echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+if($var==1){
+
+
+?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,'Situación de créditos - Por Sector', null, "950");?>
+
+<?= $sisap->OpenTable('950'); ?>
+
+<form method = "post" action="<?php echo  $html->url('/canp00_reporte/cfpd05_situacion_credito_sector_1/2'); ?>" onSubmit="return cnap00_reporte_relacion_obras_proyecto_valida_radio_nivel_consulta();">
+
+<?php $sisap->radio_nivel_consulta($ano_lista, $ano_ejecucion, $vector_presi,  $cod_presi_seleccion); ?>
+
+<table width='100%' border='0' cellspacing='0' cellpadding='0' >
+		<tr>
+			<td align="center" id="radio">
+			  <?= $sisap->radioTagRemote("datos/tipo_presupuesto", array('6'=>'Todo', '1'=>'Ordinario', '2'=>'Coordinado', '3'=>'Laee',  '4'=>'Fides',  '5'=>'Ingresos extraordinario'), array('id'=>'tipo_presupuesto'), null, $opc=6); ?>
+			</td>
+		</tr>
+</table>
+
+<br>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'));?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($var==2){
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_a'] = "";
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-10);
+    	//Select Arial italic 8
+	$this->SetFont('vera','',5);
+    	//Print current and total page numbers
+   	 //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+	    $this->info_top_reporte(array("CRÉDITOS POR SECTOR ",$_SESSION["TITULO"], $_SESSION['recurso']), array("Y"=>"11", "X"=>"13", "Z"=>"11"), array("Y"=>"14", "X"=>"325"));
+
+
+            $this->SetFont('vera','B',7);
+
+            $this->Cell(40,5,'República','TBRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+
+	        if($_SESSION["tipo_top"]==1){
+
+		    $this->Cell(40,5,'Estado','BRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+
+
+
+	  }else if($_SESSION["tipo_top"]==2){
+
+	  	     $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+		     $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+
+
+	  }else if($_SESSION["tipo_top"]==3){
+
+	  	     $this->Cell(40,5,'Estado','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+			 $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+   			 $this->Cell(40,5,'Institución','RLB',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_INST"],'RB',1,'L'); //// AQUIE LA INSTITUCIÓN
+
+
+
+	  }else{
+
+	  }
+
+
+$this->Ln(3);
+
+         $this->SetFont('vera','B',5);
+
+		$this->Cell(11,2,"",'TRL',0,'C');
+		$this->Cell(50,1,"",'T',0,'C');
+		$this->Cell(31,2,"",'TLR',0,'C');
+		$this->Cell(30,2,"",'TLR',0,'C');
+		$this->Cell(30,2,"",'TLR',0,'C');
+		$this->Cell(31,2,"",'TLR',0,'C');
+		$this->Cell(31,2,"",'TLR',0,'C');
+		$this->Cell(31,2,"",'TLR',0,'C');
+		$this->Cell(31,2,"",'TLR',0,'C');
+		$this->Cell(30,2,"",'TLR',0,'C');
+		$this->Cell(0,2,"",'TLR',1,'C');
+
+
+		$this->Cell(11,2,"",'RL',0,'C');
+		$this->Cell(50,2,"",'',0,'C');
+		$this->Cell(31,2,"Asignación",'L',0,'C');
+		$this->Cell(30,2,"",'LR',0,'C');
+		$this->Cell(30,2,"",'LR',0,'C');
+		$this->Cell(31,2,"",'LR',0,'C');
+		$this->Cell(31,2,"",'LR',0,'C');
+		$this->Cell(31,2,"",'LR',0,'C');
+		$this->Cell(31,2,"",'LR',0,'C');
+		$this->Cell(30,2,"",'LR',0,'C');
+		$this->Cell(0,2,"",'LR',1,'C');
+
+		$this->Cell(11,6,"Sector",'RLB',0,'C');
+		$this->Cell(50,6,"Denominación",'B',0,'C');
+		$this->Cell(31,6,"Anual",'LB',0,'C');
+		$this->Cell(30,6,"Aumento",'LB',0,'C');
+		$this->Cell(30,6,"Disminución",'LB',0,'C');
+		$this->Cell(31,6,"Total",'LBR',0,'C');
+		$this->Cell(31,6,"Compromiso",'LBR',0,'C');
+		$this->Cell(31,6,"Causado",'LBR',0,'C');
+		$this->Cell(31,6,"Pagado",'LBR',0,'C');
+		$this->Cell(30,6,"Deuda",'LBR',0,'C');
+		$this->Cell(0,6,"Disponibilidad",'LBR',1,'C');
+
+
+
+
+
+
+	}//fin funtion
+
+
+
+
+
+
+
+}//fin clase
+
+
+$_SESSION['recurso'] = "";
+
+         if($tipo_presupuesto==1){  $_SESSION['recurso'] = "TIPO DE RECURSO: Ordinario";
+   }else if($tipo_presupuesto==2){  $_SESSION['recurso'] = "TIPO DE RECURSO: Coordinado";
+   }else if($tipo_presupuesto==3){  $_SESSION['recurso'] = "TIPO DE RECURSO: Laee";
+   }else if($tipo_presupuesto==4){  $_SESSION['recurso'] = "TIPO DE RECURSO: Fides";
+   }else if($tipo_presupuesto==5){  $_SESSION['recurso'] = "TIPO DE RECURSO: Ingreso Extraordinario"; }//fin else
+
+$_SESSION["tipo_top"] = 3;
+
+$_SESSION["DENO_REPUBLICA"]     = $DENO_REPUBLICA;
+$_SESSION["DENO_ESTADO"]        = $DENO_ESTADO;
+$_SESSION["DENO_COD_TIPO_INST"] = $DENO_COD_TIPO_INST;
+$_SESSION["DENO_INST"]          = $DENO_INST;
+
+
+if($year=="TODO"){
+	$_SESSION["TITULO"] = "TODOS LOS AÑOS";
+}else{
+	$_SESSION["TITULO"] = "AÑO: ".$year;
+}
+
+$pdf = new fpdfview('L','mm','LEGAL');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+$pdf->SetFont('vera','B',6);
+
+
+	$asignacion_anual=0;
+	$aumento=0;
+	$disminucion=0;
+	$total_asignacion=0;
+	$compromiso=0;
+	$causado=0;
+	$pagado=0;
+	$deuda=0;
+	$disponibilidad=0;
+
+	$total_asignacion_anual=0;
+	$total_aumento=0;
+	$total_disminucion=0;
+	$total_total_asignacion=0;
+	$total_compromiso=0;
+	$total_causado=0;
+	$total_pagado=0;
+	$total_deuda=0;
+	$total_disponibilidad=0;
+
+	$total_asignacion_anual_2=0;
+	$total_aumento_2=0;
+	$total_disminucion_2=0;
+	$total_total_asignacion_2=0;
+	$total_compromiso_2=0;
+	$total_causado_2=0;
+	$total_pagado_2=0;
+	$total_deuda_2=0;
+	$total_disponibilidad_2=0;
+
+   $aux_cod_presi         = 0;
+   $aux_cod_entidad       = 0;
+   $aux_cod_tipo_inst     = 0;
+   $aux_cod_inst          = 0;
+   $aux_cod_dep           = 0;
+   $aux_cod_dep_original  = 0;
+   $aux_ano               = 0;
+   $aux_cod_obra          = "";
+   $aux_codigo_prod_serv  = "";
+
+   $total_contratos_total        = 0;
+   $total_monto_proyectado_total = 0;
+
+   $total_contratos        = 0;
+   $total_monto_proyectado = 0;
+
+    $_SESSION["ANO_ESTIMACION"]     = "";
+	$_SESSION["COD_SNC"]            = "";
+	$_SESSION["DENO_COD_SNC"]       = "";
+    $_SESSION["DENO_ESTADO"]        = "";
+    $_SESSION["DENO_COD_TIPO_INST"] = "";
+    $_SESSION["DENO_INST"]          = "";
+
+
+if(isset($datos)){
+
+foreach($datos as $row){
+
+
+
+
+ if($aux_cod_presi         != $row[0]["cod_presi"]        ||
+	$aux_cod_entidad       != $row[0]["cod_entidad"]      ||
+	$aux_cod_tipo_inst     != $row[0]["cod_tipo_inst"]    ||
+	$aux_cod_inst          != $row[0]["cod_inst"]
+	){
+
+        $_SESSION["DENO_ESTADO"]        = $row[0]["deno_cod_entidad"];
+        $_SESSION["DENO_COD_TIPO_INST"] = $row[0]["deno_cod_tipo_inst"];
+        $_SESSION["DENO_INST"]          = $row[0]["deno_cod_inst"];
+
+        $aux_cod_presi         = $row[0]["cod_presi"];
+		$aux_cod_entidad       = $row[0]["cod_entidad"];
+		$aux_cod_tipo_inst     = $row[0]["cod_tipo_inst"];
+		$aux_cod_inst          = $row[0]["cod_inst"];
+
+
+	    $pdf->Cell(61,6,"TOTAL",'TRLB',0,'R');
+		$pdf->Cell(31,6,$sisap->Formato2($total_asignacion_anual),'LB',0,'R');//TOTAL ASIGNACION ANUAL
+		$pdf->Cell(30,6,$sisap->Formato2($total_aumento),'LB',0,'R');//TOTAL AUMENTO
+		$pdf->Cell(30,6,$sisap->Formato2($total_disminucion),'LB',0,'R');//TOTAL DISMINUCION
+		$pdf->Cell(31,6,$sisap->Formato2($total_total_asignacion),'LB',0,'R');//TOTAL TOTAL
+		$pdf->Cell(31,6,$sisap->Formato2($total_compromiso),'LB',0,'R');//TOTAL COMPROMISO
+		$pdf->Cell(31,6,$sisap->Formato2($total_causado),'LB',0,'R');//TOTAL CAUSADO
+		$pdf->Cell(31,6,$sisap->Formato2($total_pagado),'LB',0,'R');//TOTAL PAGADO
+		$pdf->Cell(30,6,$sisap->Formato2($total_deuda),'LB',0,'R');//TOTAL DEUDA
+		$pdf->Cell(0,6,$sisap->Formato2($total_disponibilidad),'LBR',1,'R');//TOTAL DISPONIBILIDAD
+
+		    $total_asignacion_anual=0;
+			$total_aumento=0;
+			$total_disminucion=0;
+			$total_total_asignacion=0;
+			$total_compromiso=0;
+			$total_causado=0;
+			$total_pagado=0;
+			$total_deuda=0;
+			$total_disponibilidad=0;
+
+
+       $pdf->AddPage();
+
+
+	}
+
+
+	$partida = $row[0]['cod_sector'];
+	$denominacion = $row[0]['denominacion'];
+	$asignacion_anual = $row[0]['asignacion_anual'];
+	$aumento = $row[0]['aumento'];
+	$disminucion = $row[0]['disminucion'];
+	$total_asignacion = $row[0]['total_asignacion'];
+	$compromiso = $row[0]['compromiso'];
+	$causado = $row[0]['causado'];
+	$pagado = $row[0]['pagado'];
+	$deuda = $row[0]['deuda'];
+	$disponibilidad = $row[0]['disponibilidad'];
+	$long=strlen($denominacion);
+	if($long<=45){//echo "a";
+		$height=5;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=10;
+	}else if($long>90 && $long<=135){//echo "c";
+		$height=14;
+	}else if($long>135 && $long<=170){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=26;
+	}else{
+		$height=28;
+	}
+
+	$pdf->Cell(11,$height,$sisap->AddCero3($partida),'LR',0,'C');//PARTIDA
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(50,1,"",'T',2,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->MultiCell(50,3,$denominacion,'','L');//AQUI DENOMINACION
+	$varX =$varX+50;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(31,$height,$sisap->Formato2($asignacion_anual),'L',0,'R');//ASIGNACION ANUAL
+	$pdf->Cell(30,$height,$sisap->Formato2($aumento),'L',0,'R');//AUMENTO
+	$pdf->Cell(30,$height,$sisap->Formato2($disminucion),'L',0,'R');//DISMINUCION
+	$pdf->Cell(31,$height,$sisap->Formato2($total_asignacion),'L',0,'R');//TOTAL
+	$pdf->Cell(31,$height,$sisap->Formato2($compromiso),'L',0,'R');//COMPROMISO
+	$pdf->Cell(31,$height,$sisap->Formato2($causado),'L',0,'R');//CAUSADO
+	$pdf->Cell(31,$height,$sisap->Formato2($pagado),'L',0,'R');//PAGADO
+	$pdf->Cell(30,$height,$sisap->Formato2($deuda),'L',0,'R');//DEUDA
+	$pdf->Cell(0,$height,$sisap->Formato2($disponibilidad),'LR',1,'R');//DISPONIBILIDAD
+	$pdf->Cell(0,0,"",'T',1,'R');
+
+	$total_asignacion_anual+=$asignacion_anual;
+	$total_aumento+=$aumento;
+	$total_disminucion+=$disminucion;
+	$total_total_asignacion+=$total_asignacion;
+	$total_compromiso+=$compromiso;
+	$total_causado+=$causado;
+	$total_pagado+=$pagado;
+	$total_deuda+=$deuda;
+	$total_disponibilidad+=$disponibilidad;
+
+	$total_asignacion_anual_2+=$asignacion_anual;
+	$total_aumento_2+=$aumento;
+	$total_disminucion_2+=$disminucion;
+	$total_total_asignacion_2+=$total_asignacion;
+	$total_compromiso_2+=$compromiso;
+	$total_causado_2+=$causado;
+	$total_pagado_2+=$pagado;
+	$total_deuda_2+=$deuda;
+	$total_disponibilidad_2+=$disponibilidad;
+
+
+}//FIN FOR
+
+
+	$pdf->Cell(61,6,"TOTAL",'TRLB',0,'R');
+	$pdf->Cell(31,6,$sisap->Formato2($total_asignacion_anual),'LB',0,'R');//TOTAL ASIGNACION ANUAL
+	$pdf->Cell(30,6,$sisap->Formato2($total_aumento),'LB',0,'R');//TOTAL AUMENTO
+	$pdf->Cell(30,6,$sisap->Formato2($total_disminucion),'LB',0,'R');//TOTAL DISMINUCION
+	$pdf->Cell(31,6,$sisap->Formato2($total_total_asignacion),'LB',0,'R');//TOTAL TOTAL
+	$pdf->Cell(31,6,$sisap->Formato2($total_compromiso),'LB',0,'R');//TOTAL COMPROMISO
+	$pdf->Cell(31,6,$sisap->Formato2($total_causado),'LB',0,'R');//TOTAL CAUSADO
+	$pdf->Cell(31,6,$sisap->Formato2($total_pagado),'LB',0,'R');//TOTAL PAGADO
+	$pdf->Cell(30,6,$sisap->Formato2($total_deuda),'LB',0,'R');//TOTAL DEUDA
+	$pdf->Cell(0,6,$sisap->Formato2($total_disponibilidad),'LBR',1,'R');//TOTAL DISPONIBILIDAD
+
+
+	$pdf->Cell(61,6,"TOTALES",'TRLB',0,'R');
+	$pdf->Cell(31,6,$sisap->Formato2($total_asignacion_anual_2),'LB',0,'R');//TOTAL ASIGNACION ANUAL
+	$pdf->Cell(30,6,$sisap->Formato2($total_aumento_2),'LB',0,'R');//TOTAL AUMENTO
+	$pdf->Cell(30,6,$sisap->Formato2($total_disminucion_2),'LB',0,'R');//TOTAL DISMINUCION
+	$pdf->Cell(31,6,$sisap->Formato2($total_total_asignacion_2),'LB',0,'R');//TOTAL TOTAL
+	$pdf->Cell(31,6,$sisap->Formato2($total_compromiso_2),'LB',0,'R');//TOTAL COMPROMISO
+	$pdf->Cell(31,6,$sisap->Formato2($total_causado_2),'LB',0,'R');//TOTAL CAUSADO
+	$pdf->Cell(31,6,$sisap->Formato2($total_pagado_2),'LB',0,'R');//TOTAL PAGADO
+	$pdf->Cell(30,6,$sisap->Formato2($total_deuda_2),'LB',0,'R');//TOTAL DEUDA
+	$pdf->Cell(0,6,$sisap->Formato2($total_disponibilidad_2),'LBR',1,'R');//TOTAL DISPONIBILIDAD
+
+}
+
+$pdf->Output('situacion_de_creditos_sector_'.date("d-m-Y").".pdf",'D');
+
+
+
+
+ } ?>

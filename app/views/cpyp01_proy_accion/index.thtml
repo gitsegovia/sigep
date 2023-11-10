@@ -1,0 +1,287 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<?$sisap->Tabla("",true,$titulo,"","950")?>
+<?$sisap->OpenTable("950");?>
+
+
+<?//*****************************************************
+		//trabajando con proyecto opcion=1
+//*******************************************************
+if(isset($opcion) && $opcion==1){?>
+	<form name='data[consulta]' method = "post" id='form1'>
+
+<?if(isset($transferir) && $transferir && !$consulta){?>
+
+	<table width="50%"  border="0" cellpadding="0" cellspacing="0" style='margin-top:10px;'>
+
+		<tr>
+			<td >Ej.</td>
+			<td><input type="text" name="data[transferir][ano_ejecucion]" value="<?=$formular-1?>" maxlength="4" size="3" style="text-align:center" readonly id='ano_ejecucion'/></td>
+			<td>Ej.</td>
+			<td><input type="text" name="data[transferir][ano_formular]" value="<?=$formular?>" maxlength="4" size="3" style="text-align:center" readonly id='ano_transferir'/></td>
+			<td><?= $sisap->submitTagRemote('Transferir', array('url1' => '/cpyp01_proy_accion/transferir/'.$opcion, 'update1'=>'principal')); ?> </td>
+
+		</tr>
+
+	</table>
+	<?}?>
+	<br><br><br><br>
+
+	<?
+			//************* tabla de daTOS***************
+			$modelo_form="cpyp01_proy_accion";
+			?>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+		<tr>
+			<td width="35%">EJERCICIO A FORMULAR</td>
+			<td><?= $sisap->inputTagRemote($modelo_form.'/ej_formular', array('url'=>'/'.$modelo_form.'/index/'.$opcion.'/'.$this->data['cpyp01_proy_accion']['ej_formular'],'update'=>'principal','size'=>'4' , 'id'=>'ej_formular','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$formular));?></td>
+		</tr>
+
+		<tr>
+			<td>C&Oacute;DIGO DEL PROYECTO</td>
+			<td><?= $sisap->inputTagRemote($modelo_form.'/cod_proyecto', array('url'=>'/'.$modelo_form.'/revisar','update'=>'rev_cod','size'=>'20' , 'id'=>'cod_proyecto'));?></td>
+		</tr>
+
+
+		<tr>
+			<td>C&Oacute;DIGO DEL PROYECTO SEG&Uacute;N LA ONAPRE</td>
+			<td><?= $html->input($modelo_form.'/cod_onapre',array('id'=>'cod_onapre', 'size'=>'20', 'style'=>'text-align:left','maxlength'=>'20'));?></td>
+		</tr>
+
+
+		<tr>
+			<td>DENOMINACI&Oacute;N DEL PROYECTO</td>
+			<td><?= $html->input($modelo_form.'/denominacion',array('id'=>'denominacion', 'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+		<tr>
+			<td>DESCRIPCI&Oacute;N DEL PROYECTO</td>
+			<td><?= $html->textarea($modelo_form.'/descripcion', array('id'=>'descripcion','rows'=>'2',  'cols' => '40', 'class'=>'inputtext'),  false) ?></td>
+		</tr>
+
+		<tr>
+			<td>UNIDAD EJECUTORA DEL PROYECTO</td>
+			<td><?= $html->input($modelo_form.'/unidad_ej',array('id'=>'unidad_ej',  'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+
+		<tr>
+			<td>FUNCIONARIO RESPONSABLE UNIDAD EJECUTORA</td>
+			<td><?= $html->input($modelo_form.'/funcionario',array('id'=>'funcionario',  'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+		<tr>
+			<td>FECHA DE CREACI&Oacute;N</td>
+			<td><?=$sisap->input_fecha("cpyp01_proy_accion","fecha","fecha", date('d/m/Y'), array()); ?></td>
+		</tr>
+
+		<tr>
+        <?if(!$consulta){?>
+		<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Proyecto', array('funcion'=>'valida_cpyp01','url1' => '/cpyp01_proy_accion/guardar_proyecto/1', 'update1'=>'principal')); ?></td>
+		<?}?>
+		</tr>
+
+	</table>
+	</form>
+	<br><br>
+	<?
+			//************* grilla*******************
+	if(isset($transferir) && !$transferir){?>
+	<div id="Lista" class="Lista">
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+		<tr>
+			<td  colspan="4" align="left">PROYECTOS REGISTRADOS  PARA ESTE  EJERCICIO PRESUPUESTARIO:</td>
+		</tr>
+		<tr class="tr_negro">
+			<td width="12%" align="center">C&oacute;digo</td>
+			<td width="40%" align="center">Denominaci&oacute;n</td>
+			<td width="20%" align="center">UNIDAD EJECUTORA</td>
+			<td width="8%" align="center">Acci&oacute;n</td>
+		</tr>
+
+		<?if(isset($datos) && $datos!=null){
+			$color="#DAEBFF";
+
+			foreach($datos as $x){
+			   	$ale = rand();
+    	    	$id_fila = ''.$ale.'_'.$i;
+       		 	$fila = 'fila_'.$ale.'_'.$i;
+        		$param_eliminar = $x[$modelo]["cod_proy_accion"]."/".$opcion."/".$x[$modelo]["ano"];
+        		$param_editar = $x[$modelo]["cod_proy_accion"].'/'.$opcion."/".$x[$modelo]["ano"];
+
+
+				if($color=="#DAEBFF"){
+	    			$color="#CDF2FF";
+		    	}else{
+		    		$color="#DAEBFF";
+		    	}
+		  ?>
+				<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+					<td width="12%" align="center"><?=$x['cpyd01_proy_accion']['cod_proy_accion']?></td>
+					<td width="40%" align="left"><?=$x['cpyd01_proy_accion']['denominacion']?></td>
+					<td width="20%" align="center"><?=$x['cpyd01_proy_accion']['unidad_ejecutora']?></td>
+					<td width="8%" align="center">
+					        <?if(!$consulta){?>
+					        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpyp01_proy_accion/eliminar/'.$param_eliminar, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpyp01_proy_accion/editar/'.$param_editar, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+							<?}?>
+					</td>
+				</tr>
+
+			<?}
+		}?>
+	</table>
+	</div>
+	<?}?>
+
+<?}else{//fin de proyecto opcion=1?>
+
+
+	<form name='data[consulta]' method = "post" id='form1'>
+
+<?if(isset($transferir) && $transferir && !$consulta){?>
+
+	<table width="50%"  border="0" cellpadding="0" cellspacing="0" style='margin-top:10px;'>
+
+		<tr>
+			<td >Ej.</td>
+			<td><input type="text" name="data[transferir][ano_ejecucion]" value="<?=$formular-1?>" maxlength="4" size="3" style="text-align:center" readonly id='ano_ejecucion'/></td>
+			<td>Ej.</td>
+			<td><input type="text" name="data[transferir][ano_formular]" value="<?=$formular?>" maxlength="4" size="3" style="text-align:center" readonly id='ano_transferir'/></td>
+			<td><?= $sisap->submitTagRemote('Transferir', array('url1' => '/cpyp01_proy_accion/transferir/'.$opcion, 'update1'=>'principal')); ?> </td>
+		</tr>
+
+	</table>
+	<?}?>
+	<br><br><br><br>
+
+	<?
+			//************* tabla de daTOS***************
+			$modelo_form="cpyp01_proy_accion";
+			?>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+		<tr>
+			<td width="35%">EJERCICIO A FORMULAR</td>
+			<td>
+				<?= $sisap->inputTagRemote($modelo_form.'/ej_formular', array('url'=>'/'.$modelo_form.'/index/'.$opcion.'/'.$this->data['cpyp01_proy_accion']['ej_formular'],'update'=>'principal','size'=>'4' , 'id'=>'ej_formular','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$formular));?>
+			</td>
+		</tr>
+
+		<tr>
+			<td>C&Oacute;DIGO DE LA ACCI&Oacute;N CENTRALIZADA</td>
+			<td><?= $sisap->inputTagRemote($modelo_form.'/cod_proyecto', array('url'=>'/'.$modelo_form.'/revisar','update'=>'rev_cod','size'=>'20' , 'id'=>'cod_proyecto'));?></td>
+		</tr>
+
+		<tr>
+			<td>DENOMINACI&Oacute;N DE LA ACCI&Oacute;N CENTRALIZADA</td>
+			<td><?= $html->input($modelo_form.'/denominacion',array('id'=>'denominacion', 'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+		<tr>
+			<td>DESCRIPCI&Oacute;N DE LA ACCI&Oacute;N CENTRALIZADA</td>
+			<td><?= $html->textarea($modelo_form.'/descripcion', array('id'=>'descripcion','rows'=>'2',  'cols' => '40', 'class'=>'inputtext'),  false) ?></td>
+		</tr>
+
+		<tr>
+			<td>UNIDAD EJECUTORA DE LA ACCI&Oacute;N CENTRALIZADA</td>
+			<td><?= $html->input($modelo_form.'/unidad_ej',array('id'=>'unidad_ej',  'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+
+		<tr>
+			<td>FUNCIONARIO RESPONSABLE UNIDAD EJECUTORA</td>
+			<td><?= $html->input($modelo_form.'/funcionario',array('id'=>'funcionario',  'class'=>'inputtext', 'style'=>'text-align:left','maxlength'=>'250'));?></td>
+		</tr>
+
+		<tr>
+			<td>FECHA DE CREACI&Oacute;N</td>
+			<td><?=$sisap->input_fecha("cpyp01_proy_accion","fecha","fecha", date('d/m/Y'), array()); ?></td>
+		</tr>
+
+		<tr>
+        <?if(!$consulta){?>
+		<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Acción', array('funcion'=>'valida_cpyp01_2','url1' => '/cpyp01_proy_accion/guardar_proyecto/2', 'update1'=>'principal')); ?></td>
+		<?}?>
+		</tr>
+
+	</table>
+	</form>
+	<br><br>
+	<?
+			//************* grilla*******************
+	if(isset($transferir) && !$transferir){?>
+	<div id="Lista" class="Lista">
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+
+		<tr>
+			<td  colspan="4" align="left">ACCIONES CENTRALIZADAS REGISTRADAS PARA ESTE EJERCICIO PRESUPUESTARIO:</td>
+		</tr>
+
+		<tr class="tr_negro">
+			<td width="12%" align="center">C&oacute;digo</td>
+			<td width="40%" align="center">Denominaci&oacute;n</td>
+			<td width="20%" align="center">UNIDAD EJECUTORA</td>
+			<td width="8%" align="center">Acci&oacute;n</td>
+		</tr>
+
+		<?if(isset($datos) && $datos!=null){
+			$color="#DAEBFF";
+
+			foreach($datos as $x){
+			   	$ale = rand();
+    	    	$id_fila = ''.$ale.'_'.$i;
+       		 	$fila = 'fila_'.$ale.'_'.$i;
+        		$param_eliminar = $x[$modelo]["cod_proy_accion"]."/".$opcion."/".$x[$modelo]["ano"];
+        		$param_editar = $x[$modelo]["cod_proy_accion"].'/'.$opcion."/".$x[$modelo]["ano"];
+
+
+				if($color=="#DAEBFF"){
+	    			$color="#CDF2FF";
+		    	}else{
+		    		$color="#DAEBFF";
+		    	}
+		  ?>
+				<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+					<td width="12%" align="center"><?=$x['cpyd01_proy_accion']['cod_proy_accion']?></td>
+					<td width="40%" align="left"><?=$x['cpyd01_proy_accion']['denominacion']?></td>
+					<td width="20%" align="center"><?=$x['cpyd01_proy_accion']['unidad_ejecutora']?></td>
+					<td width="8%" align="center">
+					        <?if(!$consulta){?>
+					        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpyp01_proy_accion/eliminar/'.$param_eliminar, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+      						<?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpyp01_proy_accion/editar/'.$param_editar, array('update'=>'principal','title'=>'Modificar'),false,false,true) ?>
+							<?}?>
+					</td>
+				</tr>
+
+			<?}
+		}?>
+	</table>
+	</div>
+	<?}?>
+
+
+
+
+
+<?}// fin aciones decentralizadas opcion=2?>
+<?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>
+<div id="rev_cod"></div>
+<script>
+$('cod_proyecto').value='';
+<?if($opcion==1){?>$('cod_onapre').value='';<?}?>
+$('denominacion').value='';
+$('descripcion').value='';
+$('unidad_ej').value='';
+$('funcionario').value='';
+
+</script>

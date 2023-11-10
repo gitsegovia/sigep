@@ -1,0 +1,196 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+//$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+    //$this->SetY(-10);
+    //$this->SetFont('vera','',6);
+    //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+
+		    $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	$escudo_array      = top_reporte_escudo(false);
+			$escudo            = $escudo_array["escudo"];
+		    $entidad_federal   = $escudo_array["entidad_federal"];
+		    $dependencia       = $escudo_array["dependencia"];
+			$varTOPh1="".$entidad_federal;
+			$varTOPh2="".$_SESSION['titulo_a'];
+			$varTOPh11=$dependencia;
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,9,"RETENCIÓN DE RESPOSABILIDAD CIVIL ACUMULADO PENDIENTE DE RENDICIÓN",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+    	$this->SetFont('vera','B',5);
+    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:ia"));
+
+		$this->Ln(2);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(18,5,"",'TRL',0,'C');
+		$this->Cell(13,5,"",'TR',0,'C');
+		$this->Cell(25,5,"",'TRL',0,'C');
+		$this->Cell(75,5,"",'TR',0,'C');
+		$this->Cell(25,5,"BASE",'TR',0,'C');
+		$this->Cell(20,5,"PORCENTAJE",'TR',0,'C');
+		$this->Cell(0,5,"MONTO",'TR',1,'C');
+
+		$this->Cell(18,5,"FECHA",'RLB',0,'C');
+		$this->Cell(13,5,"AÑ0",'RB',0,'C');
+		$this->Cell(25,5,"ORDEN DE PAGO",'RLB',0,'C');
+		$this->Cell(75,5,"BENEFICIARIO",'RB',0,'C');
+		$this->Cell(25,5,"IMPONIBLE",'RB',0,'C');
+		$this->Cell(20,5,"RETENCIÓN",'RB',0,'C');
+		$this->Cell(0,5,"RETENCIÓN",'RB',1,'C');
+
+	}//fin funtion Header
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+if(isset($vacio) && $vacio=='si' && isset($mensaje)){
+   $pdf->Ln(8);
+   $pdf->SetFont('vera','BU',11);
+   $pdf->Cell(0,10,$mensaje,'',0,'C');
+}elseif(isset($vacio) && $vacio=='no'){
+
+$total=0;
+$cuenta_bancaria = "";
+$cuenta_aux      = "";
+$cuenta_bancaria_monto = 0;
+
+
+$pdf->SetFont('vera','',7);
+
+foreach($datos_ordenpago as $orden){
+
+	$cuenta=$orden['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+	$cuenta_bancaria_cuenta=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+
+if($cuenta_bancaria.'a'!=$cuenta_bancaria.'a'){
+	    if($cuenta_bancaria_monto!=0){
+			    $pdf->SetFont('vera','B',6);
+				$pdf->Cell(170,7,"Total Cuenta: ",'TLBR',0,'R');
+				$pdf->Cell(0,7,$sisap->Formato2($cuenta_bancaria_monto),'TRLB',1,'R');
+				$cuenta_bancaria_monto = 0;
+	   }//fin if
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(0,8,'Cuenta Bancaria: '.$cuenta_bancaria_cuenta,'TRLB',1,'L');
+		$cuenta_bancaria=$orden['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+}//fin if
+
+
+
+foreach($datos_cuerpo_multa as $multa){
+	if($orden['cepd03_ordenpago_cuerpo']['numero_orden_pago']==$multa['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(0,0,"",'T',1);
+		$pdf->Cell(18,10,$sisap->cambia_fecha($multa['cstd07_retenciones_cuerpo_multa']['fecha_proceso_registro']),'TRL',0,'C');
+		$pdf->Cell(13,10,$multa['cstd07_retenciones_cuerpo_multa']['ano_orden_pago'],'TR',0,'C');
+		$pdf->Cell(25,10,$sisap->mascara_ocho($multa['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']),'TRL',0,'C');
+		$cuenta_aux      = $orden['cepd03_ordenpago_cuerpo']['cuenta_bancaria'];
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(75,2,"",'T',2);
+		$pdf->MultiCell(74,2,$orden['cepd03_ordenpago_cuerpo']['beneficiario'],'','L');
+		$varX = $varX+75;
+		$pdf->SetXY($varX,$varY);
+		//$a = ($orden['cepd03_ordenpago_cuerpo']['monto_coniva'] -($orden['cepd03_ordenpago_cuerpo']['monto_iva']+$orden['cepd03_ordenpago_cuerpo']['monto_retencion_fielcumplimiento']+$orden['cepd03_ordenpago_cuerpo']['monto_retencion_laboral']));
+        //$pdf->Cell(25,10,$sisap->Formato2($a),'TRL',0,'R');
+
+        $bandera = 0;
+        foreach($datos_ordenpago_facturas as $ve_aux2){
+			if($ve_aux2['cepd03_ordenpago_facturas']['ano_orden_pago']==$multa['cstd07_retenciones_cuerpo_multa']['ano_orden_pago']  &&  $ve_aux2['cepd03_ordenpago_facturas']['numero_orden_pago']==$multa['cstd07_retenciones_cuerpo_multa']['numero_orden_pago']){
+			$pdf->Cell(25,10,$sisap->Formato2($ve_aux2[0]['monto_sub_total']),'TRL',0,'R');
+			$bandera = 1;
+			}else{
+			//$pdf->Cell(25,10,$sisap->Formato2(0),'TRL',0,'R');
+			}
+		}//fin foreach
+
+		if($bandera==0){
+			    $pdf->Cell(25,10,$sisap->Formato2(0),'TRL',0,'R');
+		}
+
+
+        $pdf->Cell(20,10,$sisap->Formato2(0),'TRL',0,'R');
+        $pdf->Cell(0,10,$sisap->Formato2($multa['cstd07_retenciones_cuerpo_multa']['monto']),'TRL',1,'R');
+        $total=$total+$multa['cstd07_retenciones_cuerpo_multa']['monto'];
+        $cuenta_bancaria_monto += $multa['cstd07_retenciones_cuerpo_multa']['monto'];
+  	}//fin if
+}//fin for
+
+}//fin for
+
+
+
+
+
+
+
+
+
+ if($cuenta_bancaria_monto!=0){
+			    $pdf->SetFont('vera','B',6);
+				$pdf->Cell(170,7,"Total Cuenta: ",'TLBR',0,'R');
+				$pdf->Cell(0,7,$sisap->Formato2($cuenta_bancaria_monto),'TRLB',1,'R');
+				$cuenta_bancaria_monto = 0;
+}//fin if
+
+
+
+$pdf->Cell(0,0,"",'T',1);
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(160,5,"T O T A L ",'TRBL',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total),'TRB',1,'R');
+}
+$pdf->Output('Retencion_multa_pendiente_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

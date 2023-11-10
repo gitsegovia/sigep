@@ -1,0 +1,130 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+
+
+<?$sisap->Tabla("",true,"REQUERIMIENTOS DE LA POBLACIÓN","","750")?>
+
+<form name='data[ccnp00]'  method = "post" id='registroasignacion' >
+<?$sisap->OpenTable("750");?>
+
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+	<tr align="center">
+		<td width="10%">Código</td>
+		<td width="40%">Denominación del requerimiento</td>
+		<td width="10%">Tipo <br> Requerimiento</td>
+		<td width="13%">Código<br>Proyecto</td>
+		<td width="17%">Status</td>
+		<td width="10%">Acción</td>
+	</tr>
+	<tr align="center" >
+		<td ><?= $html->input('arrp00/codigo', $htmlAttributes = array('value'=>$sisap->zero($cod_requerimiento),'style'=>'width:98%;text-align:center','id'=>'codigo','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);','readonly'=>'readonly'), false); ?></td>
+		<td ><?= $html->textarea('arrp00/denominacion', $htmlAttributes = array("class"=>"inputtext", 'style'=>'width:100%', 'id'=>'denominacion', 'value'=>'','readonly'=>'','rows'=>'4'), false); ?></td>
+		<td ><?= $sisap->selectTagRemote('arrp00/tipo_requerimiento', $tipo_requerimiento ,null,null, array('onchange1'=>'/ccnp01_recursos_necesarios/seleccion_actividad/', 'update1'=>'tab_pestana_descripcion_proyecto_2','id'=>'actividad',  true), null, true);?> </td>
+		<td ><?= $html->input('arrp00/proyecto', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+		<td ><?= $html->input('arrp00/status', $htmlAttributes = array('value'=>'NO ATENDIDO','style'=>'width:98%','id'=>'denominacion','class'=>'inputtext'), false); ?></td>
+		<td><?= $sisap->submitTagRemote('+', array('id'=>'save','disabled'=>'','url1' => '/ccnp01_requerimientos_poblacion/guardar', 'update1'=>'vacio')); ?></td>
+	</tr>
+
+    <tr>
+</table>
+
+<br>
+<div id="grilla" style="height:250px; overflow:auto;">
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center" class="tr_negro">
+			<td width="10%">Código</td>
+			<td width="40%">Denominación del requerimiento</td>
+			<td width="10%">Tipo <br> Requerimiento</td>
+			<td width="13%">Código<br>Proyecto</td>
+			<td width="17%">Status</td>
+			<td width="10%">Acción</td>
+		</tr>
+
+		<? if($datos!=null){
+			 	$j=0;
+				foreach($paren as $x){
+					$deno[$j] = $x['ccnd02_tipo_requerimiento']['denominacion'];
+					$codigo[$j] = $x['ccnd02_tipo_requerimiento']['cod_tipo_requerimiento'];
+					$j++;
+				}
+			for($i=0;$i<count($datos);$i++){
+				if($i%2==0){
+	    			$color="#CDF2FF";
+		    	}else{
+		    		$color="#DAEBFF";
+		    	}
+		    	$id_fila = (int) rand()."_".$i;
+				$fila = "fila_".$id_fila;
+
+		    	if($datos[$i][0]['status']==1){
+		    		$status='NO ATENDIDO';
+		    	}else if($datos[$i][0]['status']==2){
+		    		$status='EN PROYECTO';
+		    	}else if($datos[$i][0]['status']==3){
+		    		$status='EN EJECUCIÓN';
+		    	}else{
+		    		$status='EJECUTADO';
+		    	}
+		  ?>
+		  <tr bgcolor=<?=$color?> id="<?= $fila ?>" onclick="new Effect.Highlight(this);" >
+		  		<td align="center"><?=$sisap->zero($datos[$i][0]['cod_requerimiento'])?></td>
+		  		<td ><?= $datos[$i][0]['denominacion']?></td>
+				<td align="center"><?= denominacion($deno, $codigo,$datos[$i][0]['cod_tipo_requerimiento']) ?></td>
+				<td align="center"><?=$datos[$i][0]['cod_proyecto']?></td>
+				<td align="center"><?= $status?></td>
+				<?if($datos[$i][0]['status']==1){?><td align="center" id="<?= "li_".$i ?>">
+					<a href="javascript:ver_documento('/ccnp01_requerimientos_poblacion/modificar/<?=$datos[$i][0]['cod_requerimiento']?>/<?=$i?>','<?= $fila ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos del requerimiento'))?></a>
+					<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/ccnp01_requerimientos_poblacion/eliminar/'.$datos[$i][0]['cod_requerimiento'], array('update'=>'vacio', 'title'=>'Eliminar'), "Realmente desea Eliminar este requerimiento?", false, true); ?>
+				</td>
+				<?}else{
+					echo "<td>&nbsp;</td>";
+				}?>
+		 </tr>
+
+
+
+	<?		} ?>
+		<input type="hidden" id="TI" value="<?=$i?>"/>
+
+		<?}else{ ?>
+			 <tr bgcolor="#DAEBFF"  onclick="new Effect.Highlight(this);" >
+			  		<td align="center">&nbsp;</td>
+			  		<td >&nbsp;</td>
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+					<td align="center">&nbsp;</td>
+			 </tr>
+
+
+	<?	} ?>
+	</table>
+
+
+</div>
+
+<div id="vacio"></div>
+
+<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/ccnp01_concejo_comunales_entrada/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>

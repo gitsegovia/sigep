@@ -1,0 +1,129 @@
+<?php
+
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$monto_total = 0;
+$i=0;
+$color="#CDF2FF";
+
+?>
+
+
+
+<div id="grabar" style="height:200px; overflow:auto;">
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="16%">MONTO</td>
+    <td align="center" width="8%">--</td>
+  </tr>
+  <?php
+ if(isset($_SESSION ["items"])){
+  if($_SESSION ["items"]!=null){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+
+
+    foreach($_SESSION ["items"] as $codigos){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+$rand=rand();
+
+if($codigos['id']=="no" && $codigos['id']!="0"){
+
+}else{
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i.$rand ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <?
+
+   for($x=0;$x<=11;$x++){
+   	if($x==11){
+   		 echo "<td align=\"right\" class='td2' height='22' id='denominacion_".$codigos['id']."' >".$codigos[$x]."</td>";
+   		 $monto_total=$monto_total+$sisap->Formato1($codigos[$x]);
+
+   		 ?><input type="hidden" id="<?php echo 'monto_'.$i; ?>" value="<?= $sisap->Formato2($codigos[$x]); ?>"> <?php
+
+   	}else{
+   		 echo "<td align=\"center\" class='td2center' height='22' >".$codigos[$x]."</td>";
+   	}
+}
+   ?>
+   <td align="center">
+	     <div id="iconos_1_<?= $codigos['id'] ?>">
+	             <?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/caop00_cfpp07_ejecucion/editar/'.$codigos['id'], array('update'=>"denominacion_".$codigos['id'],'title'=>'Editar'),false,false,true); ?>
+			     <?= $ajax->link($html->image('delete.png',array('border'=>0)),      '/caop00_cfpp07_ejecucion/eliminar_items/'.$codigos['id'], array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_".$i.$rand."');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		  </div>
+		  <div id="iconos_2_<?= $codigos['id'] ?>" style="display:none;">
+			     <?= $sisap->submitTagRemote('', array('url1' => '/caop00_cfpp07_ejecucion/agregar_partidas_modificacion/'.$codigos['id'], 'update1'=>'ListaPresupuestaria', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$codigos['id'])); ?>
+		         <?php echo $ajax->link($html->image('cancel.png',array('border'=>0)), '/caop00_cfpp07_ejecucion/cancelar/'.$codigos['id'], array('update'=>'ListaPresupuestaria','title'=>'Cancelar'),false,false,true); ?>
+		  </div>
+   </td>
+  </tr>
+<?
+}
+
+    	$i++;
+
+    }//fin foreach
+  }
+ }
+
+
+        if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+
+?>
+<tr bgcolor="<?=$color?>" class="textNegro2"><td colspan="11" style="padding-right:5px; text-align:right;" class="td2" height="22">TOTAL <?=MONEDA2?>: </td>
+    <td align="right" id="TOTALINGRESOS" style="font-weight:bold;" ><?=$sisap->Formato2($monto_total);?></td><td><br></td></tr>
+</table>
+
+<input type="hidden" name="data[cscd04_ordencompra_autorizacion][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+
+<div id="del"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

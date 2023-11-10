@@ -1,0 +1,642 @@
+<?php
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.032 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+
+function Header()
+{
+
+$this->image_escudo(12,32,23);
+$this->SetFont('vera','B',10);
+$this->Cell(20,6,"",'TL',0);
+$this->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);
+$this->Cell(25,4,"",'L',0);
+$this->SetFont('vera','',9);
+$this->Cell(0,4,$_SESSION['titulo'],'R',1);
+$this->SetFont('vera','B',12);
+$this->Cell(30,10,"",'L',0);
+$this->MultiCell(0,5,"PRESUPUESTO DE GASTOS POR SECTORES A NIVEL DE\n PARTIDAS Y SUB-PARTIDAS",'R','C');
+$this->SetFont('vera','',7);
+$this->Cell(30,3,"",'L',0);
+$this->Cell(0,3,"(BOLÍVAR)",'R',1,'C');
+$this->SetFont('vera','',9);
+$this->Cell(22,5,"",'BL',0);
+$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);
+$this->Ln(7);
+
+	/*$this->SetFont('vera','B',7);
+	$this->Cell(33,4,"C�DIGOS",'TRBL',0,'C');
+	$this->Cell(58,4,"",'TR',0,'C');
+	$this->Cell(30,4,"TOTAL",'TR',0,'C');
+	$this->Cell(0,4,"S E C T O R E S",'TRB',0,'C');
+
+
+	$this->Cell(9,4,"",'RL',0,'C');
+	$this->Cell(24,4,"SUB - PARTIDAS",'TRBL',0,'C');
+	$this->Cell(58,4,"",'R',0,'C');
+	$this->Cell(30,4,"PRESUP. A�O ANT.",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(0,4,"",'R',1,'C');
+
+	$this->Cell(9,5,"PART.",'RL',0,'C');
+	$this->Cell(8,5,"GEN.",'TR',0,'C');
+	$this->Cell(8,5,"ESP.",'TR',0,'C');
+	$this->Cell(8,5,"SUB",'TR',0,'C');
+	$this->SetFont('vera','B',8);
+	$this->Cell(58,5,"D E N O M I N A C I � N",'R',0,'C');
+	$this->SetFont('vera','B',9);
+	$this->Cell(30,5,"",'R',0,'C');
+	$this->Cell(24,5,"01",'R',0,'C');
+	$this->Cell(24,5,"02",'R',0,'C');
+	$this->Cell(24,5,"03",'R',0,'C');
+	$this->Cell(24,5,"04",'R',0,'C');
+	$this->Cell(24,5,"05",'R',0,'C');
+	$this->Cell(0,5,"06",'R',1,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(9,5,"",'RLB',0,'C');
+	$this->Cell(8,5,"",'RB',0,'C');
+	$this->Cell(8,5,"",'RB',0,'C');
+	$this->Cell(8,5,"ESP.",'RB',0,'C');
+	$this->Cell(58,5,"",'RB',0,'C');
+	$this->Cell(30,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(0,5,"",'RB',1,'C');*/
+
+  }//fin funtion
+}//fin clases
+
+
+
+
+
+
+
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+
+
+
+
+function DENOMINACION($partida,$generica,$especifica,$subespecifica,$codigos){
+	$a = 0;
+$b = 0;
+$c = 0;
+$d = 0;
+$e = 0;
+$codigos[1]=substr($codigos[1],-2);
+
+foreach($partida as $part){$a++;
+
+			$part_aux[$a]['cod_grupo'] = $part['cfpd01_ano_partida']['cod_grupo'];
+  			$part_aux[$a]['cod_partida'] = $part['cfpd01_ano_partida']['cod_partida'];
+  			$part_aux[$a]['denominacion'] = $part['cfpd01_ano_partida']['denominacion'];
+  			if($part_aux[$a]['cod_grupo']==CE && $codigos[1]==$part_aux[$a]['cod_partida'] && $codigos[2]==0 && $codigos[3]==0 && $codigos[4]==0){
+  				return $part_aux[$a]['denominacion'];
+  			}
+
+}
+
+foreach($generica as $gen){$b++;
+			$gen_aux[$b]['cod_grupo'] = $gen['cfpd01_ano_generica']['cod_grupo'];
+			$gen_aux[$b]['cod_partida'] = $gen['cfpd01_ano_generica']['cod_partida'];
+			$gen_aux[$b]['cod_generica'] = $gen['cfpd01_ano_generica']['cod_generica'];
+			$gen_aux[$b]['denominacion'] = $gen['cfpd01_ano_generica']['denominacion'];
+
+			if($gen_aux[$b]['cod_grupo']==CE && $codigos[1]==$gen_aux[$b]['cod_partida'] && $codigos[2]==$gen_aux[$b]['cod_generica'] && $codigos[3]==0 && $codigos[4]==0){
+  				return $gen_aux[$b]['denominacion'];
+  			}
+
+}
+
+foreach($especifica as $espec){$c++;
+			$espec_aux[$c]['cod_grupo'] = $espec['cfpd01_ano_especifica']['cod_grupo'];
+         	$espec_aux[$c]['cod_partida'] = $espec['cfpd01_ano_especifica']['cod_partida'];
+         	$espec_aux[$c]['cod_generica'] = $espec['cfpd01_ano_especifica']['cod_generica'];
+         	$espec_aux[$c]['cod_especifica'] = $espec['cfpd01_ano_especifica']['cod_especifica'];
+         	$espec_aux[$c]['denominacion'] = $espec['cfpd01_ano_especifica']['denominacion'];
+         	if($espec_aux[$c]['cod_grupo']==CE && $codigos[1]==$espec_aux[$c]['cod_partida'] && $codigos[2]==$espec_aux[$c]['cod_generica'] && $codigos[3]==$espec_aux[$c]['cod_especifica'] && $codigos[4]==0){
+  				return $espec_aux[$c]['denominacion'];
+  			}
+}
+
+foreach($subespecifica as $subespec){$d++;
+	        $subespec_aux[$d]['cod_grupo'] = $subespec['cfpd01_ano_sub_espec']['cod_grupo'];
+         	$subespec_aux[$d]['cod_partida'] = $subespec['cfpd01_ano_sub_espec']['cod_partida'];
+         	$subespec_aux[$d]['cod_generica'] = $subespec['cfpd01_ano_sub_espec']['cod_generica'];
+            $subespec_aux[$d]['cod_especifica'] = $subespec['cfpd01_ano_sub_espec']['cod_especifica'];
+            $subespec_aux[$d]['cod_sub_espec'] = $subespec['cfpd01_ano_sub_espec']['cod_sub_espec'];
+            $subespec_aux[$d]['denominacion'] = $subespec['cfpd01_ano_sub_espec']['denominacion'];
+            if($subespec_aux[$d]['cod_grupo']==CE && $codigos[1]==$subespec_aux[$d]['cod_partida'] && $codigos[2]==$subespec_aux[$d]['cod_generica'] && $codigos[3]==$subespec_aux[$d]['cod_especifica'] && $codigos[4]==$subespec_aux[$d]['cod_sub_espec']){
+  				return $subespec_aux[$d]['denominacion'];
+  			}
+}
+}//fin denominacion
+
+
+$fpdf = new fpdfview('L','mm','Letter');
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(30);
+$fpdf->SetLeftMargin(5);
+$fpdf->SetRightMargin(5);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+//$fpdf->AddPage();
+
+//----------------------------------LOS DATOS SE IMPRIMEN A PARTIR DE AQUI ------------------------------//
+$Aa=0;
+$Aa1=0;
+$Aa2=0;
+$Aa3=0;
+$Aa4=0;
+$Aa5=0;
+$Aa6=0;
+$total_ano_ant=0;
+$Ab=0;
+$Ab1=0;
+$Ab2=0;
+$Ab3=0;
+$Ab4=0;
+$Ab5=0;
+$Ab6=0;
+$Ac1=0;
+$Ac2=0;
+$Ac3=0;
+//for($i=0; $i<10; $i++){
+$gg=0;
+
+$acumulador=0;// variable de control del encabezado 1 2 3 4 5 6
+$aux=0;
+$contador=count($reporte_cfpd05);
+foreach($reporte_cfpd05 as $a){
+	//print_r($a);
+	 $cod=array(1=>$a['cfpd05_2032_tmp']['cod_partida'],2=>$a['cfpd05_2032_tmp']['cod_generica'],3=>$a['cfpd05_2032_tmp']['cod_especifica'],4=>$a['cfpd05_2032_tmp']['cod_sub_espec']);
+     $deno=DENOMINACION($partida,$generica,$especifica,$subespecifica,$cod);
+     $cod1=$cod[1];
+     $cod2=$sisap->AddCero3($cod[2])>0 ? $sisap->AddCero3($cod[2]) : "";
+     $cod3=$sisap->AddCero3($cod[3])>0 ? $sisap->AddCero3($cod[3]) : "";
+     $cod4=$cod3=="" ? "" : $sisap->AddCero3($cod[4]);
+     $aux_vector[$aux][1]=$cod1;
+     $aux_vector[$aux][2]=$cod2;
+     $aux_vector[$aux][3]=$cod3;
+     $aux_vector[$aux][4]=$cod4;
+     $aux_vector[$aux][5]=$a['cfpd05_2032_tmp']['monto_sector_uno'];
+     $aux_vector[$aux][6]=$a['cfpd05_2032_tmp']['monto_sector_dos'];
+     $aux_vector[$aux][7]=$a['cfpd05_2032_tmp']['monto_sector_tres'];
+     $aux_vector[$aux][8]=$a['cfpd05_2032_tmp']['monto_sector_cuatro'];
+     $aux_vector[$aux][9]=$a['cfpd05_2032_tmp']['monto_sector_cinco'];
+     $aux_vector[$aux][10]=$a['cfpd05_2032_tmp']['monto_sector_seis'];
+     $aux_vector[$aux][11]=$a['cfpd05_2032_tmp']['monto_sector_siete'];
+     $aux_vector[$aux][12]=$a['cfpd05_2032_tmp']['monto_sector_ocho'];
+     $aux_vector[$aux][13]=$a['cfpd05_2032_tmp']['monto_sector_nueve'];
+     $aux_vector[$aux][14]=$a['cfpd05_2032_tmp']['monto_sector_diez'];
+     $aux_vector[$aux][15]=$a['cfpd05_2032_tmp']['monto_sector_once'];
+     $aux_vector[$aux][16]=$a['cfpd05_2032_tmp']['monto_sector_doce'];
+     $aux_vector[$aux][17]=$a['cfpd05_2032_tmp']['monto_sector_trece'];
+     $aux_vector[$aux][18]=$a['cfpd05_2032_tmp']['monto_sector_catorce'];
+     $aux_vector[$aux][19]=$a['cfpd05_2032_tmp']['monto_sector_quince'];
+     $aux_vector[$aux][20]=$aux_vector[$aux][5]+$aux_vector[$aux][6]+$aux_vector[$aux][7]+$aux_vector[$aux][8]+$aux_vector[$aux][9]+$aux_vector[$aux][10]+$aux_vector[$aux][11]+$aux_vector[$aux][12]+$aux_vector[$aux][13]+$aux_vector[$aux][14]+$aux_vector[$aux][15]+$aux_vector[$aux][16]+$aux_vector[$aux][17];
+     $aux_vector[$aux][21]=$deno;
+     $aux_vector[$aux][22]=$a['cfpd05_2032_tmp']['monto_estimado_anterior'];
+    /** A partir de aqui comienza la logica para dectectar el cambio de linea **/
+    $letras = strlen($deno);//calculo el numero de letras del string que contiene $deno
+
+   if($letras <= 36) {
+		$heigth = "4";
+
+    }elseif(($letras >= 36) && ($letras < 70)){
+		$heigth = "9";
+
+    }elseif(($letras >= 70) && ($letras < 106)){
+    	$heigth = "13";
+
+    }elseif(($letras >= 106) && ($letras < 142)){
+    	$heigth = "17";
+
+    }elseif($letras >= 142){
+    	$heigth = "21";
+
+    }
+    $aux_vector[$aux][23]=$heigth;
+    $x = $fpdf->GetY();
+
+    if($x >= 190 || $aux==0){//inicio 1-6
+    	$fpdf->AddPage();
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(33,4,"CÓDIGOS",'TRBL',0,'C');
+		$fpdf->Cell(58,4,"",'TR',0,'C');
+		$fpdf->Cell(30,4,"",'TR',0,'C');
+		$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(24,3,"SUB - PARTIDAS",'TRBL',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"DIRECCIÓN",'R',0,'C');
+		$fpdf->Cell(24,3,"SEGURIDAD",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"ENERGIA, MINAS",'R',0,'C');
+		$fpdf->Cell(24,3,"INDUSTRIA",'R',0,'C');
+		$fpdf->Cell(0,3,"TURISMO",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,3,"PART.",'RL',0,'C');
+		$fpdf->Cell(8,3,"GEN.",'TR',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'TR',0,'C');
+		$fpdf->Cell(8,3,"SUB",'TR',0,'C');
+		$fpdf->SetFont('vera','B',8);
+		$fpdf->Cell(58,3,"D E N O M I N A C I Ó N",'R',0,'C');
+		$fpdf->Cell(30,3,"TOTAL",'R',0,'C');
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"SUPERIOR",'R',0,'C');
+		$fpdf->Cell(24,3,"Y DEFENSA",'R',0,'C');
+		$fpdf->Cell(24,3,"AGRICULTURA",'R',0,'C');
+		$fpdf->Cell(24,3,"Y PETROLEO",'R',0,'C');
+		$fpdf->Cell(24,3,"Y COMERCIO",'R',0,'C');
+		$fpdf->Cell(0,3,"Y RECREACIÓN",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'R',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+		$fpdf->SetFont('vera','',6);
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(0,3,"",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,5,"",'RLB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(58,5,"",'RB',0,'C');
+		$fpdf->Cell(30,5,"PRESUPUESTO ".($ANO-1),'RB',0,'C');
+		$fpdf->Cell(24,5,"01",'RB',0,'C');
+		$fpdf->Cell(24,5,"02",'RB',0,'C');
+		$fpdf->Cell(24,5,"03",'RB',0,'C');
+		$fpdf->Cell(24,5,"04",'RB',0,'C');
+		$fpdf->Cell(24,5,"05",'RB',0,'C');
+		$fpdf->Cell(0,5,"06",'RB',1,'C');
+		$fpdf->SetFont('vera','',7);
+    }
+
+    $fpdf->Cell(9,$heigth,$cod1,'TRL',0,'C');//---------cod_partida
+    $fpdf->Cell(8,$heigth,$cod2,'TR',0,'C');//----------cod_generica
+    $fpdf->Cell(8,$heigth,$cod3,'TR',0,'C');//----------cod_especifica
+    $fpdf->Cell(8,$heigth,$cod4,'TR',0,'C');//----------cod_sub_espec
+    $varX = $fpdf->GetX();//asigno X
+    $varY = $fpdf->GetY();//asigno Y
+    $fpdf->Cell(58,1,"",'T',2,'C');
+    $fpdf->MultiCell(58,3,$aux_vector[$aux][21],'','J');//--------------denominacion
+    $varX = $varX+58;//le sumo a X 58 del Cell debido a que lo capture antes.
+    $fpdf->SetXY($varX,$varY);// cargo XY
+
+    $t1=$aux_vector[$aux][5];
+    $t2=$aux_vector[$aux][6];
+    $t3=$aux_vector[$aux][7];
+    $t4=$aux_vector[$aux][8];
+    $t5=$aux_vector[$aux][9];
+    $t6=$aux_vector[$aux][10];
+    $monto_ano_ante=$aux_vector[$aux][22];
+    $fpdf->Cell(30,$heigth,"",'TLRB',0,'C');//---------total anterior
+    $fpdf->Cell(24,$heigth,cerocero($sisap->Formato2($t1)),'TR',0,'R');//----------------------------sector_01
+    $fpdf->Cell(24,$heigth,cerocero($sisap->Formato2($t2)),'TR',0,'R');//----------------------------sector_02
+    $fpdf->Cell(24,$heigth,cerocero($sisap->Formato2($t3)),'TR',0,'R');//---------------------------sector_03
+    $fpdf->Cell(24,$heigth,cerocero($sisap->Formato2($t4)),'TR',0,'R');//-------------------------sector_04
+    $fpdf->Cell(24,$heigth,cerocero($sisap->Formato2($t5)),'TR',0,'R');//--------------------------sector_05
+    $fpdf->Cell(0,$heigth,cerocero($sisap->Formato2($t6)),'TR',1,'R');//----------------------------sector_06
+    $fpdf->Cell(0,0,"",'T',1);
+	//$A=$A+$totalFila;
+		if($cod1!=0 && $cod2==0 && $cod3==0 && $cod4==0){
+			$Aa1+=$t1;
+			$Aa2+=$t2;
+			$Aa3+=$t3;
+			$Aa4+=$t4;
+			$Aa5+=$t5;
+			$Aa6+=$t6;
+			$total_ano_ant+=$monto_ano_ante;
+		}
+    $aux++;
+	$gg++;//fin 1-6
+    $contador=$contador-1;
+    $pasar = $contador==0 ? true : false;
+    if($contador==0){
+    	$fpdf->SetFont('vera','B',9);
+		$fpdf->Cell(91,8,"T O T A L E S        ",'TRBL',0,'R');
+		$fpdf->SetFont('vera','',7);
+		$fpdf->Cell(30,8,"",'TRB',0,'R');
+		$fpdf->Cell(24,8,cerocero($sisap->Formato2($Aa1)),'TRB',0,'R');
+		$fpdf->Cell(24,8,cerocero($sisap->Formato2($Aa2)),'TRB',0,'R');
+		$fpdf->Cell(24,8,cerocero($sisap->Formato2($Aa3)),'TRB',0,'R');
+		$fpdf->Cell(24,8,cerocero($sisap->Formato2($Aa4)),'TRB',0,'R');
+		$fpdf->Cell(24,8,cerocero($sisap->Formato2($Aa5)),'TRB',0,'R');
+		$fpdf->Cell(0,8,cerocero($sisap->Formato2($Aa6)),'TRB',1,'R');
+
+    }
+
+	///////////////////////////////////////
+
+    $x = $fpdf->GetY();
+    if($x >= 190 || $pasar==true){//inicio 7-12
+    	$fpdf->AddPage();
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(33,4,"CÓDIGOS",'TRBL',0,'C');
+		$fpdf->Cell(58,4,"",'TR',0,'C');
+		$fpdf->Cell(30,4,"",'TR',0,'C');
+		$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(24,3,"SUB - PARTIDAS",'TRBL',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"TRANSPORTE Y",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"CULTURA Y",'R',0,'C');
+		$fpdf->Cell(24,3,"CIENCIA",'R',0,'C');
+		$fpdf->Cell(24,3,"VIVIENDA,",'R',0,'C');
+		$fpdf->Cell(0,3,"",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,3,"PART.",'RL',0,'C');
+		$fpdf->Cell(8,3,"GEN.",'TR',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'TR',0,'C');
+		$fpdf->Cell(8,3,"SUB",'TR',0,'C');
+		$fpdf->SetFont('vera','B',8);
+		$fpdf->Cell(58,3,"D E N O M I N A C I Ó N",'R',0,'C');
+		$fpdf->Cell(30,3,"TOTAL",'R',0,'C');
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"COMUNICACIONES",'R',0,'C');
+		$fpdf->Cell(24,3,"EDUCACIÓN",'R',0,'C');
+		$fpdf->Cell(24,3,"COMUNICACIÓN SOCIAL",'R',0,'C');
+		$fpdf->Cell(24,3,"Y TECNOLOGÍA",'R',0,'C');
+		$fpdf->Cell(24,3,"DESARROLLO URBANO",'R',0,'C');
+		$fpdf->Cell(0,3,"SALUD",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'R',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"Y SERVICIOS CONEXOS",'R',0,'C');
+		$fpdf->Cell(0,3,"",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,5,"",'RLB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(58,5,"",'RB',0,'C');
+		$fpdf->Cell(30,5,"PRESUPUESTO ".($ANO-1),'RB',0,'C');
+		$fpdf->Cell(24,5,"07",'RB',0,'C');
+		$fpdf->Cell(24,5,"08",'RB',0,'C');
+		$fpdf->Cell(24,5,"09",'RB',0,'C');
+		$fpdf->Cell(24,5,"10",'RB',0,'C');
+		$fpdf->Cell(24,5,"11",'RB',0,'C');
+		$fpdf->Cell(0,5,"12",'RB',1,'C');
+		$acumulador=0;
+
+
+    foreach($aux_vector as $aux_vector2){
+				$heigth2=$aux_vector2[23];
+				$fpdf->SetFont('vera','',7);
+			    $fpdf->Cell(9,$heigth2,$aux_vector2[1],'TRL',0,'C');//---------cod_partida
+			    $fpdf->Cell(8,$heigth2,$aux_vector2[2],'TR',0,'C');//----------cod_generica
+			    $fpdf->Cell(8,$heigth2,$aux_vector2[3],'TR',0,'C');//----------cod_especifica
+			    $fpdf->Cell(8,$heigth2,$aux_vector2[4],'TR',0,'C');//----------cod_sub_espec
+			    $varX = $fpdf->GetX();//asigno X
+			    $varY = $fpdf->GetY();//asigno Y
+			    $fpdf->Cell(58,1,"",'T',2,'C');
+
+			    $fpdf->MultiCell(58,3,$aux_vector2[21],'','J');//--------------denominacion
+			    $varX = $varX+58;//le sumo a X 58 del Cell debido a que lo capture antes.
+			    $fpdf->SetXY($varX,$varY);// cargo XY
+
+			    $tb1=$aux_vector2[11];
+			    $tb2=$aux_vector2[12];
+			    $tb3=$aux_vector2[13];
+			    $tb4=$aux_vector2[14];
+			    $tb5=$aux_vector2[15];
+			    $tb6=$aux_vector2[16];
+			    $fpdf->Cell(30,$heigth2,"",'TLR',0,'C');//-----------total anterior
+			    $fpdf->Cell(24,$heigth2,cerocero($sisap->Formato2($tb1)),'TR',0,'R');//---------------------------sector_07
+			    $fpdf->Cell(24,$heigth2,cerocero($sisap->Formato2($tb2)),'TR',0,'R');//----------------------------sector_08
+			    $fpdf->Cell(24,$heigth2,cerocero($sisap->Formato2($tb3)),'TR',0,'R');//---------------------------sector_09
+			    $fpdf->Cell(24,$heigth2,cerocero($sisap->Formato2($tb4)),'TR',0,'R');//----------------------------sector_10
+			    $fpdf->Cell(24,$heigth2,cerocero($sisap->Formato2($tb5)),'TR',0,'R');//----------------------------sector_11
+			    $fpdf->Cell(0,$heigth2,cerocero($sisap->Formato2($tb6)),'TR',1,'R');//-----------------------------sector_12
+			    $fpdf->Cell(0,0,"",'T',1);
+				//$A=$A+$totalFila;
+					if($aux_vector2[1]!=0 && $aux_vector2[2]==0 && $aux_vector2[3]==0 && $aux_vector2[4]==0){
+						$Ab1+=$tb1;
+						$Ab2+=$tb2;
+						$Ab3+=$tb3;
+						$Ab4+=$tb4;
+						$Ab5+=$tb5;
+						$Ab6+=$tb6;
+					}//fin 7-12
+	    }//4fin for
+        if($contador==0){
+        	$fpdf->SetFont('vera','B',9);
+			$fpdf->Cell(91,8,"T O T A L E S        ",'TRBL',0,'R');
+			$fpdf->SetFont('vera','',7);
+			$fpdf->Cell(30,8,"",'TRB',0,'R');
+			$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ab1)),'TRB',0,'R');
+			$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ab2)),'TRB',0,'R');
+			$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ab3)),'TRB',0,'R');
+			$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ab4)),'TRB',0,'R');
+			$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ab5)),'TRB',0,'R');
+			$fpdf->Cell(0,8,cerocero($sisap->Formato2($Ab6)),'TRB',1,'R');
+        }
+         $x = $fpdf->GetY();
+
+    if($x >= 190 || $pasar==true){//inicio 13-15
+    	$fpdf->AddPage();
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(33,4,"CÓDIGOS",'TRBL',0,'C');
+		$fpdf->Cell(58,4,"",'TR',0,'C');
+		$fpdf->Cell(30,4,"",'TR',0,'C');
+		$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(24,3,"SUB - PARTIDAS",'TRBL',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"DESARROLLO SOCIAL",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"GASTOS NO CLASIFICADOS",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(0,3,"",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,3,"PART.",'RL',0,'C');
+		$fpdf->Cell(8,3,"GEN.",'TR',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'TR',0,'C');
+		$fpdf->Cell(8,3,"SUB",'TR',0,'C');
+		$fpdf->SetFont('vera','B',8);
+		$fpdf->Cell(58,3,"D E N O M I N A C I Ó N",'R',0,'C');
+		$fpdf->Cell(30,3,"TOTAL",'R',0,'C');
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"Y PARTICIPACIÓN",'R',0,'C');
+		$fpdf->Cell(24,3,"CRÉDITOS COMUNES",'R',0,'C');
+		$fpdf->Cell(24,3,"SECTORIALMENTE",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(0,3,"TOTAL",'R',1,'C');
+
+		$fpdf->Cell(9,3,"",'RL',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"",'R',0,'C');
+		$fpdf->Cell(8,3,"ESP.",'R',0,'C');
+		$fpdf->Cell(58,3,"",'R',0,'C');
+		$fpdf->Cell(30,3,"",'R',0,'C');
+		$fpdf->SetFont('vera','',5);
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(24,3,"",'R',0,'C');
+		$fpdf->Cell(0,3,"",'R',1,'C');
+
+		$fpdf->SetFont('vera','B',7);
+		$fpdf->Cell(9,5,"",'RLB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(8,5,"",'RB',0,'C');
+		$fpdf->Cell(58,5,"",'RB',0,'C');
+		$fpdf->Cell(30,5,"PRESUPUESTO ".($ANO-1),'RB',0,'C');
+		$fpdf->Cell(24,5,"13",'RB',0,'C');
+		$fpdf->Cell(24,5,"14",'RB',0,'C');
+		$fpdf->Cell(24,5,"15",'RB',0,'C');
+		$fpdf->Cell(24,5,"",'RB',0,'C');
+		$fpdf->Cell(24,5,"",'RB',0,'C');
+		$fpdf->Cell(0,5,"PRESUPUESTO ".$ANO,'RB',1,'C');
+
+		$fpdf->SetFont('vera','',7);
+
+		$acumulador=0;
+
+	    foreach($aux_vector as $aux_vector3){//#3
+	    	    $heigth3=$aux_vector3[23];
+			    $fpdf->Cell(9,$heigth3,$aux_vector3[1],'TRL',0,'C');//---------cod_partida
+			    $fpdf->Cell(8,$heigth3,$aux_vector3[2],'TR',0,'C');//----------cod_generica
+			    $fpdf->Cell(8,$heigth3,$aux_vector3[3],'TR',0,'C');//----------cod_especifica
+			    $fpdf->Cell(8,$heigth3,$aux_vector3[4],'TR',0,'C');//----------cod_sub_espec
+			    $varX = $fpdf->GetX();//asigno X
+			    $varY = $fpdf->GetY();//asigno Y
+			    $fpdf->Cell(58,1,"",'T',2,'C');
+			    $fpdf->MultiCell(58,3,$aux_vector3[21],'','J');//--------------denominacion
+			    $varX = $varX+58;//le sumo a X 58 del Cell debido a que lo capture antes.
+			    $fpdf->SetXY($varX,$varY);// cargo XY
+
+			    $tc1=$aux_vector3[17];
+			    $tc2=$aux_vector3[18];
+			    $tc3=$aux_vector3[19];
+			    $fpdf->Cell(30,$heigth3,$sisap->Formato2($aux_vector3[22]),'TLR',0,'C');//-----------total anterior
+			    $fpdf->Cell(24,$heigth3,cerocero($sisap->Formato2($tc1)),'TR',0,'R');//---------------sector_13
+			    $fpdf->Cell(24,$heigth3,cerocero($sisap->Formato2($tc2)),'TR',0,'R');//----------------------------sector_14
+			    $fpdf->Cell(24,$heigth3,cerocero($sisap->Formato2($tc3)),'TR',0,'R');//----------------------------sector_15
+			    $fpdf->Cell(24,$heigth3,"",'TR',0,'C');//----------------------------
+			    $fpdf->Cell(24,$heigth3,"",'TR',0,'C');//----------------------------se
+			    $fpdf->Cell(0,$heigth3,$sisap->Formato2($aux_vector3[20]),'TR',1,'C');//-----------------------------total
+			    $fpdf->Cell(0,0,"",'T',1);
+
+					if($aux_vector3[1]!=0 && $aux_vector3[2]==0 && $aux_vector3[3]==0 && $aux_vector3[4]==0){
+						$Ac1+=$tc1;
+						$Ac2+=$tc2;
+						$Ac3+=$tc3;
+					}
+	        }//finfor#3
+	        if($contador==0){
+	        	$fpdf->SetFont('vera','B',9);
+				$fpdf->Cell(91,8,"T O T A L E S        ",'TRBL',0,'R');
+				$fpdf->SetFont('vera','',7);
+				$fpdf->Cell(30,8,$sisap->Formato2($total_ano_ant),'TRB',0,'C');
+				$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ac1)),'TRB',0,'R');
+				$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ac2)),'TRB',0,'R');
+				$fpdf->Cell(24,8,cerocero($sisap->Formato2($Ac3)),'TRB',0,'R');
+				$fpdf->Cell(24,8,"",'TRB',0,'R');
+				$fpdf->Cell(24,8,"",'TRB',0,'R');
+				$fpdf->Cell(0,8,$sisap->Formato2($Aa1+$Aa2+$Aa3+$Aa4+$Aa5+$Aa6+$Ab1+$Ab2+$Ab3+$Ab4+$Ab5+$Ab6+$Ac1+$Ac2+$Ac3),'TRB',1,'C');
+	        }
+	}//fin del if
+      $aux=0;
+      $aux_vector=null;
+}//fin del if 7-12*/
+
+}//fin for
+
+
+//$fpdf->SetFont('vera','B',6);
+//$fpdf->Cell(0,6,"FORMA: 2.032",'',1,'R');
+$fpdf->OutPut('forma_2032_'.date("d-m-Y"),'D');
+?>

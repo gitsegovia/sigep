@@ -1,0 +1,263 @@
+<?php
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+	function Footer(){
+	    $this->SetY(-15);
+	    $this->SetFont('vera','B',6);
+	    $this->Cell(150,8," ",0,0,'R');
+	    $this->Cell(0,18,"FORMA: 2.004 ",0,0,'R');
+	}
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+
+		$this->top_reporte("RESUMEN DE LOS CRÉDITOS PRESUPUESTARIOS NIVEL DE PARTIDAS - (EN BOLIVARES)", "PRESUPUESTO: ".$_SESSION['ejercicio'], null, array("Y"=>"7", "X"=>"31", "Z"=>"11"), null, true);
+
+	$ano_eje = $_SESSION['ejercicio'];
+
+	if($ano_eje<=2011){
+		$var_fci = "LAEE";
+		$var_mpps = "FIDES";
+	}else{
+		$var_fci = "F.C.I.";
+		$var_mpps = "M.P.P.S.";
+	}
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,5,"",'TLR',0,'C');
+		$this->Cell(75,5,"",'TR',0,'C');
+		$this->Cell(130,5,"ASIGNACIÓN PRESUPUESTARIA",'TR',0,'C');
+		$this->Cell(0,5,"",'TR',1,'C');
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(15,5,"PARTIDA",'LR',0,'C');
+		$this->SetFont('vera','B',8);
+		$this->Cell(75,5,"DENOMINACIÓN",'R',0,'C');
+		$this->Cell(26,5,"ORDINARIO",'TR',0,'C');
+		$this->Cell(26,5,"COORDINADO",'TR',0,'C');
+		$this->Cell(26,5,$var_fci,'TR',0,'C');
+		$this->Cell(26,5,$var_mpps,'TR',0,'C');
+		$this->Cell(26,5,"INGRESOS",'TR',0,'C');
+		$this->Cell(0,5,"TOTAL",'TR',1,'C');
+
+		$this->Cell(15,5,"",'BLR',0,'C');
+		$this->Cell(75,5,"",'BR',0,'C');
+		$this->Cell(26,5,"",'BR',0,'C');
+		$this->Cell(26,5,"",'BR',0,'C');
+		$this->Cell(26,5,"",'BR',0,'C');
+		$this->Cell(26,5,"",'BR',0,'C');
+		$this->Cell(26,5,"EXTRAORD.",'BR',0,'C');
+		$this->Cell(0,5,"",'BR',1,'C');
+	}
+}//fin clases
+
+
+
+
+function Formato($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-3,1)=='.') {
+        $sents = '.'.substr($price,-2);
+        $price = substr($price,0,strlen($price)-3);
+    } elseif (substr($price,-2,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-2);
+    } else {
+        $sents = '.00';
+    }
+    $price = preg_replace("/[^0-9]/", "", $price);
+    return number_format($price.$sents,2,'.','');
+}
+
+
+?><?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DE LOS CRÉDITOS PRESUPUESTARIOS\nA NIVEL DE PARTIDAS",NULL,"750");?>
+
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_cfpp05_p/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cfpp05][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+
+<? $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true) ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+if(!empty($datos)){
+
+$i=0;
+
+foreach($datos as $row){ $i++;
+	$var[$i]['ano']  =              		 $row['cfpd05']['ano'];
+	$var[$i]['cod_partida']  =               $row['cfpd05']['cod_partida'];
+	$var[$i]['asignacion_anual']  =       	 $row['cfpd05']['asignacion_anual'];
+	$var[$i]['tipo_presupuesto']  =          $row['cfpd05']['tipo_presupuesto'];
+
+
+}//fin for
+$a=0;
+
+
+foreach($partida as $part){$a++;
+			$part_aux[$a]['cod_grupo'] = $part['cfpd01_ano_partida']['cod_grupo'];
+  			$part_aux[$a]['cod_partida'] = $part['cfpd01_ano_partida']['cod_partida'];
+  			$part_aux[$a]['denominacion'] = $part['cfpd01_ano_partida']['denominacion'];
+}
+
+
+$ano_fiscal='';
+
+for($j=1; $j<=$i; $j++){
+	if($ano_fiscal!=$var[$j]['ano']){
+       $ano_fiscal=$var[$j]['ano'];
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ano_fiscal;
+$_SESSION['titulo'] = $titulo_a;
+$pdf->AddPage();
+
+
+
+$pdf->SetFont('vera','',7);
+
+$z = 1;
+   $var_aux[$z]['cod_partida']='';
+
+
+$total_ordinario_total = 0;
+$total_coordinado_total = 0;
+$total_laee_total = 0;
+$total_fides_total = 0;
+$total_ie_total = 0;
+$total_total_total = 0;
+
+
+for($k=1; $k<=$i; $k++){
+$pdf->SetFont('vera','',6);
+
+$total_ordinario = 0;
+$total_coordinado = 0;
+$total_laee = 0;
+$total_fides = 0;
+$total_ie = 0;
+$total_total = 0;
+$denominacion = '';
+
+
+if($var[$k]['cod_partida']!=$var_aux[$z]['cod_partida']){
+	 	$var_aux[$z]['cod_partida']=$var[$k]['cod_partida'];
+
+
+        for($h=1; $h<=$a; $h++){
+        	if($part_aux[$h]['cod_grupo']==CE && $part_aux[$h]['cod_partida']==substr($var[$k]['cod_partida'],-2)){
+        		$denominacion = $part_aux[$h]['denominacion'];
+        		}//fin if
+        	}//fin for
+
+
+     for($l=1; $l<=$i; $l++){
+     	if($var[$l]['cod_partida']==$var[$k]['cod_partida']){
+
+     		 switch($var[$l]['tipo_presupuesto']){
+     		 	case '1':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+                case '2':{$total_coordinado = $total_coordinado + $var[$l]['asignacion_anual'];}break;
+                case '3':{$total_laee = $total_laee + $var[$l]['asignacion_anual'];}break;
+                case '4':{$total_fides = $total_fides + $var[$l]['asignacion_anual'];}break;
+                case '5':{$total_ie = $total_ie + $var[$l]['asignacion_anual'];}break;
+     		 }//fin switch
+
+     		}//fin if
+       }//fin for
+       $total_total = $total_ordinario + $total_coordinado + $total_laee + $total_fides + $total_ie;
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(15,12,$sisap->AddCero2(substr($var[$k]['cod_partida'],-2),CE),'RL',0,'C');
+$pdf->SetFont('vera','',7);
+
+$varX = $pdf->GetX();//asigno X
+    $varY = $pdf->GetY();//asigno Y
+    $pdf->Cell(75,5,"",'',2,'C');
+    $pdf->MultiCell(75,3,$denominacion,'','J');
+    $varX = $varX+75;//le sumo a X 70 del Cell debido a que lo capture antes.
+    $pdf->SetXY($varX,$varY);// cargo XY
+
+$pdf->Cell(26,12,$sisap->Formato2($total_ordinario),'LR',0,'R');
+$pdf->Cell(26,12,$sisap->Formato2($total_coordinado),'R',0,'R');
+$pdf->Cell(26,12,$sisap->Formato2($total_laee),'R',0,'R');
+$pdf->Cell(26,12,$sisap->Formato2($total_fides),'R',0,'R');
+$pdf->Cell(26,12,$sisap->Formato2($total_ie),'R',0,'R');
+$pdf->Cell(0,12,$sisap->Formato2($total_total),'R',1,'R');
+$pdf->Cell(0,0,"",'T',1,'C');
+
+$total_ordinario_total = $total_ordinario_total + $total_ordinario;
+$total_coordinado_total = $total_coordinado_total + $total_coordinado;
+$total_laee_total = $total_laee_total + $total_laee;
+$total_fides_total = $total_fides_total + $total_fides;
+$total_ie_total = $total_ie_total + $total_ie;
+$total_total_total = $total_total_total + $total_total;
+
+ }//fin if
+}//fin for
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(90,5,"TOTALES  ",'TRLB',0,'R');
+$pdf->Cell(26,5,$sisap->Formato2($total_ordinario_total),'TBR',0,'R');
+$pdf->Cell(26,5,$sisap->Formato2($total_coordinado_total),'TBR',0,'R');
+$pdf->Cell(26,5,$sisap->Formato2($total_laee_total),'TBR',0,'R');
+$pdf->Cell(26,5,$sisap->Formato2($total_fides_total),'TBR',0,'R');
+$pdf->Cell(26,5,$sisap->Formato2($total_ie_total),'TBR',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_total_total),'TBR',1,'R');
+
+	}//fin if
+}//fin for
+//$pdf->SetFont('vera','B',6);
+//$pdf->Cell(0,7,"FORMA: 2.004 ",'',1,'R');
+
+
+}else{
+	$pdf->SetFont('vera','B',12);
+	$pdf->Cell(0,10,"NO SE ENCONTRARON DATOS",'TRLB',1,'C');
+}
+
+$pdf->OutPut('forma_2004_'.date("d-m-Y"),'D');
+} ?>

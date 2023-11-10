@@ -1,0 +1,222 @@
+<?
+
+if(isset($ELFORM) && $ELFORM==true){
+	?>
+<?= $sisap->Tabla('',true,'EJECUCIÓN DE GASTOS CAUSADOS POR SECTORES Y PARTIDAS','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_ejecucion_gastos_causados_sectores_partida/GENERAR'); ?>">
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+
+
+<center>Indique Año de Ejecuci&oacute;n:
+<?
+// $sisap->inputTagRemote('reporte/ano', array('url'=>'/reporte2/escribir_ano', 'update'=>'st_seleccion_1','id'=>'ano', 'size'=>'6','value'=>$ano,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);"))
+?>
+<?= $html->input('reporte/ano',array('id'=>'ano', 'size'=>'6','value'=>$ANO,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);",  'style'=>"text-align:center;"));?>
+<br><br>
+<?
+$meses=array(1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre');
+?>
+Seleccione el Mes: <?=$html->selectTag('reporte/mes',$meses,isset($mes_ejecucion)?$mes_ejecucion:'',array("id"=>"mes","style"=>"width:150px;"))?>
+</center>
+<br>
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+<br><br>
+</form>
+<?=$sisap->CloseTable()?>
+<?
+}else if(isset($ELFORM) && $ELFORM==false){
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$meses=array(1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre');
+
+
+
+    	$this->top_reporte("EJECUCIÓN DE GASTOS CAUSADOS POR SECTORES Y PARTIDAS DEL PRESUPUESTO DEL EJERCICIO FISCAL ".$_SESSION["ANO"], "", "MES: ".$meses[$_SESSION["mes_solicitado"]], array("Y"=>"12", "X"=>"16", "Z"=>"12"), array("Y"=>"17", "X"=>"248"));
+
+
+
+
+		/*$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+
+		$this->Cell(0,9,"EJECUCIÓN DE GASTOS CAUSADOS POR SECTORES Y PARTIDAS DEL PRESUPUESTO DEL EJERCICIO FISCAL ".$_SESSION["ANO"],'RL',1,'C');
+		$this->Cell(0,4,"MES: ".$meses[$_SESSION["mes_solicitado"]],'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 238;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(5);*/
+    }//fin funtion
+}//fin clase
+
+
+$fpdf = new fpdfview('L','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(10);
+$fpdf->SetRightMargin(10);
+$fpdf->SetAutoPageBreak(true, 5);
+$fpdf->AddPage();
+
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(15,4,"",'TRL',0,'C');
+$fpdf->Cell(220,4,"P A R T I D A S",'TR',0,'C');
+$fpdf->Cell(24,4,"",'TR',1,'C');
+
+$fpdf->Cell(15,4,"SECTORES",'RL',0,'C');
+$fpdf->Cell(20,4,"4.01",'TR',0,'C');
+$fpdf->Cell(20,4,"4.02",'TR',0,'C');
+$fpdf->Cell(20,4,"4.03",'TR',0,'C');
+$fpdf->Cell(20,4,"4.04",'TR',0,'C');
+$fpdf->Cell(20,4,"4.05",'TR',0,'C');
+$fpdf->Cell(20,4,"4.07",'TR',0,'C');
+$fpdf->Cell(20,4,"4.08",'TR',0,'C');
+$fpdf->Cell(20,4,"4.09",'TR',0,'C');
+$fpdf->Cell(20,4,"4.10",'TR',0,'C');
+$fpdf->Cell(20,4,"4.11",'TR',0,'C');
+$fpdf->Cell(20,4,"4.98",'TR',0,'C');
+$fpdf->Cell(24,4,"TOTAL",'R',1,'C');
+
+
+$fpdf->SetFont('vera','',6);
+$total["401"]=0;
+$total["402"]=0;
+$total["403"]=0;
+$total["404"]=0;
+$total["405"]=0;
+$total["407"]=0;
+$total["408"]=0;
+$total["409"]=0;
+$total["410"]=0;
+$total["411"]=0;
+$total["498"]=0;
+$total["total"]=0;
+
+for($i=1;$i<16;$i++){
+	foreach($DATA2 as $rs){
+		if ($i==$rs[0]["cod_sector"]){
+$fpdf->Cell(15,4,$sisap->AddCero3($rs[0]["cod_sector"]),'TRL',0,'C');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_401"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_402"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_403"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_404"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_405"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_407"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_408"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_409"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_410"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_411"]),'TR',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($rs[0]["partida_498"]),'TR',0,'R');
+$fpdf->Cell(24,4,$sisap->Formato2($rs[0]["partida_401"]+$rs[0]["partida_402"]+$rs[0]["partida_403"]+$rs[0]["partida_404"]+$rs[0]["partida_405"]+$rs[0]["partida_407"]+$rs[0]["partida_408"]+$rs[0]["partida_411"]+$rs[0]["partida_498"]),'TR',1,'R');
+$total["401"]+=$rs[0]["partida_401"];
+$total["402"]+=$rs[0]["partida_402"];
+$total["403"]+=$rs[0]["partida_403"];
+$total["404"]+=$rs[0]["partida_404"];
+$total["405"]+=$rs[0]["partida_405"];
+$total["407"]+=$rs[0]["partida_407"];
+$total["408"]+=$rs[0]["partida_408"];
+$total["409"]+=$rs[0]["partida_409"];
+$total["410"]+=$rs[0]["partida_410"];
+$total["411"]+=$rs[0]["partida_411"];
+$total["498"]+=$rs[0]["partida_498"];
+$total["total"]+=$rs[0]["partida_401"]+$rs[0]["partida_402"]+$rs[0]["partida_403"]+$rs[0]["partida_404"]+$rs[0]["partida_405"]+$rs[0]["partida_407"]+$rs[0]["partida_408"]+$rs[0]["partida_409"]+$rs[0]["partida_410"]+$rs[0]["partida_411"]+$rs[0]["partida_498"];
+	  	}
+	}
+}
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(15,4,"TOTALES",'TRBL',0,'C');
+$fpdf->Cell(20,4,$sisap->Formato2($total["401"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["402"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["403"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["404"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["405"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["407"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["408"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["409"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["410"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["411"]),'TRB',0,'R');
+$fpdf->Cell(20,4,$sisap->Formato2($total["498"]),'TRB',0,'R');
+$fpdf->Cell(24,4,$sisap->Formato2($total["total"]),'TRB',1,'R');
+
+//************************************
+$fpdf->Ln(5);
+
+$fpdf->Cell(15,4,"SECTOR",'TRL',0,'C');
+$fpdf->Cell(30,4,"NETO DEL MES",'TR',0,'C');
+$fpdf->Cell(30,4,"R.P.V",'TR',0,'C');
+$fpdf->Cell(30,4,"MES",'TR',0,'C');
+$fpdf->Cell(30,4,"ANTERIOR",'TR',0,'C');
+$fpdf->Cell(50,4,"TOTAL (NETO DEL MES + ANTERIOR)",'TR',1,'C');
+
+$fpdf->SetFont('vera','',6);
+
+
+$total["MMES"]=0;
+$total["MRPV"]=0;
+$total["MNMES"]=0;
+$total["MANTERIOR"]=0;
+$total["MTOTAL"]=0;
+
+for($i=1;$i<16;$i++){
+	foreach($DATA2 as $rs){
+		if ($i==$rs[0]["cod_sector"]){
+
+	$S=$rs[0]["partida_401"]+$rs[0]["partida_402"]+$rs[0]["partida_403"]+$rs[0]["partida_404"]+$rs[0]["partida_405"]+$rs[0]["partida_407"]+$rs[0]["partida_408"]+$rs[0]["partida_411"]+$rs[0]["partida_498"];
+    $S_A=$rs[0]["partida_ant_401"]+$rs[0]["partida_ant_402"]+$rs[0]["partida_ant_403"]+$rs[0]["partida_ant_404"]+$rs[0]["partida_ant_405"]+$rs[0]["partida_ant_407"]+$rs[0]["partida_ant_408"]+$rs[0]["partida_ant_411"]+$rs[0]["partida_ant_498"];
+
+    $RPV=$rs[0]["monto_rpv"];
+
+    //$NM=$S-$RPV;
+    $NM=$S+$RPV;
+    $M_anterior=$mes==1?0:$S_A;
+    $STOTAL=$S+$M_anterior;
+    //$STOTAL=$NM+$M_anterior;
+$fpdf->Cell(15,4,$sisap->AddCero3($rs[0]["cod_sector"]),'TRL',0,'C');
+$fpdf->Cell(30,4,$sisap->Formato2($S),'TR',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($RPV),'TR',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($NM),'TR',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($M_anterior),'TR',0,'R');
+$fpdf->Cell(50,4,$sisap->Formato2($STOTAL),'TR',1,'R');
+$total["MMES"]+=$S;
+$total["MRPV"]+=$RPV;
+$total["MNMES"]+=$NM;
+$total["MANTERIOR"]+=$M_anterior;
+$total["MTOTAL"]+=$STOTAL;
+			}
+		}//fin foreach
+	}
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(15,4,"TOTAL",'TRLB',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($total["MMES"]),'TRB',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($total["MRPV"]),'TRB',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($total["MNMES"]),'TRB',0,'R');
+$fpdf->Cell(30,4,$sisap->Formato2($total["MANTERIOR"]),'TRB',0,'R');
+$fpdf->Cell(50,4,$sisap->Formato2($total["MTOTAL"]),'TRB',1,'R');
+$fpdf->Output('reporte_ejecucion_gastos_causados_sectores_partida_'.date("d-m-Y").".pdf",'D');
+
+}//fin else if
+?>

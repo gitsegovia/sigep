@@ -1,0 +1,480 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+class pdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		
+		$this->image_escudo(11,15,13);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,1,"",'',1,'C');
+		$this->Cell(0,3,"REPÚBLICA BOLIVARIANA DE VENEZUELA",'',1,'C');
+		//$this->Cell(0,3,$_SESSION['entidad_freporta'],'RL',1,'C');
+		//$this->Cell(0,3,$_SESSION['deno_dependencia'],'RL',1,'C');
+		$this->Cell(0,3,'ENTIDAD REPORTA','',1,'C');
+		$this->Cell(0,3,'DENOMINACION DEPENDENCIA','',1,'C');
+		$this->Cell(0,3,"DIVISIÓN DE BIENES",'',1,'C');
+
+		$this->Cell(0,1,"",'',1,'C');
+		
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 12;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		
+		$this->Cell(0,10,"",'',1,'C');
+    }//fin funtion
+
+    /*function footer(){
+		$this->SetY(-65);
+		$this->SetFont('vera','B',6);
+
+		// FIRMAS 1 Y 2:
+
+		$this->Cell(100,17,"",'TRL',0,'C');
+		$this->Cell(0,17,"",'TR',1,'C');
+
+		$this->Cell(100,3,"__________________________________________________________________________",'RL',0,'C');
+		$this->Cell(0,3,"__________________________________________________________________________",'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['nombre_primera_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['nombre_segunda_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cedula_primera_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['cedula_segunda_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cargo_primera_firma'],'BRL',0,'C');
+		$this->Cell(0,3,$_SESSION['cargo_segunda_firma'],'BR',1,'C');
+
+
+		// FIRMAS 3 Y 4:
+
+		$this->Cell(100,17,"",'RL',0,'C');
+		$this->Cell(0,17,"",'R',1,'C');
+
+		$this->Cell(100,3,"__________________________________________________________________________",'RL',0,'C');
+		$this->Cell(0,3,"__________________________________________________________________________",'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['nombre_tercero_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['nombre_cuarto_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cedula_tercero_firma'],'RL',0,'C');
+		$this->Cell(0,3,$_SESSION['cedula_cuarto_firma'],'R',1,'C');
+
+		$this->Cell(100,3,$_SESSION['cargo_tercero_firma'],'BRL',0,'C');
+		$this->Cell(0,3,$_SESSION['cargo_cuarto_firma'],'BR',1,'C');
+    }*/
+
+	function fecha_alfabetico_acta($var=null){
+		$fecha = $var;
+		$mes = '';
+		$year = '';
+		if($fecha!=''){
+			$year = $fecha[0].$fecha[1].$fecha[2].$fecha[3];
+			$mes = $fecha[5].$fecha[6];
+			$dia = $fecha[8].$fecha[9];
+		}//fin
+
+		switch($mes){
+		    case"1":{$var="Enero"; }break;
+		    case"2":{ $var="Febrero"; }break;
+		    case"3":{ $var="Marzo"; }break;
+		    case"4":{ $var="Abril"; }break;
+		    case"5":{ $var="Mayo"; }break;
+		    case"6":{ $var="Junio"; }break;
+		    case"7":{ $var="Julio"; }break;
+		    case"8":{ $var="Agosto"; }break;
+		    case"9":{ $var="Septiembre"; }break;
+		    case"10":{$var="Octubre"; }break;
+		    case"11":{$var="Noviembre"; }break;
+		    case"12":{$var="Diciembre"; }break;
+		}//fin
+
+		$var_aux = $dia.' DE '.$var.' DEL '.$year;
+
+
+		return $var_aux;
+	}//fin function
+}//fin clase
+
+foreach($data as $row){
+
+	$numero_identificacion = $row['v_inventario_inmuebles_todo']['numero_identificacion'];
+	$denominacion = $row['v_inventario_inmuebles_todo']['denominacion_inmueble'];
+	
+	$deno_incorporacion = $row['v_inventario_inmuebles_todo']['deno_incorporacion'];
+	$fecha_incorporacion = $row['v_inventario_inmuebles_todo']['fecha_incorporacion'];
+
+	$deno_secretaria = $row['v_inventario_inmuebles_todo']['deno_secretaria'];
+		$deno_direccion = $row['v_inventario_inmuebles_todo']['deno_direccion'];
+
+		$cod_tipo = $row['v_inventario_inmuebles_todo']['cod_tipo'];
+		$cod_grupo = $sisap->AddCero2($row['v_inventario_inmuebles_todo']['cod_grupo']);
+		$cod_subgrupo = $sisap->AddCero2($row['v_inventario_inmuebles_todo']['cod_subgrupo']);
+		$cod_seccion = $sisap->mascara_cuatro($row['v_inventario_inmuebles_todo']['cod_seccion']);
+
+		$valor_unitario = $row['v_inventario_inmuebles_todo']['avaluo_actual'];
+		$valor_actual = $row['v_inventario_inmuebles_todo']['valor_actual'];
+		$estado_actual= $row['v_inventario_inmuebles_todo']['estado_actual'];
+
+		$deno_division=$row['v_inventario_inmuebles_todo']['deno_division'];
+		if($deno_division== ''){
+			$deno_division='N/A';
+		}
+		
+		$deno_departamento=$row['v_inventario_inmuebles_todo']['deno_departamento'];
+		if($deno_departamento== ''){
+			$deno_departamento='N/A';
+		}
+
+		$deno_oficina=$row['v_inventario_inmuebles_todo']['deno_oficina'];
+		if($deno_oficina== ''){
+			$deno_oficina='N/A';
+		}
+
+		if(in_array($cod_tipo_incorporacion, array('3','9','11'))){
+			$numero_oc = $row['v_inventario_muebles_todo']['numero_orden_compra'];
+			$fecha_oc = $row['v_inventario_muebles_todo']['fecha_orden_compra'];
+		}
+
+		$numero_doc=$row['v_inventario_inmuebles_todo']['numero_doc'];
+
+		$cond_act = $row['v_inventario_inmuebles_todo']['condicion_actividad'];
+		if($cond_act == 2){
+			$numero_acta = $row['v_inventario_inmuebles_todo']['numero_acta'];
+			$fecha_des = $row['v_inventario_inmuebles_todo']['fecha_proceso_desincorporacion'];
+			$observacion_des = $row['v_inventario_inmuebles_todo']['observaciones_desincorporacion'];
+		}
+}
+
+$pdf = new pdfview('P','mm','Letter');
+
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+$pdf->AddPage();
+
+
+$pdf->SetFillColor(50, 138, 164); // establece el color del fondo de la celda (en este caso es AZUL
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,3,"FICHA DE BIENES INMUEBLES",'',1,'C');
+
+$pdf->Cell(0,10,"",'',1,'C');
+
+$pdf->SetFont('vera','B',7);
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(70,6,"RESPONSABLE PATRIMONIAL:",'TRLB',0,'R', true);
+$pdf->SetTextColor(0,0,0);
+$pdf->Cell(0,6,$deno_secretaria,'TRB',1,'L');
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(70,6,"RESPONSABLE PRIMARIO:",'TRLB',0,'R', true);
+$pdf->SetTextColor(0,0,0);
+$pdf->Cell(0,6,$deno_direccion,'TRB',1,'L');
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(70,6,"RESPONSABLE DE USO:",'TRLB',0,'R', true);
+$pdf->SetTextColor(0,0,0);
+$pdf->Cell(0,6,$deno_division,'TRB',1,'L');
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(70,6,"DEPARTAMENTO DE USO:",'TRLB',0,'R', true);
+
+$pdf->SetTextColor(0,0,0);
+$pdf->Cell(0,6,$deno_departamento,'TRB',1,'L');
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(70,6,"OFICINA DE USO:",'TRLB',0,'R', true);
+
+$pdf->SetTextColor(0,0,0);
+$pdf->Cell(0,6,$deno_oficina,'TRB',1,'L');
+
+$pdf->Cell(0,7,"",'',1,'C');
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,3,"BIENES INMUEBLES",'',1,'C');
+
+$pdf->Cell(0,7,"",'',1,'C');
+
+//CABECERA DESCRIPCION
+$pdf->SetFont('vera','B',7);
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(37,4,"CLASIFICACION",'TRL',0,'C', true);
+$pdf->Cell(122,4,"DESCRIPCION DEL BIEN",'TRL',0,'C', true);
+$pdf->Cell(37,4,"Nº DE IDENT.",'TR',1,'C', true);
+
+$pdf->Cell(37,4,"FUNCIONAL DEL BIEN",'RBL',0,'C', true);
+$pdf->Cell(122,4,"",'RBL',0,'C', true);
+$pdf->Cell(37,4,"EN INVENTARIO(BM-1)",'RB',1,'C', true);
+
+$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+//DESCRIPCION BIENES MUEBLE
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+
+$lengtext = strlen(trim($denominacion));
+
+$altoMC = 5;
+if ($lengtext <= 69){
+	$altoC=10;
+	$altoMC=10;
+}else if ($lengtext >= 70 && $lengtext <=140){
+	$altoC=10;
+}else if ($lengtext > 140 && $lengtext <=210){
+	$altoC=15;
+}else{
+	$altoC=20;
+}
+	$pdf->Cell(37,$altoC,$cod_tipo.'-'.$cod_grupo.'-'.$cod_subgrupo.'-'.$cod_seccion,'RBL',0,'C', false);
+	$pdf->SetXY($varX+37, $varY);
+	$pdf->MultiCell(122,$altoMC, strlen(trim($denominacion)).$denominacion, 'RB', 'C', 0, 0, '', '', true, 0, false, true, 40, 'M');
+	$pdf->SetXY($varX+159, $varY);
+	$pdf->Cell(37, $altoC, $sisap->mascara_ocho($numero_identificacion), 'RB', 1, 'C',false);
+
+/*$pdf->MultiCell(37, 13.5, $cod_tipo.'-'.$cod_grupo.'-'.$cod_subgrupo.'-'.$cod_seccion, 'RBL', 'C', 0, 0, '', '', true);
+
+$pdf->SetXY($varX+37, $varY);
+
+if(strlen($denominacion) <= 69){ 
+	$pdf->MultiCell(122,13.5, $denominacion, 'RB', 'C', 0, 0, '', '', true, 0, false, true, 40, 'M');
+}elseif(strlen($denominacion) <= 99){
+	$pdf->MultiCell(122, 13.5, $denominacion, 'RB', 'C', 0, 0, '', '', true, 0, false, true, 40, 'M');
+}else{
+	$pdf->MultiCell(122, 4.5, $denominacion, 'RB', 'C', 0, 0, '', '', true, 0, false, true, 40, 'M');
+}
+
+$pdf->SetXY($varX+159, $varY);
+
+$pdf->MultiCell(37, 13.5, $sisap->mascara_ocho($numero_identificacion), 'RB', 'C', 0, 0, '', '', true);*/
+
+$pdf->Cell(0,7,"",'',1,'C');
+
+$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+$pdf->Cell(34,6,"FORMA ADQUISICION",'TRL',0,'C', true);
+$pdf->Cell(37,6,"FECHA DE ADQUISICION",'TL',0,'C', true);
+$pdf->Cell(37,6,"VALOR DE ADQUISICION",'TL',0,'C', true);
+$pdf->Cell(27,6,"VALOR ACTUAL",'TL',0,'C', true);
+$pdf->Cell(61,6,"CATASTRO GEOREFERENCIADO",'TRL',1,'C', true);
+
+
+$pdf->Cell(34,6,"",'RBL',0,'C', true);
+$pdf->Cell(37,6,"",'BL',0,'C', true);
+$pdf->Cell(37,6,"",'BL',0,'C', true);
+$pdf->Cell(27,6,"",'BL',0,'C', true);
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(22,6,"DOC. PROPIEDAD",'TBL',0,'C', true);
+$pdf->Cell(14,6,"PLANOS",'TBL',0,'C', true);
+$pdf->Cell(25,6,"REF. FOTOGRAFICAS",'TRBL',1,'C', true);
+
+$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es NEGRO) 
+$pdf->SetFont('vera','B',7);
+
+$varX = $pdf->GetX();
+$varY = $pdf->GetY();
+
+
+
+
+if(strlen($deno_incorporacion) <= 10){
+	$pdf->MultiCell(34, 8, $deno_incorporacion, '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+34, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Cfecha($fecha_incorporacion,'D/M/A'), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+71, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Formato2($valor_unitario), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+108, $varY);
+
+	$pdf->MultiCell(27, 8, $sisap->Formato2($valor_actual), '1', 'C', 0, 0, '', '', true); 
+}else if(strlen($deno_incorporacion) <= 18){
+	$pdf->MultiCell(34, 8, $deno_incorporacion, '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+34, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Cfecha($fecha_incorporacion,'D/M/A'), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+71, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Formato2($valor_unitario), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+108, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Formato2($valor_actual), '1', 'C', 0, 0, '', '', true); 
+}else if(strlen($deno_incorporacion) <= 34){
+	$pdf->MultiCell(34, 4, $deno_incorporacion, '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+34, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Cfecha($fecha_incorporacion,'D/M/A'), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+71, $varY);
+
+	$pdf->MultiCell(37, 8, $sisap->Formato2($valor_unitario), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+108, $varY);
+
+	$pdf->MultiCell(27, 8, $sisap->Formato2($valor_actual), '1', 'C', 0, 0, '', '', true); 
+
+}else{
+	$pdf->MultiCell(34, 3, $deno_incorporacion, '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+34, $varY);
+
+	$pdf->MultiCell(37, 12, $sisap->Cfecha($fecha_incorporacion,'D/M/A'), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+71, $varY);
+
+	$pdf->MultiCell(37, 12, $sisap->Formato2($valor_unitario), '1', 'C', 0, 0, '', '', true);
+
+	$pdf->SetXY($varX+108, $varY);
+
+	$pdf->MultiCell(27, 12, $sisap->Formato2($valor_actual), '1', 'C', 0, 0, '', '', true); 
+}
+
+if(strlen($deno_incorporacion) <= 34){
+	if($estado_actual == 1){
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 8, 'X', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 8, '--', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 8, '--', '1', 'C', 0, 0, '', '', true);
+	}elseif ($estado_actual == 2) {
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 8, '--', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 8, 'X', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 8, '--', '1', 'C', 0, 0, '', '', true);
+	}else{
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 8, '--', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 8, '--', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 8, 'X', '1', 'C', 0, 0, '', '', true);
+	}
+}else{
+	if($estado_actual == 1){
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 12, 'X', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 12, '--', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 12, '--', '1', 'C', 0, 0, '', '', true);
+	}elseif ($estado_actual == 2) {
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 12, '--', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 12, 'X', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 12, '--', '1', 'C', 0, 0, '', '', true);
+	}else{
+		$pdf->SetXY($varX+135, $varY);
+		$pdf->MultiCell(22, 12, '--', '1', 'C', 0, 0, '', '', true); 
+		$pdf->SetXY($varX+157, $varY);
+		$pdf->MultiCell(14, 12, '--', '1', 'C', 0, 0, '', '', true);
+		$pdf->SetXY($varX+171, $varY);
+		$pdf->MultiCell(25, 12, 'X', '1', 'C', 0, 0, '', '', true);
+	}
+}
+
+$pdf->Cell(0,7,"",'',1,'C');
+
+if($cod_tipo_incorporacion == 3){
+	$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+	$pdf->Cell(50,6,"NUMERO DE ORDEN COMPRA",'TRBL',0,'C', true);
+	$pdf->Cell(50,6,"FECHA ORDEN COMPRA",'TB',0,'C', true);
+	$pdf->Cell(96,6,"PROVEEDOR",'TRBL',1,'C', true);
+
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+
+	$pdf->Cell(50,6,$numero_oc,'TRBL',0,'C');
+	$pdf->Cell(50,6,$sisap->Cfecha($fecha_oc,'D/M/A'),'TRBL',0,'C');
+	$pdf->Cell(96,6,$proveedor,'TRBL',1,'C');
+}
+if(in_array($cod_tipo_incorporacion, array('2','7'))){
+	$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+	$pdf->Cell(98,6,"NUMERO DE DOCUMENTO",'TRBL',0,'C', true);
+	$pdf->Cell(98,6,"FECHA DOCUMENTO",'TRBL',1,'C', true);
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+	$pdf->Cell(98,6,$numero_doc,'TRBL',0,'C');
+	$pdf->Cell(98,6,$sisap->Cfecha($fecha_incorporacion,'D/M/A'),'TRBL',1,'C');
+}
+if(in_array($cod_tipo_incorporacion, array('9','11'))){
+	$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+	$pdf->Cell(98,6,"NUMERO DE DOCUMENTO",'TRBL',0,'C', true);
+	$pdf->Cell(98,6,"FECHA",'TRBL',1,'C', true);
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+	$pdf->Cell(98,6,$numero_doc,'TRBL',0,'C');
+	$pdf->Cell(98,6,$sisap->Cfecha($fecha_oc,'D/M/A'),'TRBL',1,'C');
+
+	$pdf->Cell(0,7,"",'',1,'C');
+
+	$pdf->SetTextColor(255,255,255);
+	$pdf->Cell(196,6,"OBSERVACION",'TRBL',1,'C', true);
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+	$pdf->MultiCell(196, 8, $observacion, '1', 'C', 0, 0, '', '', true);
+
+}
+if(in_array($cod_tipo_incorporacion, array('4','5','6','8','10','12','13','14','15','16','17','18'))){
+	$pdf->SetTextColor(255,255,255);
+	$pdf->Cell(196,6,"OBSERVACION",'TRBL',1,'C', true);
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+	$pdf->MultiCell(196, 8, $observacion, '1', 'C', 0, 0, '', '', true);
+}
+
+$pdf->Cell(0,7,"",'',1,'C');
+
+if($cond_act == 2){
+	$pdf->SetTextColor(255,255,255);  // Establece el color del texto (en este caso es blanco) 
+	$pdf->Cell(35,6,"NUMERO DE ACTA",'TRBL',0,'C', true);
+	$pdf->Cell(30,6,"FECHA",'TB',0,'C', true);
+	$pdf->Cell(131,6,"CONCEPTO",'TRBL',1,'C', true);
+
+	$pdf->SetTextColor(0,0,0);  // Establece el color del texto (en este caso es negro) 
+
+	$pdf->Cell(35,6,$numero_acta,'TRBL',0,'C');
+	$pdf->Cell(30,6,$sisap->Cfecha($fecha_des,'D/M/A'),'TRBL',0,'C');
+	$pdf->Cell(131,6,$observacion_des,'TRBL',1,'C');
+}
+/*$pdf->Cell(34,6,$deno_incorporacion,'TRBL',0,'C');
+$pdf->Cell(37,6,$sisap->Cfecha($fecha_incorporacion,'D/M/A'),'TBL',0,'C');
+$pdf->Cell(37,6,$sisap->Formato2($valor_unitario),'TBL',0,'C');
+$pdf->Cell(27,6,$sisap->Formato2($valor_actual),'BL',0,'C');
+
+if($estado_actual == 1){
+	$pdf->Cell(22,6,"X",'TBL',0,'C');
+	$pdf->Cell(14,6,"--",'TBL',0,'C');
+	$pdf->Cell(25,6,"--",'TRBL',1,'C');
+}elseif ($estado_actual == 2) {
+	$pdf->Cell(22,6,"--",'TBL',0,'C');
+	$pdf->Cell(14,6,"X",'TBL',0,'C');
+	$pdf->Cell(25,6,"--",'TRBL',1,'C');
+}else{
+	$pdf->Cell(22,6,"--",'TBL',0,'C');
+	$pdf->Cell(14,6,"--",'TBL',0,'C');
+	$pdf->Cell(25,6,"X",'TRBL',1,'C');
+}*/
+
+$pdf->Output('ficha_bienes_INmuebles'.date('d-m-Y').'.pdf','D');
+?>

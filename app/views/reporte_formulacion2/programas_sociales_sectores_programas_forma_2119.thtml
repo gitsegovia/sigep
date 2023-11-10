@@ -1,0 +1,270 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Programas Sociales a nivel de sectores y Programas'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion2/programas_sociales_sectores_programas_forma_2119/3/'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?= $html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+<?= $sisap->radioTagRemote("datos/tipo_busqueda", array('1'=>'Todo','2'=>'Un Programa Especifico'), array('url1'=>'/reporte_formulacion2/programas_sociales_sectores_programas_forma_2119/2', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+<br><br>
+<div id="funcion"></div>
+
+
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else if($opcion==2){
+
+
+	if($opcion2==2){
+
+?>
+
+		<table width='40%' border='0' cellspacing='0' cellpadding='0' >
+				<tr>
+					<td align="right">Sector: </td>
+					<td align="left" id="radio">
+					  <?= $sisap->selectTagRemote('organismo/cod_sector', $optionElements=$lista_numero,  null, null, $selectAttr = array('onchange1'=>'/reporte_formulacion2/programas_sociales_sectores_programas_forma_2119/4',  "update1"=>"radio2",  'id'=>'select_lista_reporte' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+				<tr>
+				    <td align="right">Programa:</td>
+					<td align="left" id="radio2">
+					  <?= $sisap->selectTagRemote('organismo/cod_programa', $optionElements=array(),  null, null, $selectAttr = array('id'=>'select_lista_reporte2' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+		</table>
+<?php
+
+	}//fin else
+
+
+
+
+}else if($opcion==4){ ?>
+
+<?= $sisap->selectTagRemote('organismo/cod_programa', $optionElements=$lista_numero,  null, null, $selectAttr = array('id'=>'select_lista_reporte2' ,'style'=>'width:180px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+
+<?php
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "PROGRAMAS SOCIALES A NIVEL DE SECTORES Y PROGRAMAS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"31", "Z"=>"13"), null);
+
+       	$this->SetFont('vera','B',8);
+		$this->Cell(0,7,'PRESUPUESTO:  '.$_SESSION['ano_top'],'TRBL',1);
+
+		$this->SetFont('vera','',8);
+		$this->Cell(28,6,'','RL',0,'C');
+		$this->Cell(20,6,'CÓDIGO','R',0,'C');
+		$this->Cell(0,6,'D E N O M I N A C I Ó N','R',1,'C');
+
+		$this->SetFont('vera','',8);
+		$this->Cell(28,5,'SECTOR','TRL',0);
+		$this->SetFont('vera','B',8);
+		if($_SESSION['top_sector']=='')$top='';   else $top=mascara($_SESSION['top_sector'],2);
+		$this->Cell(20,5,$top,'TRL',0,'C');// CÓDIGO DEL SECTOR
+		$this->Cell(0,5,$_SESSION['deno_sector'],'TR',1);// DENOMINACIÓN DEL SECTOR
+
+		$this->SetFont('vera','',8);
+		$this->Cell(28,5,'PROGRAMA','TRL',0);
+		$this->SetFont('vera','B',8);
+		if($_SESSION['top_programa']=='')$tope='';   else $tope=mascara($_SESSION['top_programa'],2);
+		$this->Cell(20,5,$tope,'TRL',0,'C');// CÓDIGO DEL PROGRAMA
+		$this->Cell(0,5,$_SESSION['deno_programa'],'TR',1);// DENOMINACIÓN DEL PROGRAMA
+
+
+		$this->SetFont('vera','',8);
+		$this->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION['unidad_ejecutora'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+		$this->SetFont('vera','',8);
+		$this->Cell(48,5,'UNIDAD (ES) EJECUTORA (S)','TRL',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,5,$_SESSION['unidad_ejecutora1'],'TR',1);// UNIDA(DES) EJECUTORAS
+
+
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(180,5,'PROGRAMAS SOCIALES','TRBL',0,'C');
+		$this->Cell(110,5,'ORGANISMO','TRB',0,'C');
+		$this->Cell(0,5,'ASIGNACIÓN ANUAL','TRB',1,'C');
+
+
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2119','',1,'R');
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+$_SESSION['ano_top']='';
+$_SESSION['top_sector']='';
+$_SESSION['top_programa']='';
+$_SESSION['deno_sector']='';
+$_SESSION['deno_programa']='';
+$_SESSION['unidad_ejecutora']='';
+$_SESSION['unidad_ejecutora1']='';
+
+if($datos2!=null){
+
+
+		for($i=0;$i<count($datos);$i++){
+			$_SESSION['ano_top']=$datos[$i][0]['ano'];
+			$_SESSION['top_sector']=$datos[$i][0]['cod_sector'];
+			$_SESSION['top_programa']=$datos[$i][0]['cod_programa'];
+			$_SESSION['deno_sector']=$datos[$i][0]['deno_sector'];
+			$_SESSION['deno_programa']=$datos[$i][0]['deno_prog'];
+			$_SESSION['unidad_ejecutora']=$datos[$i][0]['unidad_ejecutora_sector'];
+			$_SESSION['unidad_ejecutora1']=$datos[$i][0]['unidad_ejecutora_prog'];
+			$pdf->AddPage();
+			$monto=0;
+
+
+
+				for($j=0;$j<count($datos2);$j++){
+					if($datos[$i][0]['cod_dep']==$datos2[$j][0]['cod_dep'] && $datos[$i][0]['ano']==$datos2[$j][0]['ano'] && $datos[$i][0]['cod_sector']==$datos2[$j][0]['cod_sector'] && $datos[$i][0]['cod_programa']==$datos2[$j][0]['cod_programa']){
+							$monto+=$datos2[$j][0]['asignacion_anual'];
+							$pdf->SetFont('vera','',7);
+							$pdf->Cell(1,10,'','L',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$pdf->Cell(179,1,'','',4,'C');
+								$pdf->MultiCell(178,3,$datos2[$j][0]['programa_social'],'','L');
+								$varX = $varX+179;
+								$pdf->SetXY($varX,$varY);
+							$pdf->Cell(1,10,'','L',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$pdf->Cell(109,1,'','',4,'C');
+								$pdf->MultiCell(108,3,$datos2[$j][0]['organismo'],'','L');
+								$varX = $varX+109;
+								$pdf->SetXY($varX,$varY);
+							$pdf->Cell(0,10,$sisap->Formato2($datos2[$j][0]['asignacion_anual']),'RL',1,'R');
+							$pdf->Cell(0,0,'','T',1);
+
+
+					}
+
+
+
+				}
+
+				if($monto!=0){
+					$pdf->SetFont('vera','B',7);
+					$pdf->Cell(290,5,'T O T A L: ','TRBL',0,'R');
+					$pdf->Cell(0,5,$sisap->Formato2($monto),'TRB',1,'R');
+
+				}
+
+
+
+		}
+
+
+}else{
+	if($datos!=null){
+		$i=0;
+		$_SESSION['ano_top']=$datos[$i][0]['ano'];
+		$_SESSION['top_sector']=$datos[$i][0]['cod_sector'];
+		$_SESSION['deno_sector']=$datos[$i][0]['denominacion'];
+		$_SESSION['unidad_ejecutora']=$datos[$i][0]['unidad_ejecutora'];
+	}
+
+	$pdf->AddPage();
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(1,10,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(179,1,"",'',4,'C');
+			$pdf->MultiCell(178,3,"",'','L');
+			$varX = $varX+179;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,10,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$var_aux_X = $varX;
+			$var_aux_Y = $varY;
+			$pdf->Cell(109,1,"",'',4,'C');
+			$pdf->MultiCell(108,3,"",'','L');
+			$varX = $varX+109;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,10,'','RL',1,'R');
+		$pdf->Cell(0,0,'','T',1);
+
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(290,5,'T O T A L: ','TRBL',0,'R');
+		$pdf->Cell(0,5,'','TRB',1,'R');
+
+}
+
+
+$pdf->Output('FORMA_2119_programas_sociales_nivel_sector_programa.pdf','D');
+
+}//fin function
+
+
+?>

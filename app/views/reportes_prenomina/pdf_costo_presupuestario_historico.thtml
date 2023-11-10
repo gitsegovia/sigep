@@ -1,0 +1,158 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['NOMINA']="".mascara_tres($cod_tipo_nomina_reporte)." - ".$denominacion_nomina_reporte;
+$_SESSION['CORRE']=$nomina[0]['v_cnmd08_historia_trans_con']['correspondiente'];
+$_SESSION['LAPSO']="DESDE: ".cambiar_formato_fecha($nomina[0]['v_cnmd08_historia_trans_con']['periodo_desde'])." - HASTA: ".cambiar_formato_fecha($nomina[0]['v_cnmd08_historia_trans_con']['periodo_hasta']);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='P',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+    function Header(){
+		$this->top_reporte2(array("COSTO PRESUPUESTARIO - HISTORICO", ''.$_SESSION['NOMINA'], ''.$_SESSION['CORRE'],$_SESSION['LAPSO']), array("Y"=>"12", "X"=>"15", "Z"=>"13"), array("Y"=>"17", "X"=>"247"));
+    }//fin funtion
+
+}//fin clase
+
+
+$fpdf = new fpdfview('L','mm','Letter');
+$fpdf->AliasNbPages('TPAG');
+$fpdf->SetTopMargin(15);
+$fpdf->SetLeftMArgin(10);
+$fpdf->SetRightMargin(10);
+$fpdf->SetAutoPageBreak(true, 10);
+
+
+$fpdf->AddPage();
+$fpdf->SetFont('vera','B',5);
+$fpdf->Cell(0,3,"",'',1,'C');
+$fpdf->Cell(10,3,"",'TRL',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(8,3,"sub.",'TR',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(8,3,"actv",'TR',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(8,3,"sub",'TR',0,'C');
+$fpdf->Cell(8,3,"",'TR',0,'C');
+$fpdf->Cell(90,3,"",'TR',0,'C');
+$fpdf->Cell(30,3,"",'TR',0,'C');
+$fpdf->Cell(30,3,"",'TR',0,'C');
+$fpdf->Cell(0,3,"",'TR',1,'C');
+$fpdf->Cell(0,0,"",'',1,'C');//linea o corte
+$fpdf->Cell(10,3,"Sector",'RLB',0,'C');
+$fpdf->Cell(8,3,"prog",'RB',0,'C');
+$fpdf->Cell(8,3,"prog",'RB',0,'C');
+$fpdf->Cell(8,3,"proy",'RB',0,'C');
+$fpdf->Cell(8,3,"obra",'RB',0,'C');
+$fpdf->Cell(8,3,"part",'RB',0,'C');
+$fpdf->Cell(8,3,"gen",'RB',0,'C');
+$fpdf->Cell(8,3,"esp",'RB',0,'C');
+$fpdf->Cell(8,3,"esp",'RB',0,'C');
+$fpdf->Cell(8,3,"aux",'RB',0,'C');
+$fpdf->Cell(90,3,"denominacion de la partida",'RB',0,'C');
+$fpdf->Cell(30,3,"disponibilidad",'RB',0,'C');
+$fpdf->Cell(30,3,"monto nómina",'RB',0,'C');
+$fpdf->Cell(0,3,"diferencia",'RB',1,'C');
+
+$fpdf->SetFont('vera','',6);
+$asignaciones=0;
+$deducciones=0;
+$total_monto_nomina=0;
+foreach($data as $r){
+	extract($r['costo_presupuestario_p2_historico']);
+	    $deno_c=strlen($denominacion);
+
+		if($deno_c<65){
+			$alto=3;
+		}else if($deno_c>=65 && $deno_c<=130){
+			$alto=6;
+		}else if($deno_c>=131 && $deno_c<=196){
+			$alto=9;
+		}else{
+			$alto=10;
+		}
+	    $fpdf->Cell(10,$alto,$sisap->AddCero2($cod_sector),'RL',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_programa),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_sub_prog),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_proyecto),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_activ_obra),'R',0,'C');
+		$fpdf->Cell(8,$alto,mascara_tres($cod_partida),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_generica),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_especifica),'R',0,'C');
+		$fpdf->Cell(8,$alto,$sisap->AddCero2($cod_sub_espec),'R',0,'C');
+		$fpdf->Cell(8,$alto,mascara_cuatro($cod_auxiliar),'R',0,'C');
+		$varX = $fpdf->GetX();
+		$varY = $fpdf->GetY();
+		$fpdf->SetFont('vera','',5);
+		$fpdf->MultiCell(90,3,$denominacion,'','L');//---[Beneficiario]
+		$varX = $varX+90;
+		//$varY = $varY-1;
+		$fpdf->SetXY($varX,$varY);
+		//$fpdf->Cell(90,$alto,$denominacion,'RB',0,'L');
+		$fpdf->SetFont('vera','',6);
+		$fpdf->Cell(30,$alto,$sisap->Formato2($disponibilidad),'LR',0,'R');
+		$fpdf->Cell(30,$alto,$sisap->Formato2($monto_nomina),'R',0,'R');
+		$fpdf->Cell(0,$alto,$sisap->Formato2($diferencia),'R',1,'R');
+		$total_monto_nomina+=$monto_nomina;
+
+		$fpdf->Cell(0,0,'','T',1);
+		}
+
+		$fpdf->SetFont('vera','B',6);
+		$alto = 4;
+		$fpdf->Cell(202,$alto,'Total monto nómina:','RLB',0,'R');
+		$fpdf->Cell(30,$alto,$sisap->Formato2($total_monto_nomina),'RB',0,'R');
+		$fpdf->Cell(0,$alto,'','RB',1,'R');
+
+if(count($no_conectadas)>0){
+
+$fpdf->AddPage();
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(0,4,"TRANSACCIONES NO CONECTADAS",'',1,'C');
+$fpdf->SetFont('vera','B',6);
+$fpdf->Cell(0,3,"",'',1,'C');
+$fpdf->Cell(80,4,"",'',0,'C');
+$fpdf->Cell(20,4,"TIPO",'TRL',0,'C');
+$fpdf->Cell(20,4,"CÓDIGO",'TRL',0,'C');
+$fpdf->Cell(65,4,"",'TR',1,'C');
+$fpdf->Cell(80,4,"",'',0,'C');
+$fpdf->Cell(20,4,"TRANSACCIÓN",'RLB',0,'C');
+$fpdf->Cell(20,4,"TRANSACCIÓN",'RLB',0,'C');
+$fpdf->Cell(65,4,"DESCRIPCIÓN DE LA TRANSACCIÓN",'RB',1,'C');
+
+
+foreach($no_conectadas as $rnc){
+	extract($rnc['trasacciones_no_conectadas']);
+	$tipo=$cod_tipo_transaccion==1?"Asignación":"Deducción";
+	$fpdf->SetFont('vera','',6);
+	$fpdf->Cell(80,4,"",'',0,'C');
+	$fpdf->Cell(20,4,$tipo,'TRL',0,'C');
+	$fpdf->Cell(20,4,mascara_tres($cod_transaccion),'TRL',0,'C');
+	$fpdf->Cell(65,4,$denominacion,'TR',1,'L');
+
+
+}
+$fpdf->Cell(80,4,"",'',0,'C');
+$fpdf->Cell(105,0,"",'T',1,'C');
+
+}
+
+
+
+
+$fpdf->Output('costo_presupuestario_historico_'.date("d-m-Y").".pdf",'D');
+?>

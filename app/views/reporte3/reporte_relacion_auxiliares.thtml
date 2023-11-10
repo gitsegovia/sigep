@@ -1,0 +1,216 @@
+<?php
+/*
+ * Creado el 06/10/2008 a las 11:10:04 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($var) && $var=="si"){
+// onSubmit="return reporte_analitico_pago();"
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE AUXILIARES","","950");?>
+
+<form name="data[relacion_auxiliares]" method="post" id='form' action="<?php echo $html->url('/reporte3/reporte_relacion_auxiliares/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+
+<table  width="50%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="center" width="20%" id="td-ano-ejecucion"><br />
+				Año:&nbsp;<input type="text" name="data[relacion_auxiliares][ano]" id="ano" value="<?=$ano_formulacion?>" size="4" maxlength="4" onKeyPress="return solonumeros_con_punto(event);" style="text-align:center;" />
+			</td>
+		</tr>
+</table>
+<br>
+	<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+
+	<table  width="50%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="center">ORDENADO POR:<br />
+				<?= $html->radio('relacion_auxiliares/ordenamiento', array('1'=>'Todos', '2'=>'Utilizados', '3'=>'No utilizados'), null, array('value'=>'1'))?>
+			</td>
+		</tr>
+	</table>
+
+
+
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/relacion_auxiliares/salir', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["titulo_a"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"RELACIÓN DE AUXILIARES",'RL',1,'C');
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"AÑO: ".$_SESSION["ano_relacion_aux"],'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(12,3,'CÓDIGO','TRL',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'SUB','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'ACTV','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'SUB','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(67,3,'','TR',0,'C');
+		$this->Cell(0,3,'','TR',1,'C');
+
+		$this->Cell(12,3,'DEPEND','RBL',0,'C');
+		$this->Cell(10,3,'SEC','RB',0,'C');
+		$this->Cell(10,3,'PROG','RB',0,'C');
+		$this->Cell(10,3,'PROG','RB',0,'C');
+		$this->Cell(10,3,'PROY.','RB',0,'C');
+		$this->Cell(10,3,'OBRA','RB',0,'C');
+		$this->Cell(10,3,'PART','RB',0,'C');
+		$this->Cell(10,3,'GEN','RB',0,'C');
+		$this->Cell(10,3,'ESP','RB',0,'C');
+		$this->Cell(10,3,'ESP','RB',0,'C');
+		$this->Cell(10,3,'AUX','RB',0,'C');
+		$this->Cell(67,3,'DENOMINACIÓN','RB',0,'C');
+		$this->Cell(0,3,'UTILIZADO','RB',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+
+$_SESSION["titulo_a"] = $titulo_a;
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',7);
+for($i=0; $i<count($datos); $i++){
+
+	$deno  = str_replace("\n"," ",$datos[$i][0]['denominacion']);
+	$deno2 = trim($deno);
+	$char  = strlen($deno2);
+
+	if($char <= 45){
+		$height = 4;
+	}elseif($char > 45 && $char <= 90){
+		$height = 8;
+	}elseif($char > 90 && $char <= 135){
+		$height = 10;
+	}elseif($char > 135 && $char <= 180){
+		$height = 12;
+	}elseif($char > 180 && $char <= 225){
+		$height = 14;
+	}elseif($char > 225 && $char <= 270){
+		$height = 16;
+	}elseif($char > 270 && $char <= 315){
+		$height = 18;
+	}elseif($char > 315 && $char <= 360){
+		$height = 20;
+	}elseif($char > 360 && $char <= 405){
+		$height = 22;
+	}elseif($char > 405 && $char <= 450){
+		$height = 26;
+	}elseif($char > 450 && $char <= 495){
+		$height = 28;
+	}elseif($char > 495 && $char <= 540){
+		$height = 30;
+	}elseif($char > 540 && $char <= 585){
+		$height = 32;
+	}elseif($char > 585 && $char <= 630){
+		$height = 34;
+	}elseif($char > 630 && $char <= 675){
+		$height = 36;
+	}elseif($char > 675 && $char <= 720){
+		$height = 38;
+	}elseif($char > 720 && $char <= 765){
+		$height = 40;
+	}elseif($char > 765 && $char <= 810){
+		$height = 42;
+	}elseif($char > 810 && $char <= 855){
+		$height = 44;
+	}elseif($char > 855 && $char <= 900){
+		$height = 46;
+	}elseif($char > 900 && $char <= 945){
+		$height = 48;
+	}elseif($char > 945 && $char <= 990){
+		$height = 50;
+	}elseif($char > 990 && $char <= 1035){
+		$height = 52;
+	}elseif($char > 1035){
+		$height = 54;
+	}
+
+	$pdf->Cell(12,$height,$datos[$i][0]['cod_dep'],'RL',0,'C');//--[DEP]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sector']),'R',0,'C');//--[SEC]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_programa']),'R',0,'C');//--[PROG]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sub_prog']),'R',0,'C');//--[SUB]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_proyecto']),'R',0,'C');//--[PROY]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_activ_obra']),'R',0,'C');//--[ACTV]
+	$pdf->Cell(10,$height,$datos[$i][0]['cod_partida'],'R',0,'C');//--[PART]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_generica']),'R',0,'C');//--[GEN]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_especifica']),'R',0,'C');//--[ESP]
+	$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sub_espec']),'R',0,'C');//--[SUB]
+	$pdf->Cell(10,$height,$sisap->mascara_cuatro($datos[$i][0]['cod_auxiliar']),'R',0,'C');//--[AUX]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(67,1,"",'',2,'C');
+	$pdf->SetFont('vera','',6);
+	$pdf->MultiCell(67,2,$datos[$i][0]['denominacion'],'','L');//---[DENOMINACIÓN]
+	$varX = $varX+67;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','',7);
+	if($datos[$i][0]['utilizado_cfpd05']==0 && $datos[$i][0]['utilizado_cfpd05_requerimiento']==0){
+		$pdf->Cell(0,$height,"no",'RL',1,'C');
+	}else{
+		$pdf->Cell(0,$height,"si",'RL',1,'C');
+	}
+	$pdf->Cell(0,0,'','T',1,'C');
+}
+
+$pdf->Output('relacion_de_auxiliares_'.date('d-m-Y').'.pdf','D');//Poner nombre y la opcion D
+}
+?>

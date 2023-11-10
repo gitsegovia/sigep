@@ -1,0 +1,226 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('PARTICIPACIÓN FINANCIERA EN ORGANISMOS PÚBLICOS MUNICIPALES'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion_alc2014/forma_2128/2/'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?> FORMA: 2128</td>
+	</tr>
+</table>
+<br><br>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+<?= $sisap->CloseTable(); ?>
+
+<?php
+
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='EXTRAOFICE') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "PARTICIPACIÓN FINANCIERA EN ORGANISMOS PÚBLICOS MUNICIPALES";
+	$titulo_B = "(En Bolívares)";
+    $this->top_reporte22(array($titulo_A, $titulo_B), array("Y"=>"6", "X"=>"30", "Z"=>"13"), array("Y"=>"20", "X"=>"354"));
+
+	$this->SetFont('vera','B',8);
+	if(isset($_SESSION['ano_top']))$ano=$_SESSION['ano_top'];else$ano='';
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(204,4,'ORGANISMO','TRBL',0,'C', true);
+	$this->Cell(95,4,'MUNICIPIO','TRB',0,'C', true);
+	$this->Cell(0,4,'','TR',1);
+
+	$this->Cell(79,4,'','RL',0,'C');
+	$this->Cell(55,4,'','R',0,'C');
+	$this->Cell(40,4,'','R',0,'C');
+	$this->Cell(30,4,'CAPITAL SOCIAL','R',0,'C');
+	$this->Cell(30,4,'CUOTA DE','R',0,'C');
+	$this->Cell(10,4,'','R',0,'C');
+	$this->Cell(55,4,'REGISTRO PRESUPUESTARIO','RB',0,'C');
+	$this->Cell(0,4,'','R',1,'C');
+
+	$this->Cell(79,4,'','RL',0,'C');
+	$this->Cell(55,4,'UBICACIÓN','R',0,'C');
+	$this->Cell(40,4,'','R',0,'C');
+	$this->Cell(30,4,'O PRESUPUESTO','R',0,'C');
+	$this->Cell(30,4,'PARTICIPACIÓN','R',0,'C');
+	$this->Cell(10,4,'','R',0,'C');
+	$this->Cell(12,4,'','R',0,'C');
+	$this->Cell(15,4,'','R',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(15,4,'SUB','R',0,'C');
+	$this->Cell(13,4,'','R',0,'C');
+	$this->Cell(0,4,'','R',1,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(79,4,'NOMBRE','RBL',0,'C');
+	$this->Cell(55,4,'GEOGRAFICA','RB',0,'C');
+	$this->Cell(40,4,'TIPO','RB',0,'C');
+	$this->Cell(30,4,'ANUAL','RB',0,'C');
+	$this->Cell(30,4,'(Bs.)','RB',0,'C');
+	$this->Cell(10,4,'%','RB',0,'C');
+	$this->SetFont('vera','B',6);
+	$this->Cell(12,4,'SECTOR','RB',0,'C');
+	$this->Cell(15,4,'PROGRAMA','RB',0,'C');
+	$this->Cell(15,4,'PROGRAMA','RB',0,'C');
+	$this->Cell(13,4,'PARTIDA','RB',0,'C');
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,4,'OBSERVACIONES','RB',1,'C');
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2128','',1,'R');
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','EXTRAOFICE');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+if($datos!=null){
+
+		$pdf->SetFont('vera','',6);
+for($i=0; $i<count($datos); $i++){
+
+
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(78,1,'','',2,'C');
+		$pdf->MultiCell(77,3,$datos[$i][0]['nombre'],'','L');// NOMBRE
+		$varX = $varX+78;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(54,1,"",'',2,'C');
+		$pdf->MultiCell(53,3,$datos[$i][0]['ubicacion_geografica'],'','L');// GEOGRAFICA
+		$varX = $varX+54;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(39,1,"",'',2,'C');
+		$pdf->MultiCell(38,3,$datos[$i][0]['tipo'],'','L');// TIPO
+		$varX = $varX+39;
+		$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,7,$sisap->Formato2($datos[$i][0]['capital_social']),'RL',0,'R');// CAPITAL SOCIAL O PRESUPUESTO ANUAL
+	$pdf->Cell(30,7,$sisap->Formato2($datos[$i][0]['cuota_participacion']),'R',0,'R');// CUOTA DE PARTICIPACIÓN (Bs.)
+	$pdf->Cell(10,7,$sisap->Formato2($datos[$i][0]['porcentaje']),'R',0,'C');// %
+	$pdf->Cell(12,7,mascara($datos[$i][0]['cod_sector'],2),'R',0,'C');// SECTOR
+	$pdf->Cell(15,7,mascara($datos[$i][0]['cod_programa'],2),'R',0,'C');// PROGRAMA
+	$pdf->Cell(15,7,mascara($datos[$i][0]['cod_sub_prog'],2),'R',0,'C');// SUBPROGRAMA
+	$pdf->Cell(13,7,mascara($datos[$i][0]['cod_partida'],2),'R',0,'C');// PARTIDA
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(80,1,"",'',2,'C');
+		$pdf->MultiCell(79,3,$datos[$i][0]['observaciones'],'','L');// OBSERVACIONES
+		$varX = $varX+80;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,7,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);
+
+}
+
+}else{
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(78,1,"",'',2,'C');
+		$pdf->MultiCell(77,3,"",'','L');// NOMBRE
+		$varX = $varX+78;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(54,1,"",'',2,'C');
+		$pdf->MultiCell(53,3,"",'','L');// GEOGRAFICA
+		$varX = $varX+54;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(1,7,'','L',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(39,1,"",'',2,'C');
+		$pdf->MultiCell(38,3,"",'','L');// TIPO
+		$varX = $varX+39;
+		$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(30,7,'','RL',0,'R');// CAPITAL SOCIAL O PRESUPUESTO ANUAL
+	$pdf->Cell(30,7,'','R',0,'R');// CUOTA DE PARTICIPACIÓN (Bs.)
+	$pdf->Cell(10,7,'','R',0,'C');// %
+	$pdf->Cell(12,7,'','R',0,'C');// SECTOR
+	$pdf->Cell(15,7,'','R',0,'C');// PROGRAMA
+	$pdf->Cell(15,7,'','R',0,'C');// SUBPROGRAMA
+	$pdf->Cell(13,7,'','R',0,'C');// PARTIDA
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(80,1,"",'',2,'C');
+		$pdf->MultiCell(79,3,"",'','L');// OBSERVACIONES
+		$varX = $varX+80;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,7,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);
+
+
+}
+
+$pdf->Output('forma_2128_'.date("d_m_Y").'.pdf','D');//Poner nombre y la opcion D
+
+}//fin function
+
+
+?>

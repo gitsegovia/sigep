@@ -1,0 +1,279 @@
+<? if(isset($ir) && $ir=="si"){ ?>
+<?$sisap->Tabla_modulos("",true,"SOLICITUD DE RECURSOS POR ORGANISMO","","950","csrp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[organismo]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/solicitud_recurso_organismos/no'); ?>" >
+Año:<input name="data[organismo][ano]"  value="<?= $year?>" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  />
+<br><br>
+
+<? if($_SESSION['SScoddep']==1){ ?>
+	<?= $sisap->radioTagRemote('organismo/tipo_peticion', array('1'=>'Todas las dependencias', '2'=>'Una en particular'), array('url1'=>'/reporte_e/solicitud_recurso_organismos/peticion/', 'update1'=>'carga_radio','value'=>'','disabled'=>'','id'=>'peticion'),null,$opc=1);?>
+<? }?>
+
+	<div id="carga_radio"></div>
+          <?= $sisap->radioTagRemote('organismo/op_fecha', array('1'=>'Hasta la Fecha', '2'=>'Por Rango de Fecha'), array('url1'=>'/reporte_e/rango', 'update1'=>'rango_fecha','value'=>'','disabled'=>'','id'=>'rango'),null,$opc=1);?>
+	<div id="rango_fecha"></div>
+
+
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+
+
+<? }else if(isset($peticion) && $peticion==2){ ?>
+
+
+<br>
+<table width="100%" border="0" >
+	<tr>
+		<td width="20%" align="right">
+			Dependencia:
+		</td>
+		<td width="20%" align="lefth">
+			<?=  $sisap->selectTagRemote('organismo/cod_dep', isset($dependencias)?$dependencias:array(),null,  '', array('onchange1'=>'/reporte_e/analitico_solicitud_recurso/dep', 'update1'=>'carga','onchange2'=>'/reporte_e/analitico_solicitud_recurso/select', 'update2'=>'actividad','id'=>'nomina_1','style'=>'width:50%','onChange'=>'vacio',true), null, true); ?>
+		</td>
+	</tr>
+
+</table>
+<br><br>
+
+<? }else if(isset($ir) && $ir=="no"){
+//require_once('../tcpdf.php');
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+
+ function Header(){
+		$titulo_A = "SOLICITUD DE RECURSOS POR ORGANISMO";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"10", "X"=>"12", "Z"=>"13"), array("Y"=>"14", "X"=>"250"));
+
+
+  		 $this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',8);
+
+		$this->Cell(0,0,"",'T',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(17,4,"NÚMERO",'RL',0,'C');
+		$this->Cell(20,4,"",'R',0,'C');
+		$this->Cell(20,4,"",'R',0,'C');
+		$this->Cell(25,4,"",'R',0,'C');
+		$this->Cell(50,4,"ENTIDAD",'R',0,'C');
+		$this->Cell(30,4,"N° DE",'R',0,'C');
+		$this->Cell(25,4,"N° DE",'R',0,'C');
+		$this->Cell(25,4,"FECHA",'R',0,'C');
+		$this->Cell(25,4,"MONTO",'R',0,'C');
+		$this->Cell(0,4,"MONTO",'R',1,'C');
+
+		$this->Cell(17,2,"SOLICITUD",'RLB',0,'C');
+		$this->Cell(20,2,"FECHA",'RB',0,'C');
+		$this->Cell(20,2,"MES",'RB',0,'C');
+		$this->Cell(25,2,"MONTO",'RB',0,'C');
+		$this->Cell(50,2,"BANCARIA",'RB',0,'C');
+		$this->Cell(30,2,"CUENTA",'RB',0,'C');
+		$this->Cell(25,2,"CHEQUE",'RB',0,'C');
+		$this->Cell(25,2,"CHEQUE",'RB',0,'C');
+		$this->Cell(25,2,"CHEQUE",'RB',0,'C');
+		$this->Cell(0,2,"REINTEGRO",'RB',1,'C');
+
+
+
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+
+if($datos!=null){
+		$meses= array('1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+		$concatena='';
+		$concatena2='';
+		$aux=0;
+//		pr($datos);
+
+	for($i=0;$i<count($datos);$i++){
+
+
+			$pdf->SetFont('vera','',6);
+			$concatena2=$datos[$i][0]['cod_dep'];
+
+			if($concatena!=$concatena2){
+				if($i==0){
+					if($_SESSION['SScoddep']==1){
+						$pdf->Cell(0,6,$datos[$i][0]['denominacion_dependencia'],'BRL',1,'L');
+					}else{
+
+					}
+				}else{
+					$pdf->SetFont('vera','B',5);
+
+					$pdf->Cell(29,4,"ASIGNACIÓN",'LR',0,'C');
+					$pdf->Cell(29,4,"",'R',0,'C');
+					$pdf->Cell(29,4,"",'R',0,'C');
+					$pdf->Cell(29,4,"PRE",'R',0,'C');
+					$pdf->Cell(29,4,"ASIGNACIÓN",'R',0,'C');
+					$pdf->Cell(29,4,"",'R',0,'C');
+					$pdf->Cell(29,4,"MONTO",'R',0,'C');
+					$pdf->Cell(29,4,"",'R',0,'C');
+					$pdf->Cell(0,4,"MONTO",'R',1,'C');
+
+					$pdf->Cell(29,2,"INICIAL",'LRB',0,'C');
+					$pdf->Cell(29,2,"AUMENTOS",'RB',0,'C');
+					$pdf->Cell(29,2,"DISMINUCIONES",'RB',0,'C');
+					$pdf->Cell(29,2,"COMPROMISOS",'RB',0,'C');
+					$pdf->Cell(29,2,"AJUSTADA",'RB',0,'C');
+					$pdf->Cell(29,2,"REINTEGROS",'RB',0,'C');
+					$pdf->Cell(29,2,"SOLICITADO",'RB',0,'C');
+					$pdf->Cell(29,2,"DISPONIBILIDAD",'RB',0,'C');
+					$pdf->Cell(0,2,"ENTREGADO",'RB',1,'C');
+
+					$pdf->Cell(29,6,$asignacion_inicial,'LRB',0,'R');
+					$pdf->Cell(29,6,$aumento,'RB',0,'R');
+					$pdf->Cell(29,6,$disminuciones,'RB',0,'R');
+					$pdf->Cell(29,6,$precompromiso,'RB',0,'R');
+					$pdf->Cell(29,6,$sisap->Formato2($ajustada),'RB',0,'R');
+					$pdf->Cell(29,6,$sisap->Formato2($reintegro),'RB',0,'R');
+					$pdf->Cell(29,6,$sisap->Formato2($monto_solicitado),'RB',0,'R');
+					$pdf->Cell(29,6,$sisap->Formato2($disponibilidad),'RB',0,'R');
+					$pdf->Cell(0,6,$monto_entregado,'RB',1,'R');
+
+					$pdf->AddPage();
+					if($_SESSION['SScoddep']==1){
+						$pdf->Cell(0,6,$datos[$i][0]['denominacion_dependencia'],'BRL',1,'L');
+					}
+
+				}
+
+				$concatena=$concatena2;
+			}
+
+			$pdf->Cell(17,6,$datos[$i][0]['numero_solicitud'],'RL',0,'C');
+			$pdf->Cell(20,6,$sisap->cambia_fecha($datos[$i][0]['fecha_solicitud']),'R',0,'C');
+			$pdf->Cell(20,6,$meses[$datos[$i][0]['mes_solicitado']],'R',0,'C');
+			$pdf->Cell(25,6,$sisap->Formato2($datos[$i][0]['monto_solicitado']),'R',0,'R');
+
+			$varX = $pdf->GetX();//capturo X
+			$varY = $pdf->GetY();//capturo Y
+			$pdf->Cell(50,1,"",'',2,'C');
+			$pdf->MultiCell(50,2,$datos[$i][0]['denominacion_entidad_bancaria'],'','L');//DENOMINACION
+			$varX =$varX+50;
+			$pdf->SetXY($varX,$varY);// cargo XY
+
+//			$pdf->Cell(50,6,$datos[$i][0]['denominacion_entidad_bancaria'],'RB',0,'L');
+
+			if($datos[$i][0]['cuenta_bancaria']==0){
+				$datos[$i][0]['cuenta_bancaria']='';
+			}
+			$pdf->Cell(30,6,$datos[$i][0]['cuenta_bancaria'],'RL',0,'C');
+
+			if($datos[$i][0]['numero_cheque']==0){
+				$numero_cheque='';
+			}else{
+				$numero_cheque=mascara($datos[$i][0]['numero_cheque'],6);
+			}
+			$pdf->Cell(25,6,$numero_cheque,'R',0,'C');
+
+			if($datos[$i][0]['fecha_cheque']=='1900-01-01'){
+				$datos[$i][0]['fecha_cheque']='';
+			}
+			$pdf->Cell(25,6,$sisap->cambia_fecha($datos[$i][0]['fecha_cheque']),'R',0,'C');
+
+			if($datos[$i][0]['monto_entregado_solicitud']==0){
+				$monto='';
+			}else{
+				$monto=$sisap->Formato2($datos[$i][0]['monto_entregado_solicitud']);
+			}
+			$pdf->Cell(25,6,$monto,'RB',0,'R');
+
+			$pdf->Cell(0,6,$datos[$i][0]['monto_reintegro'],'RB',1,'R');
+
+			$pdf->Cell(0,0,'','T',1,'R');
+
+			$asignacion_inicial=$sisap->Formato2($datos[$i][0]['asignacion_inicial_1']);
+			$aumento=$sisap->Formato2($datos[$i][0]['aumento_1']);
+			$disminuciones=$sisap->Formato2($datos[$i][0]['disminuciones']);
+			$precompromiso=$sisap->Formato2($datos[$i][0]['precompromiso']);
+			$ajustada=(($datos[$i][0]['asignacion_inicial_1']+$datos[$i][0]['aumento_1'])-($datos[$i][0]['disminuciones']+$datos[$i][0]['precompromiso']));
+			$monto_entregado=$sisap->Formato2($datos[$i][0]['monto_entregado']);
+			$monto_solicitado=$datos[$i][0]['solicitado'];
+			$reintegro=$datos[$i][0]['reintegro'];
+			// $reintegro_acumuladot=$datos[$i][0]['reintegro_acumulado'];
+			$disponibilidad=(($ajustada-$monto_solicitado) + $reintegro);
+
+	}/////fin for
+
+			$pdf->SetFont('vera','B',5);
+
+			$pdf->Cell(29,4,"ASIGNACIÓN",'LR',0,'C');
+			$pdf->Cell(29,4,"",'R',0,'C');
+			$pdf->Cell(29,4,"",'R',0,'C');
+			$pdf->Cell(29,4,"PRE",'R',0,'C');
+			$pdf->Cell(29,4,"ASIGNACIÓN",'R',0,'C');
+			$pdf->Cell(29,4,"",'R',0,'C');
+			$pdf->Cell(29,4,"MONTO",'R',0,'C');
+			$pdf->Cell(29,4,"",'R',0,'C');
+			$pdf->Cell(0,4,"MONTO",'R',1,'C');
+
+			$pdf->Cell(29,2,"INICIAL",'LRB',0,'C');
+			$pdf->Cell(29,2,"AUMENTOS",'RB',0,'C');
+			$pdf->Cell(29,2,"DISMINUCIONES",'RB',0,'C');
+			$pdf->Cell(29,2,"COMPROMISOS",'RB',0,'C');
+			$pdf->Cell(29,2,"AJUSTADA",'RB',0,'C');
+			$pdf->Cell(29,2,"REINTEGROS",'RB',0,'C');
+			$pdf->Cell(29,2,"SOLICITADO",'RB',0,'C');
+			$pdf->Cell(29,2,"DISPONIBILIDAD",'RB',0,'C');
+			$pdf->Cell(0,2,"ENTREGADO",'RB',1,'C');
+
+			$pdf->Cell(29,6,$asignacion_inicial,'LRB',0,'R');
+			$pdf->Cell(29,6,$aumento,'RB',0,'R');
+			$pdf->Cell(29,6,$disminuciones,'RB',0,'R');
+			$pdf->Cell(29,6,$precompromiso,'RB',0,'R');
+			$pdf->Cell(29,6,$sisap->Formato2($ajustada),'RB',0,'R');
+			$pdf->Cell(29,6,$sisap->Formato2($reintegro),'RB',0,'R');
+			$pdf->Cell(29,6,$sisap->Formato2($monto_solicitado),'RB',0,'R');
+			$pdf->Cell(29,6,$sisap->Formato2($disponibilidad),'RB',0,'R');
+			$pdf->Cell(0,6,$monto_entregado,'RB',1,'R');
+
+}else{
+
+
+
+
+}
+
+$pdf->Output('Solicitud_Recurso_Organismo'.date('d-m-Y').'.pdf','D');
+
+} ?>

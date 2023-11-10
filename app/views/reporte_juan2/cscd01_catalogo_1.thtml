@@ -1,0 +1,210 @@
+<?php
+if(!isset($var1)){
+?>
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"CATÁLOGO DE PRODUCTOS Y SERVICIOS","","950","ciap");?>
+ <?= $sisap->OpenTable("950")?>
+ <form name='data[reporte_juan2]'  method = "post" id='form' action="<?php echo $html->url('/reporte_juan2/cscd01_catalogo_1/1');?>" >
+ <table width="100%">
+ 	<tr>
+ 		<td align='center'>
+ 		<b>ORDENADO POR:</b><?= $sisap->radioTagRemote("reporte_juan2/tipo", array('1'=>'Todo', '2'=>'Bienes', '3'=>'Servicios', '4'=>'Obras'), array('url1'=>'/reporte_juan2/ordenado', 'update1'=>'ordenado', 'id'=>'tipo'), null, $opc=1); ?>
+ 		</td>
+ 	</tr>
+ 	<tr>
+ 		<td><br></td>
+ 	</tr>
+ 	<tr align="left">
+ 		<td  align='center'>
+	 <div id="ordenado">
+	    <b>Ordenado por:</b> <?= $sisap->radioTagRemote("reporte_juan2/orden", array('1'=>'Código', '2'=>'Denominación', '3'=>'Partida Presupuestaria'), array('url1'=>'/reporte_juan2/', 'update1'=>''), null, $opc=2); ?>
+	 </div>
+	 	</td>
+ 	</td>
+ 	<tr>
+ 		<td><br></td>
+ 	</tr>
+ 	<tr>
+ 		<td align="center">
+ 			<?= $html->submit('Generar', array('onClick'=>'return validaReportereporte_juan2;')); ?>&nbsp;&nbsp;&nbsp;&nbsp;
+ 			<?= $sisap->buttonTagRemote('/reporte_juan2/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+ 		</td>
+ 	</tr>
+ </table>
+ </form>
+ <?= $sisap->CloseTable(); ?>
+
+
+<?php  }else{
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+
+$_SESSION['titulo_a'] = '';
+
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+    	$this->SetY(-8);
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		$this->top_reporte("CATÁLOGO DE PRODUCTOS Y SERVICIOS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), null, false);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(15,3,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(15,3,"CÓDIGO",'TR',0,'C');
+		$this->Cell(68,3,"",'TR',0,'C');
+		$this->Cell(27,3,"UNIDAD",'TR',0,'C');
+		$this->Cell(22,3,"",'TR',0,'C');
+		$this->Cell(15,3,"FECHA",'TR',0,'C');
+		$this->Cell(17,3,"PRECIO",'TR',0,'C');
+		$this->Cell(0,3,"PRECIO",'TR',1,'C');
+
+		$this->Cell(15,3,"SNC",'RLB',0,'C');
+		$this->Cell(15,3,"SISTEMA",'RB',0,'C');
+		$this->Cell(68,3,"DENOMINACIÓN",'RB',0,'C');
+		$this->Cell(27,3,"MEDIDA",'RB',0,'C');
+		$this->Cell(22,3,"PARTIDA",'RB',0,'C');
+		$this->Cell(15,3,"PRECIO",'RB',0,'C');
+		$this->Cell(17,3,"REFERENCIA",'RB',0,'C');
+		$this->Cell(0,3,"ACTUAL",'RB',1,'C');
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',6);
+
+$cod_grupo_3_aux              = "";
+$cod_grupo_5_aux              = "";
+$cod_snc_aux                  = "";
+
+foreach($catalogo as $row){
+	$cod_snc                  = $row['v_catalgo_reporte_tipo_grupo']['cod_snc'];
+	$cod_sistema              = $row['v_catalgo_reporte_tipo_grupo']['codigo_prod_serv'];
+	$denominacion             = $row['v_catalgo_reporte_tipo_grupo']['denominacion'];
+	$cod_partida              = $row['v_catalgo_reporte_tipo_grupo']['cod_partida'];
+	$cod_generica             = $row['v_catalgo_reporte_tipo_grupo']['cod_generica'];
+	$cod_especifica           = $row['v_catalgo_reporte_tipo_grupo']['cod_especifica'];
+	$cod_sub_espec            = $row['v_catalgo_reporte_tipo_grupo']['cod_sub_espec'];
+	$cod_auxiliar             = $row['v_catalgo_reporte_tipo_grupo']['cod_auxiliar'];
+	$partida                  = $sisap->zero($cod_partida).'.'.$sisap->zero($cod_generica).'.'.$sisap->zero($cod_especifica).'.'.$sisap->zero($cod_sub_espec).'.'.$sisap->zero($cod_auxiliar);
+	$fecha_precio             = $row['v_catalgo_reporte_tipo_grupo']['fecha_precio'];
+	$precio_referencia        = $row['v_catalgo_reporte_tipo_grupo']['precio_referencia'];
+	$precio_actual            = $row['v_catalgo_reporte_tipo_grupo']['precio_actual'];
+	$cod_medida               = $row['v_catalgo_reporte_tipo_grupo']['cod_medida'];
+	$expresion                = $row['v_catalgo_reporte_tipo_grupo']['expresion_medida'];
+	$dMedida                  = $row['v_catalgo_reporte_tipo_grupo']['denominacion_medida'];
+	$cod_grupo_3              = $row['v_catalgo_reporte_tipo_grupo']['cod_grupo_3'];
+	$cod_grupo_5              = $row['v_catalgo_reporte_tipo_grupo']['cod_grupo_5'];
+	$denominacion_cod_grupo_3 = $row['v_catalgo_reporte_tipo_grupo']['denominacion_cod_grupo_3'];
+	$denominacion_cod_grupo_5 = $row['v_catalgo_reporte_tipo_grupo']['denominacion_cod_grupo_5'];
+	$denominacion_cod_tipo    = $row['v_catalgo_reporte_tipo_grupo']['denominacion_cod_tipo'];
+
+	if($exento_iva==1){
+		$exento_iva='SI';
+	}else{
+		$exento_iva='NO';
+	}
+
+if($orden==1){
+
+$pdf->SetFont('vera','B',6);
+
+	if($cod_grupo_3!=$cod_grupo_3_aux){$cod_grupo_3_aux=$cod_grupo_3;
+		               $pdf->Cell(15,8,$cod_grupo_3_aux,'TRL',0,'C');//[CODIGO]
+						$pdf->Cell(15,8,"",'TRL',0,'C');//-------------[CODIGO SISTEMA]
+						    $varX = $pdf->GetX();
+							$varY = $pdf->GetY();
+						$pdf->Cell(68,1,"",'T',2);
+							$pdf->MultiCell(67,3,$denominacion_cod_grupo_3,'','L');//[DENOMINACION]
+							$varX = $varX+68;
+							$pdf->SetXY($varX,$varY);
+						$pdf->Cell(27,8,"",'TRL',0,'C');//-------------[UNIDAD]
+						$pdf->Cell(22,8,"",'TR',0,'C');//--------------[PARTIDA]
+						$pdf->Cell(15,8,"",'TR',0,'C');//--------------[FECHA_PRECIO]
+						$pdf->Cell(17,8,"",'TR',0,'C');//--------------[PRECIO_REFERENCIA]
+						$pdf->Cell(0,8,"",'TR',1,'C');//---------------[PRECIO_ACTUAL]
+						$pdf->Cell(0,0,"",'T',1,'C');
+	}//fin if
+
+
+
+	if($cod_grupo_5!=$cod_grupo_5_aux){ $cod_grupo_5_aux=$cod_grupo_5;
+		               $pdf->Cell(15,8,$cod_grupo_5_aux,'TRL',0,'C');//[CODIGO]
+						$pdf->Cell(15,8,"",'TRL',0,'C');//-------------[CODIGO SISTEMA]
+						    $varX = $pdf->GetX();
+							$varY = $pdf->GetY();
+						$pdf->Cell(68,1,"",'T',2);
+							$pdf->MultiCell(67,3,$denominacion_cod_grupo_5,'','L');//[DENOMINACION]
+							$varX = $varX+68;
+							$pdf->SetXY($varX,$varY);
+						$pdf->Cell(27,8,"",'TRL',0,'C');//-------------[UNIDAD]
+						$pdf->Cell(22,8,"",'TR',0,'C');//--------------[PARTIDA]
+						$pdf->Cell(15,8,"",'TR',0,'C');//--------------[FECHA_PRECIO]
+						$pdf->Cell(17,8,"",'TR',0,'C');//---------------[PRECIO_REFERENCIA]
+						$pdf->Cell(0,8,"",'TR',1,'C');//---------------[PRECIO ACTUAL]
+						$pdf->Cell(0,0,"",'T',1,'C');
+	}//fin if
+
+
+	if($cod_snc!=$cod_snc_aux){$cod_snc_aux=$cod_snc;
+		               $pdf->Cell(15,8,$cod_snc,'TRL',0,'C');//--------[CODIGO]
+						$pdf->Cell(15,8,"",'TRL',0,'C');//-------------[CODIGO SISTEMA]
+						    $varX = $pdf->GetX();
+							$varY = $pdf->GetY();
+						$pdf->Cell(68,1,"",'T',2);
+							$pdf->MultiCell(67,3,$denominacion_cod_tipo,'','L');//[DENOMINACION]
+							$varX = $varX+68;
+							$pdf->SetXY($varX,$varY);
+						$pdf->Cell(27,8,"",'TRL',0,'C');//-------------[UNIDAD]
+						$pdf->Cell(22,8,"",'TR',0,'C');//--------------[PARTIDA]
+						$pdf->Cell(15,8,"",'TR',0,'C');//--------------[FECHA_PRECIO]
+						$pdf->Cell(17,8,"",'TR',0,'C');//---------------[PRECIO_REFERENCIA]
+						$pdf->Cell(0,8,"",'TR',1,'C');//---------------[PRECIO_ACTUAL]
+						$pdf->Cell(0,0,"",'T',1,'C');
+	}//fin if
+
+
+}//fin if
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(15,8,$cod_snc,'TRL',0,'C');//-----------[CODIGO]
+		$pdf->Cell(15,8,$cod_sistema,'TRL',0,'C');//-------[CODIGO SISTEMA]
+		    $varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+		$pdf->Cell(68,1,"",'T',2);
+			$pdf->MultiCell(67,3,$denominacion,'','L');//--[DENOMINACION]
+			$varX = $varX+68;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(27,8,$dMedida,'TRL',0,'C');//-----------[UNIDAD]
+		$pdf->Cell(22,8,$partida,'TR',0,'C');//------------[PARTIDA]
+		$pdf->Cell(15,8,$fecha_precio,'TR',0,'C');//---------[FECHA_PRECIO]
+		$pdf->Cell(17,8,$sisap->Formato2($precio_referencia),'TR',0,'R');//--------[PRECIO_REFERENCIA]
+		$pdf->Cell(0,8,$sisap->Formato2($precio_actual),'TR',1,'R');//--------[PRECIO_ACTUAL]
+		$pdf->Cell(0,0,"",'T',1,'C');
+}//fin for
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Output("CATALOGO_".date("d-m-Y_h").".pdf",'D');
+}//fin else
+?>

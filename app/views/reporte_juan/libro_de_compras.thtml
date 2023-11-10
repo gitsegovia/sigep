@@ -1,0 +1,310 @@
+<?php
+if ($opcion == 1) {
+
+
+    echo $sisap->Tabla($session->read('entidad_federal'), true, 'LIBRO DE COMPRAS', '', '950');
+    echo $sisap->OpenTable('950');
+    ?>
+
+    <br> <br>
+
+    <form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo $html->url('/reporte_juan/libro_de_compras/2'); ?>" >
+        <table border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+            <?php
+            $d = $session->read('SScoddep');
+            if ($d == 1) {
+                $_SESSION['tipo_consolidado'] = 1;
+                ?>
+                <tr><td >
+                        CONSOLIDADO POR:<?= $sisap->radioTagRemote("reporte3/consolidacion", array('1' => 'Instituci&oacute;n', '2' => 'Dependencia'), array('url1' => '/reporte_juan/pagos_realizados_por_subpartida/10', 'update1' => 'funcion', 'id' => 'tipo_consolidado'), null, $opc = 1); ?>
+                    </td></tr>
+
+            <?php
+            } else {
+                $_SESSION['tipo_consolidado'] = 2;
+            }//fin  
+            ?>
+
+
+
+            <tr>
+                <td width='800px' align="center" id="ano_recurso">Año: <?= $sisap->inputTagRemote('reporte3/year', array('url1' => '/reporte5/session_year/4/' . $_SESSION['tipo_consolidado'], 'update1' => 'funcion', 'style' => 'text-align:right;', 'id' => 'ano', 'size' => '6', 'value' => $year, 'onKeyPress' => "return solonumeros_con_punto(event);")) ?></td>
+            </tr>
+
+            <tr>
+                <td >
+    <?= $sisap->radioTagRemote("reporte3/tipo_year", array('1' => 'Todo el año', '2' => 'Un mes especifico', '3' => 'Rango de Fechas'), array('url1' => '/reporte_juan/libro_de_compras/3/', 'update1' => 'div_meses', 'id' => 'tipo_year'), null, $opc = 1); ?>
+                </td>
+            </tr>
+
+            <tr>
+                <td width='800px' id="div_meses"  align="center"><br></td>
+            </tr>
+
+
+
+
+
+
+            <tr>
+                <td  align="center">
+    <?= $html->submit('Generar') ?>
+    <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array('type' => 'button', 'value' => 'Salir'), array('url2' => '/administradors/vacio', 'update2' => 'principal')) ?>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+
+
+
+    <?= $sisap->CloseTable(); ?>
+
+
+
+    <?php
+} else if ($opcion == 2) {
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            /*
+              $escudo_array      = top_reporte_escudo(false);
+              $escudo            = $escudo_array["escudo"];
+              $entidad_federal   = $escudo_array["entidad_federal"];
+              $dependencia       = $escudo_array["dependencia"];
+
+              $this->Image($escudo,4,16,13);
+              $this->SetFont('vera','B',8);
+              $this->Cell(14,4,"",'TL',0);
+              $this->Cell(0,4,$entidad_federal,'TR',1);
+              $this->Cell(14,3,"",'L',0);
+              $this->SetFont('vera','',7);
+              $this->Cell(0,3,$dependencia,'R',1);
+              $this->SetFont('vera','B',8);
+              $this->Cell(0,2,"",'RL',1,'C');
+              $this->Cell(0,3,"LIBRO DE COMPRAS",'RL',1,'C');
+              $this->SetFont('vera','B',6);
+              $this->Cell(0,4,"AÑO: ".$_SESSION["YEAR"],'RL',1,'C');
+              $this->Cell(0,2,"MES: ".$_SESSION["MES"],'RL',1,'C');
+              $this->Cell(0,1,"",'RBL',1,'C');
+
+              $varX_aux = $this->GetX() + 254;
+              $varY_aux = $this->GetY() - 17;
+              $this->SetFont('vera','B',5);
+              $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+              $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+              $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+              $this->Ln(3);
+             */
+            $titulo_A = 'LIBRO DE COMPRAS';
+            $titulo_B = 'AÑO: ' . $_SESSION["YEAR"];
+                        
+            if ($_SESSION["TIPO_YEAR"] == 3) 
+                
+                {
+                $titulo_C =  $_SESSION["RANGO_FECHAS"];
+                               
+                }else 
+                {
+                $titulo_C = 'MES: ' . $_SESSION["MES"];}
+            
+            
+            
+            $this->top_reporte2(array($titulo_A, $titulo_B, $titulo_C), array("Y" => "4", "X" => "16", "Z" => "13"), array("Y" => "17", "X" => "256"));
+
+            $this->SetFont('vera', 'B', 6);
+            $this->Cell(18, 3, '', 'TRL', 0, 'C');
+            $this->Cell(14, 3, 'FECHA', 'TR', 0, 'C');
+            $this->Cell(16, 3, '', 'TR', 0, 'C');
+            $this->Cell(35, 3, '', 'TR', 0, 'C');
+            $this->Cell(5, 3, '', 'TR', 0, 'C');
+            $this->Cell(25, 3, '', 'TR', 0, 'C');
+            $this->Cell(18, 3, '', 'TR', 0, 'C');
+            $this->Cell(14, 3, 'NÚMERO', 'TR', 0, 'C');
+            $this->Cell(14, 3, 'NÚMERO', 'TR', 0, 'C');
+            $this->Cell(5, 3, '', 'TR', 0, 'C');
+            $this->Cell(15, 3, '', 'TR', 0, 'C');
+            $this->Cell(17, 3, 'TOTAL', 'TR', 0, 'C');
+            $this->Cell(17, 3, 'TOTAL', 'TR', 0, 'C');
+            $this->Cell(15, 3, '', 'TR', 0, 'C');
+            $this->Cell(13, 3, '', 'TR', 0, 'C');
+            $this->Cell(15, 3, '', 'TR', 0, 'C');
+            $this->Cell(0, 3, '', 'TR', 1, 'C');
+
+            $this->Cell(18, 3, 'NÚMERO', 'RL', 0, 'C');
+            $this->Cell(14, 3, 'DE LA', 'R', 0, 'C');
+            $this->Cell(16, 3, '', 'R', 0, 'C');
+            $this->Cell(35, 3, '', 'R', 0, 'C');
+            $this->Cell(5, 3, 'T', 'R', 0, 'C');
+            $this->Cell(25, 3, 'NÚMERO', 'R', 0, 'C');
+            $this->Cell(18, 3, 'NÚMERO', 'R', 0, 'C');
+            $this->Cell(14, 3, 'NOTA', 'R', 0, 'C');
+            $this->Cell(14, 3, 'TOTAL', 'R', 0, 'C');
+            $this->Cell(5, 3, 'T', 'R', 0, 'C');
+            $this->Cell(15, 3, 'FACTURAS', 'R', 0, 'C');
+            $this->Cell(17, 3, 'COMPRAS', 'R', 0, 'C');
+            $this->Cell(17, 3, 'COMPRAS', 'R', 0, 'C');
+            $this->Cell(15, 3, 'BASE', 'R', 0, 'C');
+            $this->Cell(13, 3, '', 'R', 0, 'C');
+            $this->Cell(15, 3, 'IMPUESTO', 'R', 0, 'C');
+            $this->Cell(0, 3, 'I.V.A.', 'R', 1, 'C');
+
+            $this->Cell(18, 3, 'OPERACIÓN', 'RBL', 0, 'C');
+            $this->Cell(14, 3, 'FACTURA', 'RB', 0, 'C');
+            $this->Cell(16, 3, 'R.I.F.', 'RB', 0, 'C');
+            $this->Cell(35, 3, 'NOMBRE Ó RAZÓN SOCIAL', 'RB', 0, 'C');
+            $this->Cell(5, 3, 'P', 'RB', 0, 'C');
+            $this->Cell(25, 3, 'COMPROBANTE', 'RB', 0, 'C');
+            $this->Cell(18, 3, 'FACTURA', 'RB', 0, 'C');
+            $this->Cell(14, 3, 'DÉBITO', 'RB', 0, 'C');
+            $this->Cell(14, 3, 'CRÉDITO', 'RB', 0, 'C');
+            $this->Cell(5, 3, 'T', 'RB', 0, 'C');
+            $this->Cell(15, 3, 'AFECTADAS', 'RB', 0, 'C');
+            $this->Cell(17, 3, 'CON I.V.A.', 'RB', 0, 'C');
+            $this->Cell(17, 3, 'SIN I.V.A.', 'RB', 0, 'C');
+            $this->Cell(15, 3, 'IMPONIBLE', 'RB', 0, 'C');
+            $this->Cell(13, 3, 'ALICUOTA', 'RB', 0, 'C');
+            $this->Cell(15, 3, 'I.V.A.', 'RB', 0, 'C');
+            $this->Cell(0, 3, 'RETENIDO', 'RB', 1, 'C');
+        }
+
+//fin funtion
+    }
+
+    //fin clase
+    $pdf = new fpdfview('L', 'mm', 'Letter');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(15);
+    $pdf->SetLeftMArgin(3);
+    $pdf->SetRightMargin(3);
+    $pdf->SetAutoPageBreak(true, 5);
+    $pdf->SetFont('vera', '', 6);
+
+
+    $_SESSION["YEAR"] = $year;
+    $_SESSION["MES"] = "";
+    $_SESSION["RANGO_FECHAS"] = $rango_fechas;
+    $_SESSION["TIPO_YEAR"] = $this->data['reporte3']['tipo_year'];
+    
+    
+    $i = 0;
+
+    // DEF. VARIABLES TOTALES:
+
+    $vart1 = 0;
+    $vart2 = 0;
+    $vart3 = 0;
+    $vart4 = 0;
+    $vart5 = 0;
+    
+
+    foreach ($datos as $ve) {
+        $i++;
+
+        $mes = $ve[0]['mes'];
+        if ($_SESSION["MES"] != $meses[$mes]) {
+            $_SESSION["MES"] = $meses[$mes];
+
+            $pdf->AddPage();
+        }
+
+        $pdf->Cell(18, 6, $i, 'RL', 0, 'C'); //---[OPERACIÓN]
+        $pdf->Cell(14, 6, $sisap->cambia_fecha($ve[0]['fecha_factura']), 'R', 0, 'C'); //---[FACTURA FERCHA]
+        $pdf->Cell(16, 6, $ve[0]['rif'], 'R', 0, 'C'); //---[R.I.F.]
+        $varX = $pdf->GetX();
+        $varY = $pdf->GetY();
+        $pdf->SetFont('vera', '', 5);
+        $pdf->Cell(35, 1, "", '', 2, 'C');
+        $cont = strlen($ve[0]['beneficiario']);
+        if ($cont > 45) {
+            $ve[0]['beneficiario'] = substr($ve[0]['beneficiario'], 0, 45) . '...';
+        }
+        $pdf->MultiCell(34, 2, $ve[0]['beneficiario'], '', 'L'); //---[NOMBRE Ó RAZÓN SOCIAL]
+        $varX = $varX + 35;
+        $pdf->SetXY($varX, $varY);
+        $pdf->SetFont('vera', '', 6);
+        $pdf->Cell(5, 6, "", 'RL', 0, 'C'); //---[TT]
+        $pdf->Cell(25, 6, $ve[0]['ano_orden_pago'] . $sisap->AddCero2($mes) . $sisap->mascara_cuatro($ve[0]['cod_dep']) . $sisap->mascara_cuatro($ve[0]['numero_comprobante_egreso']), 'R', 0, 'C'); //---[COMPROBANTE]
+        $pdf->Cell(18, 6, $ve[0]['numero_factura'], 'R', 0, 'C'); //---[FACTURA]
+
+        $pdf->Cell(14, 6, "", 'R', 0, 'C'); //---[DÉBITO]
+        $pdf->Cell(14, 6, "", 'R', "", 'C'); //---[CRÉDITO]
+
+
+
+        $pdf->Cell(5, 6, $sisap->AddCero2(1), 'R', 0, 'C'); //---[TP]
+        $pdf->Cell(15, 6, '', 'R', 0, 'C'); //---[AFECTADAS]
+        $pdf->Cell(17, 6, $sisap->Formato2($ve[0]['monto_total_factura'] - $ve[0]['monto_exento']), 'R', 0, 'R'); //---[CON I.V.A.]
+        $pdf->Cell(17, 6, $sisap->Formato2($ve[0]['monto_exento']), 'R', 0, 'R'); //---[SIN I.V.A.]
+        $pdf->Cell(15, 6, $sisap->Formato2($ve[0]['monto_sub_total']), 'R', 0, 'C'); //---[IMPONIBLE]
+        $pdf->Cell(13, 6, $sisap->Formato2($ve[0]['porcentaje_iva']), 'R', 0, 'C'); //---[ALICUOTA]
+        $pdf->Cell(15, 6, $sisap->Formato2($ve[0]['monto_iva']), 'R', 0, 'C'); //---[I.V.A.]
+        $pdf->Cell(0, 6, $sisap->Formato2($ve[0]['monto_retencion_iva']), 'R', 1, 'R'); //---[RETENIDO]
+        $pdf->Cell(0, 0, '', 'T', 1, 'C');
+
+        $vart1 += $ve[0]['monto_total_factura'] - $ve[0]['monto_exento'];
+        $vart2 += $ve[0]['monto_exento'];
+        $vart3 += $ve[0]['monto_sub_total'];
+        $vart4 += $ve[0]['monto_iva'];
+        $vart5 += $ve[0]['monto_retencion_iva'];
+    }//fin foreach
+
+    $pdf->SetFont('vera', 'B', 6);
+    $pdf->Cell(179, 6, "T O T A L E S: ", 'RBL', 0, 'R');
+    $pdf->SetFont('vera', 'B', 5);
+    $pdf->Cell(17, 6, $sisap->Formato2($vart1), 'RB', 0, 'R'); //---[CON I.V.A.]
+    $pdf->Cell(17, 6, $sisap->Formato2($vart2), 'RB', 0, 'R'); //---[SIN I.V.A.]
+    $pdf->Cell(15, 6, $sisap->Formato2($vart3), 'RB', 0, 'C'); //---[IMPONIBLE]
+    $pdf->Cell(13, 6, "", 'RB', 0, 'C'); //---[ALICUOTA]
+    $pdf->Cell(15, 6, $sisap->Formato2($vart4), 'RB', 0, 'C'); //---[I.V.A.]
+    $pdf->Cell(0, 6, $sisap->Formato2($vart5), 'RB', 1, 'R'); //---[RETENIDO]
+
+
+    $pdf->Output('libro_de_compra_' . date("d-m-Y_h"), 'D');
+    
+    
+    
+} else if ($opcion == 3 && $opcion_var == 2) {
+    echo "Mes: ";
+    ?> <?= $html->selectTag('reporte3/mes', $mes != '' ? $mes : array('' => ''), null, array('style' => 'width:150px'), array(null), null, true); ?>
+
+    <?php
+} else if ($opcion == 3 && $opcion_var == 3) {
+    ?>
+   <table class="tablacompromiso tablacompromiso2">
+		<tr>
+		<td align="center" class="tr_negro">&nbsp;Fecha desde:&nbsp;</td>
+				<td align="center">&nbsp;&nbsp;<span><?= $sisap->input_fecha('reporte3', 'fecha_inicial', 'fecha_inicial') ?></span>&nbsp;&nbsp;</td>
+     	       	<td align="center" class="tr_negro">&nbsp;Fecha hasta:&nbsp;</td>
+     	        <td align="center">&nbsp;&nbsp;<span><?= $sisap->input_fecha('reporte3', 'fecha_final', 'fecha_final') ?></span>&nbsp;&nbsp;</td>
+		</tr>
+	</table>
+    <?php
+} else if ($opcion == 19) {
+
+
+    if (isset($errorMessage)) {
+        echo $sisap->mensajes_error($errorMessage);
+    } else if (isset($Message_existe)) {
+        echo $sisap->mensajes_correcto($Message_existe);
+    }//fin else
+    ?>
+
+
+<?php
+} else {
+    echo'<br>';
+}
+?>

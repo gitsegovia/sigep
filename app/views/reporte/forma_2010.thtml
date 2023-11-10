@@ -1,0 +1,225 @@
+<?php
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //vera italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2.010 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+
+function Header(){
+
+		//$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',4,27,18);
+		$this->image_escudo(4,27,18);
+		$this->SetFont('vera','B',10);
+		$this->Cell(20,6,"",'TL',0);
+		$this->Cell(0,6,$_SESSION['entidad_federal_aux'],'TR',1);//---AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET)
+		$this->Cell(25,4,"",'L',0);
+		$this->SetFont('vera','',9);
+		$this->Cell(0,4,$_SESSION['titulo_a'],'R',1);//-----------------AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET)
+		$this->SetFont('vera','B',11);
+		$this->Cell(30,10,"",'L',0);
+		$this->MultiCell(0,5,"Gastos de inversión estimados para el año presupuestado",'R','C');
+		$this->SetFont('vera','',7);
+		$this->Cell(30,3,"",'L',0);
+		$this->Cell(0,3,"(EN BOLIVARES)",'R',1,'C');
+		$this->SetFont('vera','',9);
+		$this->Cell(22,5,"",'BL',0);
+		$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'BR',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+		$this->SetFont('vera','',5);
+		$this->Ln(7);
+
+$this->SetFont('vera','B',7);
+$this->Cell(13,6,"",'TLR',0,'C');
+$this->Cell(46,6,"SUB - PARTIDAS",'TLRB',0,'C');
+$this->Cell(90,6,"",'TLR',0,'C');
+$this->Cell(40,6,"",'TLR',0,'C');
+$this->Cell(0,6,"",'TLR',1,'C');
+
+$this->Cell(13,2,"",'LR',0,'C');
+$this->Cell(15,2,"",'LR',0,'C');
+$this->Cell(17,2,"",'LR',0,'C');
+$this->Cell(14,2,"",'LR',0,'C');
+$this->Cell(90,2,"",'LR',0,'C');
+$this->Cell(40,2,"",'LR',0,'C');
+$this->Cell(0,2,"",'LR',1,'C');
+
+$this->SetFont('vera','B',8);
+$this->Cell(13,4,"",'LR',0,'C');
+$this->Cell(15,4,"",'LR',0,'C');
+$this->Cell(17,4,"",'LR',0,'C');
+$this->Cell(14,4,"",'LR',0,'C');
+$this->Cell(90,4,"",'LR',0,'C');
+$this->Cell(40,4,"ASIGNACION",'LR',0,'C');
+$this->Cell(0,4,"",'LR',1,'C');
+
+$this->SetFont('vera','B',7);
+$this->Cell(13,4,"PARTIDA",'LR',0,'C');
+$this->Cell(15,4,"GENERICA",'LR',0,'C');
+$this->Cell(17,4,"ESPECIFICA",'LR',0,'C');
+$this->Cell(14,4,"SUB-ESP.",'LR',0,'C');
+$this->SetFont('vera','B',8);
+$this->Cell(90,4,"D E N O M I N A C I Ó N",'LR',0,'C');
+$this->Cell(40,4,"PRESUPUESTARIA",'LR',0,'C');
+$this->Cell(0,4,"OBSERVACIONES",'LR',1,'C');
+$this->Cell(13,4,"",'LR',0,'C');
+$this->Cell(15,4,"",'LR',0,'C');
+$this->Cell(17,4,"",'LR',0,'C');
+$this->Cell(14,4,"",'LR',0,'C');
+$this->Cell(90,4,"",'LR',0,'C');
+$this->Cell(40,4,"( EN ".MONEDA2." )",'LR',0,'C');
+$this->Cell(0,4,"",'LR',1,'C');
+
+
+	}//fin header
+
+}//fin class
+//Recibiendo las variables
+
+if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"Gastos de inversiÓn estimados para el aÑo presupuestado",NULL,"750");?>
+
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/forma_2010/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cfpp05][ano]"  value="<?= $year?>" id="ano_formular"  style="text-align:center" size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+
+<? $sisap->radio_consolidado('cfpp05/consolidacion', array(), '', true) ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(25);
+$pdf->SetLeftMargin(2);
+$pdf->SetRightMargin(2);
+$pdf->SetAutoPageBreak(true, 8);
+
+
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['titulo_a'] = $titulo_a;
+$_SESSION['ejercicio'] = $ejercicio;
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera','B',10);
+
+$total_total = 0;
+$deno='';
+$z = 1;
+$var_aux[$z]['cod_partida']= 0 ;
+
+
+foreach($datos as $resul){
+
+
+	$partida        =  $resul[0]['cod_partida'];
+	$generica       =  $resul[0]['cod_generica'];
+	$especifica     =  $resul[0]['cod_especifica'];
+	$sub_especifica =  $resul[0]['cod_sub_espec'];
+	$deno = str_replace("\n", ' ',$resul[0]['denominacion']);
+
+	$partida = $sisap->AddCero2(substr($partida,-2),CE);
+	if($generica==0){       $generica='';}else{      $generica = $sisap->AddCero2($generica); }
+	if($especifica==0){     $especifica='';}else{    $especifica = $sisap->AddCero2($especifica); }
+	if($sub_especifica==0){ $sub_especifica='';}else{$sub_especifica = $sisap->AddCero2($sub_especifica); }
+
+    if($resul[0]['cod_sub_espec']==0 && $resul[0]['tipo_fila']==4){}else{
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(13,20,$partida,'LTBR',0,'C');
+		$pdf->Cell(15,20,$generica,'LTBR',0,'C');
+		$pdf->Cell(17,20,$especifica,'BTLR',0,'C');
+		$pdf->Cell(14,20,$sub_especifica,'BTLR',0,'C');
+
+
+	    $varX = $pdf->GetX();//asigno X
+	    $varY = $pdf->GetY();//asigno Y
+	    $pdf->Cell(89,2,"",'T',2,'C');
+	    $pdf->MultiCell(89,4,$deno,'','J');
+	    $varX = $varX+89;//le sumo a X 90 del Cell debido a que lo capture antes.
+	    $pdf->SetXY($varX,$varY);// cargo XY
+	    $pdf->Cell(1,20,"",'TR',0);//lateral
+		$pdf->Cell(40,20,$sisap->Formato2($resul[0]['asignacion_presupuestaria']),'TBLR',0,'C');
+		$pdf->MultiCell(0,20,"",'LRTB','L');
+
+		$pdf->Cell(0,0,"",'T',1);
+    }
+
+
+	if($var_aux[$z]['cod_partida']!=$resul[0]['cod_partida']){
+	  $var_aux[$z]['cod_partida']=$resul[0]['cod_partida'];
+	  $total_total += $resul[0]['asignacion_presupuestaria'];
+	}//fin if
+
+}//fin for each
+
+
+$pdf->Cell(149,5,"T O T A L E S     ",'TLRB',0,'R');
+$pdf->Cell(40,5,$sisap->Formato2($total_total),'TLRB',0,'C');
+$pdf->Cell(0,5,"",'TLRB',1,'C');
+$pdf->OutPut('forma_2010_'.date("d-m-Y"),'D');
+
+
+}//fin else
+
+
+
+
+
+
+?>

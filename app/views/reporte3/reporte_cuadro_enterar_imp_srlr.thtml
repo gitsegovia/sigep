@@ -1,0 +1,273 @@
+<?php
+/*
+ * Creado el 06/10/2008 a las 11:10:04 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($var) && $var=="si"){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CUADRO PARA ENTERAR EL IMPUESTO SOBRE LA RENTA","","950");?>
+
+<form name="data[cuadro_enterar_imp_srlr]" method="post" id='form' action="<?php echo $html->url('/reporte3/reporte_cuadro_enterar_imp_srlr/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table  width="50%" border="0" cellpadding="0" cellspacing="0">
+		<?php
+	  	$d=$session->read('SScoddep');
+		if($d==1){?>
+			<tr><td align="center">
+				CONSOLIDADO POR:<?= $html->radio('cuadro_enterar_imp_srlr/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), null, array('value'=>'1'))?>
+			</td></tr>
+		<?php }//fin
+		?>
+		<tr>
+			<td align="center" width="20%" id="td-ano-ejecucion"><br />
+				Año:&nbsp;<input type="text" name="data[cuadro_enterar_imp_srlr][ano]" id="ano" size="5" value=<?=$ano_ejecucion?> maxlength="4" onKeyPress="return solonumeros_con_punto(event);" style="text-align:center" />
+			</td>
+		</tr>
+		<tr>
+			<td align="center"><br />
+			  <table border="0" width="40%">
+			    <tr>
+			      <td align="right">Mes:&nbsp;</td>
+			      <td>
+				      <select name="data[cuadro_enterar_imp_srlr][mes]">
+						<option value="1">Enero</option>
+						<option value="2">Febrero</option>
+						<option value="3">Marzo</option>
+						<option value="4">Abril</option>
+						<option value="5">Mayo</option>
+						<option value="6">Junio</option>
+						<option value="7">Julio</option>
+						<option value="8">Agosto</option>
+						<option value="9">Septiembre</option>
+						<option value="10">Octubre</option>
+						<option value="11">Noviembre</option>
+						<option value="12">Diciembre</option>
+					  </select>
+			      </td>
+			    </tr>
+			  </table>
+			</td>
+		</tr>
+	</table>
+	<br><br>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/cuadro_enterar_imp_srlr/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="no"){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer(){
+    	$this->SetY(-34);
+		$this->SetFont('vera','B',6);
+		$this->Cell(105,4,'AGENTE DE RETENCIÓN','TRBL',0,'C');
+		$this->Cell(0,4,'FISCAL DE RENTAS','TRB',1,'C');
+		$this->Cell(105,18,'','RL',0,'C');//--[AGENTE DE RETENCIÓN]
+		$this->Cell(0,18,'','R',1,'C');//--[FISCAL DE RENTAS]
+		$this->Cell(105,4,'FIRMA Y SELLO','TRBL',0,'C');
+		$this->Cell(0,4,'FIRMA Y SELLO','TRB',1,'C');
+    }//fin footer
+
+    function Header(){
+		$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,4,"CUADRO PARA ENTERAR EL IMPUESTO SOBRE LA RENTA",'RL',1,'C');
+		$this->Cell(0,3,"",'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+    }//fin header
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 35);
+
+$vector_mes = array('01'=>'ENERO','02'=>'FEBRERO','03'=>'MARZO','04'=>'ABRIL','05'=>'MAYO','06'=>'JUNIO','07'=>'JULIO','08'=>'AGOSTO','09'=>'SEPTIEMBRE','10'=>'OCTUBRE','11'=>'NOVIEMBRE','12'=>'DICIEMBRE');
+
+if(count($datos)==0){
+	$pdf->AddPage();
+	$pdf->Ln(8);
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,30,'ATENCIÓN, NO SE ENCONTRARÓN REGISTROS PARA EL MES DE '.$vector_mes[$mes].' DEL AÑO '.$ano,'TRBL',0,'L');
+}else{
+
+	for($i=0; $i<count($datos); $i++){
+		if(isset($datos[$i][0][0]['cod_tipo_pago'])){
+			$pdf->AddPage();
+			$pdf->Ln(3);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(40,5,'DEPENDENCIA U ORGANISMO:','TRBL',0,'L');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,5,$datos[$i][0][0]['dependencia'],'TRB',1,'L');//--[DEPENDENCIA]
+
+			$pdf->Ln(3);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(65,5,'AGENTE DE RETENCIÓN','TRBL',0,'C');
+			$pdf->Cell(65,5,'FISCAL DE RENTAS','TRB',0,'C');
+			$pdf->Cell(34,5,'R.I.F.','TRB',0,'C');
+			$pdf->Cell(0,5,'N.I.T.','TRB',1,'C');
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(1,6,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(64,1,"",'',2,'C');
+			$pdf->MultiCell(63,2,$datos[$i][0][0]['agente_retencion'],'','L');//--[AGENTE DE RETENCIÓN]
+			$varX = $varX+64;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(1,6,'','L',0,'C');
+			$pdf->Cell(65,1,"",'',2,'C');
+			$pdf->MultiCell(64,2,$datos[$i][0][0]['fiscal_rentas'],'','L');//--[FISCAL DE RENTAS]
+			$varX = $varX+65;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(34,6,$datos[$i][0][0]['rif'],'RL',0,'C');//--[RIF]
+			$pdf->Cell(0,6,$datos[$i][0][0]['nit'],'R',1,'C');//--[NIT]
+			$pdf->Cell(0,0,'','T',1,'C');
+
+			$pdf->Ln(3);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(105,5,'DIRECCIÓN DEL AGENTE DE RETENCIÓN','TRBL',0,'C');
+			$pdf->Cell(45,5,'TELÉFONOS','TRB',0,'C');
+			$pdf->Cell(0,5,'E-MAIL','TRB',1,'C');
+
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(1,6,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(104,1,"",'',2,'C');
+			$pdf->MultiCell(103,2,$datos[$i][0][0]['direccion'],'','L');//--[DIRECCION AGENTE DE RETENCIÓN]
+			$varX = $varX+104;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','',7);
+			$pdf->Cell(45,6,'('.$datos[$i][0][0]['cod_area'].') - '.$datos[$i][0][0]['telefonos'],'RL',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(0,6,$datos[$i][0][0]['email'],'R',1,'C');//--[E-MAIL]
+			$pdf->Cell(0,0,'','T',1,'C');
+
+			$pdf->Ln(3);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(105,5,'TIPO DE PAGO','TRBL',0,'C');
+			$pdf->Cell(45,5,'ALÍCUOTA','TRB',0,'C');
+			$pdf->Cell(20,5,'AÑO','TRB',0,'C');
+			$pdf->Cell(0,5,'MES','TRB',1,'C');
+
+			//------------------------------------------------------------------------------------
+
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(105,6,$datos[$i][0][0]['cod_tipo_pago'].' - '.$datos[$i][0][0]['tipo_pago'],'RBL',0,'L');//--[TIPO DE PAGO]
+			$pdf->Cell(45,6,$sisap->Formato2($datos[$i][0][0]['porcentaje_islr']),'RB',0,'C');//--[ALICUOTA]
+			$pdf->Cell(20,6,$ano,'RB',0,'C');//--[AÑO]
+			$pdf->Cell(0,6,$vector_mes[$mes],'RB',1,'C');//--[MES]
+
+			$pdf->Ln(3);
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(40,4,'','TRL',0,'C');
+			$pdf->Cell(30,4,'','TR',0,'C');
+			$pdf->Cell(20,4,'NÚMERO','TR',0,'C');
+			$pdf->Cell(15,4,'FECHA','TR',0,'C');
+			$pdf->Cell(22,4,'MONTO','TR',0,'C');
+			$pdf->Cell(22,4,'MONTO DE','TR',0,'C');
+			$pdf->Cell(22,4,'','TR',0,'C');
+			$pdf->Cell(0,4,'MONTO','TR',1,'C');
+
+			$pdf->Cell(40,3,'EMPRESA','RBL',0,'C');
+			$pdf->Cell(30,3,'BANCO','RB',0,'C');
+			$pdf->Cell(20,3,'CHEQUE','RB',0,'C');
+			$pdf->Cell(15,3,'DE CHEQUE','RB',0,'C');
+			$pdf->Cell(22,3,'BASE','RB',0,'C');
+			$pdf->Cell(22,3,'RETENCIÓN','RB',0,'C');
+			$pdf->Cell(22,3,'SUSTRAENDO','RB',0,'C');
+			$pdf->Cell(0,3,'A ENTERAR','RB',1,'C');
+
+
+			$pdf->SetFont('vera','',6);
+			$total_base=0;
+			$total_retencion=0;
+			$total_sustraendo=0;
+			$total_enterar=0;
+
+			$jj=0;
+			$paso=0;
+			$total=count($datos[$i]);
+			for($j=0; $j<$total; $j++){
+
+				$monto_retencion = $datos[$i][$j][0]['monto_islr'] + $datos[$i][$j][0]['monto_sustraendo'];
+
+				$pdf->Cell(1,8,'','TL',0,'C');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(39,1,"",'T',2,'C');
+				$pdf->MultiCell(38,2,$datos[$i][$j][0]['autorizado'],'','L');//--[EMPRESA]
+				$varX = $varX+39;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(1,8,'','TL',0,'C');
+				$pdf->Cell(30,1,"",'T',2,'C');
+				$pdf->MultiCell(29,2,$datos[$i][$j][0]['entidad_bancaria'],'','L');//--[BANCO]
+				$varX = $varX+30;
+				$pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,8,$sisap->mascara_ocho($datos[$i][$j][0]['numero_cheque']),'TRL',0,'C');//--[NUM CHEQ]
+				$pdf->Cell(15,8,$sisap->cambia_fecha($datos[$i][$j][0]['fecha_cheque']),'TR',0,'C');//--[FECHA CHEQ]
+				$pdf->Cell(22,8,$sisap->Formato2($datos[$i][$j][0]['monto_descontar_impuesto']),'TR',0,'R');//--[MONTO BASE]
+				$pdf->Cell(22,8,$sisap->Formato2($monto_retencion),'TR',0,'R');//--[MONTO RETENCION]
+				$pdf->Cell(22,8,$sisap->Formato2($datos[$i][$j][0]['monto_sustraendo']),'TR',0,'R');//--[SUSTRAENDO]
+				$pdf->Cell(0,8,$sisap->Formato2($datos[$i][$j][0]['monto_islr']),'TR',1,'R');//--[MONTO A ENTERAR]
+				$pdf->Cell(0,0,'','T',1,'C');
+
+				$jj++;
+				if($jj==19){
+					$jj=0;
+					$paso=1;
+				}
+				$total_base += $datos[$i][$j][0]['monto_descontar_impuesto'];
+				$total_retencion += $monto_retencion;
+				$total_sustraendo += $datos[$i][$j][0]['monto_sustraendo'];
+				$total_enterar += $datos[$i][$j][0]['monto_islr'];
+			}
+			$pdf->SetFont('vera','B',6);
+			$pdf->Cell(105,5,'TOTAL BOLIVARES: ','RBL',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($total_base),'RB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($total_retencion),'RB',0,'R');
+			$pdf->Cell(22,5,$sisap->Formato2($total_sustraendo),'RB',0,'R');
+			$pdf->Cell(0,5,$sisap->Formato2($total_enterar),'RB',1,'R');
+		}
+	}
+}//fin count
+$pdf->Output('cuadro_para_enterar_islr_'.date('d-m-Y').'.pdf','D');//Poner nombre y la opcion D
+}
+?>

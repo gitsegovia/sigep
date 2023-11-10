@@ -1,0 +1,171 @@
+<?php
+if(isset($ir) && $ir=='si'){
+	$sisap->CssSelect();
+?>
+<?= $sisap->Tabla("",true,"ACTA DE RECEPCIÓN DE BIENES Y MATERIALES","","950");?>
+<form name="data[cpcp02]" method="POST" id='form' action="<?php echo  $html->url('/cscp05_ordencompra_nota_entrega/form_reporte_nota_entrega/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+<div id="cscp05_ordencompra_notaentrega">
+<table width="300" border="0" cellspacing="0">
+<tr>
+  <td align="center" colspan="2">
+    Año: <?= $sisap->inputTagRemote('cscp05_ordencompra_nota_entrega/ano', array('url1'=>'/cscp05_ordencompra_nota_entrega/buscar_ano_ordencompra/', 'update1'=>'td-select-ordencompra', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano_ejecucion', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+    <br /><br /><br />
+  </td>
+</tr>
+
+<tr>
+  <td align="right" width="50%"><b>ORDEN DE COMPRA:&nbsp;</b></td>
+  <td width="50%" id="td-select-ordencompra">
+  	<?= $sisap->selectTagRemote('cscp05_ordencompra_nota_entrega/orden_compra', $lista_ordencompra, null, '', array('onchange1'=>'/cscp05_ordencompra_nota_entrega/select_nota_entrega/'.$ano, 'update1'=>'td-select-notaentrega', 'onchange'=>'vacio', 'id'=>'orden_compra', 'style'=>'width:100%', true), null, true); ?>
+  </td>
+</tr>
+
+<tr>
+  <td><br /><br /></td>
+</tr>
+
+<tr>
+  <td align="right"><b>NOTA DE ENTREGA:&nbsp;</b></td>
+  <td id="td-select-notaentrega">
+	<?= $sisap->selectTagRemote('cscp05_ordencompra_nota_entrega/nota_entrega', $lista_nota_entrega = null, null, '', array('onchange1'=>'', 'update1'=>'', 'id'=>'nota_entrega', 'style'=>'width:100%', true), null, true); ?>
+  </td>
+</tr>
+
+</table>
+<br />
+<?= $html->submit('GENERAR', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cpcp02/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</div>
+<?= $sisap->CloseTable()?>
+</form>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		// ACTA DE RECEPCIÓN DE BIENES Y MATERIALES
+		$this->top_reporte("", null, null, array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"220"), false);
+	}
+}//fin de la clase PDF
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',14);
+$pdf->Cell(0,5,'ACTA DE RECEPCIÓN DE BIENES Y MATERIALES','',1,'C');
+$pdf->Cell(0,5,'No. '.$nota_entrega_encabezado[0]['cscd05_ordencompra_nota_entrega_encabezado']['numero_nota_entrega'],'',1,'C');
+
+$pdf->Ln(10);
+
+$pdf->SetFont('vera','',9.8);
+$pdf->Cell(0,5,'Quien Suscribe la presente Acta, hace constar que recibe conforme los renglones contenidos','',1);
+$pdf->Cell(0,5,'en la Orden de Compra Anexa.','',1);
+
+$pdf->Ln(7);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(25,3,'Codigo','TRL',0,'C');
+$pdf->Cell(90,3,'','TR',0,'C');
+$pdf->Cell(18,3,'Unidad','TR',0,'C');
+$pdf->Cell(18,3,'','TR',0,'C');
+$pdf->Cell(22,3,'','TR',0,'C');
+$pdf->Cell(0,3,'Costo','TR',1,'C');
+
+$pdf->Cell(25,3,'Producto','RBL',0,'C');
+$pdf->Cell(90,3,'Denominacion','RB',0,'C');
+$pdf->Cell(18,3,'de medida','RB',0,'C');
+$pdf->Cell(18,3,'Cantidad','RB',0,'C');
+$pdf->Cell(22,3,'Unitario','RB',0,'C');
+$pdf->Cell(0,3,'Total','RB',1,'C');
+
+$total_cantidad = 0;
+$total_costo = 0;
+
+$pdf->SetFont('vera','',7);
+foreach($nota_entrega_cuerpo as $datos){
+	$cantidad = 0;
+	$precio_u = 0;
+	$costo_to = 0;
+	$cantidad = $datos['cscd05_ordencompra_nota_entrega_cuerpo']['cantidad'];
+	$precio_u = $datos['cscd05_ordencompra_nota_entrega_cuerpo']['precio_unitario'];
+	$costo_to = $cantidad * $precio_u;
+
+	$cantidad_promedio = $datos['cscd05_ordencompra_nota_entrega_cuerpo']['cantidad'];
+	$aux_cantidad = explode('.',$cantidad_promedio);
+	if($aux_cantidad[1]=='000000' || $aux_cantidad[1]==000000){
+		$cantidad = $aux_cantidad[0];
+	}else{
+		//$cantidad = $sisap->Formato_6input($cantidad_promedio);
+		$cantidad = $sisap->Formato2($cantidad_promedio);
+	}
+
+	$str = strlen($datos['cscd05_ordencompra_nota_entrega_cuerpo']['descripcion']);
+	if($str < 55){
+		$height = 4;
+	}else if($str >= 55 && $str < 110){
+		$height = 6;
+	}else if($str >= 110 && $str < 165){
+		$height = 8;
+	}else if($str >= 165 && $str < 220){
+		$height = 10;
+	}else if($str >= 220 && $str < 275){
+		$height = 12;
+	}else{
+		$height = 14;
+	}
+
+	$pdf->Cell(25,$height,$datos['cscd05_ordencompra_nota_entrega_cuerpo']['codigo_prod_serv'],'RL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(90,0.5,'','',2);
+	$pdf->MultiCell(90,2.5,$datos['cscd05_ordencompra_nota_entrega_cuerpo']['descripcion'],'','J');
+	$varX = $varX+90;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(18,$height,$unidad_medida[$datos['cscd05_ordencompra_nota_entrega_cuerpo']['cod_medida']],'RL',0,'C');
+	$pdf->Cell(18,$height,$cantidad,'R',0,'C');
+	$pdf->Cell(22,$height,$sisap->Formato2($precio_u),'R',0,'R');
+	$pdf->Cell(0,$height,$sisap->Formato2($costo_to),'R',1,'R');
+	$pdf->Cell(0,0,'','T',1);
+
+	$total_cantidad += $cantidad;
+	$total_costo += $costo_to;
+}
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(133,5,'T O T A L: ','RBL',0,'R');
+$pdf->Cell(18,5,$sisap->Formato2($total_cantidad),'RB',0,'C');
+$pdf->Cell(22,5,'','RB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_costo),'RB',1,'R');
+
+$pdf->Ln(10);
+$pdf->Cell(100,8,'Orden de compra: '.mascara($nota_entrega_encabezado[0]['cscd05_ordencompra_nota_entrega_encabezado']['numero_orden_compra'], 8),'TRL',0);
+$pdf->Cell(0,8,'Nombre: _____________________________________','TR',1);
+
+$pdf->Cell(100,8,'Fecha: '.$sisap->cambia_fecha($fecha_orden_compra),'RL',0);
+$pdf->Cell(0,8,'C.I. No:    _____________________________________','R',1);
+
+$pdf->Cell(100,8,'','RBL',0);
+$pdf->Cell(0,8,'Firma:     _____________________________________','RB',1);
+
+$pdf->Output('Acta_recepcion_bienes_materiales_'.date('d-m-Y').'.pdf','D');
+}//fin else
+?>

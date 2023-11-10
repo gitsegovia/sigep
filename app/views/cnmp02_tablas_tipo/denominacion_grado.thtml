@@ -1,0 +1,90 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<div id="principal_cnmp10">
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,'DENOMINACI&Oacute;N DEL GRADO','','950',"cnmp"); ?>
+<?= $sisap->OpenTable('950'); ?>
+<form name='data[cnmp02_tablas_tipo]'  method = "post" id='form'>
+
+<table width="100%" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td width='15%' align='center'>Grado</td>
+		<td width='77%' align='center'>Denominaci&oacute;n del Grado</td>
+		<td width='8%' align='center'>---</td>
+	</tr>
+
+	<tr>
+		<td><?= $html->input('cnmp02_tablas_tipo/cod_tipo', $htmlAttributes = array('value'=> $cod_tipo>8 ? '' : mascara($cod_tipo,2), 'style'=>'width:98%;text-align:center','readonly'=>'readonly','id'=>'cod_tipo'), false); ?></td>
+		<td><?= $html->input('cnmp02_tablas_tipo/denominacion', $htmlAttributes = array('style'=>'width:98%;text-align:legth','maxlength'=>'100','id'=>'denominacion'), false); ?></td>
+		<td width='15%' align='center'>
+		  <?= $sisap->submitTagRemote('Agregar', array('id'=>'save','url1' => '/cnmp02_tablas_tipo/guardar2', 'update1'=>'principal')); ?>
+		</td>
+	</tr>
+</table>
+
+<br />
+
+<div id="grilla" style="height:300px; overflow:auto;">
+
+<table width="100%" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr  class="tr_negro">
+		<td width='15%' align='center'>Grado</td>
+		<td width='77%' align='center'>Denominaci&oacute;n del Grado</td>
+		<td width='8%' align='center'>---</td>
+	</tr>
+
+<?php
+if(isset($datos) && $datos!=''){
+	$i=0;
+	$j=0;
+	foreach($datos as $row){
+		$cod_tabla = $row['cnmd02_deno_grado']['grado'];
+		$denominacion = $row['cnmd02_deno_grado']['denominacion'];
+		if($i%2==0){
+			$color="#CDF2FF";
+		}else{
+			$color="#DAEBFF";
+		}
+		$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+		?>
+<tr id="<?= $fila ?>" class="textNegro2" bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" >
+<td class="td2center">
+	<?= $html->input('cnmp02_tablas_tipo/cod_trans'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:center', 'readonly'=>'readonly', 'value'=>$sisap->AddCero2($cod_tabla)), false); ?>
+</td>
+<td class="td2center">
+	<?= $html->input('cnmp02_tablas_tipo/deno'.$i, $htmlAttributes = array('style'=>'width:98%;text-align:lefth','readonly'=>'readonly', 'value'=>$denominacion), false); ?>
+</td>
+<td class="td2center">
+	<a href="javascript:ver_documento('/cnmp02_tablas_tipo/modificar2/<?=$cod_tabla?>/<?=$i?>','<?= $fila ?>');"  id="numero_td">
+	<?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar'))?></a><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp02_tablas_tipo/eliminar2/'.$cod_tabla, array('update'=>'principal','title'=>'Eliminar'),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+</td>
+</tr>
+
+<?
+$i++;
+ }
+}else{
+?>
+<tr class="tr_negro">
+		<td  align='center'>---</td>
+		<td  align='center'>---</td>
+		<td  align='center'>---</td>
+	</tr>
+<? } ?>
+</table>
+<input type="hidden" id="TI" value="<?=$i?>" />
+<br>
+</div>
+
+<div id="vacio"></div>
+
+ <?= $sisap->buttonTagRemote('cnmp09_asignacion/principal', array ('value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+
+</form>
+
+<?= $sisap->CloseTable(); ?>

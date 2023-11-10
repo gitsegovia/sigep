@@ -1,0 +1,319 @@
+<?php
+
+
+
+            if($vista==1){
+
+			                          if(isset($errorMessage)) {
+								          echo $sisap->mensajes_error($errorMessage);
+								}else if(isset($Message_existe)){
+								 	      echo $sisap->mensajes_correcto($Message_existe);
+								}
+
+?>
+
+
+
+<?= $infogob->AbrirMarco('Obras proyectadas');?>
+
+
+<?php /* <form method = "post" action="echo  $html->url('/reporte/cheque_formato_libre/si'); " onSubmit="return reporte_valida_comprobantes_cheque_libre();"> */ ?>
+
+
+<form method = "post" action="<?php echo  $html->url('/info_reporte_sin_session/relacion_obras_proyectadas/2'); ?>" onSubmit="return reporte_relacion_obras_proyecto_valida_radio_nivel_consulta();">
+
+<?php $infogob->radio_nivel_consulta($ano_estimacion, $ano_ejecucion, $vector_presi,  $cod_presi_seleccion); ?>
+
+<?= $infogob->submit('Generar', array('id'=>'enviar')); ?>
+<?= $infogob->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/infogobierno/vacio', 'update1'=>'contenido'));?>
+
+</form>
+
+
+
+<?= $infogob->CerrarMarco();?>
+
+
+
+
+<?php }else if($vista==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header(){
+
+
+        $this->info_top_reporte(array("OBRAS PROYECTADAS PARA EL AÑO: ".$_SESSION["ANO_ESTIMACION"]), array("Y"=>"7", "X"=>"6", "Z"=>"10"), array("Y"=>"7", "X"=>"190"), false);
+
+
+        $this->SetFont('vera','B',7);
+		$this->Cell(40,5,'Estado','TRL',0,'L');
+		$this->Cell(0,5,$_SESSION["DENO_ESTADO"],'TR',1,'L'); //// AQUIE EL ESTADO
+
+		$this->Cell(40,5,'Tipo de Institución','TRL',0,'L');
+		$this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'TR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+		$this->Cell(40,5,'Institución','TRLB',0,'L');
+		$this->Cell(0,5,$_SESSION["DENO_INST"],'TRB',1,'L'); //// AQUIE LA INSTITUCIÓN
+
+
+		$this->Ln(3);
+
+
+		$this->SetFont('vera','',8);
+        $this->Cell(0,5,'CLASIFICACIÓN SEGÚN EL  SERVICIO NACIONAL DE CONTRATISTAS','TRL',1,'C');
+
+        $this->SetFont('vera','B',7);
+		$this->Cell(40,5,'CÓDIGO SNC','TRL',0,'C');
+		$this->Cell(0,5,'Denominación de la clasificación','TR',1,'C');
+
+		$this->Cell(40,5,$_SESSION["COD_SNC"],      'TRLB',0,'C'); //// AQUIE EL CÓDIGO SNC
+		$this->Cell(0, 5,$_SESSION["DENO_COD_SNC"], 'TRB', 1,'L');   //// AQUIE LA DENOMINACIÓN DEL CÓDIGO SNC
+
+		$this->Ln(3);
+
+
+		$this->Cell(40,5,' Código DE LA OBRA','TRLB',0,'C');
+		$this->Cell(115,5,'DENOMINACIÓN DE LA OBRA','TRB',0,'C');
+		$this->Cell(30,5,'MONTO','TRB',0,'C');
+		$this->Cell(0,5,'STATUS','TBR',1,'C');
+		$this->SetFont('vera','',6);
+
+
+
+
+	}//fin funtion
+}//fin de la clase PDF
+
+
+                    $pdf = new fpdfview('P','mm','Letter');
+					$pdf->AliasNbPages('TPAG');
+					$pdf->SetTopMargin(5);
+					$pdf->SetLeftMArgin(5);
+					$pdf->SetRightMargin(5);
+					$pdf->SetAutoPageBreak(true, 5);
+
+					   $aux_cod_presi         = 0;
+					   $aux_cod_entidad       = 0;
+					   $aux_cod_tipo_inst     = 0;
+					   $aux_cod_inst          = 0;
+				       $aux_cod_dep           = 0;
+				       $aux_cod_dep_original  = 0;
+					   $aux_ano_estimacion    = 0;
+					   $aux_cod_obra          = "";
+					   $aux_codigo_prod_serv  = "";
+
+					   $total_contratos_total        = 0;
+					   $total_monto_proyectado_total = 0;
+
+					   $total_contratos        = 0;
+					   $total_monto_proyectado = 0;
+
+					                    $_SESSION["ANO_ESTIMACION"]     = "";
+										$_SESSION["COD_SNC"]            = "";
+										$_SESSION["DENO_COD_SNC"]       = "";
+                                        $_SESSION["DENO_ESTADO"]        = "";
+                                        $_SESSION["DENO_COD_TIPO_INST"] = "";
+                                        $_SESSION["DENO_INST"]          = "";
+
+
+
+
+                   if(isset($datos)){
+                       if($datos!=null){
+                         foreach($datos as $ve){
+
+                                 if($aux_cod_presi         != $ve[0]["cod_presi"]        ||
+									$aux_cod_entidad       != $ve[0]["cod_entidad"]      ||
+									$aux_cod_tipo_inst     != $ve[0]["cod_tipo_inst"]    ||
+									$aux_cod_inst          != $ve[0]["cod_inst"]         ||
+									$aux_ano_estimacion    != $ve[0]["ano_estimacion"]   ||
+									$aux_codigo_prod_serv  != $ve[0]["cod_snc"]
+									){
+
+										$_SESSION["ANO_ESTIMACION"]     = $ve[0]["ano_estimacion"];
+										$_SESSION["COD_SNC"]            = $ve[0]["cod_snc"];
+										$_SESSION["DENO_COD_SNC"]       = $ve[0]["deno_cod_snc"];
+                                        $_SESSION["DENO_ESTADO"]        = $ve[0]["deno_cod_entidad"];
+                                        $_SESSION["DENO_COD_TIPO_INST"] = $ve[0]["deno_cod_tipo_inst"];
+                                        $_SESSION["DENO_INST"]          = $ve[0]["deno_cod_inst"];
+
+	                                    $aux_cod_presi         = $ve[0]["cod_presi"];
+										$aux_cod_entidad       = $ve[0]["cod_entidad"];
+										$aux_cod_tipo_inst     = $ve[0]["cod_tipo_inst"];
+										$aux_cod_inst          = $ve[0]["cod_inst"];
+										$aux_ano_estimacion    = $ve[0]["ano_estimacion"];
+										$aux_codigo_prod_serv  = $ve[0]["cod_snc"];
+
+                                        if($total_contratos_total!=0){
+                                        	$pdf->SetFont('vera','B',6);
+												 $pdf->Cell(40,5,'Nº de Obras','RLB',0,'R');
+												 $pdf->Cell(40,5,$total_contratos,'RB',0,'R');
+												 $pdf->Cell(60,5,'Monto Proyectado','RB',0,'R');
+												 $pdf->Cell(0,5,$sisap->Formato2($total_monto_proyectado),'BR',1,'R');
+										    $pdf->SetFont('vera','',6);
+                                        }//fin if
+
+				                       $pdf->AddPage();
+
+				                       $total_contratos        = 0;
+					                   $total_monto_proyectado = 0;
+
+
+									}
+
+
+									$total_contratos_total++;
+									$total_monto_proyectado_total +=$ve[0]["estimado_presu"];
+
+									$total_contratos++;
+									$total_monto_proyectado +=$ve[0]["estimado_presu"];
+
+									            $denominacion = str_replace("\n",  "",      $ve[0]["denominacion"]);
+									            $denominacion = str_replace("      ",  " ", $denominacion);
+									            $denominacion = str_replace("     ",   " ", $denominacion);
+									            $denominacion = str_replace("    ",    " ", $denominacion);
+									            $denominacion = str_replace("   ",     " ", $denominacion);
+									            $denominacion = str_replace("  ",      " ", $denominacion);
+
+												$long         = strlen($denominacion);
+
+													if($long<=97){//echo "a";
+														$height=10;
+													}else if($long>97 && $long<=194){//echo "b";
+														$height=13;
+													}else if($long>194 && $long<=291){//echo "c";
+														$height=16;
+													}else if($long>291 && $long<=388){//echo "d";
+														$height=19;
+													}else if($long>388 && $long<=485){//echo "e";
+														$height=22;
+													}else if($long>485) {//echo "f";
+														$height=25;
+
+													}
+
+
+
+									                    $pdf->Cell(40,$height,$ve[0]["cod_obra"],'RL',0,'C');
+
+															$varX = $pdf->GetX();
+															$varY = $pdf->GetY();
+															$pdf->Cell(115,1,"",'',2,'C');
+															$pdf->MultiCell(114,3,$denominacion,'','L');//---[DENOMINACION DE LA OBRA]
+															$varX = $varX+115;
+															$pdf->SetXY($varX,$varY);
+
+															  $d = ($ve[0]['cobd01_monto_original_contrato'] + $ve[0]['cobd01_aumento'])-$ve[0]['cobd01_disminucion'];
+													          $saldo_contrato = $d - ($ve[0]['cobd01_monto_cancelado'] + ($ve[0]['cobd01_monto_amortizacion']  +  $ve[0]['cobd01_monto_retencion_laboral']  +  $ve[0]['cobd01_monto_retencion_fielcumplimiento']));
+
+
+
+															     if($ve[0]["monto_contratado"]==0){
+
+																         $satus = "En proyecto ";
+
+															}else if($saldo_contrato == 0){
+
+                                                                          $satus = "Finalizada ";
+
+                                                            }else if($ve[0]["cobd01_monto_anticipo"] != 0 || $ve[0]["cobd01_monto_cancelado"] != 0){
+
+                                                                          $satus = "En ejecución ";
+
+                                                            }else if($ve[0]["monto_contratado"] != 0){
+
+                                                                          $satus = "Contratada";
+
+															}
+
+
+                                                        $pdf->Cell(30,$height,$sisap->Formato2($ve[0]["costo_total"]),'RL',0,'R');
+															$pdf->SetFont('vera','B',6);
+														$pdf->Cell(0,$height,$satus,'R',1,'C');
+															$pdf->SetFont('vera','',6);
+														$pdf->Cell(0,0,"",'T',1,'C');
+
+
+
+
+
+
+						 }//fin foreach
+
+
+
+
+
+														 $pdf->SetFont('vera','B',6);
+
+										                 $pdf->Cell(40,5,'Nº de Obras','RLB',0,'R');
+														 $pdf->Cell(40,5,$total_contratos,'RB',0,'R');
+														 $pdf->Cell(60,5,'Monto Proyectado','RB',0,'R');
+														 $pdf->Cell(0,5,$sisap->Formato2($total_monto_proyectado),'BR',1,'R');
+
+
+										                 $pdf->Cell(40,5,'TOTAL Nº de Obras','RLB',0,'R');
+														 $pdf->Cell(40,5,$total_contratos_total,'RB',0,'R');
+														 $pdf->Cell(60,5,'TOTAL Monto Proyectado','RB',0,'R');
+														 $pdf->Cell(0,5,$sisap->Formato2($total_monto_proyectado_total),'BR',1,'R');
+
+
+
+                       }else{
+
+                       	        $pdf->AddPage();
+                                $pdf->Ln(20);
+                       	        $pdf->SetFont('vera','B',14);
+								$pdf->Cell(0,0,"NO EXISTEN DATOS",'',1,'C');
+
+                       	    }//fin else
+
+              }else{
+
+              	         $pdf->AddPage();
+              	         $pdf->Ln(20);
+              	         $pdf->SetFont('vera','B',14);
+						 $pdf->Cell(0,0,"NO EXISTEN DATOS",'',1,'C');
+
+              	   }//fin else
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					$pdf->Output('relacion_de_obras_proyectadas_'.date("d-m-Y"),'D');
+
+
+            }//fin if
+
+?>

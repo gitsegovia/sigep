@@ -1,0 +1,582 @@
+<?php set_time_limit(0);
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+
+
+if($acepta=='no'){ ?>
+
+
+<?= $sisap->Tabla('',true,'Requerimientos Especiales','','750');?>
+<?= $sisap->OpenTable("750")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/reporte_cfpd05_requerimiento_especiales'); ?>">
+
+EJERCICIO FISCAL: <input name="data[cfpp05][ano]"  value="<?= $ano?>" id="ano" style="text-align:center" size="3"  maxlength="4" onKeyPress="return solonumeros(event);"><br><br>
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+
+
+<?
+ echo $html->submit('Generar');
+//$sisap->submitTagRemote('ir', array('url1' => '/cfpp05/tabla_temporal', 'update1'=>'capa'));
+ ?>&nbsp;
+
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/', 'update1'=>'contenedor'))?>
+<br><br>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+<div id="capa"></div>
+
+
+
+<?php }else if($acepta=='si'){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+function Footer(){
+ //Posición: a 1,5 cm del final
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('vera','B',6);
+    //Número de página
+    $this->Cell(150,8," ",0,0,'R');
+    $this->Cell(0,18,"FORMA: 2032 ",0,0,'R');
+    //$this->Cell(0,8,'Gastos de inversión estimados para el ano presupuestado',0,0,'R');
+}
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+function Header()
+{
+
+$this->image_escudo(6,31,23);
+$this->SetFont('vera','B',10);
+$this->Cell(20,5,"",'TL',0);
+$this->Cell(0,5,$_SESSION['entidad_federal_aux'],'TR',1);
+$this->Cell(25,4,"",'L',0);
+$this->SetFont('vera','',9);
+$this->Cell(0,4,$_SESSION['titulo_a'],'R',1);
+$this->SetFont('vera','B',12);
+$this->Cell(30,10,"",'L',0);
+$this->MultiCell(0,5,"REQUERIMIENTOS ESPECIALES\n",'R','C');
+$this->SetFont('vera','',7);
+$this->Cell(30,3,"",'L',0);
+$this->Cell(0,3,"(BOLÍVAR FUERTE)",'R',1,'C');
+$this->SetFont('vera','',9);
+$this->Cell(22,5,"",'BL',0);
+$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);
+$this->Ln(7);
+/*
+	$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',7,31,19);
+	$this->SetFont('vera','B',10);
+	$this->Cell(28,5,"",'TL',0);
+	$this->Cell(0,5,$_SESSION['entidad_federal_aux'],'TR',1);//----AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->Cell(28,5,"",'L',0);
+	$this->SetFont('vera','',9);
+	$this->Cell(0,5,$_SESSION['titulo'],'R',1);//----AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->SetFont('vera','B',12);
+	$this->Cell(25,10,"",'L',0);
+	$this->MultiCell(0,5,"REQUERIMIENTOS ESPECIALES",'R','C');
+	$this->SetFont('vera','',7);
+	$this->Cell(30,3,"",'L',0);
+	$this->Cell(0,3,"(BOLIVAR FUERTE)",'R',1,'C');
+	$this->SetFont('vera','',9);
+	$this->Cell(28,5,"",'BL',0);
+	$this->Cell(0,5,"PRESUPUESTO :".$_SESSION['ejercicio'],'RB',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+	$this->Ln(8);
+*/
+  }//fin funtion
+}//fin clases
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+
+
+
+
+function DENOMINACION($partida,$generica,$especifica,$subespecifica,$codigos){
+$a = 0;
+$b = 0;
+$c = 0;
+$d = 0;
+
+$codigos[1]=substr($codigos[1],-2);
+
+foreach($partida as $part){$a++;
+
+			$part_aux[$a]['cod_grupo'] = $part['cfpd01_ano_partida']['cod_grupo'];
+  			$part_aux[$a]['cod_partida'] = $part['cfpd01_ano_partida']['cod_partida'];
+  			$part_aux[$a]['denominacion'] = $part['cfpd01_ano_partida']['denominacion'];
+  			if($part_aux[$a]['cod_grupo']==CE && $codigos[1]==$part_aux[$a]['cod_partida'] && $codigos[2]==0 && $codigos[3]==0 && $codigos[4]==0){
+  				return $part_aux[$a]['denominacion'];
+  			}
+
+}
+
+foreach($generica as $gen){$b++;
+			$gen_aux[$b]['cod_grupo'] = $gen['cfpd01_ano_generica']['cod_grupo'];
+			$gen_aux[$b]['cod_partida'] = $gen['cfpd01_ano_generica']['cod_partida'];
+			$gen_aux[$b]['cod_generica'] = $gen['cfpd01_ano_generica']['cod_generica'];
+			$gen_aux[$b]['denominacion'] = $gen['cfpd01_ano_generica']['denominacion'];
+
+			if($gen_aux[$b]['cod_grupo']==CE && $codigos[1]==$gen_aux[$b]['cod_partida'] && $codigos[2]==$gen_aux[$b]['cod_generica'] && $codigos[3]==0 && $codigos[4]==0){
+  				return $gen_aux[$b]['denominacion'];
+  			}
+
+}
+
+foreach($especifica as $espec){$c++;
+			$espec_aux[$c]['cod_grupo'] = $espec['cfpd01_ano_especifica']['cod_grupo'];
+         	$espec_aux[$c]['cod_partida'] = $espec['cfpd01_ano_especifica']['cod_partida'];
+         	$espec_aux[$c]['cod_generica'] = $espec['cfpd01_ano_especifica']['cod_generica'];
+         	$espec_aux[$c]['cod_especifica'] = $espec['cfpd01_ano_especifica']['cod_especifica'];
+         	$espec_aux[$c]['denominacion'] = $espec['cfpd01_ano_especifica']['denominacion'];
+         	if($espec_aux[$c]['cod_grupo']==CE && $codigos[1]==$espec_aux[$c]['cod_partida'] && $codigos[2]==$espec_aux[$c]['cod_generica'] && $codigos[3]==$espec_aux[$c]['cod_especifica'] && $codigos[4]==0){
+  				return $espec_aux[$c]['denominacion'];
+  			}
+}
+
+foreach($subespecifica as $subespec){$d++;
+	        $subespec_aux[$d]['cod_grupo'] = $subespec['cfpd01_ano_sub_espec']['cod_grupo'];
+         	$subespec_aux[$d]['cod_partida'] = $subespec['cfpd01_ano_sub_espec']['cod_partida'];
+         	$subespec_aux[$d]['cod_generica'] = $subespec['cfpd01_ano_sub_espec']['cod_generica'];
+            $subespec_aux[$d]['cod_especifica'] = $subespec['cfpd01_ano_sub_espec']['cod_especifica'];
+            $subespec_aux[$d]['cod_sub_espec'] = $subespec['cfpd01_ano_sub_espec']['cod_sub_espec'];
+            $subespec_aux[$d]['denominacion'] = $subespec['cfpd01_ano_sub_espec']['denominacion'];
+            if($subespec_aux[$d]['cod_grupo']==CE && $codigos[1]==$subespec_aux[$d]['cod_partida'] && $codigos[2]==$subespec_aux[$d]['cod_generica'] && $codigos[3]==$subespec_aux[$d]['cod_especifica'] && $codigos[4]==$subespec_aux[$d]['cod_sub_espec']){
+  				return $subespec_aux[$d]['denominacion'];
+  			}
+}
+
+}//fin denom inacion
+  function deno_especifica ($especifica,$codigos) {
+  	$c=0;
+  	$codigos[1]=substr($codigos[1],-2);
+  	$codigos[1]= $codigos[1]>9 ? $codigos[1] : substr($codigos[1],-1);
+  		foreach($especifica as $espec){$c++;
+			$espec_aux[$c]['cod_grupo'] = $espec['cfpd01_ano_especifica']['cod_grupo'];
+         	$espec_aux[$c]['cod_partida'] = $espec['cfpd01_ano_especifica']['cod_partida'];
+         	$espec_aux[$c]['cod_generica'] = $espec['cfpd01_ano_especifica']['cod_generica'];
+         	$espec_aux[$c]['cod_especifica'] = $espec['cfpd01_ano_especifica']['cod_especifica'];
+         	$espec_aux[$c]['denominacion'] = $espec['cfpd01_ano_especifica']['denominacion'];
+         	if($espec_aux[$c]['cod_grupo']==CE && $codigos[1]==$espec_aux[$c]['cod_partida'] && $codigos[2]==$espec_aux[$c]['cod_generica'] && $codigos[3]==$espec_aux[$c]['cod_especifica'] && $codigos[4]==0){
+  				return $espec_aux[$c]['denominacion'];
+  			}
+		}
+}//fin deno_especifica
+
+function deno_subespecifica($subespecifica,$codigos) {
+	$d=0;
+	$codigos[1]=substr($codigos[1],-2);
+  	$codigos[1]= $codigos[1]>9 ? $codigos[1] : substr($codigos[1],-1);
+	foreach($subespecifica as $subespec){$d++;
+	        $subespec_aux[$d]['cod_grupo'] = $subespec['cfpd01_ano_sub_espec']['cod_grupo'];
+         	$subespec_aux[$d]['cod_partida'] = $subespec['cfpd01_ano_sub_espec']['cod_partida'];
+         	$subespec_aux[$d]['cod_generica'] = $subespec['cfpd01_ano_sub_espec']['cod_generica'];
+            $subespec_aux[$d]['cod_especifica'] = $subespec['cfpd01_ano_sub_espec']['cod_especifica'];
+            $subespec_aux[$d]['cod_sub_espec'] = $subespec['cfpd01_ano_sub_espec']['cod_sub_espec'];
+            $subespec_aux[$d]['denominacion'] = $subespec['cfpd01_ano_sub_espec']['denominacion'];
+            if($subespec_aux[$d]['cod_grupo']==CE && $codigos[1]==$subespec_aux[$d]['cod_partida'] && $codigos[2]==$subespec_aux[$d]['cod_generica'] && $codigos[3]==$subespec_aux[$d]['cod_especifica'] && $codigos[4]==$subespec_aux[$d]['cod_sub_espec']){
+  				return $subespec_aux[$d]['denominacion'];
+  			}
+}
+}//fin deno_subespecifica
+function deno_sector ($sectord,$codigos2) {
+$f=0;
+foreach($sectord as $vsector){$f++;
+			$va[$f]['cod_sector'] = $vsector['cfpd02_sector']['cod_sector'];
+  			$va[$f]['denominacion'] = $vsector['cfpd02_sector']['denominacion'];
+  			if($codigos2[1]==$va[$f]['cod_sector'] && $codigos2[2]==0 && $codigos2[3]==0 && $codigos2[4]==0 && $codigos2[5]==0 ){
+  				return $va[$f]['denominacion'];
+  			}
+
+}
+}//fin deno sector
+
+function deno_programa ($programad,$codigos2) {
+$g=0;
+foreach($programad as $vprog){$g++;
+			$ve[$g]['cod_sector'] = $vprog['cfpd02_programa']['cod_sector'];
+  			$ve[$g]['cod_programa'] = $vprog['cfpd02_programa']['cod_programa'];
+  			$ve[$g]['denominacion'] = $vprog['cfpd02_programa']['denominacion'];
+  			if($codigos2[1]==$ve[$g]['cod_sector'] && $codigos2[2]==$ve[$g]['cod_programa'] && $codigos2[3]==0 && $codigos2[4]==0 && $codigos2[5]==0){
+  				return $ve[$g]['denominacion'];
+  			}
+
+}
+}//fin deno programa
+function deno_subprograma ($subprogramad,$codigos2) {
+
+$h=0;
+foreach($subprogramad as $vsupprog){$h++;
+			$vi[$h]['cod_sector'] = $vsupprog['cfpd02_sub_prog']['cod_sector'];
+  			$vi[$h]['cod_programa'] = $vsupprog['cfpd02_sub_prog']['cod_programa'];
+  			$vi[$h]['cod_sub_prog'] = $vsupprog['cfpd02_sub_prog']['cod_sub_prog'];
+  			$vi[$h]['denominacion'] = $vsupprog['cfpd02_sub_prog']['denominacion'];
+  			if($codigos2[1]==$vi[$h]['cod_sector'] && $codigos2[2]==$vi[$h]['cod_programa'] && $codigos2[3]==$vi[$h]['cod_sub_prog'] && $codigos2[4]==0 && $codigos2[5]==0){
+  				return $vi[$h]['denominacion'];
+  			}
+
+}
+  }//fin deno subprograma
+
+function deno_proyecto ($proyectod,$codigos2,$condicion) {
+
+$i=0;
+foreach($proyectod as $vproy){$i++;
+			$vo[$i]['cod_sector'] = $vproy['cfpd02_proyecto']['cod_sector'];
+  			$vo[$i]['cod_programa'] = $vproy['cfpd02_proyecto']['cod_programa'];
+  			$vo[$i]['cod_sub_prog'] = $vproy['cfpd02_proyecto']['cod_sub_prog'];
+  			$vo[$i]['cod_proyecto'] = $vproy['cfpd02_proyecto']['cod_proyecto'];
+  			$vo[$i]['denominacion'] = $vproy['cfpd02_proyecto']['denominacion'];
+  			$vo[$i]['unidad_ejecutora'] = $vproy['cfpd02_proyecto']['unidad_ejecutora'];
+  			if($codigos2[1]==$vo[$i]['cod_sector'] && $codigos2[2]==$vo[$i]['cod_programa'] && $codigos2[3]==$vo[$i]['cod_sub_prog'] && $codigos2[4]==$vo[$i]['cod_proyecto'] && $codigos2[5]==0){
+  				if($condicion=="UE")
+  				    return $vo[$i]['unidad_ejecutora'];
+  				else
+  				    return $vo[$i]['denominacion'];
+  			}
+}
+  }//fin deno proyecto
+
+function deno_actividad($vector,$codigos2,$condicion) {
+	$j=0;
+     foreach($vector as $vacti){$j++;
+			$vu[$j]['cod_sector'] = $vacti['cfpd02_activ_obra']['cod_sector'];
+  			$vu[$j]['cod_programa'] = $vacti['cfpd02_activ_obra']['cod_programa'];
+  			$vu[$j]['cod_sub_prog'] = $vacti['cfpd02_activ_obra']['cod_sub_prog'];
+  			$vu[$j]['cod_proyecto'] = $vacti['cfpd02_activ_obra']['cod_proyecto'];
+  			$vu[$j]['cod_activ_obra'] = $vacti['cfpd02_activ_obra']['cod_activ_obra'];
+  			$vu[$j]['denominacion'] = $vacti['cfpd02_activ_obra']['denominacion'];
+  			$vu[$j]['unidad_ejecutora'] = $vacti['cfpd02_activ_obra']['unidad_ejecutora'];
+  			if($codigos2[1]==$vu[$j]['cod_sector'] && $codigos2[2]==$vu[$j]['cod_programa'] && $codigos2[3]==$vu[$j]['cod_sub_prog'] && $codigos2[4]==$vu[$j]['cod_proyecto'] && $codigos2[5]==$vu[$j]['cod_activ_obra']){
+  				if($condicion=="UE")
+  				    return $vu[$j]['unidad_ejecutora'];
+  				else
+  				    return $vu[$j]['denominacion'];
+  			}
+}
+}//fin deno actividad
+
+function deno_auxiliar($vector,$codigos2) {
+	$j=0;
+     foreach($vector as $vauxi){$j++;
+			$vu[$j]['cod_sector'] = $vauxi['cfpd05_auxiliar']['cod_sector'];
+  			$vu[$j]['cod_programa'] = $vauxi['cfpd05_auxiliar']['cod_programa'];
+  			$vu[$j]['cod_sub_prog'] = $vauxi['cfpd05_auxiliar']['cod_sub_prog'];
+  			$vu[$j]['cod_proyecto'] = $vauxi['cfpd05_auxiliar']['cod_proyecto'];
+  			$vu[$j]['cod_activ_obra'] = $vauxi['cfpd05_auxiliar']['cod_activ_obra'];
+  			$vu[$j]['cod_partida'] = $vauxi['cfpd05_auxiliar']['cod_partida'];
+  			$vu[$j]['cod_generica'] = $vauxi['cfpd05_auxiliar']['cod_generica'];
+  			$vu[$j]['cod_especifica'] = $vauxi['cfpd05_auxiliar']['cod_especifica'];
+  			$vu[$j]['cod_sub_espec'] = $vauxi['cfpd05_auxiliar']['cod_sub_espec'];
+  			$vu[$j]['cod_auxiliar'] = $vauxi['cfpd05_auxiliar']['cod_auxiliar'];
+  			$vu[$j]['denominacion'] = $vauxi['cfpd05_auxiliar']['denominacion'];
+  			if($codigos2[1]==$vu[$j]['cod_sector'] && $codigos2[2]==$vu[$j]['cod_programa'] && $codigos2[3]==$vu[$j]['cod_sub_prog'] && $codigos2[4]==$vu[$j]['cod_proyecto'] && $codigos2[5]==$vu[$j]['cod_activ_obra'] && $codigos2[6]==$vu[$j]['cod_partida'] && $codigos2[7]==$vu[$j]['cod_generica'] && $codigos2[8]==$vu[$j]['cod_especifica'] && $codigos2[9]==$vu[$j]['cod_sub_espec'] && $codigos2[10]==$vu[$j]['cod_auxiliar']){
+  				    return "".$vu[$j]['denominacion'];
+  			}
+}
+}
+
+
+
+$fpdf = new fpdfview('L','mm','Letter');
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(30);
+$fpdf->SetLeftMargin(5);
+$fpdf->SetRightMargin(5);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+$_SESSION['titulo_a'] = $titulo_a;
+
+//$fpdf->AddPage();
+
+
+$totaltotal=0;
+//-------------------------------------------------------
+foreach($distintos_sectores as $ds){
+	$var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+    $var[11]=deno_sector($sector,array(1=>$var[1],2=>0,3=>0,4=>0,5=>0));
+    $var[12]=deno_programa($programa,array(1=>$var[1],2=>$var[2],3=>0,4=>0,5=>0));
+    $var[13]=deno_subprograma($subprograma,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>0,5=>0));
+    $var[14]=deno_proyecto($proyecto,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>$var[4],5=>0),"NO");
+    $var[15]=deno_actividad($actividad,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>$var[4],5=>$var[5]),"NO");
+    if($var[4]!=0){
+    	$var[16]=deno_proyecto($proyecto,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>$var[4],5=>0),"UE");
+    }else{
+    	$var[16]=deno_actividad($actividad,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>$var[4],5=>$var[5]),"UE");
+    }
+    $var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+	$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+	$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+	$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+	$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+    $fpdf->AddPage();
+	$fpdf->Cell(33,4,"",'TBRL',0,'C');
+	$fpdf->Cell(17,4,"CÓDIGO",'TBRL',0,'C');
+	$fpdf->Cell(0,4,"D E N O M I N A C I Ó N",'TBRL',1,'C');
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"SECTOR",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[1],'RBL',0,'C');//-----------------------[COD. SECTOR]
+	$fpdf->Cell(0,4,$var[11],'RBL',1,'L');//------------------------[DENO SECTOR]
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"PROGRAMA",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[2],'RBL',0,'C');//-----------------------[COD. PROGRAMA]
+	$fpdf->Cell(0,4,$var[12],'RBL',1,'L');//------------------------[DENO PROGRAMA]
+
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"SUBPROGRAMA",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[3],'RBL',0,'C');//-----------------------[COD. SUBPROGRAMA]
+	$fpdf->Cell(0,4,$var[13],'RBL',1,'L');//------------------------[DENO SUBP]
+    if($var[4]!=0){
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"PROYECTO",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[4],'RBL',0,'C');//-----------------------[COD. PROYECTO]
+	$fpdf->Cell(0,4,$var[14],'RBL',1,'L');//------------------------[DENO PROYECTO]
+    }
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(33,4,"ACTIVIDAD",'RBL',0,'L');
+	$fpdf->SetFont('vera','B',6);
+	$fpdf->Cell(17,4,$var[5],'RBL',0,'C');//-----------------------[COD. ACTIVIDAD]
+	$fpdf->Cell(0,4,$var[15],'RBL',1,'L');//------------------------[DENO ACTIVIDAD]
+
+	        $fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"UNIDAD EJECUTORA",'BL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,"",'RB',0,'C');//-----------------------[COD. UNID. EJECUTORA]
+			$fpdf->Cell(0,4,$var[16],'RBL',1,'L');//------------------------[DENO UNID. EJECUTORA]
+			$fpdf->Ln();
+
+	$fpdf->SetFont('vera','B',7);
+	$fpdf->Cell(50,4,"CÓDIGOS",'TRBL',0,'C');
+	$fpdf->Cell(180,4,"",'TR',0,'C');
+	$fpdf->Cell(0,4,"",'TR',1,'C');
+
+	$fpdf->Cell(9,3,"",'RL',0,'C');
+	$fpdf->Cell(8,3,"",'RL',0,'C');
+	$fpdf->Cell(8,3,"",'RL',0,'C');
+	$fpdf->Cell(8,3,"",'RL',0,'C');
+	$fpdf->Cell(8,3,"",'RL',0,'C');
+	$fpdf->Cell(9,3,"",'RL',0,'C');
+
+	$fpdf->Cell(180,3,"",'R',0,'C');
+	$fpdf->Cell(0,3,"",'R',1,'C');
+
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(9,5,"",'RL',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(8,5,"SUB",'R',0,'C');
+	$fpdf->Cell(8,5,"",'R',0,'C');
+	$fpdf->Cell(9,5,"CÓDIGO",'R',0,'C');
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(180,5,"D E N O M I N A C I Ó N",'R',0,'C');
+	$fpdf->Cell(0,5,"ASIGNACIÓN",'R',1,'C');
+
+	$fpdf->SetFont('vera','B',5);
+	$fpdf->Cell(9,3,"PART.",'RLB',0,'C');
+	$fpdf->Cell(8,3,"GEN.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+	$fpdf->Cell(8,3,"ORDI.",'RB',0,'C');
+	$fpdf->Cell(9,3,"OBRA",'RB',0,'C');
+	$fpdf->Cell(180,3,"",'RB',0,'C');
+	$fpdf->Cell(0,3,"",'RB',1,'C');
+	$fpdf->SetFont('vera','',7);
+    $var[1]=$ds[0]['cod_sector'];
+	$var[2]=$ds[0]['cod_programa'];
+	$var[3]=$ds[0]['cod_sub_prog'];
+	$var[4]=$ds[0]['cod_proyecto'];
+	$var[5]=$ds[0]['cod_activ_obra'];
+	        	$var[1]=$var[1]>9 ? $var[1] : "0".$var[1];
+			$var[2]=$var[2]>9 ? $var[2] : "0".$var[2];
+			$var[3]=$var[3]>9 ? $var[3] : "0".$var[3];
+			$var[4]=$var[4]>9 ? $var[4] : "0".$var[4];
+			$var[5]=$var[5]>9 ? $var[5] : "0".$var[5];
+	foreach($cfpd05 as  $vcfpd){
+		$var2[1]=$vcfpd['cfpd05_requerimiento']['cod_sector'];
+		$var2[2]=$vcfpd['cfpd05_requerimiento']['cod_programa'];
+		$var2[3]=$vcfpd['cfpd05_requerimiento']['cod_sub_prog'];
+		$var2[4]=$vcfpd['cfpd05_requerimiento']['cod_proyecto'];
+		$var2[5]=$vcfpd['cfpd05_requerimiento']['cod_activ_obra'];
+		$var2[6]=$vcfpd['cfpd05_requerimiento']['cod_partida'];
+		$var2[7]=$vcfpd['cfpd05_requerimiento']['cod_generica'];
+		$var2[8]=$vcfpd['cfpd05_requerimiento']['cod_especifica'];
+		$var2[9]=$vcfpd['cfpd05_requerimiento']['cod_sub_espec'];
+		$var2[10]=$vcfpd['cfpd05_requerimiento']['cod_auxiliar'];
+		$var2[11]=$vcfpd['cfpd05_requerimiento']['asignacion_anual'];
+
+		if($var2[9]==0 && $var2[10]==0){
+			$var2[12]=deno_especifica($especifica,array(1=>$var2[6],2=>$var2[7],3=>$var2[8],4=>$var2[9]));
+		}else if($var2[10]!=0){
+            $var2[12]=deno_auxiliar($auxiliar,array(1=>$var[1],2=>$var[2],3=>$var[3],4=>$var[4],5=>$var[5],6=>$var2[6],7=>$var2[7],8=>$var2[8],9=>$var2[9],10=>$var2[10]));
+		}else{
+			$var2[12]=deno_subespecifica($subespecifica,array(1=>$var2[6],2=>$var2[7],3=>$var2[8],4=>$var2[9]));
+		}
+		//$var2[11]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(1=>$var2[6],2=>$var2[7],3=>$var2[8],4=>$var2[9]));
+		 $var2[7]=$var2[7]>9 ? $var2[7] : "0".$var2[7];
+	     $var2[8]=$var2[8]>9 ? $var2[8] : "0".$var2[8];
+	     $var2[9]=$var2[9]>9 ? $var2[9] : "0".$var2[9];
+	     $var2[10]=$var2[10]>9 ? $var2[10] : "0".$var2[10];
+	     //$var2[9]=$var2[9]==0 ? "" : $var2[9];
+	     $var2[10]=$var2[10]==0 ? "" : $var2[10];
+		$x = $fpdf->GetY();
+		if($var[1]==$var2[1] && $var[2]==$var2[2] && $var[3]==$var2[3] && $var[4]==$var2[4] && $var[5]==$var2[5]){
+			//$totaltotal=$totaltotal+$var2[10];
+        if($x >= 190){
+
+            $fpdf->AddPage();
+			$fpdf->Cell(33,4,"",'TBRL',0,'C');
+			$fpdf->Cell(17,4,"CÓDIGO",'TBRL',0,'C');
+			$fpdf->Cell(0,4,"D E N O M I N A C I Ó N",'TBRL',1,'C');
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"SECTOR",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[1],'RBL',0,'C');//-----------------------[COD. SECTOR]
+			$fpdf->Cell(0,4,$var[11],'RBL',1,'L');//------------------------[DENO SECTOR]
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"PROGRAMA",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[2],'RBL',0,'C');//-----------------------[COD. PROGRAMA]
+			$fpdf->Cell(0,4,$var[12],'RBL',1,'L');//------------------------[DENO PROGRAMA]
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"SUBPROGRAMA",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[3],'RBL',0,'C');//-----------------------[COD. SUBPROGRAMA]
+			$fpdf->Cell(0,4,$var[13],'RBL',1,'L');//------------------------[DENO SUBP]
+		    if($var[4]!=0){
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"PROYECTO",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[4],'RBL',0,'C');//-----------------------[COD. PROYECTO]
+			$fpdf->Cell(0,4,$var[14],'RBL',1,'L');//------------------------[DENO PROYECTO]
+		    }
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"ACTIVIDAD",'RBL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,$var[5],'RBL',0,'C');//-----------------------[COD. ACTIVIDAD]
+			$fpdf->Cell(0,4,$var[15],'RBL',1,'L');//------------------------[DENO ACTIVIDAD]
+
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(33,4,"UNIDAD EJECUTORA",'BL',0,'L');
+			$fpdf->SetFont('vera','B',6);
+			$fpdf->Cell(17,4,"",'RB',0,'C');//-----------------------[COD. UNID. EJECUTORA]
+			$fpdf->Cell(0,4,$var[16],'RBL',1,'L');//------------------------[DENO UNID. EJECUTORA]
+			$fpdf->Ln();
+
+			$fpdf->SetFont('vera','B',7);
+			$fpdf->Cell(50,4,"CÓDIGOS",'TRBL',0,'C');
+			$fpdf->Cell(180,4,"",'TR',0,'C');
+			$fpdf->Cell(0,4,"",'TR',1,'C');
+
+			$fpdf->Cell(9,3,"",'RL',0,'C');
+			$fpdf->Cell(8,3,"",'RL',0,'C');
+			$fpdf->Cell(8,3,"",'RL',0,'C');
+			$fpdf->Cell(8,3,"",'RL',0,'C');
+			$fpdf->Cell(8,3,"",'RL',0,'C');
+			$fpdf->Cell(9,3,"",'RL',0,'C');
+
+			$fpdf->Cell(180,3,"",'R',0,'C');
+			$fpdf->Cell(0,3,"",'R',1,'C');
+
+			$fpdf->SetFont('vera','B',5);
+			$fpdf->Cell(9,5,"",'RL',0,'C');
+			$fpdf->Cell(8,5,"",'R',0,'C');
+			$fpdf->Cell(8,5,"",'R',0,'C');
+			$fpdf->Cell(8,5,"SUB",'R',0,'C');
+			$fpdf->Cell(8,5,"",'R',0,'C');
+			$fpdf->Cell(9,5,"CÓDIGO",'R',0,'C');
+			$fpdf->SetFont('vera','B',8);
+			$fpdf->Cell(180,5,"D E N O M I N A C I Ó N",'R',0,'C');
+			$fpdf->Cell(0,5,"ASIGNACIÓN",'R',1,'C');
+
+			$fpdf->SetFont('vera','B',5);
+			$fpdf->Cell(9,3,"PART.",'RLB',0,'C');
+			$fpdf->Cell(8,3,"GEN.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ESP.",'RB',0,'C');
+			$fpdf->Cell(8,3,"ORDI.",'RB',0,'C');
+			$fpdf->Cell(9,3,"OBRA",'RB',0,'C');
+			$fpdf->Cell(180,3,"",'RB',0,'C');
+			$fpdf->Cell(0,3,"",'RB',1,'C');
+			$fpdf->SetFont('vera','',7);
+        }//fin $x 190
+
+            $fpdf->SetFont('vera','',6);
+		    $fpdf->Cell(9,8,$var2[6],'TRLB',0,'C');//-----------------------[PARTIDA]
+		    $fpdf->Cell(8,8,$var2[7],'TRB',0,'C');//------------------------[GENERICA]
+		    $fpdf->Cell(8,8,$var2[8],'TRB',0,'C');//------------------------[ESP.]
+		    $fpdf->Cell(8,8,$var2[9],'TRB',0,'C');//---------------------[SUB. ESP.]
+		    $fpdf->Cell(8,8,$var2[10],'TRB',0,'C');//------------------------[ORDINARIA]
+		    $fpdf->Cell(9,8,"",'TRB',0,'C');//------------------------[COD. OBRA]
+		    $varX = $fpdf->GetX();
+		    $varY = $fpdf->GetY();
+		    $fpdf->Cell(180,2,"",'T',2,'C');
+		    $fpdf->MultiCell(180,3,$var2[12],'','J');//-----------------------[DENOMINACION TODO]
+		    $varX = $varX+180;
+		    $fpdf->SetXY($varX,$varY);
+
+		    $fpdf->Cell(0,8,$sisap->Formato2($var2[11]),'TLRB',1,'R');//-----[Asignacion anual]
+		    $fpdf->Cell(0,0,"",'T',1,'C');
+		    $totaltotal=$totaltotal+$var2[11];
+        }//end if
+
+	}//fin foreach cfpd05
+	$fpdf->SetFont('vera','B',9);
+    $fpdf->Cell(230,8,"T O T A L E S        ",'TRBL',0,'R');
+    $fpdf->Cell(0,8,$sisap->Formato2($totaltotal),'TLRB',1,'R');//-----[Asignacion anual]
+    $totaltotal=0;
+}//fin foreach distintos_sectores
+
+//$fpdf->SetFont('vera','B',9);
+//$fpdf->Cell(230,8,"T O T A L E S        ",'TRBL',0,'R');
+//$fpdf->Cell(0,8,$sisap->Formato2($totaltotal),'TLRB',1,'R');//-----[Asignacion anual]
+//$fpdf->SetFont('vera','B',6);
+//$fpdf->Cell(0,6,"FORMA: 2.032",'',1,'R');
+$fpdf->OutPut('requerimientos_especiales_'.date("d-m-Y"),'D');
+
+}//fin else if
+
+?>

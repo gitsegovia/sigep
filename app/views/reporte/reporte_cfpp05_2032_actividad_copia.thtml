@@ -1,0 +1,611 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de página
+
+
+function Header()
+{
+
+	$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',7,32,23);
+	$this->SetFont('vera','B',10);
+	$this->Cell(28,5,"",'TL',0);
+	$this->Cell(0,5,$_SESSION['entidad_federal_aux'],'TR',1);//----AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->Cell(28,5,"",'L',0);
+	$this->SetFont('vera','',9);
+	$this->Cell(0,5,$_SESSION['titulo'],'R',1);//----AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET) --- JUAN
+	$this->SetFont('vera','B',12);
+	$this->Cell(30,10,"",'L',0);
+	$this->MultiCell(0,5,"PRESUPUESTOS DE GASTOS DE LA ENTIDAD FEDERAL POR ACTVIDADES",'R','C');
+	$this->SetFont('vera','',7);
+	$this->Cell(30,4,"",'L',0);
+	$this->Cell(0,4,"(BOLIVAR)",'R',1,'C');
+	$this->SetFont('vera','',9);
+	$this->Cell(28,6,"",'BL',0);
+	$this->Cell(0,6,"PRESUPUESTO :".$_SESSION['ejercicio'],'RB',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+	$this->Ln(10);
+
+	/*$this->SetFont('vera','B',7);
+	$this->Cell(33,4,"C�DIGOS",'TRBL',0,'C');
+	$this->Cell(58,4,"",'TR',0,'C');
+	$this->Cell(30,4,"TOTAL",'TR',0,'C');
+	$this->Cell(0,4,"S E C T O R E S",'TRB',0,'C');
+
+
+	$this->Cell(9,4,"",'RL',0,'C');
+	$this->Cell(24,4,"SUB - PARTIDAS",'TRBL',0,'C');
+	$this->Cell(58,4,"",'R',0,'C');
+	$this->Cell(30,4,"PRESUP. A�O ANT.",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(24,4,"",'R',0,'C');
+	$this->Cell(0,4,"",'R',1,'C');
+
+	$this->Cell(9,5,"PART.",'RL',0,'C');
+	$this->Cell(8,5,"GEN.",'TR',0,'C');
+	$this->Cell(8,5,"ESP.",'TR',0,'C');
+	$this->Cell(8,5,"SUB",'TR',0,'C');
+	$this->SetFont('vera','B',8);
+	$this->Cell(58,5,"D E N O M I N A C I � N",'R',0,'C');
+	$this->SetFont('vera','B',9);
+	$this->Cell(30,5,"",'R',0,'C');
+	$this->Cell(24,5,"01",'R',0,'C');
+	$this->Cell(24,5,"02",'R',0,'C');
+	$this->Cell(24,5,"03",'R',0,'C');
+	$this->Cell(24,5,"04",'R',0,'C');
+	$this->Cell(24,5,"05",'R',0,'C');
+	$this->Cell(0,5,"06",'R',1,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(9,5,"",'RLB',0,'C');
+	$this->Cell(8,5,"",'RB',0,'C');
+	$this->Cell(8,5,"",'RB',0,'C');
+	$this->Cell(8,5,"ESP.",'RB',0,'C');
+	$this->Cell(58,5,"",'RB',0,'C');
+	$this->Cell(30,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(24,5,"",'RB',0,'C');
+	$this->Cell(0,5,"",'RB',1,'C');*/
+
+  }//fin funtion
+}//fin clases
+
+
+
+
+
+
+
+
+function cerocero ($var) {
+	$var= $var == "0,00" ? "" : $var;
+	return $var;
+}
+
+
+
+
+
+function DENOMINACION($partida,$generica,$especifica,$subespecifica,$codigos,$sectord,$programad,$subprogramad,$proyectod,$codigos2){
+$a = 0;
+$b = 0;
+$c = 0;
+$d = 0;
+$e = 0;
+$f = 0;
+$g = 0;
+$h = 0;
+$i = 0;
+$j = 0;
+$codigos[1]=substr($codigos[1],-2);
+
+foreach($partida as $part){$a++;
+
+			$part_aux[$a]['cod_grupo'] = $part['cfpd01_ano_partida']['cod_grupo'];
+  			$part_aux[$a]['cod_partida'] = $part['cfpd01_ano_partida']['cod_partida'];
+  			$part_aux[$a]['denominacion'] = $part['cfpd01_ano_partida']['denominacion'];
+  			if($part_aux[$a]['cod_grupo']==CE && $codigos[1]==$part_aux[$a]['cod_partida'] && $codigos[2]==0 && $codigos[3]==0 && $codigos[4]==0){
+  				return $part_aux[$a]['denominacion'];
+  			}
+
+}
+
+foreach($generica as $gen){$b++;
+			$gen_aux[$b]['cod_grupo'] = $gen['cfpd01_ano_generica']['cod_grupo'];
+			$gen_aux[$b]['cod_partida'] = $gen['cfpd01_ano_generica']['cod_partida'];
+			$gen_aux[$b]['cod_generica'] = $gen['cfpd01_ano_generica']['cod_generica'];
+			$gen_aux[$b]['denominacion'] = $gen['cfpd01_ano_generica']['denominacion'];
+
+			if($gen_aux[$b]['cod_grupo']==CE && $codigos[1]==$gen_aux[$b]['cod_partida'] && $codigos[2]==$gen_aux[$b]['cod_generica'] && $codigos[3]==0 && $codigos[4]==0){
+  				return $gen_aux[$b]['denominacion'];
+  			}
+
+}
+
+foreach($especifica as $espec){$c++;
+			$espec_aux[$c]['cod_grupo'] = $espec['cfpd01_ano_especifica']['cod_grupo'];
+         	$espec_aux[$c]['cod_partida'] = $espec['cfpd01_ano_especifica']['cod_partida'];
+         	$espec_aux[$c]['cod_generica'] = $espec['cfpd01_ano_especifica']['cod_generica'];
+         	$espec_aux[$c]['cod_especifica'] = $espec['cfpd01_ano_especifica']['cod_especifica'];
+         	$espec_aux[$c]['denominacion'] = $espec['cfpd01_ano_especifica']['denominacion'];
+         	if($espec_aux[$c]['cod_grupo']==CE && $codigos[1]==$espec_aux[$c]['cod_partida'] && $codigos[2]==$espec_aux[$c]['cod_generica'] && $codigos[3]==$espec_aux[$c]['cod_especifica'] && $codigos[4]==0){
+  				return $espec_aux[$c]['denominacion'];
+  			}
+}
+
+foreach($subespecifica as $subespec){$d++;
+	        $subespec_aux[$d]['cod_grupo'] = $subespec['cfpd01_ano_sub_espec']['cod_grupo'];
+         	$subespec_aux[$d]['cod_partida'] = $subespec['cfpd01_ano_sub_espec']['cod_partida'];
+         	$subespec_aux[$d]['cod_generica'] = $subespec['cfpd01_ano_sub_espec']['cod_generica'];
+            $subespec_aux[$d]['cod_especifica'] = $subespec['cfpd01_ano_sub_espec']['cod_especifica'];
+            $subespec_aux[$d]['cod_sub_espec'] = $subespec['cfpd01_ano_sub_espec']['cod_sub_espec'];
+            $subespec_aux[$d]['denominacion'] = $subespec['cfpd01_ano_sub_espec']['denominacion'];
+            if($subespec_aux[$d]['cod_grupo']==CE && $codigos[1]==$subespec_aux[$d]['cod_partida'] && $codigos[2]==$subespec_aux[$d]['cod_generica'] && $codigos[3]==$subespec_aux[$d]['cod_especifica'] && $codigos[4]==$subespec_aux[$d]['cod_sub_espec']){
+  				return $subespec_aux[$d]['denominacion'];
+  			}
+}
+
+foreach($sectord as $vsector){$f++;
+			$va[$f]['cod_sector'] = $vsector['cfpd02_sector']['cod_sector'];
+  			$va[$f]['denominacion'] = $vsector['cfpd02_sector']['denominacion'];
+  			if($codigos2[1]==$va[$f]['cod_sector'] && $codigos2[2]==0 && $codigos2[3]==0 && $codigos2[4]==0){
+  				return $va[$f]['denominacion'];
+  			}
+
+}
+
+foreach($programad as $vprog){$g++;
+			$ve[$g]['cod_sector'] = $vprog['cfpd02_programa']['cod_sector'];
+  			$ve[$g]['cod_programa'] = $vprog['cfpd02_programa']['cod_programa'];
+  			$ve[$g]['denominacion'] = $vprog['cfpd02_programa']['denominacion'];
+  			if($codigos2[1]==$ve[$g]['cod_sector'] && $codigos2[2]==$ve[$g]['cod_programa'] && $codigos2[3]==0 && $codigos2[4]==0){
+  				return $ve[$g]['denominacion'];
+  			}
+
+}
+
+foreach($subprogramad as $vsupprog){$h++;
+			$vi[$h]['cod_sector'] = $vsupprog['cfpd02_sub_prog']['cod_sector'];
+  			$vi[$h]['cod_programa'] = $vsupprog['cfpd02_sub_prog']['cod_programa'];
+  			$vi[$h]['cod_sub_prog'] = $vsupprog['cfpd02_sub_prog']['cod_sub_prog'];
+  			$vi[$h]['denominacion'] = $vsupprog['cfpd02_sub_prog']['denominacion'];
+  			if($codigos2[1]==$vi[$h]['cod_sector'] && $codigos2[2]==$vi[$h]['cod_programa'] && $codigos2[3]==$vi[$h]['cod_sub_prog'] && $codigos2[4]==0){
+  				return $vi[$h]['denominacion'];
+  			}
+
+}
+
+foreach($proyectod as $vproy){$i++;
+			$vo[$i]['cod_sector'] = $vproy['cfpd02_proyecto']['cod_sector'];
+  			$vo[$i]['cod_programa'] = $vproy['cfpd02_proyecto']['cod_programa'];
+  			$vo[$i]['cod_sub_prog'] = $vproy['cfpd02_proyecto']['cod_sub_prog'];
+  			$vo[$i]['cod_proyecto'] = $vproy['cfpd02_proyecto']['cod_proyecto'];
+  			$vo[$i]['denominacion'] = $vproy['cfpd02_proyecto']['denominacion'];
+  			if($codigos2[1]==$vo[$i]['cod_sector'] && $codigos2[2]==$vo[$i]['cod_programa'] && $codigos2[3]==$vo[$i]['cod_sub_prog'] && $codigos2[4]==$vo[$i]['cod_proyecto']){
+  				return $vo[$i]['denominacion'];
+  			}
+}
+/*
+foreach($actividadd as $vacti){$j++;
+			$vu[$j]['cod_sector'] = $vacti['cfpd02_activ_obra']['cod_sector'];
+  			$vu[$j]['cod_programa'] = $vacti['cfpd02_activ_obra']['cod_programa'];
+  			$vu[$j]['cod_sub_prog'] = $vacti['cfpd02_activ_obra']['cod_sub_prog'];
+  			$vu[$j]['cod_proyecto'] = $vacti['cfpd02_activ_obra']['cod_proyecto'];
+  			$vu[$j]['cod_activ_obra'] = $vacti['cfpd02_activ_obra']['cod_activ_obra'];
+  			$vu[$j]['denominacion'] = $vacti['cfpd02_activ_obra']['denominacion'];
+  			if($codigos2[1]==$vu[$j]['cod_sector'] && $codigos2[2]==$vu[$j]['cod_programa'] && $codigos2[3]==$vu[$j]['cod_sub_prog'] && $codigos2[4]==$vu[$j]['cod_proyecto'] && $codigos2[5]==$vu[$j]['cod_activ_obra']){
+  				return $vu[$j]['denominacion'];
+  			}
+}*/
+
+
+
+}//fin DENOMINACION
+
+$fpdf = new fpdfview('L','mm','Letter');
+$fpdf->AliasNbPages();
+$fpdf->SetTopMargin(20);
+$fpdf->SetLeftMArgin(5);
+$fpdf->SetRightMargin(5);
+$fpdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ANO;
+$_SESSION['titulo'] = $titulo_a;
+$fpdf->AddPage();
+
+foreach($distintos_sectores as $vds){
+	//print_r($distintos_sectores);
+	$s[1]=$vds[0]["cod_sector"];
+	$s[2]=$vds[0]["cod_programa"];
+	$s[3]=$vds[0]["cod_sub_prog"];
+	$s[4]=$vds[0]["cod_proyecto"];
+	$cod2[1]=array(1=>$vds[0]["cod_sector"],2=>0,3=>0,4=>0);
+	$cod2[2]=array(1=>$vds[0]["cod_sector"],2=>$vds[0]["cod_programa"],3=>0,4=>0);
+	$cod2[3]=array(1=>$vds[0]["cod_sector"],2=>$vds[0]["cod_programa"],3=>$vds[0]["cod_sub_prog"],4=>0);
+	$cod2[4]=array(1=>$vds[0]["cod_sector"],2=>$vds[0]["cod_programa"],3=>$vds[0]["cod_sub_prog"],4=>$vds[0]["cod_proyecto"]);
+	$d[1]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(),$sector,$programa,$subprograma,$proyecto,$cod2[1]);
+	$d[2]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(),$sector,$programa,$subprograma,$proyecto,$cod2[2]);
+	$d[3]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(),$sector,$programa,$subprograma,$proyecto,$cod2[3]);
+	$d[4]=DENOMINACION($partida,$generica,$especifica,$subespecifica,array(),$sector,$programa,$subprograma,$proyecto,$cod2[4]);
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(40,5,"SECTOR: ",'TLRB',0,'L');
+	$fpdf->Cell(25,5,$s[1],'TRB',0,'C');//----------------------[sector]
+	$fpdf->SetFont('vera','',8);
+	$fpdf->Cell(0,5,$d[1],'TRB',1,'L');
+
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(40,5,"PROGRAMA: ",'LRB',0,'L');
+	$fpdf->Cell(25,5,$s[2],'TRB',0,'C');//------------------------[programa]
+	$fpdf->SetFont('vera','',8);
+	$fpdf->Cell(0,5,$d[2],'TRB',1,'L');
+
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(40,5,"SUB-PROGRAMA: ",'LRB',0,'L');
+	$fpdf->Cell(25,5,$s[3],'TRB',0,'C');//-------------------[sub-programa]
+	$fpdf->SetFont('vera','',8);
+	$fpdf->Cell(0,5,$d[3],'TRB',1,'L');
+
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(40,5,"PROYECTO: ",'LRB',0,'L');
+	$fpdf->Cell(25,5,$s[4],'TRB',0,'C');//-----------------------[proyecto]
+	$fpdf->SetFont('vera','',8);
+	$fpdf->Cell(0,5,$d[4],'TRB',1,'L');
+	$fpdf->Ln(2);
+
+	$fpdf->SetFont('vera','B',7);
+	$fpdf->Cell(41,4,"CÒDIGOS",'TRBL',0,'C');
+	$fpdf->Cell(50,4,"",'TR',0,'C');
+	$fpdf->Cell(25,4,"",'TR',0,'C');
+	$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+	$fpdf->Cell(9,4,"",'RL',0,'C');
+	$fpdf->Cell(32,4,"SUB - PARTIDAS",'TRBL',0,'C');
+	$fpdf->Cell(50,4,"",'R',0,'C');
+	$fpdf->Cell(25,4,"",'TR',0,'C');
+	$fpdf->Cell(25,4,"",'R',0,'C');
+	$fpdf->Cell(25,4,"",'R',0,'C');
+	$fpdf->Cell(25,4,"",'R',0,'C');
+	$fpdf->Cell(25,4,"",'R',0,'C');
+	$fpdf->Cell(25,4,"",'R',0,'C');
+	$fpdf->Cell(0,4,"",'R',1,'C');
+
+	$fpdf->Cell(9,5,"PART.",'RL',0,'C');
+	$fpdf->Cell(8,5,"GEN.",'TR',0,'C');
+	$fpdf->Cell(8,5,"ESP.",'TR',0,'C');
+	$fpdf->Cell(8,5,"SUB",'TR',0,'C');
+	$fpdf->Cell(8,5,"",'TR',0,'C');
+	$fpdf->SetFont('vera','B',8);
+	$fpdf->Cell(50,5,"D E N O M I N A C I Ó N",'R',0,'C');
+	$fpdf->SetFont('vera','B',9);
+	$fpdf->Cell(25,5,"01",'R',0,'C');
+	$fpdf->Cell(25,5,"02",'R',0,'C');
+	$fpdf->Cell(25,5,"03",'R',0,'C');
+	$fpdf->Cell(25,5,"04",'R',0,'C');
+	$fpdf->Cell(25,5,"05",'R',0,'C');
+	$fpdf->Cell(25,5,"06",'R',0,'C');
+	$fpdf->Cell(0,5,"07",'R',1,'C');
+
+	$fpdf->SetFont('vera','B',7);
+	$fpdf->Cell(9,5,"",'RLB',0,'C');
+	$fpdf->Cell(8,5,"",'RB',0,'C');
+	$fpdf->Cell(8,5,"",'RB',0,'C');
+	$fpdf->Cell(8,5,"ESP.",'RB',0,'C');
+	$fpdf->Cell(8,5,"",'RB',0,'C');
+	$fpdf->Cell(50,5,"",'RB',0,'C');
+	$fpdf->Cell(25,5,"",'RB',0,'C');if($mayor=="2"){
+	$fpdf->Cell(25,5,"",'RB',0,'C');
+	$fpdf->Cell(25,5,"",'RB',0,'C');
+	$fpdf->Cell(25,5,"",'RB',0,'C');
+	$fpdf->Cell(25,5,"",'RB',0,'C');
+	$fpdf->Cell(25,5,"",'RB',0,'C');
+	$fpdf->Cell(0,5,"",'RB',1,'C');
+
+	$fpdf->SetFont('vera','',7);
+foreach($reporte_cfpd05_tmp_activ as $rta){
+	$u[1]=$rta[0]['cod_partida'];
+	$u[2]=$rta[0]['cod_generica'];
+	$u[3]=$rta[0]['cod_especifica'];
+	$u[4]=$rta[0]['cod_sub_espec'];
+     $cod=array(1=>$rta[0]['cod_partida'],2=>$rta[0]['cod_generica'],3=>$rta[0]['cod_especifica'],4=>$rta[0]['cod_sub_espec']);
+     $deno=DENOMINACION($partida,$generica,$especifica,$subespecifica,$cod,$sector,$programa,$subprograma,$proyecto,array());
+     $cod1=$cod[1];
+     $cod2=$sisap->AddCero3($cod[2])>0 ? $sisap->AddCero3($cod[2]) : "";
+     $cod3=$sisap->AddCero3($cod[3])>0 ? $sisap->AddCero3($cod[3]) : "";
+     $cod4=$cod3=="" ? "" : $sisap->AddCero3($cod[4]);
+	$fpdf->Cell(9,15,$cod1,'RLB',0,'C');
+	$fpdf->Cell(8,15,$cod2,'RB',0,'C');
+	$fpdf->Cell(8,15,$cod3,'RB',0,'C');
+	$fpdf->Cell(8,15,$cod4,'RB',0,'C');
+	$fpdf->Cell(8,15,"",'RB',0,'C');
+
+	$varX = $fpdf->GetX();//asigno X
+	$varY = $fpdf->GetY();//asigno Y
+	$fpdf->Cell(50,3,"",'T',2,'C');
+	$fpdf->MultiCell(50,4,$deno,'','C');//-------[denominacion]
+	$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+	$fpdf->SetXY($varX,$varY);// cargo XY
+	$act[1]=$rta[0]['monto_actividad_51'];
+	$act[2]=$rta[0]['monto_actividad_52'];
+	$act[3]=$rta[0]['monto_actividad_53'];
+	$act[4]=$rta[0]['monto_actividad_54'];
+	$act[5]=$rta[0]['monto_actividad_55'];
+	$act[6]=$rta[0]['monto_actividad_56'];
+	$act[7]=$rta[0]['monto_actividad_57'];
+	$fpdf->Cell(25,15,$act[1],'LRB',0,'C');//-----------------------------------------------[actividad_01]
+	$fpdf->Cell(25,15,$act[2],'RB',0,'C');//------------------------------------------------[actividad_02]
+	$fpdf->Cell(25,15,$act[3],'RB',0,'C');//------------------------------------------------[actividad_03]
+	$fpdf->Cell(25,15,$act[4],'RB',0,'C');//------------------------------------------------[actividad_04]
+	$fpdf->Cell(25,15,$act[5],'RB',0,'C');//------------------------------------------------[actividad_05]
+	$fpdf->Cell(25,15,$act[6],'RB',0,'C');//------------------------------------------------[actividad_06]
+	$fpdf->Cell(0,15,$act[7],'RB',1,'C');//-------------------------------[actividad_07]
+	$fpdf->Cell(0,0,"",'T',1);
+}
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(91,10,"T O T A L E S",'TRBL',0,'R');
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(25,10,"",'TRB',0,'R');//-------------------------------------------------[totales]
+$fpdf->Cell(0,10,"",'TRB',1,'R');//--------------------------------------------------[totales]
+
+}//fin foreach distintos sectores
+
+
+/*
+
+
+
+
+
+$fpdf->AddPage();//********************** agrego otra pagina para las actividades 8 9 10 11 12 13 14
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"SECTOR: ",'TLRB',0,'L');
+$fpdf->Cell(25,5,"24214",'TRB',0,'C');//----------------------[sector]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"FFFFFFFF",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"PROGRAMA: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"424",'TRB',0,'C');//------------------------[programa]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"FFFFFFFFF",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"SUB-PROGRAMA: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"53873957",'TRB',0,'C');//-------------------[sub-programa]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"DDDDDDDDD",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"PROYECTO: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"42421",'TRB',0,'C');//-----------------------[proyecto]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"SDDDDDDDDD",'TRB',1,'L');
+$fpdf->Ln(2);
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(41,4,"C�DIGOS",'TRBL',0,'C');
+$fpdf->Cell(50,4,"",'TR',0,'C');
+$fpdf->Cell(25,4,"",'TR',0,'C');
+$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+$fpdf->Cell(9,4,"",'RL',0,'C');
+$fpdf->Cell(32,4,"SUB - PARTIDAS",'TRBL',0,'C');
+$fpdf->Cell(50,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'TR',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(0,4,"",'R',1,'C');
+
+$fpdf->Cell(9,5,"PART.",'RL',0,'C');
+$fpdf->Cell(8,5,"GEN.",'TR',0,'C');
+$fpdf->Cell(8,5,"ESP.",'TR',0,'C');
+$fpdf->Cell(8,5,"SUB",'TR',0,'C');
+$fpdf->Cell(8,5,"",'TR',0,'C');
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(50,5,"D E N O M I N A C I � N",'R',0,'C');
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(25,5,"08",'R',0,'C');
+$fpdf->Cell(25,5,"09",'R',0,'C');
+$fpdf->Cell(25,5,"10",'R',0,'C');
+$fpdf->Cell(25,5,"11",'R',0,'C');
+$fpdf->Cell(25,5,"12",'R',0,'C');
+$fpdf->Cell(25,5,"13",'R',0,'C');
+$fpdf->Cell(0,5,"14",'R',1,'C');
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(9,5,"",'RLB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(8,5,"ESP.",'RB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(50,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(0,5,"",'RB',1,'C');
+
+$fpdf->SetFont('vera','',7);
+for($i=0; $i<10; $i++){
+$fpdf->Cell(9,15,"",'RLB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$fpdf->Cell(8,15,"ESP.",'RB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$varX = $fpdf->GetX();//asigno X
+$varY = $fpdf->GetY();//asigno Y
+$fpdf->Cell(50,3,"",'T',2,'C');
+$fpdf->MultiCell(50,4,"AAAAAAAAAAAAAAAAAAJJJJJJJJJJJCCCCSAFASFJSFFCCCCCCCCCCC",'','C');
+$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+$fpdf->SetXY($varX,$varY);// cargo XY
+
+$fpdf->Cell(25,15,"",'LRB',0,'C');//----------------------------------------------[actividad_08]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_09]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_10]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_11]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_12]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_13]
+$fpdf->Cell(0,15,"43.344.343.433.333",'RB',1,'C');//------------------------------[actividad_14]
+}
+
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(91,10,"T O T A L E S",'TRBL',0,'R');
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(0,10,"",'TRB',1,'R');
+
+
+
+
+
+
+$fpdf->AddPage();//********************** agrego otra pagina para las actividades 15 16 17 18 19 20
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"SECTOR: ",'TLRB',0,'L');
+$fpdf->Cell(25,5,"24214",'TRB',0,'C');//----------------------[sector]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"FFFFFFFF",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"PROGRAMA: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"424",'TRB',0,'C');//------------------------[programa]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"FFFFFFFFF",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"SUB-PROGRAMA: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"53873957",'TRB',0,'C');//-------------------[sub-programa]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"DDDDDDDDD",'TRB',1,'L');
+
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(40,5,"PROYECTO: ",'LRB',0,'L');
+$fpdf->Cell(25,5,"42421",'TRB',0,'C');//-----------------------[proyecto]
+$fpdf->SetFont('vera','',8);
+$fpdf->Cell(0,5,"SDDDDDDDDD",'TRB',1,'L');
+$fpdf->Ln(2);
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(41,4,"C�DIGOS",'TRBL',0,'C');
+$fpdf->Cell(50,4,"",'TR',0,'C');
+$fpdf->Cell(25,4,"",'TR',0,'C');
+$fpdf->Cell(0,4,"S E C T O R E S",'TRB',1,'C');
+
+$fpdf->Cell(9,4,"",'RL',0,'C');
+$fpdf->Cell(32,4,"SUB - PARTIDAS",'TRBL',0,'C');
+$fpdf->Cell(50,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'TR',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(25,4,"",'R',0,'C');
+$fpdf->Cell(0,4,"",'R',1,'C');
+
+$fpdf->Cell(9,5,"PART.",'RL',0,'C');
+$fpdf->Cell(8,5,"GEN.",'TR',0,'C');
+$fpdf->Cell(8,5,"ESP.",'TR',0,'C');
+$fpdf->Cell(8,5,"SUB",'TR',0,'C');
+$fpdf->Cell(8,5,"",'TR',0,'C');
+$fpdf->SetFont('vera','B',8);
+$fpdf->Cell(50,5,"D E N O M I N A C I � N",'R',0,'C');
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(25,5,"15",'R',0,'C');
+$fpdf->Cell(25,5,"16",'R',0,'C');
+$fpdf->Cell(25,5,"17",'R',0,'C');
+$fpdf->Cell(25,5,"18",'R',0,'C');
+$fpdf->Cell(25,5,"19",'R',0,'C');
+$fpdf->Cell(25,5,"20",'R',0,'C');
+$fpdf->Cell(0,5,"T O T A L",'R',1,'C');
+
+$fpdf->SetFont('vera','B',7);
+$fpdf->Cell(9,5,"",'RLB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(8,5,"ESP.",'RB',0,'C');
+$fpdf->Cell(8,5,"",'RB',0,'C');
+$fpdf->Cell(50,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(25,5,"",'RB',0,'C');
+$fpdf->Cell(0,5,"",'RB',1,'C');
+
+$fpdf->SetFont('vera','',7);
+for($i=0; $i<10; $i++){
+$fpdf->Cell(9,15,"",'RLB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$fpdf->Cell(8,15,"ESP.",'RB',0,'C');
+$fpdf->Cell(8,15,"",'RB',0,'C');
+$varX = $fpdf->GetX();//asigno X
+$varY = $fpdf->GetY();//asigno Y
+$fpdf->Cell(50,3,"",'T',2,'C');
+$fpdf->MultiCell(50,4,"AAAAAAAAAAAAAAAAAAJJJJJJJJJJJCCCCSAFASFJSFFCCCCCCCCCCC",'','C');
+$varX = $varX+50;//le sumo a X 50 del Cell debido a que lo capture antes.
+$fpdf->SetXY($varX,$varY);// cargo XY
+
+$fpdf->Cell(25,15,"",'LRB',0,'C');//----------------------------------------------[actividad_15]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_16]
+$fpdf->Cell(25,15,"43.344.343.433.333",'RB',0,'C');//-----------------------------[actividad_17]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_18]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_19]
+$fpdf->Cell(25,15,"",'RB',0,'C');//-----------------------------------------------[actividad_20]
+$fpdf->Cell(0,15,"",'RB',1,'C');//------------------------------------------------[total de todo horizontal]
+}
+$fpdf->SetFont('vera','B',9);
+$fpdf->Cell(91,10,"T O T A L E S",'TRBL',0,'R');
+$fpdf->SetFont('vera','',7);
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"43.344.343.433.333",'TRB',0,'R');
+$fpdf->Cell(25,10,"4.703.973.457.533",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(25,10,"",'TRB',0,'R');
+$fpdf->Cell(0,10,"",'TRB',1,'R');
+
+*/
+$fpdf->OutPut('forma_2032_actividad'.date("d-m-Y"),'D');
+}
+?>

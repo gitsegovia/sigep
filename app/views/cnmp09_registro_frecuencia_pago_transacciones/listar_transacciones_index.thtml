@@ -1,0 +1,73 @@
+<script language="JavaScript" type="text/javascript">
+  $('save').disabled='disabled';
+  $('div_frecuencias').style.display='none';
+</script>
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<?php
+if(isset($DATA) && count($DATA)!=0){
+?>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center" width="10%">Código transacción</td>
+    <td align="center">Denominación transacción</td>
+    <td align="center" width="15%">Frecuencia</td>
+    <td align="center" width="15%">Acción</td>
+  </tr>
+   <?php
+   $i=0;
+   foreach($DATA as $ld){
+     $color = $i%2==0?"#CDF2FF": "#DAEBFF";
+     $para =array();
+     $para[]=$ld['v_cnmd09_frecuencia']['cod_tipo_nomina'];
+     $para[]=$ld['v_cnmd09_frecuencia']['cod_tipo_transaccion'];
+     $para[]=$ld['v_cnmd09_frecuencia']['cod_transaccion'];
+     $parametro = implode('/',$para);
+   	?>
+   	<tr style="background-color:<?php echo $color;?>" id="filaa<?php echo $i; ?>a" onclick="new Effect.Highlight(this);">
+       <td align="center"><?=mascara_tres($ld['v_cnmd09_frecuencia']['cod_transaccion'])?></td>
+       <td style="text-align:left;font-size:9pt;"><?=$ld['v_cnmd09_frecuencia']['denominacion']?></td>
+       <td style="text-align:center;font-size:7pt;"><?= $sisap->frecuencia($ld['v_cnmd09_frecuencia']['cod_frecuencia']); ?></td>
+       <td align="center">
+       <?= $html->link($html->image('modificar.png',array('border'=>0)), '#modificar_frecuencia', array('title'=>'modificar',"onclick"=>"mostrar_frecuencia('".$ld['v_cnmd09_frecuencia']['cod_transaccion']."','".$ld['v_cnmd09_frecuencia']['cod_frecuencia']."');"),false,false,true) ?>
+       <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp09_registro_frecuencia_pago_transacciones/eliminar/'.$parametro, array('update'=>'numero','title'=>'Eliminar',"after"=>"new Effect.DropOut('filaa".$i."a');"),'Realmente desea eliminar esta transacci&oacute;n?',false,true) ?>
+       </td>
+     </tr>
+  <?php
+  $i++;
+   }
+   ?>
+</table>
+<?php
+}else{
+?>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+   <tr class="tr_negro">
+    <td align="center" width="10%">Código transacción</td>
+    <td align="center">Denominación transacción</td>
+    <td align="center" width="15%">Frecuencia</td>
+    <td align="center" width="15%">Acción</td>
+  </tr>
+   <?php
+   for($i=0;$i<6;$i++){
+     $color = $i%2==0?"#CDF2FF": "#DAEBFF";
+   	?>
+   	<tr style="background-color:<?php echo $color;?>" id="filaa<?php echo $i; ?>a" onclick="new Effect.Highlight(this);">
+       <td>&nbsp;</td>
+       <td>&nbsp;</td>
+       <td>&nbsp;</td>
+       <td>&nbsp;</td>
+     </tr>
+  <?php
+   }
+   ?>
+</table>
+<?php
+echo $sisap->mensajes_error('No hay transacciones registradas');
+}
+?>

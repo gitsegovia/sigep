@@ -1,0 +1,353 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header() {
+		$this->top_reporte2(array(""), array("Y"=>"15", "X"=>"21", "Z"=>"13"), array());
+
+		/*
+		$this->image("img/logos_dependencias_reportes/logo_".$_SESSION['SScodpresi'].'_'.$_SESSION['SScodentidad'].'_'.$_SESSION['SScodtipoinst'].'_'.$_SESSION['SScodinst'].".jpg",12,10,20);
+		$this->SetFont('vera','B',10);
+		$this->Cell(20,3,'','',0);
+		$this->Cell(100,3,"".$_SESSION['ins_deno'],'',0,'L');
+		$this->Ln(12);
+		*/
+	}
+
+
+	function Footer(){
+
+	}
+
+}
+
+
+$pdf = new fpdfview('P','mm','Legal');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(20);
+$pdf->SetLeftMargin(15);
+$pdf->SetRightMargin(15);
+$pdf->SetAutoPageBreak(true, 20);
+$pdf->AddPage();
+
+$meses = array('01'=>'Enero', '02'=>'Febrero', '03'=>'Marzo', '04'=>'Abril', '05'=>'Mayo', '06'=>'Junio', '07'=>'Julio', '08'=>'Agosto', '09'=>'Septiembre', '10'=>'Octubre', '11'=>'Noviemnre', '12'=>'Diciembre');
+
+$pdf->SetFont('vera','',10);
+$pdf->Cell(0,5,$denominacion_ciudad." ".$sisap->fecha_alfabetico($fecha_oficio),'',1,'R');
+
+$pdf->Ln(10);
+
+$pdf->Cell(22,3,"OFICIO Nº :",'',0);
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(20,3,isset($num_oficio)?$num_oficio:"SG-",'',0,'L');
+$pdf->Cell(0,3,"",'',1);
+$pdf->Ln(5);
+
+$pdf->Cell(0,4,"Ciudadano(a):",'',1);
+if($_SESSION['SScodtipoinst']==30){
+$pdf->Cell(0,4,"Miembros de la junta directiva",'',1);
+$pdf->Cell(0,4,"Presente.-",'',1);
+}else{
+$pdf->Cell(0,4,"Presidente(a) y demás miembros del Concejo Municipal",'',1);
+$pdf->Cell(0,4,"Salón de Sesiones:",'',1);
+}
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+	$pdf->Cell(0,4,"Del consejo legislativo del estado falcón",'',1);
+$pdf->Cell(0,4,"Ciudad.-",'',1);
+}
+
+$pdf->Ln(10);
+
+$pdf->SetFont('vera','',9);
+
+if (isset($asignado) && $asignado) {
+	$pdf->MultiCell(0,3.5,"Dichos recursos serán incorporados a la Distribución Institucional del Presupuesto de Gasto del Ejercicio Fiscal ".$ano_fiscal.", como a continuación se especifica:",'','J');
+} else {
+	$pdf->MultiCell(0,3.5,"Me es grato dirigirme a usted (es) con la finalidad de solicitar la debida autorización para dictar crédito adicional, por la cantidad de ".$sisap->convertir($monto_oficio)." (Bs. ".$sisap->Formato2($monto_oficio)."). ".
+						"\n\n".
+						"Dichos recursos serán incorporados a la Distribución Institucional del Presupuesto de Gasto del Ejercicio Fiscal ".$ano_fiscal.", como a continuación se especifica:",'','J');
+}
+
+
+$pdf->Ln(5);
+$pdf->SetFont('vera','BU',8);
+$pdf->Cell(0,4,"CREAR O INCREMENTAR: ",'',1);
+$cod_sector_2     = '';
+$cod_programa_2   = '';
+$cod_sub_prog_2   = '';
+$cod_proyecto_2   = '';
+$cod_activ_obra_2 = '';
+$cod_partida_2    = '';
+$cod_generica_2   = '';
+$cod_especifica_2 = '';
+$cod_sub_espec_2  = '';
+$cod_auxiliar_2   = '';
+$total_aumento_sector = 0;
+$total_aumento_oficio = 0;
+$codigo_ubicacion_partida_2 = '';
+
+$total_partidas = count($partidas_aumento);
+$i=0;
+
+$pdf->SetFont('vera','',8);
+foreach($partidas_aumento as $aumento){
+	$i++;
+	$cod_sector     = $aumento[0]['cod_sector'];
+	$cod_programa   = $aumento[0]['cod_programa'];
+	$cod_sub_prog   = $aumento[0]['cod_sub_prog'];
+	$cod_proyecto   = $aumento[0]['cod_proyecto'];
+	$cod_activ_obra = $aumento[0]['cod_activ_obra'];
+	$cod_partida    = $aumento[0]['cod_partida'];
+	$cod_generica   = $aumento[0]['cod_generica'];
+	$cod_especifica = $aumento[0]['cod_especifica'];
+	$cod_sub_espec  = $aumento[0]['cod_sub_espec'];
+	$cod_auxiliar   = $aumento[0]['cod_auxiliar'];
+
+
+	if($cod_sector != $cod_sector_2){
+		if($i != 1){
+			$pdf->Ln(2);
+			$pdf->Cell(27,6,'','',0);
+			$pdf->SetFont('vera','B',8);
+			$pdf->Cell(0,2,'','',1,'R');
+			$pdf->Cell(27,6,'','',0,'R');
+			$pdf->Cell(120,6,'TOTAL INCREMENTO SECTOR '.mascara($cod_sector_2, 2),'',0);
+			$pdf->Cell(6,6,'BS.','B',0,'R');
+			$pdf->Cell(0,6,Formato2($total_aumento_sector),'B',1,'R');
+			$pdf->SetFont('vera','',8);
+			$total_aumento_sector=0;
+		}
+
+		$pdf->Ln(8);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'SECTOR: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_sector, 2),'',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_sector'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,3,'','',1);
+	}
+
+	if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2){
+		$pdf->Ln(8);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'PROGRAMA: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_programa, 2),'',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_programa'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,3,'','',1);
+	}
+
+if ($cod_sub_prog!=0){
+	if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2 || $cod_sub_prog != $cod_sub_prog_2){
+		$pdf->Ln(8);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'SUBPROGRAMA: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_sub_prog, 2),'',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_sub_prog'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,3,'','',1);
+	}
+}
+
+if ($cod_proyecto!=0){
+	if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2 || $cod_sub_prog != $cod_sub_prog_2 || $cod_proyecto != $cod_proyecto_2){
+		$pdf->Ln(8);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'PROYECTO: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_proyecto, 2),'',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_proyecto'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(0,3,'','',1);
+	}
+}
+
+	if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2 || $cod_sub_prog != $cod_sub_prog_2 || $cod_proyecto != $cod_proyecto_2 || $cod_activ_obra != $cod_activ_obra_2){
+		$pdf->Ln(8);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'ACTIVIDAD: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_activ_obra, 2),'',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_activ_obra'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,3,'','',1);
+	}
+
+	if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2 || $cod_sub_prog != $cod_sub_prog_2 || $cod_proyecto != $cod_proyecto_2 || $cod_activ_obra != $cod_activ_obra_2 || $cod_partida != $cod_partida_2 || $cod_generica != $cod_generica_2 || ($cod_especifica != $cod_especifica_2) || $cod_sub_espec != $cod_sub_espec_2){
+		$pdf->Ln(10);
+		$pdf->Cell(1,3,'','',0);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->SetFont('vera','',7);
+		$pdf->MultiCell(25,3,'          PARTIDA: ','','J');
+		$pdf->SetFont('vera','B',7);
+		$varX = $varX+25;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,3,'','',0);
+		$pdf->Cell(22,3,mascara($cod_partida,2).'.'.mascara($cod_generica, 2).'.'.mascara($cod_especifica, 2).'.'.mascara($cod_sub_espec, 2),'',0);
+		$pdf->SetFont('vera','',7);
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->MultiCell(98,3,$aumento[0]['deno_sub_espec'],'','J');
+		$varX = $varX+98;
+		$pdf->SetXY($varX,$varY);
+		if ($cod_auxiliar==0){
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(10,3,'Bs.','',0,'R');
+		$pdf->Cell(0,3,Formato2($aumento[0]['monto_aumento']),'',0,'R');
+		$pdf->Cell(0,3,'','',1,'R');
+	    }else{
+	    $pdf->Cell(0,3,'','',1,'R');
+	    }
+	     $pdf->SetFont('vera','',7);
+	}
+
+	if(!empty($cod_auxiliar)){
+		if($cod_sector != $cod_sector_2 || $cod_programa != $cod_programa_2 || $cod_sub_prog != $cod_sub_prog_2 || $cod_proyecto != $cod_proyecto_2 || $cod_activ_obra != $cod_activ_obra_2 || $cod_partida != $cod_partida_2 || $cod_generica != $cod_generica_2 || $cod_especifica != $cod_especifica_2 || $cod_sub_espec != $cod_sub_espec_2 || $cod_auxiliar != $cod_auxiliar_2){
+			$pdf->Ln(10);
+			$pdf->Cell(0,3,'','',1);
+			$pdf->Cell(1,3,'','',0);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->SetFont('vera','',7);
+			$pdf->MultiCell(25,3,'          ORDINAL: ','','J');
+			$pdf->SetFont('vera','B',7);
+			$varX = $varX+25;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(1,3,'','',0);
+			$pdf->Cell(22,3,mascara($cod_auxiliar,4),'',0);
+			$pdf->SetFont('vera','',7);
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->MultiCell(98,3,$aumento[0]['deno_auxiliar'],'','J');
+			$varX = $varX+98;
+			$pdf->SetXY($varX,$varY);
+			$pdf->SetFont('vera','B',7);
+		    $pdf->Cell(10,3,'Bs.','',0,'R');
+		    $pdf->Cell(0,3,Formato2($aumento[0]['monto_aumento']),'',1,'R');
+		    $pdf->SetFont('vera','',7);
+		}
+	}
+
+	$cod_sector_2     = $aumento[0]['cod_sector'];
+	$cod_programa_2   = $aumento[0]['cod_programa'];
+	$cod_sub_prog_2   = $aumento[0]['cod_sub_prog'];
+	$cod_proyecto_2   = $aumento[0]['cod_proyecto'];
+	$cod_activ_obra_2 = $aumento[0]['cod_activ_obra'];
+	$cod_partida_2    = $aumento[0]['cod_partida'];
+	$cod_generica_2   = $aumento[0]['cod_generica'];
+	$cod_especifica_2 = $aumento[0]['cod_especifica'];
+	$cod_sub_espec_2  = $aumento[0]['cod_sub_espec'];
+	$cod_auxiliar_2   = $aumento[0]['cod_auxiliar'];
+	$total_aumento_sector += $aumento[0]['monto_aumento'];
+	$total_aumento_oficio += $aumento[0]['monto_aumento'];
+	$codigo_ubicacion_partida_2 = $cod_sector.''.$cod_programa.''.$cod_sub_prog.''.$cod_proyecto;
+
+}
+$pdf->Ln(6);
+$pdf->Cell(27,6,'','',0);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,2,'','',1,'R');
+$pdf->Cell(27,6,'','',0,'R');
+$pdf->Cell(120,6,'TOTAL INCREMENTO SECTOR '.mascara($cod_sector, 2),'',0);
+$pdf->Cell(6,6,'BS.','B',0,'R');
+$pdf->Cell(0,6,Formato2($total_aumento_sector),'B',1,'R');
+$pdf->SetFont('vera','',8);
+$total_aumento_sector=0;
+
+
+$pdf->Cell(27,6,'','',0);
+$pdf->SetFont('vera','B',10);
+$pdf->Cell(0,2,'','',1,'R');
+$pdf->Cell(27,6,'','',0,'R');
+$pdf->Cell(120,6,'TOTAL INCREMENTO:     ','',0,'R');
+$pdf->Cell(6,6,'BS.','B',0,'R');
+$pdf->Cell(0,6,Formato2($total_aumento_oficio),'B',1,'R');
+$pdf->SetFont('vera','',8);
+
+
+$pdf->Ln(10);
+$pdf->MultiCell(0,3,'Sin otro particular a que hacer referencia, me suscribo de usted (es).','','J');
+
+
+$pdf->Ln(10);
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,4,'ATENTAMENTE','',1,'C');
+
+$pdf->Ln(10);
+$pdf->Cell(0,4,$firmante_1,'',1,'C');
+$pdf->Cell(0,4,$cargo_1,'',1,'C');
+
+if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+	$pdf->Ln(5);
+	$pdf->SetFont('vera','',8);
+	$pdf->Cell(0,4,'JML/ZJ/cc','',1);
+	$pdf->Cell(0,4,'SE ANEXAN SOPORTES','',1);
+
+	$pdf->Ln(10);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,4,'NOTA: SE DELEGA LA FIRMA MEDIANTE DECRETO NRO. 20 DE FECHA 07-01-2009','',1,'C');
+	$pdf->Cell(0,4,'PUBLICADO EN GACETA ORDINARIA 32.227 DE FECHA 07-01-2009','',1,'C');
+}
+
+$pdf->Output('oficio_de_reformulacion.pdf','D');
+
+?>

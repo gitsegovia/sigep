@@ -1,0 +1,242 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+
+?>
+
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+	<tr>
+	    <th width="11%">C&eacute;dula</th>
+	    <th width="10%">Código <br> de cargo</th>
+	    <th width="10%">Código ficha</th>
+	    <th width="38%">Nombres y Apellidos</th>
+	    <th width="20%">Condición actividad</th>
+	    <th width="15%">ACCIÓN</th>
+	</tr>
+</table>
+
+
+
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0;  ?>
+		        	<?php foreach($datosFILAS as $ve){
+
+		        		          $ve["datos_personales_super_busqueda"]["cod_tipo_nomina"] = "";
+		        		          $ve["datos_personales_super_busqueda"]["cod_dep"]   = "";
+		        		          $ve["datos_personales_super_busqueda"]["cod_cargo"] = "";
+                                  $ve["datos_personales_super_busqueda"]["cod_ficha"] = "";
+                                  $ve["datos_personales_super_busqueda"]["condicion_actividad"] = "";
+
+                                  $marca = 0;
+
+                         foreach($dato_a as $ve2){
+		        			if($ve["datos_personales_super_busqueda"]["cedula_identidad"]==$ve2[0]["cedula_identidad"]){
+                               $marca++;
+                               break;
+		        			}
+		        		 }
+
+                      if($marca!=0){
+
+								        		foreach($dato_a as $ve2){
+								        			if($ve["datos_personales_super_busqueda"]["cedula_identidad"]==$ve2[0]["cedula_identidad"]){
+								        				  $ve["datos_personales_super_busqueda"]["cod_tipo_nomina"]     = $ve2[0]["cod_tipo_nomina"];
+						                                  $ve["datos_personales_super_busqueda"]["cod_cargo"]           = $ve2[0]["cod_cargo"];
+						                                  $ve["datos_personales_super_busqueda"]["cod_ficha"]           = $ve2[0]["cod_ficha"];
+						                                  $ve["datos_personales_super_busqueda"]["condicion_actividad"] = $ve2[0]["condicion_actividad"];
+						//                              break;
+
+
+								        		    if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==1){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Activo";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==2){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Permiso No Remunerado";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==3){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Comision de Servicio";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==4){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Vacaciones";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==5){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Suspendido";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==6){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Retirado";
+													}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==7){
+													   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Ascenso";
+													}
+
+
+												$aux1 = $ve["datos_personales_super_busqueda"]["cod_cargo"];
+												$aux2 = $ve["datos_personales_super_busqueda"]["cod_ficha"];
+
+
+						                                      if($ve["datos_personales_super_busqueda"]["cod_cargo"]=="" ){
+
+										        			      $capa = 'imagen';
+
+										        		}else{
+
+
+										        			if(!isset($_SESSION["tipo_nomina_cod_cargo"])){
+
+										        				$capa = 'principal';
+
+										        			}else{
+
+												        			 if($ve["datos_personales_super_busqueda"]["cod_cargo"] != $_SESSION["tipo_nomina_cod_cargo"] ){
+
+												        			      $capa = 'imagen';
+
+												        			      $aux1 = $ve["datos_personales_super_busqueda"]["cod_cargo"];
+																		  $aux2 = $ve["datos_personales_super_busqueda"]["cod_ficha"];
+
+																		  $ve["datos_personales_super_busqueda"]["cod_cargo"] = 0;
+												        			      $ve["datos_personales_super_busqueda"]["cod_ficha"] = 0;
+
+												        			 }else{
+												        			      $capa = 'principal';
+												        			 }
+										        			}//fin else
+
+										        		}//fin else
+
+								        		?>
+								        		<?php if($color==1){$color=0;}else{$color=1;}?>
+
+											      <tr class="row<?php echo $color; ?>">
+												    <td class="" width="11%" height="22"  width="2">	<?= $ve["datos_personales_super_busqueda"]["cedula_identidad"] ?></td>
+												    <td class="" width="10%" height="22"  width="2">    <?= mascara_seis($aux1) ?></td>
+												    <td class="" width="10%" height="22"  width="2">    <?= mascara_seis($aux2) ?></td>
+												    <td class="" width="40%">                       	<?= $ve["datos_personales_super_busqueda"]["primer_nombre"]." ".$ve["datos_personales_super_busqueda"]["segundo_nombre"]." ".$ve["datos_personales_super_busqueda"]["primer_apellido"]." ".$ve["datos_personales_super_busqueda"]["segundo_apellido"] ?></td>
+												    <td class="" width="20%" align="center">            <?= $ve["datos_personales_super_busqueda"]["condicion_actividad"] ?></td>
+												    <td class="" width="9%"  align='center'>
+												     <?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/cnmp07_consulta/consulta/'.$ve["datos_personales_super_busqueda"]["cod_tipo_nomina"].'/'.$ve["datos_personales_super_busqueda"]["cod_cargo"].'/'.$ve["datos_personales_super_busqueda"]["cod_ficha"], array('update'=>$capa,'title'=>'ver'),'',false,true); ?>
+						                            </td>
+												  </tr>
+
+
+
+
+										  <?php        }//fin if
+										            }//fin foreach
+
+
+
+										  ?>
+
+				<?php }else{ ?>
+
+					<?php
+
+								foreach($dato_a as $ve2){
+					        			if($ve["datos_personales_super_busqueda"]["cedula_identidad"]==$ve2[0]["cedula_identidad"]){
+					        				  $ve["datos_personales_super_busqueda"]["cod_tipo_nomina"]     = $ve2[0]["cod_tipo_nomina"];
+			                                  $ve["datos_personales_super_busqueda"]["cod_cargo"]           = $ve2[0]["cod_cargo"];
+			                                  $ve["datos_personales_super_busqueda"]["cod_ficha"]           = $ve2[0]["cod_ficha"];
+			                                  $ve["datos_personales_super_busqueda"]["condicion_actividad"] = $ve2[0]["condicion_actividad"];
+			                              break;
+					        			}//fin if
+					        		}//fin foreach
+
+					        		    if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==1){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Activo";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==2){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Permiso No Remunerado";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==3){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Comision de Servicio";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==4){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Vacaciones";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==5){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Suspendido";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==6){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Retirado";
+										}else if($ve["datos_personales_super_busqueda"]["condicion_actividad"]==7){
+										   $ve["datos_personales_super_busqueda"]["condicion_actividad"]="Ascenso";
+										}
+
+
+									$aux1 = $ve["datos_personales_super_busqueda"]["cod_cargo"];
+									$aux2 = $ve["datos_personales_super_busqueda"]["cod_ficha"];
+
+
+			                                      if($ve["datos_personales_super_busqueda"]["cod_cargo"]=="" ){
+
+							        			      $capa = 'imagen';
+
+							        		}else{
+
+
+							        			if(!isset($_SESSION["tipo_nomina_cod_cargo"])){
+
+							        				$capa = 'principal';
+
+							        			}else{
+
+									        			 if($ve["datos_personales_super_busqueda"]["cod_cargo"] != $_SESSION["tipo_nomina_cod_cargo"] ){
+
+									        			      $capa = 'imagen';
+
+									        			      $aux1 = $ve["datos_personales_super_busqueda"]["cod_cargo"];
+															  $aux2 = $ve["datos_personales_super_busqueda"]["cod_ficha"];
+
+															  $ve["datos_personales_super_busqueda"]["cod_cargo"] = 0;
+									        			      $ve["datos_personales_super_busqueda"]["cod_ficha"] = 0;
+
+									        			 }else{
+									        			      $capa = 'principal';
+									        			 }
+							        			}//fin else
+
+							        		}//fin else
+
+					        		?>
+					        		<?php if($color==1){$color=0;}else{$color=1;} ?>
+
+								      <tr class="row<?php echo $color; ?>">
+									    <td class="" width="11%" height="22"  width="2">	<?= $ve["datos_personales_super_busqueda"]["cedula_identidad"] ?></td>
+									    <td class="" width="10%" height="22"  width="2">    <?= mascara_seis($aux1) ?></td>
+									    <td class="" width="10%" height="22"  width="2">    <?= mascara_seis($aux2) ?></td>
+									    <td class="" width="40%">                       	<?= $ve["datos_personales_super_busqueda"]["primer_nombre"]." ".$ve["datos_personales_super_busqueda"]["segundo_nombre"]." ".$ve["datos_personales_super_busqueda"]["primer_apellido"]." ".$ve["datos_personales_super_busqueda"]["segundo_apellido"] ?></td>
+									    <td class="" width="20%" align="center">            <?= $ve["datos_personales_super_busqueda"]["condicion_actividad"] ?></td>
+									    <td class="" width="9%"  align='center'>
+									     <?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/cnmp07_consulta/seleccion_busqueda_venta2/'.$ve["datos_personales_super_busqueda"]["cedula_identidad"].'/'.$ve["datos_personales_super_busqueda"]["cod_cargo"].'/'.$ve["datos_personales_super_busqueda"]["cod_ficha"], array('update'=>$capa,'title'=>'ver'),'',false,true); ?>
+			                            </td>
+									  </tr>
+
+		        <?php } ?>
+
+
+
+<?php }//fin foreach
+
+ }else{ ?>
+
+      <tr class="row<?php echo $color; ?>">
+	    <td class="" height="22"  width="2">--</td>
+	    <td class="">--</td>
+	    <td class="">--</td>
+	    <td class="">--</td>
+	    <td>--</td>
+	    <td>--</td>
+	  </tr>
+
+<?php } ?>
+
+
+
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/cnmp07_consulta/buscar_por_pista2/'.$opcion.'/a', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

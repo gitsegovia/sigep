@@ -1,0 +1,80 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla_modulos("",true,$titulo_reporte_top,"","950","cnmp")?>
+
+<?$sisap->OpenTable("950");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_personal/parametros/'.$opcion.'/si'); ?>" >
+
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$this->top_reporte($titulo_A = $_SESSION['titulo_reporte_top'], null, null, array("Y"=>"7", "X"=>"12", "Z"=>"12"), array("Y"=>"12", "X"=>"191", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(20,7,'CÓDIGO','TLRB',0,'C');
+		$this->Cell(0,7,'DENOMINACIÓN','TRB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+}//fin clase
+
+$_SESSION['titulo_reporte_top'] = $titulo_reporte_top;
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',7);
+
+
+if(isset($data) && count($data)>0){
+	foreach($data as $r){
+		$r=$r[0];
+		$pdf->Cell(20,7,mascara_tres($r['codigo']),'LRB',0,'C');//Código
+		$pdf->Cell(0,7,$r['denominacion'],'RB',1,'L');//denominación
+	}
+}else{
+	$pdf->Cell(20,7,'','LRB',0,'C');//Código
+    $pdf->Cell(0,7,'DATOS NO ENCONTRADOS','RB',1,'L');//denominación
+}
+
+
+
+
+
+$pdf->Output(str_replace(' ','_',$titulo_reporte_top)."_".date('d-m-Y').'.pdf','D');
+
+}
+?>

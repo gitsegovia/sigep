@@ -1,0 +1,228 @@
+<?php
+/*
+ * Creado el 24/10/2008 a las 06:19:04 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+if(isset($var) && $var=="si"){
+?>
+<?= $sisap->Tabla('',true,'COMPLEMENTOS DE LA CONSTRUCCIÓN','','950');?>
+<?= $sisap->OpenTable("950")?>
+<br />
+<form name="data[catp02_reporte_ficha_datos]" method="post" id='form' action="<?php echo $html->url('/catp02_reporte_ficha_datos/reporte_complemento_construccion/no'); ?>">
+<table width="5%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="80%" align="right"><b>A&ntilde;o:&nbsp;</td>
+	<td width="20%" align="center"><input type="text" name="data[catp02_reporte_ficha_datos][ano_ordenanza]" id="ano_ordenanza" class"inputtext" size="6" value="<?=$anio_ej?>" maxlength="4" onKeyPress="return solonumeros(event);" style="text-align:center" /></td>
+  </tr>
+</table>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar'));?>
+<?= $sisap->buttonTagRemote('/catp02_reporte_ficha_datos/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+</form>
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable()?>
+
+
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+	   function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		/*$this->Image('/var/www/utf8_tcpdf/images/logo_11_100.jpg',11,15,70);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,"",'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,"",'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"RECARGOS CATASTRALES",'RL',1,'C');
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"AÑO: ".$_SESSION['ano_ordenanza_report'],'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+        */
+	    $this->top_reporte("COMPLEMENTOS DE LA CONSTRUCCIÓN","AÑO: ".$_SESSION['ano_ordenanza_report'], null, array("Y"=>"11", "X"=>"15", "Z"=>"12"), array("Y"=>"18", "X"=>"248"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(13,3,'','TRL',0,'C');
+		$this->Cell(60,3,'','TR',0,'C');
+		$this->Cell(16,3,'VALOR','TR',0,'C');
+		$this->Cell(15,3,'VARIABLE','TR',0,'C');
+		$this->Cell(60,3,'','TR',0,'C');
+		$this->Cell(15,3,'VARIABLE','TR',0,'C');
+		$this->Cell(60,3,'','TR',0,'C');
+		$this->Cell(0,3,'COMPLEMENTO','TR',1,'C');
+
+		$this->Cell(13,3,'TIPOLOGÍA','RBL',0,'C');
+		$this->Cell(60,3,'DENOMINACIÓN','RB',0,'C');
+		$this->Cell(16,3,'(Bs/M2)','RB',0,'C');
+		$this->Cell(15,3,'PRINCIPAL','RB',0,'C');
+		$this->Cell(60,3,'DENOMINACIÓN','RB',0,'C');
+		$this->Cell(15,3,'PRIMARIA','RB',0,'C');
+		$this->Cell(60,3,'DENOMINACIÓN','RB',0,'C');
+		$this->Cell(0,3,'(Bs/M2)','RB',1,'C');
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',7);
+
+$tipo="";
+$var_prim = "";
+
+if(isset($datos) && !empty($datos)){
+
+foreach($datos as $reg){
+
+	if($tipo!=$reg['v_catd02_complementos_construccion']['tipologia']){
+		$tipo=$reg['v_catd02_complementos_construccion']['tipologia'];
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(13,6,$reg['v_catd02_complementos_construccion']['tipologia'],'RL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(60,1,"",'',2,'C');
+		$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_tipo'],'','J');
+		$varX = $varX+60;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(16,6,$reg['v_catd02_complementos_construccion']['valor_m2'],'RL',0,'C');
+		$pdf->Cell(15,6,'','R',0,'C');
+		$pdf->Cell(60,6,'','R',0,'C');
+		$pdf->Cell(15,6,'','R',0,'C');
+		$pdf->Cell(60,6,'','R',0,'C');
+		$pdf->Cell(0,6,'','R',1,'C');
+		$pdf->Cell(0,0,"",'T',1,'C');
+
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(13,6,'','RL',0,'C');
+		$pdf->Cell(60,6,'','R',0,'L');
+		$pdf->Cell(16,6,'','R',0,'C');
+		$pdf->Cell(15,6,$reg['v_catd02_complementos_construccion']['cod_variable_principal'],'RL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(60,1,"",'',2,'C');
+		$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_principal'],'','J');
+		$varX = $varX+60;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(15,6,'','RL',0,'C');
+		$pdf->Cell(60,6,'','R',0,'C');
+		$pdf->Cell(0,6,'','R',1,'C');
+		$pdf->Cell(0,0,"",'T',1,'C');
+
+		$pdf->Cell(13,6,'','RL',0,'C');
+		$pdf->Cell(60,6,'','R',0,'L');
+		$pdf->Cell(16,6,'','R',0,'C');
+		$pdf->Cell(15,6,'','R',0,'C');
+		$pdf->Cell(60,6,'','R',0,'L');
+		$pdf->Cell(15,6,$reg['v_catd02_complementos_construccion']['cod_variable_primaria'],'RL',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(60,1,"",'',2,'C');
+		$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_primaria'],'','J');
+		$varX = $varX+60;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,6,$reg['v_catd02_complementos_construccion']['complemento_bs_m2'],'RL',1,'C');
+		$pdf->Cell(0,0,"",'T',1,'C');
+
+	}else{
+
+		if($var_prim!=$reg['v_catd02_complementos_construccion']['cod_variable_principal']){
+
+			$var_prim=$reg['v_catd02_complementos_construccion']['cod_variable_principal'];
+			$pdf->Cell(13,6,'','RL',0,'C');
+			$pdf->Cell(60,6,'','R',0,'L');
+			$pdf->Cell(16,6,'','R',0,'C');
+			$pdf->Cell(15,6,$reg['v_catd02_complementos_construccion']['cod_variable_principal'],'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(60,1,"",'',2,'C');
+			$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_principal'],'','J');
+			$varX = $varX+60;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(15,6,'','RL',0,'C');
+			$pdf->Cell(60,6,'','R',0,'C');
+			$pdf->Cell(0,6,'','R',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+
+			$pdf->Cell(13,6,'','RL',0,'C');
+			$pdf->Cell(60,6,'','R',0,'L');
+			$pdf->Cell(16,6,'','R',0,'C');
+			$pdf->Cell(15,6,'','R',0,'C');
+			$pdf->Cell(60,6,'','R',0,'L');
+			$pdf->Cell(15,6,$reg['v_catd02_complementos_construccion']['cod_variable_primaria'],'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(60,1,"",'',2,'C');
+			$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_primaria'],'','J');
+			$varX = $varX+60;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,$reg['v_catd02_complementos_construccion']['complemento_bs_m2'],'RL',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+
+
+		}else{
+
+			$pdf->Cell(13,6,'','RL',0,'C');
+			$pdf->Cell(60,6,'','R',0,'L');
+			$pdf->Cell(16,6,'','R',0,'C');
+			$pdf->Cell(15,6,'','R',0,'C');
+			$pdf->Cell(60,6,'','R',0,'L');
+			$pdf->Cell(15,6,$reg['v_catd02_complementos_construccion']['cod_variable_primaria'],'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(60,1,"",'',2,'C');
+			$pdf->MultiCell(60,2,$reg['v_catd02_complementos_construccion']['denominacion_primaria'],'','J');
+			$varX = $varX+60;
+			$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,6,$reg['v_catd02_complementos_construccion']['complemento_bs_m2'],'RL',1,'C');
+			$pdf->Cell(0,0,"",'T',1,'C');
+
+		}//end if variable primaria
+
+	}//end if tipologia
+
+}//fin foreach
+
+}else{
+	$pdf->SetFont('vera','',12);
+	$pdf->Cell(0,8,'NO SE ENCONTRARON DATOS','',1,'C');
+
+}//fin de verificacion de datos
+
+$pdf->Output('complemento_construccion_'.date('d-m-Y').'.pdf','D');
+
+}
+
+?>

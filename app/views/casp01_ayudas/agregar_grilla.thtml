@@ -1,0 +1,85 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<? if(!isset($vacio)){
+	?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+  	 <tr class="tr_negro" align="center">
+			<td width="15%">Cantidad</td>
+			<td width="45%">Descripción</td>
+			<td width="15%">Precio Unitario</td>
+			<td width="15%">Costo Total</td>
+			<td width="10%">Acción</td>
+		</tr>
+
+  <?php
+
+ if(isset($_SESSION ["items1"]) && $_SESSION ["items1"]!=array() ){
+
+ 	$i=0;
+ 	$monto_total=0;
+    foreach($_SESSION ["items1"] as $codigos){
+    	//print_r($codigos);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=3;$x++){
+    	if($x==2 || $x==3){
+    		if($x==3){
+				$monto_total+=$codigos[$x];
+    		}
+    		echo "<td align=\"center\">".$html->input('casp01/can', $htmlAttributes = array('value'=>$sisap->Formato2($codigos[$x]),'style'=>'width:98%;text-align:right','id'=>'','class'=>'inputtext','readonly'=>'readonly'), false)."</td>";
+    	}else if($x==0){
+    		echo "<td align=\"center\">".$html->input('casp01/can', $htmlAttributes = array('value'=>$sisap->Formato2($codigos[$x]),'style'=>'width:98%;text-align:center','id'=>'','class'=>'inputtext','readonly'=>'readonly'), false)."</td>";
+    	}else{
+    		echo "<td>". $html->textarea('casp01/con', array('value'=>$codigos[$x],'id'=>'', 'size'=>'55','style'=>'width:98%','row'=>'3','readonly'=>'readonly'))."</td>";
+    	}
+
+
+    }
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/casp01_ayudas/eliminar_items/'.$codigos['id'], array('update'=>'carga_grilla','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$i');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+ }else{
+ 	for($x=0;$x<=3;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ }
+?>
+<tr>
+	<td colspan="3" align="right">TOTALES</td>
+	<td align="right"><?=$sisap->Formato2($monto_total);?><input type="hidden" id="monto_haber" value="<?=$monto_total?>"/></td>
+	<td align="center">---</td>
+</tr>
+</table>
+<center>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/casp01_ayudas/limpiar_lista/', 'update1'=>'carga_grilla')); ?>
+</center>
+<div id="del"></div>
+</div>
+<?/*<script language="JavaScript" type="text/javascript">
+  document.getElementById('lista_partidas').value=<?=$_SESSION["contador"];?>;
+</script> */ ?>
+<? } ?>
+
+

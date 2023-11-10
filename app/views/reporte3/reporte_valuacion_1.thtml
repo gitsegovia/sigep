@@ -1,0 +1,594 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+
+class fpdfview extends TCPDF{
+
+
+            function Footer(){}//fin footer
+
+
+			function Header(){
+
+							        $this->image_escudo_sin_consolidado(11,17,14);
+									$this->SetFont('vera','B',8);
+									$this->Cell(15,4,"",'TL',0);
+									$this->Cell(150,4,"".$_SESSION["entidad_federal"],'T',0);
+									$this->SetFont('vera','',6);
+									  $this->Cell(0,4,'    Pagina: '.$this->PageNo().'/TPAG','TR',1);//-------------------------PAGINACION
+									$this->SetFont('vera','B',8);
+									$this->Cell(15,3,"",'L',0);
+									$this->SetFont('vera','',6);
+									$this->Cell(150,3,"".$_SESSION["dependencia"],'',0);
+									  $this->Cell(0,3,'    Fecha: '.date('d/m/Y'),'R',1);//-----------------------------FECHA
+									  $this->Cell(165,3,"",'L',0);
+									  $this->Cell(0,3,'    Hora: '.date('h:i a'),'R',1);//-----------------------------HORA
+									$this->SetFont('vera','B',9);
+									$this->Cell(0,9,"VALUACIÓN DE CONTRATO DE OBRAS",'RLB',1,'C');
+									$this->Ln(4);
+
+			                 }//fin headre
+
+
+
+
+
+}//fin class
+
+
+
+
+
+
+
+
+
+
+
+
+
+if($opcion=='si'){ ?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"VALUACIÓN DE CONTRATO DE OBRAS","","950");?>
+<form  method = "post" id='form' action="<?php echo  $html->url('/reporte3/reporte_valuacion_1/'); ?>">
+
+
+<?= $sisap->OpenTable("950")?>
+
+<table border="0">
+<tr>
+	<td valign="top" width="280">AÑO DE OBRA:</td>
+	<td valign="top" width="60">
+    	<div id="valida_numero2">
+	     <?= $sisap->inputTagRemote('cobp01_contratoobras_valuacion/ano_ejecucion', array('url'=>'/reporte3/buscar_year/', 'update'=>'valida_numero', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano_ejecucion', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+	    </div>
+	</td>
+</tr>
+<br>
+<tr>
+    <td valign="top" width="280">NÚMERO DEL CONTRATO DE OBRA:</td>
+	<td valign="top" width="200">
+	  <div id="valida_numero">
+	    <?= $sisap->selectTagRemote('cobp01_contratoobras_valuacion/numero_contrato_obra',  $obras, null ,  $seleccion ,array('onchange1'=>'/reporte3/numero_valuacion/'.$ano, 'update1'=>'valida_numero_valuacion',  'id'=>'ano_formular', 'style'=>'width:180px', true), null, true); ?><br><br>
+	  </div>
+	</td>
+</tr>
+
+<tr>
+    <td valign="top" width="280">NÚMERO DE VALUACIÓN:</td>
+	<td valign="top" width="200">
+	  <div id="valida_numero_valuacion">
+	    <?= $sisap->selectTagRemote('cobp01_contratoobras_valuacion/numero_contrato_obra_valuacion',  $obras2,  null,  $seleccion2 ,array('onchange1'=>'', 'update1'=>'',  'id'=>'ano_formular2', 'style'=>'width:180px', true), null, true); ?><br><br>
+	  </div>
+	</td>
+</tr>
+</table>
+
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+
+
+<?php if(isset($seleccion)){
+	    if($seleccion!=""){
+
+            echo $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/cobp01_contratoobras_valuacion/', 'update1'=>'principal'));
+
+	      }else{
+
+             echo $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'));
+
+	    }
+
+
+	    }else{
+
+             echo $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/modulos/vacio', 'update1'=>'principal'));
+
+	    }
+
+?>
+
+
+
+
+<?=$sisap->CloseTable()?>
+
+<div id="funcion"></div>
+
+</form>
+
+
+
+
+
+
+<?php }else{
+
+
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$cont = 0;
+$n_valuacion = "";
+$acumulado = 0;
+$amortizacion = 0;
+
+foreach($datos as $ve2){$cont++;}
+foreach($datos as $ve){
+				$pdf->AddPage();
+				//******************************* PRIMER BLOQUE **************************************//
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(160,4,"",'',0,'R');
+
+
+
+				if((($ve[0]['monto_original_contrato_valuacion']+($ve[0]['aumento_valuacion']-$ve[0]['disminucion_valuacion']))-($ve[0]['monto_cancelado_valuacion']+$ve[0]['monto_amortizacion_valuacion']+$ve[0]['monto_retencion_laboral_valuacion']+$ve[0]['monto_retencion_fielcumplimiento_valuacion']))==0 && $cont==1){
+                   $n_valuacion = "Unica";
+				}else{
+				   $n_valuacion = $sisap->AddCero2($ve[0]['numero_valuacion_valuacion']);
+				}//fin else
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(0,4,"VALUACION ".$n_valuacion,'',1,'L');//-----------------------------[NUMERO VALUACION]
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(160,4,"",'',0,'R');
+				$pdf->Cell(0,4,"PERIODO DE VALUACIÓN",'',1,'L');
+				$pdf->Cell(160,4,"",'',0,'R');
+				$pdf->Cell(0,4,"DESDE ".$sisap->cambia_fecha($ve[0]['periodo_desde_valuacion']),'',1,'L');//-------------------------[FECHA DESDE VALUACION]
+				$pdf->Cell(160,4,"",'',0,'R');
+				$pdf->Cell(0,4,"HASTA ".$sisap->cambia_fecha($ve[0]['periodo_hasta_valuacion']),'',1,'L');//-------------------------[FECHA HASTA VALUACION]
+				$pdf->Ln(5);
+				$pdf->SetFont('vera','BU',9);
+				$pdf->Cell(95,5,"POR BS.  ",'',0,'R');
+				$pdf->Cell(0,5,$sisap->Formato2($ve[0]['monto_neto_cobrar_valuacion']),'',1,'L');//--------------------------------[MONTO VALUACION]
+
+
+//******************************* SEGUNDO BLOQUE ************************************//
+				$pdf->Ln(5);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(1,25,"",'TL',0,'C');
+				$pdf->Cell(194,1,"",'T',2,'C');
+				    $varX = $pdf->GetX();
+				    $varY = $pdf->GetY();
+
+
+				    $pdf->MultiCell(194,4,"Solicitamos la cancelación de: ".$sisap->convertir($ve[0]['monto_neto_cobrar_valuacion'])." " .
+								    		"(BS ".$sisap->Formato2($ve[0]['monto_neto_cobrar_valuacion']).") correspondiente a " .
+								    		"VALUACION N. ".$sisap->AddCero2($ve[0]['numero_valuacion_valuacion']).", del Contrato: ".$ve[0]['numero_contrato_obra_valuacion'].", de fecha ".$sisap->cambia_fecha($ve[0]['fecha_contrato_obra']).", Aprobado por ".$ve[0]['denominacion_dep'].", " .
+								    		"Segun Oficio N. ".$ve[0]['oficio_aprobacion_valuacion']." de Fecha ".$sisap->fecha_alfabetico($ve[0]['fecha_aprobacion_valuacion']).", para la ejecucion de los trabajos de: ".$ve[0]['denominacion_obra'].". Segun la siguiente demostracion:",'','J');//---[Beneficiario]
+					$varX = $varX+194;
+				    $varY = $varY-1;
+				    $pdf->SetXY($varX,$varY);
+				$pdf->Cell(1,25,"",'TR',1,'C');
+				$pdf->Cell(0,0,"",'T',1,'C');
+				$pdf->Ln(2);
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"MONTO ORIGINAL DEL CONTRATO",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['monto_original_contrato']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"ANTICIPO",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['monto_anticipo_valuacion']),'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"OFICIO N. ".$ve[0]['oficio_aprobacion_valuacion']."",'TRL',0,'L');
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"FECHA: ".$sisap->cambia_fecha($ve[0]['fecha_aprobacion_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"AMORTIZACION",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$amortizacion += $ve[0]['amortizacion_anticipo_valuacion'];
+				$amortizacion = $sisap->Formato2($amortizacion);
+				$amortizacion = $sisap->Formato1($amortizacion);
+				$pdf->Cell(25,4,$sisap->Formato2($amortizacion),'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"AUMENTOS",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['aumento_obras_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"SALDO ANTICIPO",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['monto_anticipo_valuacion'] - $amortizacion),'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"OBRAS EXTRAS",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['aumento_obra_extra_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"",'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"RECONSIDERACION DE PRECIOS",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['aumento_reconsideracion_precio_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"GESTIONES DE ESTA VALUACION A:",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"",'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"SUB - TOTAL",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2($ve[0]['monto_original_contrato'] + $ve[0]['aumento_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"POR BS.",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"",'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"DISMINUCIONES",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$ve[0]['disminucion_valuacion'],'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"",'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"TOTAL MONTO",'TRL',0,'L');
+				$pdf->Cell(8,4,"BS",'T',0,'C');
+				$pdf->Cell(25,4,$sisap->Formato2(($ve[0]['monto_original_contrato'] + $ve[0]['aumento_valuacion']) - $ve[0]['disminucion_valuacion']),'TR',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'T',0,'C');
+				$pdf->Cell(25,4,"",'T',0,'R');
+				$pdf->Cell(0,4,"",'TR',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"CONTRATADO",'TRBL',0,'L');
+				$pdf->Cell(8,4,"",'TB',0,'C');
+				$pdf->Cell(25,4,"",'TRB',0,'R');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"SEGUN CARTA DE FECHA",'TRB',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(8,4,"",'TB',0,'C');
+				$pdf->Cell(25,4,"",'TB',0,'R');
+				$pdf->Cell(0,4,"",'TRB',1,'R');
+
+				//******************************* TERCER BLOQUE **************************************//
+				$pdf->Ln(2);
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"PLAZO DEL CONTRATO",'TRL',0,'L');
+				$pdf->Cell(45,4,"PARALIZACION",'TR',0,'L');
+				$pdf->Cell(50,4,"REINICIO",'TR',0,'L');
+				$pdf->Cell(0,4,"SOLICITUD DE PRORROGA",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"COMIENZO",'TRL',0,'L');
+				$pdf->Cell(45,4,"FECHA",'TR',0,'L');
+				$pdf->Cell(50,4,"FECHA",'TR',0,'L');
+				$pdf->Cell(0,4,"FECHA: S/OFICIO NRO.",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"FECHA: ".$ve[0]['fecha_inicio_contrato'],'TRL',0,'L');
+				$pdf->Cell(45,4,"FECHA APROBACION",'TR',0,'L');
+				$pdf->Cell(50,4,"FECHA APROBACION",'TR',0,'L');
+				$pdf->Cell(0,4,"",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"S/OFICIO ".$ve[0]['cod_obra'],'TRL',0,'L');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->Cell(50,4,"",'TR',0,'L');
+				$pdf->Cell(0,4,"",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"DE FECHA ".$ve[0]['fecha_contrato_obra'],'TRL',0,'L');
+				$pdf->Cell(45,4,"S/OFICIO NRO.",'TR',0,'L');
+				$pdf->Cell(50,4,"S/OFICIO NRO.",'TR',0,'L');
+				$pdf->Cell(0,4,"",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"TERMINACION",'TRL',0,'L');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->Cell(50,4,"",'TR',0,'L');
+				$pdf->Cell(0,4,"",'TR',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(50,4,"FECHA: ".$ve[0]['fecha_terminacion_contrato'],'TRLB',0,'L');
+				$pdf->Cell(45,4,"",'TRB',0,'L');
+				$pdf->Cell(50,4,"",'TRB',0,'L');
+				$pdf->Cell(0,4,"",'TRB',1,'L');
+
+				//******************************* CUARTO BLOQUE **************************************//
+				$pdf->Ln(1);
+
+				$total = 0;
+				$total =($ve[0]['monto_original_contrato'] + $ve[0]['aumento_valuacion']) - $ve[0]['disminucion_valuacion'];
+
+
+
+
+
+
+
+
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"TOTAL CONTRATADO",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($total),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,'','',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+                $acumulado += $ve[0]['monto_coniva_valuacion'];
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"OBRA EJECUTADA HASTA HOY",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_coniva_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"OBRA POR EJECUTAR",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($total - $acumulado),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"DEMOSTRACION DE ESTA VALUACION",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_coniva_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(75,4,"MENOS",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(75,4,"",'TR',0,'R');
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"AMORTIZACION DE ANTICIPO (".$ve[0]['porcentaje_amortizacion_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['amortizacion_anticipo_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"GARANTIA POR CUMPLIMIENTO DEL CONTRATO (".$ve[0]['porcentaje_fielcumplimiento_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_retencion_fielcumplimiento_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"MONTO MANO DE OBRA",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_mano_obra']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"GARANTIA LABORAL DEL CONTRATO (".$ve[0]['porcentaje_laboral_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_retencion_laboral_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"MONTO BRUTO DE ESTA VALUACIÓN",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_coniva_valuacion'] - $ve[0]['amortizacion_anticipo_valuacion'] - $ve[0]['monto_retencion_fielcumplimiento_valuacion'] - $ve[0]['monto_retencion_laboral_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'R');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(75,4,"MENOS",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(75,4,"",'TR',0,'R');
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"RETENCIÓN DEL I.V.A (".$ve[0]['porcentaje_retencion_iva_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_retencion_iva_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"I.S.L.R (".$ve[0]['porcentaje_islr_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_islr_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"TIMBRE FISCAL (".$ve[0]['porcentaje_timbre_fiscal_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_timbre_fiscal_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"IMPUESTO MUNICIPAL (".$ve[0]['porcentaje_impuesto_municipal_valuacion']."%)",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_impuesto_municipal_valuacion']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"RESPONSABILIDAD SOCIAL",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['retencion_responsabilidad']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"RESPONSABILIDAD CIVIL",'TR',0,'L');
+				$pdf->Cell(10,4,"BS ",'T',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['retencion_multa']),'T',0,'R');
+				$pdf->Cell(45,4,"",'TR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'L');
+
+
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'R',0,'L');
+				$pdf->Cell(75,4,"MONTO NETO A PAGAR",'TRB',0,'L');
+				$pdf->Cell(10,4,"BS ",'TB',0,'L');
+				$pdf->Cell(20,4,$sisap->Formato2($ve[0]['monto_neto_cobrar_valuacion']),'TB',0,'R');
+				$pdf->Cell(45,4,"",'TBR',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(20,4,"",'',0,'R');
+				$pdf->Cell(0,4,"",'',1,'R');
+
+
+				//******************************* QUINTO BLOQUE (LAS FIRMAS Y SELLOS) **************************************//
+				$pdf->Ln(6);
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(160,3,date("d/m/Y"),'',0,'L');
+				$pdf->Cell(0,3,"(VA SIN ENMIENDA)",'',1,'L');
+				$pdf->Cell(0,3,"CONFORME",'',1,'L');
+
+				$pdf->Ln(15);
+				$pdf->Cell(70,3,"_________________________________________",'',0,'C');
+				$pdf->Cell(70,3,"_________________________________________",'',0,'C');
+				$pdf->Cell(0,3,"_________________________________________",'',1,'C');
+
+                $pdf->Cell(17,3,"",'',0,'C');
+			    $varX = $pdf->GetX();
+			    $varY = $pdf->GetY();
+			    $pdf->MultiCell(35,3,$ve[0]['cargo_dep'],'','J');//---[Beneficiario]
+				$varX = $varX+35;
+			    $varY = $varY-1;
+			    $pdf->SetXY($varX,$varY);
+			    $pdf->Cell(18,3,"",'',0,'C');
+				$pdf->Cell(70,3,"DIRECTOR DE INFRAESTRUCTURA",'',0,'C');
+				$pdf->Cell(4,3,"",'',0,'C');
+				$pdf->Cell(0,3,"EMPRESA",'',1,'C');
+
+
+                $pdf->Cell(70,3,$ve[0]['funcionario_responsable_dep'],'',0,'C');
+				$pdf->Cell(70,3,"",'',0,'C');
+				$pdf->Cell(0,3,"",'',1,'C');
+
+}//fin foreach
+
+
+
+
+
+
+$pdf->OutPut('reporte_valuacion_'.date('Y_m_d'),'D');
+
+}//fin else
+
+
+
+
+?>

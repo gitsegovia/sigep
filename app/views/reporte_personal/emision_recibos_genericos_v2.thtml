@@ -1,0 +1,1185 @@
+<?php
+/*
+ * Created on 19/02/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+  if(isset($var) && $var=="no"){
+?>
+<?= $sisap->Tabla_modulos($session->read('entidad_federal'),true,"RECIBOS DE PAGO","","950","cnmp");?>
+
+<form name="data[reporte_personal]" method="post" id='form' action="<?php echo $html->url('/reporte_personal/emision_recibos_genericos/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" style="empty-cells: show;" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="18%">&nbsp;</td>
+			<td width="15%" align="center">Seleccione</td>
+			<td width="10%" align="center">Código</td>
+			<td align="center">Denominación de nómina</td>
+		</tr>
+		<tr>
+			<td align="center"><b>Tipo de nómina:</b></td>
+			<td><?= $sisap->selectTagRemote('reporte_personal/select_tiponomina',  $lista,  null,  null ,array('onchange1'=>'/reporte_personal/denominacion_tiponomina/', 'update1'=>'td-info-nomina',  'id'=>'select_tiponomina', 'style'=>'width:100%', true), null, true); ?></td>
+			<td colspan="2">
+				<div id="td-info-nomina">
+				<table width="100%" border="0" cellpadding="0" cellspacing="0" style="empty-cells: show;">
+					<tr>
+						<td width="14%" style="border-right:0px solid #000000; border-left:0px solid #000000; border-bottom:0px solid #000000"><input type="text" name="cod_nomina" id="cod_nomina" value="" readOnly="readOnly" class="inputtext" style="text-align:center" /></td>
+						<td style="border-right:0px solid #000000; border-left:1px solid #000000; border-bottom:0px solid #000000"><input type="text" name="deno_nomina" id="deno_nomina" value="" readOnly="readOnly" class="inputtext" /></td>
+					</tr>
+				</table>
+				</div>
+			</td>
+		</tr>
+
+	</table>
+
+	<br />
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" style="empty-cells: show;">
+		<tr>
+			<td align="center" colspan="4"><b>Ordenado por:</b>&nbsp;<?= $html->radio('reporte_personal/ordenado', array('1'=>'N&uacute;mero recibo', '2'=>'Ubicaci&oacute;n administrativa', '3'=>'Ubicaci&oacute;n geografica', '4'=>'Categor&iacute;a program&aacute;tica'), null, array('value'=>'1'))?></td>
+		</tr>
+		<tr><td colspan="2">&nbsp;</td></tr>
+		<tr>
+			<td align="center" colspan="2"><?= $html->radio('reporte_personal/rango_recibos', array('1'=>'Todos los recibos', '2'=>'Rango en especial'), "&nbsp;&nbsp;&nbsp;&nbsp;", array('onClick'=>'mostrar_capa_rango_recibos();', 'value'=>'1', 'id'=>'rango_recibos')) ?></td>
+		</tr>
+		<tr><td colspan="2">&nbsp;</td></tr>
+		<tr>
+			<td align="center" colspan="2">
+				<span id="capa_1" style="display:none">
+ 	       			Recibos&nbsp;desde:&nbsp;<input type="text" name="data[reporte_personal][recibo_desde]" id="recibo_desde" size="8" onKeyPress="return solonumeros(event);" style="text-align:center" />&nbsp;hasta:&nbsp;<input type="text" name="data[reporte_personal][recibo_hasta]" id="recibo_hasta" size="8" onKeyPress="return solonumeros(event);" style="text-align:center" />
+	     	    </span>
+	     	    <span id="capa_2" style="display:none">&nbsp;</span>
+			</td>
+		</tr>
+	</table>
+
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/reporte_personal/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="si"){
+set_time_limit(0);
+ini_set("memory_limit","1536M");
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function header(){
+
+    }
+
+	function GetDateDifference($StartDateString=NULL, $EndDateString=NULL) {
+		$ReturnArray = array();
+
+		$SDSplit = explode('/',$StartDateString);
+		$StartDate = mktime(0,0,0,$SDSplit[0],$SDSplit[1],$SDSplit[2]);
+
+		$EDSplit = explode('/',$EndDateString);
+		$EndDate = mktime(0,0,0,$EDSplit[0],$EDSplit[1],$EDSplit[2]);
+
+		$y1 = date("Y", $StartDate);
+		$m1 = date("m", $StartDate);
+		$d1 = date("d", $StartDate);
+		$y2 = date("Y", $EndDate);
+		$m2 = date("m", $EndDate);
+		$d2 = date("d", $EndDate);
+
+		$diff = '';
+		if (($EndDate - $StartDate)<=0) {
+		    $diff = "0 days";
+		} else {
+
+			$y = $y2 - $y1;
+			$m = $m2 - $m1;
+			$d = $d2 - $d1;
+		if ($y!=0){
+			$daysInMonth = date("t",$StartDate);
+			if ($d<=0) {$m--;$d=$daysInMonth+$d;}
+			if ($m<=0) {$y--;$m=12+$m;}
+			$daysInMonth = date("t",$m2);
+
+			// Nicestring ("1 year, 1 month, and 5 days")
+			if ($y>0) $diff .= $y==1 ? "1-" : "$y-";
+			if ($y>0 && $m>0) $diff .= "";
+			if ($m>0) $diff .= $m==1? "1-" : "$m-";
+			if (($m>0||$y>0) && $d>0) $diff .= "";
+			if ($d>0) $diff .= $d==1 ? "1" : "$d";
+		}
+		}
+
+		$difFecha = split('-',$diff);
+		switch(count($difFecha)){
+			case '1': $ReturnArray['anos'] = 0; $ReturnArray['meses'] = 0; $ReturnArray['dias'] = $difFecha[0]; break;
+			case '2': $ReturnArray['anos'] = 0; $ReturnArray['meses'] = $difFecha[0]; $ReturnArray['dias'] = $difFecha[1]; break;
+			case '3': $ReturnArray['anos'] = $difFecha[0]; $ReturnArray['meses'] = $difFecha[1]; $ReturnArray['dias'] = $difFecha[2]; break;
+			default : $ReturnArray['anos'] = ''; $ReturnArray['meses'] = ''; $ReturnArray['dias'] = ''; break;
+		}
+		return $ReturnArray;
+	}
+
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(5);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->SetFont('vera','B',6);
+
+$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+if(file_exists($img_dependencia_o)){
+	$escudo=$img_dependencia_o;
+	$varTOPh1=$_SESSION["entidad_federal"];
+	$varTOPh11=$_SESSION["dependencia"];
+	$t1=11;
+	$t2=11;
+}else{
+	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+	$varTOPh1=$_SESSION["entidad_federal"];
+	$varTOPh11=$_SESSION["dependencia"];
+	$t1=6;
+	$t2=11;
+}
+
+$cant_registros = count($datos);
+if($cant_registros==0){
+	$pdf->AddPage();
+	$pdf->Ln(10);
+	$pdf->SetFont('vera','B',10);
+	$pdf->Cell(0,35,'NO SE ENCONTRARÓN REGISTROS PARA SU PETICIÓN','TRBL',1,'C');
+}else{
+
+	$k=0;
+	$cedula_2 = "";
+	$entidad_bancaria_2 = 0;
+	$cuenta_bancaria_2  = 0;
+	$total_asignaciones_2 = 0;
+	$total_deducciones_2  = 0;
+	$neto_cobrar_2 = 0;
+	for($i=0; $i<$cant_registros; $i++){
+
+		$cedula_1 = $datos[$i][0]['cedula_identidad'];
+		if($cedula_1 != $cedula_2){
+
+			$k=0;
+
+					if($i!=0){//se imprime el pie de la pagina porque se supone que $i ya es mayor a 1 es decir ya se han impreso datos y cambio la cedula de identidad. Se imprimen los totales.
+
+								$count=count($vector_datos);
+								$cont = 12 - $count;
+								for($j=0; $j<$cont; $j++){
+									$pdf->Cell(8,4,'','RBL',0,'C');
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(35,4,'','RB',0,'L');
+									$pdf->SetFont('vera','',6);
+									$pdf->Cell(18,4,'','RB',0,'C');
+									$pdf->Cell(21,4,'','RB',0,'R');
+									$pdf->Cell(21,4,'','RB',0,'R');
+									$pdf->Cell(8,4,'','RB',0,'C');
+									$pdf->Cell(35,4,'','RB',0,'L');
+									$pdf->Cell(18,4,'','RB',0,'C');
+									$pdf->Cell(20,4,'','RB',0,'R');
+									$pdf->Cell(0,4,'','RB',1,'R');
+								}
+
+								$neto_cobrar_2 = ($total_asignaciones_2 + $datos[$i-1][0]['sueldo_basico']) - $total_deducciones_2;
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(35,5,$sisap->Formato2($total_asignaciones_2),'TR',0,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Total Deducciones:','TR',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(35,5,$sisap->Formato2($total_deducciones_2),'TR',0,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(0,5,$sisap->Formato2($neto_cobrar_2),'TR',1,'L');
+								$total_asignaciones_2 = 0;
+								$total_deducciones_2 = 0;
+								$neto_cobrar_2 = 0;
+								$total_asignaciones_2 = 0;
+								$total_deducciones_2 = 0;
+								$neto_cobrar_2 = 0;
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+								$pdf->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+								$pdf->Cell(15,5,'BANCO:','RL',0,'L');
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(88,5,$entidad_bancaria_2,'RL',1,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(15,5,'CUENTA:','RL',0,'L');
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(88,5,$cuenta_bancaria_2,'RL',1,'L');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->SetXY($varX+103,$varY-10);
+
+								$pdf->SetFont('vera','',6);
+								$pdf->MultiCell(102,3,"",'','L');//--[Mensajes]
+								$pdf->SetXY($varX+205,$varY-10);
+								$pdf->Cell(0,10,'','R',1,'C');
+								$pdf->Cell(0,0,'','T',1);
+
+								//-------------------------------------------------------------
+								$pdf->SetXY(5,140);
+								//-------------------------------------------------------------
+								// Se imprime el segundo recibo.
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(15,4,"",'TL',0);
+								$pdf->Cell(0,4,$varTOPh1,'TR',1);
+								$pdf->Cell(15,2,"",'L',0);
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(0,2,$varTOPh11,'R',1);
+								$pdf->SetFont('vera','B',8);
+								$pdf->Cell(0,3,"",'RL',1,'C');
+								$pdf->Cell(0,3,"RECIBO DE PAGO",'RL',1,'C');
+								$pdf->Cell(0,4,"NÚMERO RECIBO: ".mascara_seis($vector_datos[$k]['ultimo_recibo']),'RBL',1,'R');
+
+								$varX_aux = $pdf->GetX() + 186;
+								$varY_aux = $pdf->GetY() - 14;
+							    	$pdf->SetFont('vera','B',5);
+							    	$pdf->Text($varX_aux, $varY_aux, 'FECHA: '.date("d/m/Y"));
+							    	$pdf->Text($varX_aux, $varY_aux+3, 'HORA: '.date("h:i a"));
+
+							    $pdf->Image($escudo,$varX_aux-184,$varY_aux-1,13);
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(20,4,'CÓDIGO','RBL',2,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(20,12,mascara_cuatro($vector_datos[0]['cod_tipo_nomina']),'RL',2,'C');
+								$pdf->setXY($varX+20, $varY-4);
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(68,4,'Denominación de nómina','B',2,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->SetFont('vera','',6);
+								$pdf->MultiCell(68,3,$vector_datos[0]['denominacion_nomina'],'','L');//--[Denominación Nomina]
+
+								$pdf->setXY($varX+68, $varY-4);
+
+								$pdf->SetFont('vera','',5);
+								$pdf->Cell(1,8,'','L',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$pdf->Cell(35,1,"",'',2,'C');
+								$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_coordinacion'])." - ".$vector_datos[0]['deno_cod_coordinacion'],'','L');//--[Coor]
+								$varX = $varX+35;
+								$pdf->SetXY($varX,$varY);
+
+								$pdf->Cell(1,8,'','R',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(35,1,"",'',2,'C');
+								$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_direccion'])." - ".$vector_datos[0]['deno_cod_direccion'],'','L');//--[Dire]
+								$varX = $varX+35;
+								$pdf->SetXY($varX,$varY);
+
+								$pdf->Cell(1,8,'','R',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(44,1,"",'',2,'C');
+								$pdf->MultiCell(45,2,mascara2($vector_datos[0]['cod_departamento'])." - ".$vector_datos[0]['deno_cod_departamento'],'','L');//--[Depa]
+								$varX = $varX+44;
+								$pdf->SetXY($varX,$varY);
+								$pdf->Cell(0,8,'','R',1,'C');
+
+								$pdf->SetXY($var_aux_X-1,$var_aux_Y+8);
+
+								$pdf->Cell(1,8,'','TL',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$var_aux_X = $varX;
+								$var_aux_Y = $varY;
+								$pdf->Cell(35,1,"",'T',2,'C');
+								$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_secretaria'])." - ".$vector_datos[0]['deno_cod_secretaria'],'','L');//--[Secre]
+								$varX = $varX+35;
+								$pdf->SetXY($varX,$varY);
+
+								$pdf->Cell(1,8,'','TR',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(35,1,"",'T',2,'C');
+								$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_division'])." - ".$vector_datos[0]['deno_cod_division'],'','L');//--[Divi]
+								$varX = $varX+35;
+								$pdf->SetXY($varX,$varY);
+
+								$pdf->Cell(1,8,'','TR',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(44,1,"",'T',2,'C');
+								$pdf->MultiCell(45,2,mascara2($vector_datos[0]['deno_cod_oficina'])." - ".$vector_datos[0]['deno_cod_oficina'],'','L');//--[ofic]
+								$varX = $varX+44;
+								$pdf->SetXY($varX,$varY);
+								$pdf->Cell(0,8,'','TR',1,'C');
+
+								//---------------------------------------------------------------------------------------------
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(20,3,'Cédula de','TRL',0,'C');
+								$pdf->Cell(50,3,'','TR',0,'C');
+								$pdf->Cell(15,3,'Código','TR',0,'C');
+								$pdf->Cell(60,3,'','TR',0,'C');
+								$pdf->Cell(15,3,'Código','TR',0,'C');
+								$pdf->Cell(15,3,'Código','TR',0,'C');
+								$pdf->Cell(0,3,'Sueldo','TR',1,'C');
+
+								$pdf->Cell(20,2,'identidad','RBL',0,'C');
+								$pdf->Cell(50,2,'Apellidos y Nombres','RB',0,'C');
+								$pdf->Cell(15,2,'Puesto','RB',0,'C');
+								$pdf->Cell(60,2,'Denominación del puesto','RB',0,'C');
+								$pdf->Cell(15,2,'Cargo','RB',0,'C');
+								$pdf->Cell(15,2,'Ficha','RB',0,'C');
+								$pdf->Cell(0,2,'Mensual','RB',1,'C');
+
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(20,6,$vector_datos[0]['cedula_identidad'],'RL',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(50,2,"",'',2,'C');
+								$pdf->MultiCell(49,2,$vector_datos[0]['primer_apellido']." ".$vector_datos[0]['segundo_apellido']." ".$vector_datos[0]['primer_nombre']." ".$vector_datos[0]['segundo_nombre'],'','L');
+								$varX = $varX+50;
+								$pdf->SetXY($varX,$varY);
+								$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_puesto']),'RL',0,'C');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->Cell(60,1,"",'',2,'C');
+								$pdf->MultiCell(59,2,$vector_datos[0]['denominacion_puesto'],'','L');
+								$varX = $varX+60;
+								$pdf->SetXY($varX,$varY);
+								$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_cargo']),'RL',0,'C');
+								$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_ficha']),'R',0,'C');
+								$pdf->Cell(0,6,$sisap->Formato2($vector_datos[0]['sueldo_mensual']),'R',1,'R');
+
+								//---------------------------------------------------------------------------------------------
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(20,3,'Fecha','TRL',0,'C');
+								$pdf->Cell(35,3,'','TR',0,'C');
+								$pdf->Cell(30,3,'Acumulado','TR',0,'C');
+								$pdf->Cell(60,3,'','TR',0,'C');
+								$pdf->Cell(15,3,'','TR',0,'C');
+								$pdf->Cell(18,3,'Fecha','TR',0,'C');
+								$pdf->Cell(0,3,'Fecha','TR',1,'C');
+
+								$pdf->Cell(20,2,'ingreso','RBL',0,'C');
+								$pdf->Cell(35,2,'Tiempo de servicio','RB',0,'C');
+								$pdf->Cell(30,2,'Prestaciones','RB',0,'C');
+								$pdf->Cell(60,2,'Correspondiente','RB',0,'C');
+								$pdf->Cell(15,2,'N° Nóm.','RB',0,'C');
+								$pdf->Cell(18,2,'desde','RB',0,'C');
+								$pdf->Cell(0,2,'hasta','RB',1,'C');
+
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(20,6,$sisap->cambia_fecha($vector_datos[0]['fecha_ingreso']),'RL',0,'C');
+								$pdf->Cell(35,6,'Meses: '.$vector_datos[$k]['meses_serv'].'    Años: '.$vector_datos[$k]['anos_serv'],'R',0,'C');
+								$pdf->Cell(30,6,'','R',0,'C');
+								$pdf->Cell(60,6,$vector_datos[0]['correspondiente'],'R',0,'C');
+								$pdf->Cell(15,6,$vector_datos[0]['numero_nomina'],'R',0,'C');
+								$pdf->Cell(18,6,$sisap->cambia_fecha($vector_datos[0]['periodo_desde']),'R',0,'C');
+								$pdf->Cell(0,6,$sisap->cambia_fecha($vector_datos[0]['periodo_hasta']),'R',1,'C');
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(103,5,'ASIGNACIONES','TRBL',0,'C');
+								$pdf->Cell(0,5,'DEDUCCIONES','TRB',1,'C');
+
+								//--------------------------------------------------
+								$pdf->Cell(8,4,'Cód','RBL',0,'C');
+								$pdf->Cell(35,4,'Concepto','RB',0,'C');
+								$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+								$pdf->Cell(21,4,'Cuota','RB',0,'C');
+								$pdf->Cell(21,4,'Saldo','RB',0,'C');
+								$pdf->Cell(8,4,'Cód','RB',0,'C');
+								$pdf->Cell(35,4,'Concepto','RB',0,'C');
+								$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+								$pdf->Cell(20,4,'Cuota','RB',0,'C');
+								$pdf->Cell(0,4,'Saldo','RB',1,'C');
+
+								$total_asignacion = 0;
+								$total_deduccion  = 0;
+								$neto_cobrar = 0;
+								$total_vector=count($vector_datos);
+                                /*aqui comienza jgha*/
+                                $array1=array();
+                                $array2=array();
+								for($h=0; $h<$total_vector; $h++){
+									if($vector_datos[$h]['cod_tipo_transaccion']==1){
+										$array1[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$sisap->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$sisap->Formato2($vector_datos[$h]['saldo'])
+										                );
+									}elseif($vector_datos[$h]['cod_tipo_transaccion']==2){
+								        $array2[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$sisap->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$sisap->Formato2($vector_datos[$h]['saldo'])
+										                );
+								    }
+								}//fin for
+
+								$t_filas = count($array1)>count($array2)?count($array1):count($array2);
+
+								for($h=0; $h<$t_filas; $h++){
+									    sort($array1);
+									    sort($array2);
+									    $x1[1] = isset($array1[$h]['cod'])       ?$array1[$h]['cod']:'';
+									    $x1[2] = isset($array1[$h]['deno'])      ?$array1[$h]['deno']:'';
+									    $x1[3] = isset($array1[$h]['dias_horas'])?$array1[$h]['dias_horas']:'';
+									    $x1[4] = isset($array1[$h]['monto'])     ?$array1[$h]['monto']:'';
+									    $x1[5] = isset($array1[$h]['saldo'])     ?$array1[$h]['saldo']:0;
+									    $x2[1] = isset($array2[$h]['cod'])       ?$array2[$h]['cod']:'';
+									    $x2[2] = isset($array2[$h]['deno'])      ?$array2[$h]['deno']:'';
+									    $x2[3] = isset($array2[$h]['dias_horas'])?$array2[$h]['dias_horas']:'';
+									    $x2[4] = isset($array2[$h]['monto'])     ?$array2[$h]['monto']:'';
+									    $x2[5] = isset($array2[$h]['saldo'])     ?$array2[$h]['saldo']:0;
+									    $pdf->SetFont('vera','',6);
+										$pdf->Cell(8,4,$x1[1],'RBL',0,'C');
+										$pdf->SetFont('vera','',5);
+										$pdf->Cell(35,4,$x1[2],'RB',0,'L');
+										$pdf->SetFont('vera','',6);
+										$pdf->Cell(18,4,$x1[3],'RB',0,'C');
+										$pdf->Cell(21,4,$x1[4],'RB',0,'R');
+										$pdf->Cell(21,4,$x1[5]==0?'':$x1[5],'RB',0,'R');
+										$pdf->Cell(8,4,$x2[1],'RB',0,'C');
+										$pdf->SetFont('vera','',5);
+										$pdf->Cell(35,4,$x2[2],'RB',0,'L');
+										$pdf->SetFont('vera','',6);
+										$pdf->Cell(18,4,$x2[3],'RB',0,'C');
+										$pdf->Cell(20,4,$x2[4],'RB',0,'R');
+										$pdf->Cell(0,4,$x2[5]==0?'':$x2[5],'RB',1,'R');
+										$total_asignacion += $x1[5];
+										$total_deduccion += $x2[5];
+
+								}///////
+								unset($array1);
+								unset($array2);
+								unset($x1);
+								unset($x2);
+                                /*hasta aqui hago yo*/
+
+								// Completamos las celdas que faltaron por imprimir
+								$cont = 12 - $total_vector;
+								for($j=0; $j<$cont; $j++){
+									$pdf->Cell(8,4,'','RBL',0,'C');
+									$pdf->SetFont('vera','',5);
+									$pdf->Cell(35,4,'','RB',0,'L');
+									$pdf->SetFont('vera','',6);
+									$pdf->Cell(18,4,'','RB',0,'C');
+									$pdf->Cell(21,4,'','RB',0,'R');
+									$pdf->Cell(21,4,'','RB',0,'R');
+									$pdf->Cell(8,4,'','RB',0,'C');
+									$pdf->Cell(35,4,'','RB',0,'L');
+									$pdf->Cell(18,4,'','RB',0,'C');
+									$pdf->Cell(20,4,'','RB',0,'R');
+									$pdf->Cell(0,4,'','RB',1,'R');
+								}
+
+								$neto_cobrar = ($total_asignacion + $vector_datos[0]['sueldo_basico']) - $total_deduccion;
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(35,5,$sisap->Formato2($total_asignacion),'TR',0,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Total Deducciones:','TR',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(35,5,$sisap->Formato2($total_deduccion),'TR',0,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+								$pdf->SetFont('vera','',7);
+								$pdf->Cell(0,5,$sisap->Formato2($neto_cobrar),'TR',1,'L');
+
+								//$pdf->SetFont('vera','',7);
+								//$pdf->Cell(63,3,$sisap->Formato2($total_asignacion),'RL',0,'L');
+								//$pdf->Cell(63,3,$sisap->Formato2($total_deduccion),'R',0,'L');
+								//$pdf->Cell(0,3,$sisap->Formato2($neto_cobrar),'R',1,'L');
+
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+								$pdf->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+								$pdf->Cell(15,5,'BANCO:','RL',0,'L');
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(88,5,$vector_datos[0]['deno_entidades_bancarias'],'RL',1,'L');
+								$pdf->SetFont('vera','B',6);
+								$pdf->Cell(15,5,'CUENTA:','RL',0,'L');
+								$pdf->SetFont('vera','',6);
+								$pdf->Cell(88,5,$vector_datos[0]['cuenta_bancaria'],'RL',1,'L');
+								$varX = $pdf->GetX();
+								$varY = $pdf->GetY();
+								$pdf->SetXY($varX+103,$varY-10);
+
+								$pdf->SetFont('vera','',6);
+								$pdf->MultiCell(102,3,"",'','L');//--[Mensajes]
+								$pdf->SetXY($varX+205,$varY-10);
+								$pdf->Cell(0,10,'','R',1,'C');
+								$pdf->Cell(0,0,'','T',1);
+
+								$vector_datos=array();
+								$total_asignacion = 0;
+								$total_deduccion  = 0;
+								$neto_cobrar = 0;
+
+					}//fin if
+
+					$pdf->AddPage();
+					$pdf->SetFont('vera','B',8);
+					$pdf->Cell(15,4,"",'TL',0);
+					$pdf->Cell(0,4,$varTOPh1,'TR',1);
+					$pdf->Cell(15,2,"",'L',0);
+					$pdf->SetFont('vera','',7);
+					$pdf->Cell(0,2,$varTOPh11,'R',1);
+					$pdf->SetFont('vera','B',8);
+					$pdf->Cell(0,3,"",'RL',1,'C');
+					$pdf->Cell(0,3,"RECIBO DE PAGO",'RL',1,'C');
+					$pdf->Cell(0,4,"NÚMERO RECIBO: ".mascara_seis($datos[$i][0]['ultimo_recibo']),'RBL',1,'R');
+
+					$varX_aux = $pdf->GetX() + 186;
+					$varY_aux = $pdf->GetY() - 14;
+				    	$pdf->SetFont('vera','B',5);
+				    	$pdf->Text($varX_aux, $varY_aux, 'FECHA: '.date("d/m/Y"));
+				    	$pdf->Text($varX_aux, $varY_aux+3, 'HORA: '.date("h:i a"));
+
+				    $pdf->Image($escudo,$varX_aux-184,$varY_aux-1,13);
+
+
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,4,'CÓDIGO','RBL',2,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->SetFont('vera','',7);
+						$pdf->Cell(20,12,mascara_cuatro($datos[$i][0]['cod_tipo_nomina']),'RL',2,'C');
+						$pdf->setXY($varX+20, $varY-4);
+
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(68,4,'Denominación de nómina','B',2,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->SetFont('vera','',6);
+						$pdf->MultiCell(68,3,$datos[$i][0]['denominacion_nomina'],'','L');//--[Denominación Nomina]
+
+						$pdf->setXY($varX+68, $varY-4);
+
+						$pdf->SetFont('vera','',5);
+						$pdf->Cell(1,8,'','L',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(35,1,"",'',2,'C');
+						$pdf->MultiCell(34,2,mascara2($datos[$i][0]['cod_coordinacion'])." - ".$datos[$i][0]['deno_cod_coordinacion'],'','L');//--[Coor]
+						$varX = $varX+35;
+						$pdf->SetXY($varX,$varY);
+
+						$pdf->Cell(1,8,'','R',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(35,1,"",'',2,'C');
+						$pdf->MultiCell(34,2,mascara2($datos[$i][0]['cod_direccion'])." - ".$datos[$i][0]['deno_cod_direccion'],'','L');//--[Dire]
+						$varX = $varX+35;
+						$pdf->SetXY($varX,$varY);
+
+						$pdf->Cell(1,8,'','R',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(44,1,"",'',2,'C');
+						$pdf->MultiCell(45,2,mascara2($datos[$i][0]['cod_departamento'])." - ".$datos[$i][0]['deno_cod_departamento'],'','L');//--[Depa]
+						$varX = $varX+44;
+						$pdf->SetXY($varX,$varY);
+						$pdf->Cell(0,8,'','R',1,'C');
+
+						$pdf->SetXY($var_aux_X-1,$var_aux_Y+8);
+
+						//$var_aux_X = $varX;
+						//$var_aux_Y = $varY;
+
+						$pdf->Cell(1,8,'','TL',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$var_aux_X = $varX;
+						$var_aux_Y = $varY;
+						$pdf->Cell(35,1,"",'T',2,'C');
+						$pdf->MultiCell(34,2,mascara2($datos[$i][0]['cod_secretaria'])." - ".$datos[$i][0]['deno_cod_secretaria'],'','L');//--[Secre]
+						$varX = $varX+35;
+						$pdf->SetXY($varX,$varY);
+
+						$pdf->Cell(1,8,'','TR',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(35,1,"",'T',2,'C');
+						$pdf->MultiCell(34,2,mascara2($datos[$i][0]['cod_division'])." - ".$datos[$i][0]['deno_cod_division'],'','L');//--[Divi]
+						$varX = $varX+35;
+						$pdf->SetXY($varX,$varY);
+
+						$pdf->Cell(1,8,'','TR',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(44,1,"",'T',2,'C');
+						$pdf->MultiCell(45,2,mascara2($datos[$i][0]['cod_oficina'])." - ".$datos[$i][0]['deno_cod_oficina'],'','L');//--[ofic]
+						$varX = $varX+44;
+						$pdf->SetXY($varX,$varY);
+						$pdf->Cell(0,8,'','TR',1,'C');
+
+						//---------------------------------------------------------------------------------------------
+
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,3,'Cédula de','TRL',0,'C');
+						$pdf->Cell(50,3,'','TR',0,'C');
+						$pdf->Cell(15,3,'Código','TR',0,'C');
+						$pdf->Cell(60,3,'','TR',0,'C');
+						$pdf->Cell(15,3,'Código','TR',0,'C');
+						$pdf->Cell(15,3,'Código','TR',0,'C');
+						$pdf->Cell(0,3,'Sueldo','TR',1,'C');
+
+						$pdf->Cell(20,2,'identidad','RBL',0,'C');
+						$pdf->Cell(50,2,'Apellidos y Nombres','RB',0,'C');
+						$pdf->Cell(15,2,'Puesto','RB',0,'C');
+						$pdf->Cell(60,2,'Denominación del puesto','RB',0,'C');
+						$pdf->Cell(15,2,'Cargo','RB',0,'C');
+						$pdf->Cell(15,2,'Ficha','RB',0,'C');
+						$pdf->Cell(0,2,'Mensual','RB',1,'C');
+
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(20,6,$datos[$i][0]['cedula_identidad'],'RL',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(50,2,"",'',2,'C');
+						$pdf->MultiCell(49,2,$datos[$i][0]['primer_apellido']." ".$datos[$i][0]['segundo_apellido']." ".$datos[$i][0]['primer_nombre']." ".$datos[$i][0]['segundo_nombre'],'','L');
+						$varX = $varX+50;
+						$pdf->SetXY($varX,$varY);
+						$pdf->Cell(15,6,mascara_seis($datos[$i][0]['cod_puesto']),'RL',0,'C');
+						$varX = $pdf->GetX();
+						$varY = $pdf->GetY();
+						$pdf->Cell(60,1,"",'',2,'C');
+						$pdf->MultiCell(59,2,$datos[$i][0]['denominacion_puesto'],'','L');
+						$varX = $varX+60;
+						$pdf->SetXY($varX,$varY);
+						$pdf->Cell(15,6,mascara_seis($datos[$i][0]['cod_cargo']),'RL',0,'C');
+						$pdf->Cell(15,6,mascara_seis($datos[$i][0]['cod_ficha']),'R',0,'C');
+
+						switch($datos[$i][0]["frecuencia_cobro"]){
+							case '1': $A1=$datos[$i][0]["sueldo_basico"]*30; break;
+							case '2': $A1=(($datos[$i][0]["sueldo_basico"]*52)/12); break;
+							case '3': $A1=$datos[$i][0]["sueldo_basico"]*2 ; break;
+							case '4': $A1=$datos[$i][0]["sueldo_basico"]; break;
+							case '5': $A1=(($datos[$i][0]["sueldo_basico"]*6)/12); break;
+							case '6': $A1=(($datos[$i][0]["sueldo_basico"]*4)/12); break;
+							default : $A1= '';
+						}
+						$pdf->Cell(0,6,$sisap->Formato2($A1),'R',1,'R');
+
+						//---------------------------------------------------------------------------------------------
+
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,3,'Fecha','TRL',0,'C');
+						$pdf->Cell(35,3,'','TR',0,'C');
+						$pdf->Cell(30,3,'Acumulado','TR',0,'C');
+						$pdf->Cell(60,3,'','TR',0,'C');
+						$pdf->Cell(15,3,'','TR',0,'C');
+						$pdf->Cell(18,3,'Fecha','TR',0,'C');
+						$pdf->Cell(0,3,'Fecha','TR',1,'C');
+
+						$pdf->Cell(20,2,'ingreso','RBL',0,'C');
+						$pdf->Cell(35,2,'Tiempo de servicio','RB',0,'C');
+						$pdf->Cell(30,2,'Prestaciones','RB',0,'C');
+						$pdf->Cell(60,2,'Correspondiente','RB',0,'C');
+						$pdf->Cell(15,2,'N° Nóm.','RB',0,'C');
+						$pdf->Cell(18,2,'desde','RB',0,'C');
+						$pdf->Cell(0,2,'hasta','RB',1,'C');
+
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(20,6,$sisap->cambia_fecha($datos[$i][0]['fecha_ingreso']),'RL',0,'C');
+
+						// Bloque para calcular el tiempo de servicio.
+						$aux_fecha_ing = split('-', $datos[$i][0]['fecha_ingreso']);
+						$fecha_ing_inv = $aux_fecha_ing[1]."/".$aux_fecha_ing[2]."/".$aux_fecha_ing[0];
+						$DateDiff = $pdf->GetDateDifference($fecha_ing_inv,date('m/d/Y',strtotime ($datos[$i][0]['periodo_hasta'])));
+
+						$pdf->Cell(35,6,'Meses: '.$DateDiff['meses'].'   Años: '.$DateDiff['anos'],'R',0,'C');
+						$pdf->Cell(30,6,'','R',0,'C');
+						$pdf->Cell(60,6,$datos[$i][0]['correspondiente'],'R',0,'C');
+						$pdf->Cell(15,6,$datos[$i][0]['numero_nomina'],'R',0,'C');
+						$pdf->Cell(18,6,$sisap->cambia_fecha($datos[$i][0]['periodo_desde']),'R',0,'C');
+						$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['periodo_hasta']),'R',1,'C');
+
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(103,5,'ASIGNACIONES','TRBL',0,'C');
+						$pdf->Cell(0,5,'DEDUCCIONES','TRB',1,'C');
+
+						$pdf->Cell(8,4,'Cód','RBL',0,'C');
+						$pdf->Cell(35,4,'Concepto','RB',0,'C');
+						$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+						$pdf->Cell(21,4,'Cuota','RB',0,'C');
+						$pdf->Cell(21,4,'Saldo','RB',0,'C');
+						$pdf->Cell(8,4,'Cód','RB',0,'C');
+						$pdf->Cell(35,4,'Concepto','RB',0,'C');
+						$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+						$pdf->Cell(20,4,'Cuota','RB',0,'C');
+						$pdf->Cell(0,4,'Saldo','RB',1,'C');
+		}///fin if compara cedulas
+
+			$vector_datos[$k]['cod_tipo_nomina'] = $datos[$i][0]['cod_tipo_nomina'];
+			$vector_datos[$k]['denominacion_nomina'] = $datos[$i][0]['denominacion_nomina'];
+			$vector_datos[$k]['cod_coordinacion'] = $datos[$i][0]['cod_coordinacion'];
+			$vector_datos[$k]['deno_cod_coordinacion'] = $datos[$i][0]['deno_cod_coordinacion'];
+			$vector_datos[$k]['cod_direccion'] = $datos[$i][0]['cod_direccion'];
+			$vector_datos[$k]['deno_cod_direccion'] = $datos[$i][0]['deno_cod_direccion'];
+			$vector_datos[$k]['cod_departamento'] = $datos[$i][0]['cod_departamento'];
+			$vector_datos[$k]['deno_cod_departamento'] = $datos[$i][0]['deno_cod_departamento'];
+			$vector_datos[$k]['cod_secretaria'] = $datos[$i][0]['cod_secretaria'];
+			$vector_datos[$k]['deno_cod_secretaria'] = $datos[$i][0]['deno_cod_secretaria'];
+			$vector_datos[$k]['cod_division'] = $datos[$i][0]['cod_division'];
+			$vector_datos[$k]['deno_cod_division'] = $datos[$i][0]['deno_cod_division'];
+			$vector_datos[$k]['cod_oficina'] = $datos[$i][0]['cod_oficina'];
+			$vector_datos[$k]['deno_cod_oficina'] = $datos[$i][0]['deno_cod_oficina'];
+			$vector_datos[$k]['cedula_identidad'] = $datos[$i][0]['cedula_identidad'];
+			$vector_datos[$k]['ultimo_recibo'] = $datos[$i][0]['ultimo_recibo'];
+
+			$vector_datos[$k]['primer_apellido'] = $datos[$i][0]['primer_apellido'];
+			$vector_datos[$k]['segundo_apellido'] = $datos[$i][0]['segundo_apellido'];
+			$vector_datos[$k]['primer_nombre'] = $datos[$i][0]['primer_nombre'];
+			$vector_datos[$k]['segundo_nombre'] = $datos[$i][0]['segundo_nombre'];
+			$vector_datos[$k]['cod_puesto'] = $datos[$i][0]['cod_puesto'];
+			$vector_datos[$k]['denominacion_puesto'] = $datos[$i][0]['denominacion_puesto'];
+			$vector_datos[$k]['cod_cargo'] = $datos[$i][0]['cod_cargo'];
+			$vector_datos[$k]['cod_ficha'] = $datos[$i][0]['cod_ficha'];
+			$vector_datos[$k]['sueldo_basico'] = $datos[$i][0]['sueldo_basico'];
+
+			$vector_datos[$k]['fecha_ingreso'] = $datos[$i][0]['fecha_ingreso'];
+			$vector_datos[$k]['meses_serv'] = $DateDiff['meses'];
+			$vector_datos[$k]['anos_serv'] = $DateDiff['anos'];
+			$vector_datos[$k]['correspondiente'] = $datos[$i][0]['correspondiente'];
+			$vector_datos[$k]['numero_nomina'] = $datos[$i][0]['numero_nomina'];
+			$vector_datos[$k]['periodo_desde'] = $datos[$i][0]['periodo_desde'];
+			$vector_datos[$k]['periodo_hasta'] = $datos[$i][0]['periodo_hasta'];
+
+			$vector_datos[$k]['cod_tipo_transaccion'] = $datos[$i][0]['cod_tipo_transaccion'];
+			$vector_datos[$k]['cod_transaccion'] = $datos[$i][0]['cod_transaccion'];
+			$vector_datos[$k]['deno_transaccion'] = $datos[$i][0]['deno_transaccion'];
+			$vector_datos[$k]['dias_horas'] = $datos[$i][0]['dias_horas'];
+			$vector_datos[$k]['monto_cuota'] = $datos[$i][0]['monto_cuota'];
+			$vector_datos[$k]['saldo'] = $datos[$i][0]['saldo'];
+			$vector_datos[$k]['sueldo_mensual'] = $A1;
+
+			$vector_datos[$k]['deno_entidades_bancarias'] = $datos[$i][0]['deno_entidades_bancarias'];
+			$vector_datos[$k]['cuenta_bancaria'] = $datos[$i][0]['cuenta_bancaria'];
+
+			$k++;
+            /**/
+			$pdf->SetFont('vera','',6);
+			if($datos[$i][0]['cod_tipo_transaccion']==1){
+				$pdf->Cell(8,4,mascara_tres($datos[$i][0]['cod_transaccion']),'RBL',0,'C');
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(35,4,$datos[$i][0]['deno_transaccion'],'RB',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(18,4,$datos[$i][0]['dias_horas'],'RB',0,'C');
+				$pdf->Cell(21,4,$sisap->Formato2($datos[$i][0]['monto_cuota']),'RB',0,'R');
+				$pdf->Cell(21,4,$sisap->Formato2($datos[$i][0]['saldo']),'RB',0,'R');
+				$pdf->Cell(8,4,'','RB',0,'C');
+				$pdf->Cell(35,4,'','RB',0,'L');
+				$pdf->Cell(18,4,'','RB',0,'C');
+				$pdf->Cell(20,4,'','RB',0,'R');
+				$pdf->Cell(0,4,'','RB',1,'R');
+				$total_asignaciones_2 += $datos[$i][0]['saldo'];
+
+			}elseif($datos[$i][0]['cod_tipo_transaccion']==2){
+				$pdf->Cell(8,4,'','RBL',0,'C');
+				$pdf->Cell(35,4,'','RB',0,'L');
+				$pdf->Cell(18,4,'','RB',0,'C');
+				$pdf->Cell(21,4,'','RB',0,'R');
+				$pdf->Cell(21,4,'','RB',0,'R');
+				$pdf->Cell(8,4,mascara_tres($datos[$i][0]['cod_transaccion']),'RB',0,'C');
+				$pdf->SetFont('vera','',5);
+				$pdf->Cell(35,4,$datos[$i][0]['deno_transaccion'],'RB',0,'L');
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(18,4,$datos[$i][0]['dias_horas'],'RB',0,'C');
+				$pdf->Cell(20,4,$sisap->Formato2($datos[$i][0]['monto_cuota']),'RB',0,'R');
+				$pdf->Cell(0,4,$sisap->Formato2($datos[$i][0]['saldo']),'RB',1,'R');
+				$total_deducciones_2 += $datos[$i][0]['saldo'];
+
+			}
+			/**/
+
+
+			$entidad_bancaria_2 = $datos[$i][0]['deno_entidades_bancarias'];
+			$cuenta_bancaria_2 = $datos[$i][0]['cuenta_bancaria'];
+			$cedula_2 = $datos[$i][0]['cedula_identidad'];
+
+	}//fin for
+
+	$count= count($vector_datos);
+	$cont = 12 - $count;
+	for($j=0; $j<$cont; $j++){
+		$pdf->Cell(8,4,'','RBL',0,'C');
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(35,4,'','RB',0,'L');
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(18,4,'','RB',0,'C');
+		$pdf->Cell(21,4,'','RB',0,'R');
+		$pdf->Cell(21,4,'','RB',0,'R');
+		$pdf->Cell(8,4,'','RB',0,'C');
+		$pdf->Cell(35,4,'','RB',0,'L');
+		$pdf->Cell(18,4,'','RB',0,'C');
+		$pdf->Cell(20,4,'','RB',0,'R');
+		$pdf->Cell(0,4,'','RB',1,'R');
+	}
+
+	$neto_cobrar_2 = ($total_asignaciones_2 + $vector_datos[0]['sueldo_mensual']) - $total_deducciones_2;
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(35,5,$sisap->Formato2($total_asignaciones_2),'TR',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Total Deducciones:','TR',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(35,5,$sisap->Formato2($total_deducciones_2),'TR',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(0,5,$sisap->Formato2($neto_cobrar_2),'TR',1,'L');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+	$pdf->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+	$pdf->Cell(15,5,'BANCO:','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(88,5,$vector_datos[0]['deno_entidades_bancarias'],'RL',1,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(15,5,'CUENTA:','RL',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(88,5,$vector_datos[0]['cuenta_bancaria'],'RL',1,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->SetXY($varX+103,$varY-10);
+
+	$pdf->SetFont('vera','',6);
+	$pdf->MultiCell(102,3,"",'','L');//--[Mensajes]
+	$pdf->SetXY($varX+205,$varY-10);
+	$pdf->Cell(0,10,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);
+
+	$pdf->SetXY(5,140);
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(15,4,"",'TL',0);
+	$pdf->Cell(0,4,$varTOPh1,'TR',1);
+	$pdf->Cell(15,2,"",'L',0);
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(0,2,$varTOPh11,'R',1);
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,3,"",'RL',1,'C');
+	$pdf->Cell(0,3,"RECIBO DE PAGO",'RL',1,'C');
+	$pdf->Cell(0,4,"NÚMERO RECIBO: ".mascara_seis($vector_datos[0]['ultimo_recibo']),'RBL',1,'R');
+
+	$varX_aux = $pdf->GetX() + 186;
+	$varY_aux = $pdf->GetY() - 14;
+		$pdf->SetFont('vera','B',5);
+    	$pdf->Text($varX_aux, $varY_aux, 'FECHA: '.date("d/m/Y"));
+    	$pdf->Text($varX_aux, $varY_aux+3, 'HORA: '.date("h:i a"));
+
+
+	$pdf->Image($escudo,$varX_aux-184,$varY_aux-1,13);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(20,4,'CÓDIGO','RBL',2,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(20,12,mascara_cuatro($vector_datos[0]['cod_tipo_nomina']),'RL',2,'C');
+	$pdf->setXY($varX+20, $varY-4);
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(68,4,'Denominación de nómina','B',2,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->SetFont('vera','',6);
+	$pdf->MultiCell(68,3,$vector_datos[0]['denominacion_nomina'],'','L');//--[Denominación Nomina]
+
+	$pdf->setXY($varX+68, $varY-4);
+
+	$pdf->SetFont('vera','',5);
+	$pdf->Cell(1,8,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(35,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_coordinacion'])." - ".$vector_datos[0]['deno_cod_coordinacion'],'','L');//--[Coor]
+	$varX = $varX+35;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(1,8,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(35,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_direccion'])." - ".$vector_datos[0]['deno_cod_direccion'],'','L');//--[Dire]
+	$varX = $varX+35;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(1,8,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,1,"",'',2,'C');
+	$pdf->MultiCell(45,2,mascara2($vector_datos[0]['cod_departamento'])." - ".$vector_datos[0]['deno_cod_departamento'],'','L');//--[Depa]
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,8,'','R',1,'C');
+
+	$pdf->SetXY($var_aux_X-1,$var_aux_Y+8);
+
+	$pdf->Cell(1,8,'','TL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$var_aux_X = $varX;
+	$var_aux_Y = $varY;
+	$pdf->Cell(35,1,"",'T',2,'C');
+	$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_secretaria'])." - ".$vector_datos[0]['deno_cod_secretaria'],'','L');//--[Secre]
+	$varX = $varX+35;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(1,8,'','TR',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(35,1,"",'T',2,'C');
+	$pdf->MultiCell(34,2,mascara2($vector_datos[0]['cod_division'])." - ".$vector_datos[0]['deno_cod_division'],'','L');//--[Divi]
+	$varX = $varX+35;
+	$pdf->SetXY($varX,$varY);
+
+	$pdf->Cell(1,8,'','TR',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(44,1,"",'T',2,'C');
+	$pdf->MultiCell(45,2,mascara2($vector_datos[0]['cod_oficina'])." - ".$vector_datos[0]['deno_cod_oficina'],'','L');//--[ofic]
+	$varX = $varX+44;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(0,8,'','TR',1,'C');
+
+	//---------------------------------------------------------------------------------------------
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(20,3,'Cédula de','TRL',0,'C');
+	$pdf->Cell(50,3,'','TR',0,'C');
+	$pdf->Cell(15,3,'Código','TR',0,'C');
+	$pdf->Cell(60,3,'','TR',0,'C');
+	$pdf->Cell(15,3,'Código','TR',0,'C');
+	$pdf->Cell(15,3,'Código','TR',0,'C');
+	$pdf->Cell(0,3,'Sueldo','TR',1,'C');
+
+	$pdf->Cell(20,2,'identidad','RBL',0,'C');
+	$pdf->Cell(50,2,'Apellidos y Nombres','RB',0,'C');
+	$pdf->Cell(15,2,'Puesto','RB',0,'C');
+	$pdf->Cell(60,2,'Denominación del puesto','RB',0,'C');
+	$pdf->Cell(15,2,'Cargo','RB',0,'C');
+	$pdf->Cell(15,2,'Ficha','RB',0,'C');
+	$pdf->Cell(0,2,'Mensual','RB',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(20,6,$vector_datos[0]['cedula_identidad'],'RL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(50,2,"",'',2,'C');
+	$pdf->MultiCell(49,2,$vector_datos[0]['primer_apellido']." ".$vector_datos[0]['segundo_apellido']." ".$vector_datos[0]['primer_nombre']." ".$vector_datos[0]['segundo_nombre'],'','L');
+	$varX = $varX+50;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_puesto']),'RL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(60,1,"",'',2,'C');
+	$pdf->MultiCell(59,2,$vector_datos[0]['denominacion_puesto'],'','L');
+	$varX = $varX+60;
+	$pdf->SetXY($varX,$varY);
+	$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_cargo']),'RL',0,'C');
+	$pdf->Cell(15,6,mascara_seis($vector_datos[0]['cod_ficha']),'R',0,'C');
+	$pdf->Cell(0,6,$sisap->Formato2($vector_datos[0]['sueldo_mensual']),'R',1,'R');
+
+	//---------------------------------------------------------------------------------------------
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(20,3,'Fecha','TRL',0,'C');
+	$pdf->Cell(35,3,'','TR',0,'C');
+	$pdf->Cell(30,3,'Acumulado','TR',0,'C');
+	$pdf->Cell(60,3,'','TR',0,'C');
+	$pdf->Cell(15,3,'','TR',0,'C');
+	$pdf->Cell(18,3,'Fecha','TR',0,'C');
+	$pdf->Cell(0,3,'Fecha','TR',1,'C');
+
+	$pdf->Cell(20,2,'ingreso','RBL',0,'C');
+	$pdf->Cell(35,2,'Tiempo de servicio','RB',0,'C');
+	$pdf->Cell(30,2,'Prestaciones','RB',0,'C');
+	$pdf->Cell(60,2,'Correspondiente','RB',0,'C');
+	$pdf->Cell(15,2,'N° Nóm.','RB',0,'C');
+	$pdf->Cell(18,2,'desde','RB',0,'C');
+	$pdf->Cell(0,2,'hasta','RB',1,'C');
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(20,6,$sisap->cambia_fecha($vector_datos[0]['fecha_ingreso']),'RL',0,'C');
+	$pdf->Cell(35,6,'Meses: '.$vector_datos[0]['meses_serv'].'    Años: '.$vector_datos[0]['anos_serv'],'R',0,'C');
+	$pdf->Cell(30,6,'','R',0,'C');
+	$pdf->Cell(60,6,$vector_datos[0]['correspondiente'],'R',0,'C');
+	$pdf->Cell(15,6,$vector_datos[0]['numero_nomina'],'R',0,'C');
+	$pdf->Cell(18,6,$sisap->cambia_fecha($vector_datos[0]['periodo_desde']),'R',0,'C');
+	$pdf->Cell(0,6,$sisap->cambia_fecha($vector_datos[0]['periodo_hasta']),'R',1,'C');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(103,5,'ASIGNACIONES','TRBL',0,'C');
+	$pdf->Cell(0,5,'DEDUCCIONES','TRB',1,'C');
+
+	$pdf->Cell(8,4,'Cód','RBL',0,'C');
+	$pdf->Cell(35,4,'Concepto','RB',0,'C');
+	$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+	$pdf->Cell(21,4,'Cuota','RB',0,'C');
+	$pdf->Cell(21,4,'Saldo','RB',0,'C');
+	$pdf->Cell(8,4,'Cód','RB',0,'C');
+	$pdf->Cell(35,4,'Concepto','RB',0,'C');
+	$pdf->Cell(18,4,'Dias Horas','RB',0,'C');
+	$pdf->Cell(20,4,'Cuota','RB',0,'C');
+	$pdf->Cell(0,4,'Saldo','RB',1,'C');
+
+	$total_asignacion = 0;
+	$total_deduccion  = 0;
+	$neto_cobrar = 0;
+	$total_vector=count($vector_datos);
+
+
+	                            /*aqui comienza jgha*/
+                                $array1=array();
+                                $array2=array();
+								for($h=0; $h<$total_vector; $h++){
+									if($vector_datos[$h]['cod_tipo_transaccion']==1){
+										$array1[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$sisap->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$sisap->Formato2($vector_datos[$h]['saldo'])
+										                );
+									}elseif($vector_datos[$h]['cod_tipo_transaccion']==2){
+								        $array2[] = array('cod'=>mascara_tres($vector_datos[$h]['cod_transaccion']),
+										                'deno'=>$vector_datos[$h]['deno_transaccion'],
+										                'dias_horas'=>$vector_datos[$h]['dias_horas'],
+										                'monto'=>$sisap->Formato2($vector_datos[$h]['monto_cuota']),
+										                'saldo'=>$sisap->Formato2($vector_datos[$h]['saldo'])
+										                );
+								    }
+								}//fin for
+
+								$t_filas = count($array1)>count($array2)?count($array1):count($array2);
+
+								for($h=0; $h<$t_filas; $h++){
+									    sort($array1);
+									    sort($array2);
+									    $x1[1] = isset($array1[$h]['cod'])       ?$array1[$h]['cod']:'';
+									    $x1[2] = isset($array1[$h]['deno'])      ?$array1[$h]['deno']:'';
+									    $x1[3] = isset($array1[$h]['dias_horas'])?$array1[$h]['dias_horas']:'';
+									    $x1[4] = isset($array1[$h]['monto'])     ?$array1[$h]['monto']:'';
+									    $x1[5] = isset($array1[$h]['saldo'])     ?$array1[$h]['saldo']:0;
+									    $x2[1] = isset($array2[$h]['cod'])       ?$array2[$h]['cod']:'';
+									    $x2[2] = isset($array2[$h]['deno'])      ?$array2[$h]['deno']:'';
+									    $x2[3] = isset($array2[$h]['dias_horas'])?$array2[$h]['dias_horas']:'';
+									    $x2[4] = isset($array2[$h]['monto'])     ?$array2[$h]['monto']:'';
+									    $x2[5] = isset($array2[$h]['saldo'])     ?$array2[$h]['saldo']:0;
+									    $pdf->SetFont('vera','',6);
+										$pdf->Cell(8,4,$x1[1],'RBL',0,'C');
+										$pdf->SetFont('vera','',5);
+										$pdf->Cell(35,4,$x1[2],'RB',0,'L');
+										$pdf->SetFont('vera','',6);
+										$pdf->Cell(18,4,$x1[3],'RB',0,'C');
+										$pdf->Cell(21,4,$x1[4],'RB',0,'R');
+										$pdf->Cell(21,4,$x1[5]==0?'':$x1[5],'RB',0,'R');
+										$pdf->Cell(8,4,$x2[1],'RB',0,'C');
+										$pdf->SetFont('vera','',5);
+										$pdf->Cell(35,4,$x2[2],'RB',0,'L');
+										$pdf->SetFont('vera','',6);
+										$pdf->Cell(18,4,$x2[3],'RB',0,'C');
+										$pdf->Cell(20,4,$x2[4],'RB',0,'R');
+										$pdf->Cell(0,4,$x2[5]==0?'':$x2[5],'RB',1,'R');
+										$total_asignacion += $x1[5];
+										$total_deduccion += $x2[5];
+
+								}///////
+								unset($array1);
+								unset($array2);
+								unset($x1);
+								unset($x2);
+
+	$cont = 12 - $total_vector;
+	for($j=0; $j<$cont; $j++){
+		$pdf->Cell(8,4,'','RBL',0,'C');
+		$pdf->SetFont('vera','',5);
+		$pdf->Cell(35,4,'','RB',0,'L');
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(18,4,'','RB',0,'C');
+		$pdf->Cell(21,4,'','RB',0,'R');
+		$pdf->Cell(21,4,'','RB',0,'R');
+		$pdf->Cell(8,4,'','RB',0,'C');
+		$pdf->Cell(35,4,'','RB',0,'L');
+		$pdf->Cell(18,4,'','RB',0,'C');
+		$pdf->Cell(20,4,'','RB',0,'R');
+		$pdf->Cell(0,4,'','RB',1,'R');
+	}
+
+
+	$neto_cobrar = ($total_asignacion + $vector_datos[0]['sueldo_mensual']) - $total_deduccion;
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Total Asignaciones:','TRL',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(35,5,$sisap->Formato2($total_asignacion),'TR',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Total Deducciones:','TR',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(35,5,$sisap->Formato2($total_deduccion),'TR',0,'L');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(33,5,'Neto a cobrar:','TR',0,'C');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(0,5,$sisap->Formato2($neto_cobrar),'TR',1,'L');
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(103,4,'DEPOSITADO EN:','TRBL',0,'C');
+	$pdf->Cell(0,4,'MENSAJES','TRB',1,'C');
+
+	$pdf->Cell(15,5,'BANCO:','RL',0,'L');
+	$pdf->Cell(88,5,$vector_datos[0]['deno_entidades_bancarias'],'RL',1,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(15,5,'CUENTA:','RL',0,'L');
+	$pdf->Cell(88,5,$vector_datos[0]['cuenta_bancaria'],'RL',1,'L');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->SetXY($varX+103,$varY-10);
+
+	$pdf->SetFont('vera','',6);
+	$pdf->MultiCell(102,3,"",'','L');//--[Mensajes]
+	$pdf->SetXY($varX+205,$varY-10);
+	$pdf->Cell(0,10,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);
+
+	$vector_datos=array();
+}
+$pdf->Output('emision_de_recibos_'.date('d-m-Y').'.pdf','D');
+}
+?>

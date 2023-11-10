@@ -1,0 +1,175 @@
+<?php
+/*
+ * Created on 05/01/2009
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ if(isset($var) && $var=="no"){
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"VEHÍCULOS ASEGURADOS","","950");?>
+
+<form name="data[vehiculos_asegurados]" method="post" id='form' action="<?php echo $html->url('/reporte_bienes/reporte_vehiculos_asegurados/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		<?php
+		$d=$session->read('SScoddep');
+   		if($d==1){
+		?>
+		<tr>
+			<td align="center">
+			CONSOLIDADO POR:<?= $html->radio('vehiculos_asegurados/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), null, array('value'=>'1'))?>
+			</td>
+		</tr>
+		<?}?>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td align="center">
+			Ordenado por:&nbsp;&nbsp;<?= $html->radio('vehiculos_asegurados/ordenacion', array('1'=>'Placas', '2'=>'N&uacute;mero de identificaci&oacute;n'), null, array('value'=>'1'))?>
+			</td>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td align="center" id="td-busqueda_inmuebles">
+				&nbsp;
+			</td>
+		</tr>
+	</table>
+	<br />
+	<div id="vacio"></div>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/reporte_bienes/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+<?php
+}elseif(isset($var) && $var=="si"){
+set_time_limit(0);
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	/*
+    	$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=$_SESSION["entidad_federal"];
+        	$varTOPh11=$_SESSION["dependencia"];
+        	$t1=6;
+        	$t2=16;
+        }else{
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION["entidad_federal"];
+        	$varTOPh11=$_SESSION["dependencia"];
+        	$t1=6;
+        	$t2=16;
+        }
+
+		$this->Image($escudo,$t1,$t2,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$varTOPh11,'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"VEHÍCULOS ASEGURADOS",'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 186;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+		*/
+		$titulo_A = "VEHÍCULOS ASEGURADOS";
+		$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"191"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(10,3,'','TRL',0,'C');
+		$this->Cell(25,3,'NÚMERO DE','TR',0,'C');
+		$this->Cell(65,3,'','TR',0,'C');
+		$this->Cell(25,3,'NÚMERO DE','TR',0,'C');
+		$this->Cell(16,3,'FECHA DE','TR',0,'C');
+		$this->Cell(35,3,'','TR',0,'C');
+		$this->Cell(0,3,'MONTO DE','TR',1,'C');
+
+		$this->Cell(10,3,'PLACA','RBL',0,'C');
+		$this->Cell(25,3,'IDENTIFICACIÓN','RB',0,'C');
+		$this->Cell(65,3,'DESCRIPCIÓN DEL VEHICULO','RB',0,'C');
+		$this->Cell(25,3,'PÓLIZA','RB',0,'C');
+		$this->Cell(16,3,'PÓLIZA','RB',0,'C');
+		$this->Cell(35,3,'COMPAÑIA ASEGURADORA','RB',0,'C');
+		$this->Cell(0,3,'COVERTURA','RB',1,'C');
+
+    }//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$cant_registros = count($datos_vehiculos);
+if($cant_registros==0){
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(0,30,'NO EXISTEN REGISTROS DE VEHICULOS ASEGURADOS','TRBL',0,'C');
+}else{
+	$pdf->SetFont('vera','',6);
+	for($i=0; $i<$cant_registros; $i++){
+		$pdf->Cell(10,10,$datos_vehiculos[$i][0]['numero_identificacion'],'RL',0,'C');
+		$pdf->Cell(25,10,$datos_vehiculos[$i][0]['placa'],'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(65,1,"",'',2,'C');
+		$pdf->MultiCell(65,2,$datos_vehiculos[$i][0]['descripcion_vehiculo'],'','L');
+		$varX = $varX+65;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(25,10,$datos_vehiculos[$i][0]['numero_poliza'],'RL',0,'C');
+		$pdf->Cell(16,10,$datos_vehiculos[$i][0]['placa'],'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,$datos_vehiculos[$i][0]['compania_aseguradora'],'','L');
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,10,$datos_vehiculos[$i][0]['monto_cobertura'],'RL',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+
+	$pdf->Ln(3);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(68,4,'PREPARACIÓN DE INVENTARIO','TRL',0,'C');
+	$pdf->Cell(69,4,'CONFORMACIÓN','TR',0,'C');
+	$pdf->Cell(0,4,'APROBACIÓN JEFE DE BIENES','TR',1,'C');
+
+	$pdf->Cell(68,15,'','TRBL',0,'C');
+	$pdf->Cell(69,15,'','TRB',0,'C');
+	$pdf->Cell(0,15,'','TRB',1,'C');
+
+	$pdf->Cell(68,4,'FIRMA Y SELLO','RBL',0,'C');
+	$pdf->Cell(69,4,'FIRMA Y SELLO','RB',0,'C');
+	$pdf->Cell(0,4,'FIRMA Y SELLO','RB',1,'C');
+}
+$pdf->Output('Vehiculos_asegurados_'.date('d-m-Y').'.pdf','D');
+}
+?>

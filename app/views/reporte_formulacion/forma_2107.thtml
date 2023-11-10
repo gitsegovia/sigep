@@ -1,0 +1,157 @@
+<?php
+if(isset($ir)){
+?>
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DEL COSTO DE LOS RECURSOS HUMANOS DE LA INSTITUCIÓN POR ESCALA DE SUELDOS Y SALARIOS",NULL,"950"); ?>
+<div id="actualizar"></div>
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion/forma_2107/si'); ?>">
+<?= $sisap->OpenTable("950")?>
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cnmp05][ano]"  value="<?= $year ?>" id="ano_formular" style="text-align:center"  style="text-align:center" size="3" readonly  maxlength="4"  onKeyPress="return solonumeros(event);"  /><br><br>
+<?= $sisap->radio_consolidado('cnmp05/consolidacion', array(), '', true)  ?>
+<br><br>
+<?= $html->submit('Generar'); ?>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+</form>
+
+
+<?
+}else{
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RESUMEN DEL COSTO DE LOS RECURSOS HUMANOS DE LA INSTITUCIÓN POR ESCALA DE SUELDOS Y SALARIOS";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2107','',1,'R');
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$altura1=5;
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,$altura1,'PRESUPUESTO: '.$ano_presupuesto,'TRBL',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(98,$altura1,'','RL',0,'C');
+$pdf->Cell(90,$altura1,'','R',0,'C');
+$pdf->Cell(0,$altura1,'ESTIMADO PARA: '.$ano_presupuesto,'R',1,'C');
+
+
+$pdf->Cell(98,$altura1,'','RL',0,'C');
+$pdf->Cell(90,$altura1,'GENÉRO','R',0,'C');
+$pdf->Cell(53,$altura1,'EMPLEADOS','TR',0,'C');
+$pdf->Cell(53,$altura1,'OBREROS','TR',0,'C');
+$pdf->Cell(0,$altura1,'TOTAL GENERAL','TR',1,'C');
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(18,$altura1,'GRUPO','TRL',0,'C');
+$pdf->Cell(80,$altura1,'ESCALAS DE SUELDOS Y SALARIOS','TR',0,'C');
+$pdf->Cell(30,$altura1,'FEMENINO','TR',0,'C');
+$pdf->Cell(30,$altura1,'MASCULINO','TR',0,'C');
+$pdf->Cell(30,$altura1,'VACANTE','TR',0,'C');
+$pdf->Cell(18,$altura1,'NÚMERO','TR',0,'C');
+$pdf->Cell(35,$altura1,'MONTO','TR',0,'C');
+$pdf->Cell(18,$altura1,'NÚMERO','TR',0,'C');
+$pdf->Cell(35,$altura1,'MONTO','TR',0,'C');
+$pdf->Cell(18,$altura1,'NÚMERO','TR',0,'C');
+$pdf->Cell(0,$altura1,'MONTO','TR',1,'C');
+
+
+$t1=0;
+$t2=0;
+$t3=0;
+$t4=0;
+$t5=0;
+$t6=0;
+$t7=0;
+$t8=0;
+$t9=0;
+
+	foreach($data as $r){
+		extract($r[$modelo]);
+		$altura2=6;
+		$pdf->SetFont('vera','B',8);
+
+		$pdf->Cell(18,$altura2,$grupo,'TRL',0,'C');
+	if($escala==1){
+		$pdf->Cell(25,$altura2,'DESDE','T',0,'R');
+		}else{
+	    $pdf->Cell(25,$altura2,$sisap->Formato2($desde_monto),'T',0,'R');
+		    }
+		$pdf->Cell(25,$altura2,'-','T',0,'C');
+	if($escala==18){
+		$pdf->Cell(10,$altura2,'MAS','T',0,'R');
+		}else{
+	    $pdf->Cell(10,$altura2,$sisap->Formato2($hasta_monto),'T',0,'R');
+		    }
+
+		$pdf->Cell(20,$altura2,'','TR',0,'R');
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(30,$altura2,$femenino,'TR',0,'C');
+		$pdf->Cell(30,$altura2,$masculino,'TR',0,'C');
+		$pdf->Cell(30,$altura2,$vacante,'TR',0,'C');
+		$pdf->Cell(18,$altura2,$empleados,'TR',0,'C');
+		$pdf->Cell(35,$altura2,$sisap->Formato2($monto_empleados),'TR',0,'R');
+		$pdf->Cell(18,$altura2,$obreros,'TR',0,'C');
+		$pdf->Cell(35,$altura2,$sisap->Formato2($monto_obreros),'TR',0,'R');
+		$pdf->Cell(18,$altura2,($empleados+$obreros),'TR',0,'C');
+		$pdf->Cell(0,$altura2,$sisap->Formato2(($monto_empleados+$monto_obreros)),'TR',1,'R');
+		$t1+=$femenino;
+		$t2+=$masculino;
+		$t3+=$vacante;
+		$t4+=$empleados;
+		$t5+=$monto_empleados;
+		$t6+=$obreros;
+		$t7+=$monto_obreros;
+		$t8+=($empleados+$obreros);
+		$t9+=($monto_empleados+$monto_obreros);
+	}
+
+
+
+// TOTALES
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(98,6,'TOTALES: ','TRBL',0,'R');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(30,6,$t1,'TRB',0,'C');
+$pdf->Cell(30,6,$t2,'TRB',0,'C');
+$pdf->Cell(30,6,$t3,'TRB',0,'C');
+$pdf->Cell(18,6,$t4,'TRB',0,'C');
+$pdf->Cell(35,6,$sisap->Formato2($t5),'TRB',0,'R');
+$pdf->Cell(18,6,$t6,'TRB',0,'C');
+$pdf->Cell(35,6,$sisap->Formato2($t7),'TRB',0,'R');
+$pdf->Cell(18,6,$t8,'TRB',0,'C');
+$pdf->Cell(0,6,$sisap->Formato2($t9),'TRB',1,'R');
+
+$pdf->Output('FORMA_2107.pdf','D');
+
+
+}
+?>

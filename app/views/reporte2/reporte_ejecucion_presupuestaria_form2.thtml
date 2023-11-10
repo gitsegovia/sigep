@@ -1,0 +1,115 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: reporte_ejecucion_presupuestaria_form.php
+ * Fecha de creacion: 17/07/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+?>
+<?= $sisap->Tabla('',true,'EjecuciÓn presupuestaria a nivel de partidas<br/>con asignación al','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_ejecucion_presupuestaria_pdf2/'); ?>">
+
+
+
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+
+
+
+
+
+<center>Indique Año de Ejecuci&oacute;n:
+<?= $html->input('reporte/ano',array('id'=>'ano', 'size'=>'6','value'=>$ANO,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);",  'style'=>"text-align:center;"));?>
+<br><br>
+</center>
+
+TIPO DE GASTO:<br><?= $html->radio('cfpp05/tipo_gasto', array('0'=>'todo','1'=>'capital', '2'=>'corriente'), NULL, array('value'=>'0'))?><br>
+<br/>TIPO DE RECURSO:<br><?= $html->radio('cfpp05/tipo_recurso', $sisap->tipoPresupuesto(3), NULL, array('value'=>'0'))?><br>
+<br>FRECUENCIA:<br><?= $html->radio('cfpp05/frecuencia', array('2'=>'Mensual','3'=>'Trimestral','4'=>'Semestral','5'=>'Anual'), NULL, array('value'=>'5','onClick'=>'cambiar_frecuencia()'))?>
+<br><br>
+<?
+$meses=array(1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre');
+$tri=array(1=>'PRIMER TRIMESTRE',2=>'SEGUNDO TRIMESTRE',3=>'TERCER TRIMESTRE',4=>'CUARTO TRIMESTRE');
+$sem=array(1=>'PRIMER SEMESTRE',2=>'SEGUNDO SEMESTRE');
+?>
+<div id="seleccion_mes" style="display:none;">Seleccione el Mes: <?=$html->selectTag('cfpp05/mes',$meses,$mes,array("id"=>"mes","style"=>"width:150px;"), false, null)?></div>
+<div id="seleccion_tri" style="display:none;">Seleccione el Trimestre: <?=$html->selectTag('cfpp05/trimestre',$tri,'',array("id"=>"tri","style"=>"width:150px;"), false, null)?></div>
+<div id="seleccion_sem" style="display:none;">Seleccione el Semestre: <?=$html->selectTag('cfpp05/semestre',$sem,'',array("id"=>"sem","style"=>"width:150px;"), false, null)?></div>
+<br>
+<div id="firmas_anul">
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+	if(isset($firma_existe) && $firma_existe=='si'){
+?>
+<br />
+<input type="hidden" name="[cugp03_acta_anulacion][tipo_doc_anul]" value="101">
+<table width="600" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td width="70" align="center">Firma<input type="hidden" name="data[cugp03_acta_anulacion][tipo_doc_anul]" value="<?=$tipo_doc_anul?>" maxlength="4" id="tipo_doc_anul" class="inputtext" /></td>
+		<td align="center">Nombre Firmante</td>
+		<td align="center">Cargo Firmante</td>
+	<tr>
+		<td width="70" align="center">1</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" maxlength="100" id="nombre_primera_firma" readonly="readonly" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" maxlength="100" id="cargo_primera_firma" readonly="readonly" class="inputtext" /></td>
+	<tr>
+		<td width="70" align="center">2</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_segunda_firma]" value="<?=$nombre_segunda_firma?>" maxlength="100" id="nombre_segunda_firma" readonly="readonly" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_segunda_firma]" value="<?=$cargo_segunda_firma?>" maxlength="100" id="cargo_segunda_firma" readonly="readonly" class="inputtext" /></td>
+	<tr>
+		<td width="70" align="center">3</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_tercera_firma]" value="<?=$nombre_tercera_firma?>" maxlength="100" id="nombre_tercera_firma" readonly="readonly" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_tercera_firma]" value="<?=$cargo_tercera_firma?>" maxlength="100" id="cargo_tercera_firma" readonly="readonly" class="inputtext" /></td>
+</table>
+<br />
+<?= $html->submit('Generar Reporte', array('id'=>'b_generar')); ?>&nbsp;&nbsp;&nbsp;&nbsp;
+
+<span id="mostOc" style="display:none">
+    <?= $sisap->submitTagRemote('  Guardar Firmas  ', array('funcion'=>'valida_cugd07_firmas', 'url1'=>'/reporte2/modificar_firmas/', 'update1'=>'firmas_anul', 'id'=>'b_modificar_firmas', 'disabled'=>'enable')); ?>
+</span>
+
+<span id="mostOc-22">
+    <input type="button" name="b_modifica" value="Modificar Firmas" id="b_habilita_modificar" onClick="mostrar_b_modifar_cugd07_firmas();">
+</span>
+
+<?php
+}else if(isset($firma_existe) && $firma_existe=='no'){
+?>
+<br />
+<input type="hidden" name="[cugp03_acta_anulacion][tipo_doc_anul]" value="101">
+<table width="600" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td width="70" align="center">Firma<input type="hidden" name="data[cugp03_acta_anulacion][tipo_doc_anul]" value="<?=$tipo_doc_anul?>" maxlength="4" id="tipo_doc_anul" class="inputtext" /></td>
+		<td align="center">Nombre Firmante</td>
+		<td align="center">Cargo Firmante</td>
+	<tr>
+		<td width="70" align="center">1</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_primera_firma]" value="<?=$nombre_primera_firma?>" maxlength="100" id="nombre_primera_firma" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_primera_firma]" value="<?=$cargo_primera_firma?>" maxlength="100" id="cargo_primera_firma" class="inputtext" /></td>
+	<tr>
+		<td width="70" align="center">2</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_segunda_firma]" value="<?=$nombre_segunda_firma?>" maxlength="100" id="nombre_segunda_firma" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_segunda_firma]" value="<?=$cargo_segunda_firma?>" maxlength="100" id="cargo_segunda_firma" class="inputtext" /></td>
+	<tr>
+		<td width="70" align="center">3</td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][nombre_tercera_firma]" value="<?=$nombre_tercera_firma?>" maxlength="100" id="nombre_tercera_firma" class="inputtext" /></td>
+		<td><input type="text" name="data[cugp03_acta_anulacion][cargo_tercera_firma]" value="<?=$cargo_tercera_firma?>" maxlength="100" id="cargo_tercera_firma" class="inputtext" /></td>
+</table>
+<br />
+<?= $sisap->submitTagRemote('Guardar Firmas', array('funcion'=>'valida_cugd07_firmas', 'url1' => '/reporte2/guardar_firmas_anulacion/', 'update1'=>'firmas_anul', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+
+<?php
+}
+?>
+</div>
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<br>
+</form>
+<?=$sisap->CloseTable()?>

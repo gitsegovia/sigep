@@ -1,0 +1,205 @@
+<?php
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+		$this->image_escudo_sin_consolidado(7,32,20);
+		$this->SetFont('vera','B',10);
+		$this->Cell(20,6,"",'TL',0);
+		$this->Cell(0,6,$_SESSION['entidad_federal'],'TR',1);//---AQUI SE IMPRIME LA ENTIDAD QUE DEBERIA VENIR SETEADA (SET)
+		$this->Cell(25,4,"",'L',0);
+		$this->SetFont('vera','',9);
+		$this->Cell(0,4,$_SESSION['dependencia'],'R',1);//-----------------AQUI SE IMPRIME LA DEPENDENCIA QUE DEBERIA VENIR SETEADA (SET)
+		$this->SetFont('vera','B',12);
+		$this->Cell(30,10,"",'L',0);
+		$this->MultiCell(0,5,"RELACIÓN DEL PLAN DE INVERSIONES\n",'R','C');
+		$this->SetFont('vera','',7);
+		$this->Cell(30,3,"",'L',0);
+		$this->Cell(0,3,"(BOLÍVAR)",'R',1,'C');
+		$this->SetFont('vera','',9);
+		$this->Cell(22,5,"",'BL',0);
+		$this->Cell(0,5,"PRESUPUESTO: ".$_SESSION['ejercicio'],'RB',0);// <-- VARIABLE DE PRESUPUESTO AQUI
+		$this->Ln(7);
+
+		$this->SetFont('vera','B',7);
+
+		$this->Cell(149,8,"D E N O M I N A C I Ó N    D E L    R E C U R S O",'TRLB',0,'C');
+		$this->Cell(40,8,"MONTO PLAN DE INVERSIÓN",'TRB',0,'C');
+		$this->Cell(40,8,"MONTO PRESUPUESTADO",'TRB',0,'C');
+		$this->Cell(0,8,"SALDO PLAN DE INVERSIÓN",'TRB',1,'C');
+
+	}//fin funtion
+
+
+}//fin clase
+
+
+ if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RELACIÓN DEL PLAN DE INVERSIONES",NULL,"750");?>
+
+
+ <form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/plan_inversion/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+EJERCICIO PRESUPUESTARIO FORMULADO:
+<input name="data[cfpp05][ano]"  value="<?= $year?>" id="ano_formular"  size="6"  maxlength="4"  onKeyPress="return solonumeros(event);"  style="text-align:center;" /><br><br>
+<?php  $d=$session->read('SScoddep');
+      /* if($d==1){
+?>
+CONSOLIDADO POR:<br>
+<?= $html->radio('cfpp05/consolidacion', array('1'=>'Instituci&oacute;n', '2'=>'Dependencia'), '<br>', array())?>
+<br><br>
+<? } */ ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+$i=0;
+$a=0;
+$ano_recurso[1]='';
+
+foreach( $datos as $dato){
+		$tipo_recurso[$i]=  $dato['cfpd07_plan_inversion']['tipo_recurso'];
+		$clasificacion_recurso[$i]= $sisap->add_c_c($dato['cfpd07_plan_inversion']['clasificacion_recurso']);
+	  //$denominacion[$i]=  $dato['cfpd07_plan_inversion']['denominacion'];
+		$asignacion_total[$i]= $dato['cfpd07_plan_inversion']['asignacion_total'];
+		$monto_presupuestado[$i]= $dato['cfpd07_plan_inversion']['monto_presupuestado'];
+		$ano_recurso[$i]=  $dato['cfpd07_plan_inversion']['ano_recurso'];
+		$i++;
+	}
+
+foreach($datos2 as $dato2){
+
+		$tipo_recurso2[$a]=  $dato2['cfpd07_clasificacion_recurso']['tipo_recurso'];
+		$clasificacion_recurso2[$a]=  $dato2['cfpd07_clasificacion_recurso']['clasificacion_recurso'];
+   		$denominacion[$a]=  $dato2['cfpd07_clasificacion_recurso']['denominacion'];
+		$a++;
+	}
+
+
+$i--;
+$a--;
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages();
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;   // estas son las variables de seccion
+$_SESSION['ejercicio'] = $ano_recurso[0];                         // estas son las variables de seccion
+$_SESSION['titulo_a'] = $titulo_a;                       // estas son las variables de seccion
+
+$pdf->AddPage();
+$pdf->SetFont('vera','',7);
+
+$total = 0;
+$total_a = 0;
+$total_b = 0;
+$total_c = 0;
+
+for($ii=0; $ii<=$i; $ii++){
+
+	//$deno = "ABCDEFGHIJKLÑOPQRSTOPQWXYZ-ABCDEFGHIJKLÑOPQRSYTOPQWXYZ-ABCDEFGHIJKLÑOPQRSTOPQWXYZ-AAAAAAAAAAA";
+	//$num = strlen($deno);
+
+	$pageNum_Recordset1 = $ii;
+
+
+	for($aa=0; $aa<=$a; $aa++){
+	if($tipo_recurso[$pageNum_Recordset1]==$tipo_recurso2[$aa] && $clasificacion_recurso2[$aa]==$clasificacion_recurso[$pageNum_Recordset1]){
+		  $denominacion[$pageNum_Recordset1] = $denominacion[$aa];
+		}//fin if
+}//fin for
+
+   $deno   = str_replace("\n", ' ',$denominacion[$pageNum_Recordset1]);
+   $height = 13;
+
+
+	$pdf->Cell(1,$height,"",'TLB',0,'R');
+	$varX = $pdf->GetX();//asigno X
+	$varY = $pdf->GetY();//asigno Y
+	$pdf->Cell(148,2,"",'T',2,'C');
+	$pdf->MultiCell(148,3,$deno,'','J');//--------------denominacion
+	$varX = $varX+148;
+	$pdf->SetXY($varX,$varY);
+
+	$total = $asignacion_total[$pageNum_Recordset1] - $monto_presupuestado[$pageNum_Recordset1];
+
+	$pdf->Cell(40,$height,$sisap->Formato2($asignacion_total[$pageNum_Recordset1]),'TRL',0,'R');
+	$pdf->Cell(40,$height,$sisap->Formato2($monto_presupuestado[$pageNum_Recordset1]),'TR',0,'R');
+	$pdf->Cell(0,$height,$sisap->Formato2($total),'TR',1,'R');
+	$pdf->Cell(0,0,"",'T',1);
+
+
+	$total_a += $asignacion_total[$pageNum_Recordset1];
+	$total_b += $monto_presupuestado[$pageNum_Recordset1];
+	$total_c += $total;
+
+}
+
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(149,8,"T O T A L",'TRLB',0,'R');
+$pdf->Cell(40,8,$sisap->Formato2($total_a),'TRB',0,'R');
+$pdf->Cell(40,8,$sisap->Formato2($total_b),'TRB',0,'R');
+$pdf->Cell(0,8,$sisap->Formato2($total_c),'TRB',1,'R');
+
+
+$pdf->SetFont('vera','',4);
+$pdf->Cell(0,4,"RELACIÓN DEL PLAN DE INVERSIONES ".$_SESSION['ejercicio'],'',1,'R');
+// Colocamos el nombre al documento y lo enviamos al navegador
+// $pdf->Output('requerimientos_especiales_'.date("d-m-Y"),'D');
+$pdf->OutPut('plan_inversion_'.date("d-m-Y"),'D');
+
+
+}//fin else
+
+?>

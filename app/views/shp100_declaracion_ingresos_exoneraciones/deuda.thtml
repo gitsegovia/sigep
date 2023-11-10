@@ -1,0 +1,94 @@
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+    <tr><td width="15%" align="center" colspan="10">DEUDA</td></tr>
+</table>
+<div id="distribuir_busqueda_2" style="height:200px; overflow:auto;">
+	<table width="100%" border="0" class="tablacompromiso tablacompromiso3" cellspacing="0" cellpadding="0">
+		<tr align="center" class="tr_negro">
+			<td width="40">Año</td>
+			<td width="60">Número de<br/>Declaración</td>
+			<td width="85">Fecha de<br/>Declaración</td>
+			<td width="85">Periodo<br/>Desde</td>
+			<td width="85">Periodo<br/>Hasta</td>
+			<td width="85">Ingresos<br/>Declarados</td>
+			<td width="85">Monto<br/>Impuesto</td>
+			<td width="85">Monto<br/>Exonerado</td>
+			<td width="85">Impuesto<br/>a Pagar</td>
+			<td width=""  >Observ.</td>
+			<td width="50">-- --</td>
+		</tr>
+
+	<?if(isset($data) && count($data)>0){
+
+		$i=0;
+		$random=(int) rand();
+	    $CC=count($data);
+		foreach($data as $r){
+			extract($r['shd100_declaracion_ingresos']);
+	    	$color=$i%2==0?"#CDF2FF":"#DAEBFF";
+	    	$disa=$i==0?'':'disabled';
+	    	$fila = "fila_".$ano_declaracion."_".$numero_declaracion;
+	    	if($CC==1){
+	    		$click="void(0);";
+	    	}else{
+	    		if($CC==$i+1){
+	                $click="void(0);";
+	    		}else{
+	    			$click="$('pasar".($i+1)."_1').disabled=''";
+	    		}
+	    	}
+
+	    	 if($monto_exonerado==0){
+	    		$readonly=""; $disabled="";
+             }else{
+             	$readonly="readonly"; $disabled="disabled";
+             }
+
+		?>
+		<tr align="center" bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);">
+			<td><?= $ano_declaracion ?></td>
+			<td align="center"><?=mascara_seis($numero_declaracion);?></td>
+			<td align="center"><?=cambiar_formato_fecha($fecha_declaracion);?></td>
+			<td align="center"><?=cambiar_formato_fecha($periodo_desde);?></td>
+			<td align="center"><?=cambiar_formato_fecha($periodo_hasta);?></td>
+			<td align="right"><?=$sisap->Formato2($ingresos_declarados);?></td>
+			<td align="right" id="monto_impuesto_<?=$ano_declaracion."_".$numero_declaracion ?>"      ><?=$sisap->Formato2($monto_impuesto);?></td>
+			<td align="right"                                                                         ><?= $sisap->inputTagRemote("shp100_declaracion_ingresos_exoneraciones/monto_exonerado_".$ano_declaracion."_".$numero_declaracion, array('url'=>'/shp100_declaracion_ingresos_exoneraciones/recalcular/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$monto_impuesto, 'update'=>'funcion', $readonly=>$readonly, $disabled=>$disabled, "value"=>$sisap->Formato2($monto_exonerado), "class"=>"inputtext", "id"=>"monto_exonerado_".$ano_declaracion."_".$numero_declaracion,   "onFocus"=>"javascript:if(this.value=='0,00'){this.value='';}", "onBlur"=>"javascript:if(this.value==''){this.value='0,00';}else{moneda('monto_exonerado_".$ano_declaracion."_".$numero_declaracion."');}", "onKeyPress"=>"return solonumeros_con_punto(event);", 'style'=>'text-align:right'))?>
+			                                                                                           <div id="capa_observaciones_<?=$ano_declaracion."_".$numero_declaracion ?>">
+			                                                                                               <input type="hidden" name="data[shp100_declaracion_ingresos_exoneraciones][observacion_<?=$ano_declaracion."_".$numero_declaracion ?>]" id="observacion_<?=$ano_declaracion."_".$numero_declaracion ?>" />
+			                                                                                           </div>
+			</td>
+			<td align="right" id="monto_impuesto_pagar_<?=$ano_declaracion."_".$numero_declaracion ?>"><?=$sisap->Formato2($monto_impuesto - $monto_exonerado);?></td>
+			<td align="center">
+			 <? echo $sisap->linkTagRemote($html->image("eye.png",array('border'=>0)), array('url1'=>'/shp100_declaracion_ingresos_exoneraciones/observaciones_1/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$rif_cedula,   'update1'=>'funcion'), false );?>
+			</td>
+			<td>
+				 <?php if($monto_exonerado==0){$display_1 = "none"; $display_2 = "block"; }else{$display_1 = "block"; $display_2 = "none";} ?>
+				 <div id="iconos_1_<?=$ano_declaracion."_".$numero_declaracion ?>" style="display:<?= $display_1 ?>;">
+				    <?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/shp100_declaracion_ingresos_exoneraciones/editar/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$rif_cedula, array('update'=>'funcion','title'=>'Editar'),false,false,true); ?>
+	             </div>
+				 <div id="iconos_2_<?=$ano_declaracion."_".$numero_declaracion ?>" style="display:<?= $display_2 ?>;">
+				  	<?= $sisap->submitTagRemote('', array('url1' => '/shp100_declaracion_ingresos_exoneraciones/guardar/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$rif_cedula, 'update1'=>'funcion', 'id'=>'guardar', 'class'=>'guardar_input')); ?>
+		            <?= $ajax->link($html->image('cancel.png',array('border'=>0)), '/shp100_declaracion_ingresos_exoneraciones/cancelar/'.$ano_declaracion.'/'.$numero_declaracion.'/'.$rif_cedula, array('update'=>'funcion','title'=>'Cancelar'),false,false,true) ?>
+				  </div>
+			</td>
+		</tr>
+	<?
+	    $i++;
+		}
+
+	}else{?>
+	  <tr align="center" bgcolor="#CDF2FF" id="fila" onclick="new Effect.Highlight(this);">
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	<?}?>
+	</table>
+</div>

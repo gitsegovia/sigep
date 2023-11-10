@@ -1,0 +1,123 @@
+<?if($opcion1==1){ ?>
+<?$sisap->Tabla("",true,"UBICACIONES GEOGRÁFICAS","","950")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte/ubicacion_geografica/2'); ?>" >
+<?$sisap->OpenTable("950");?>
+
+
+
+<table border="0">
+	<tr>
+		<td>
+		    <?= $sisap->radioTagRemote("reporte/tipo_busqueda", array('1'=>'Todo','2'=>'Estado','3'=>'Municipio','4'=>'Parroquia','5'=>'Centro poblado'), array('url1'=>'/reporte/select_busqueda/', 'update1'=>'select', 'id'=>'tipo_busqueda'), null, $opc=1);  ?>
+	    </td>
+    </tr>
+</table>
+
+<br>
+<div id="select"></div>
+<div id="funcion" style='display:none'></div>
+
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if($opcion1==2){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	    $this->top_reporte2(array("UBICACIONES GEOGRÁFICAS"), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+	    $this->SetFont('vera','B',6);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"",'TR',0,'C');
+		$this->Cell(20,3,"Centro",'TR',0,'C');
+		$this->Cell(20,3,"Calle",'TR',0,'C');
+		$this->Cell(20,3,"Vereda",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(20,3,"País",'RBL',0,'C');
+		$this->Cell(20,3,"Estado",'RB',0,'C');
+		$this->Cell(20,3,"Municipio",'RB',0,'C');
+		$this->Cell(20,3,"Parroquia",'RB',0,'C');
+		$this->Cell(20,3,"Poblado",'RB',0,'C');
+		$this->Cell(20,3,"Avenida",'RB',0,'C');
+		$this->Cell(20,3,"Edificio",'RB',0,'C');
+		$this->Cell(0,3,"Denominación",'RB',1,'C');
+
+
+    }
+
+
+}
+
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+if($datos!=null){
+
+
+  for($i=0;$i<count($datos);$i++){
+
+  	$cod_republica = $datos[$i][0]['cod_republica']==0?"":mascara2($datos[$i][0]['cod_republica']);
+  	$cod_estado    = $datos[$i][0]['cod_estado']   ==0?"":mascara2($datos[$i][0]['cod_estado']);
+  	$cod_municipio = $datos[$i][0]['cod_municipio']==0?"":mascara2($datos[$i][0]['cod_municipio']);
+  	$cod_parroquia = $datos[$i][0]['cod_parroquia']==0?"":mascara2($datos[$i][0]['cod_parroquia']);
+  	$cod_centro    = $datos[$i][0]['cod_centro']   ==0?"":mascara2($datos[$i][0]['cod_centro']);
+  	$cod_vialidad  = $datos[$i][0]['cod_vialidad'] ==0?"":mascara2($datos[$i][0]['cod_vialidad']);
+  	$cod_vereda    = $datos[$i][0]['cod_vereda']   ==0?"":mascara2($datos[$i][0]['cod_vereda']);
+
+if (($cod_republica!=0 && $cod_estado==0) || ($cod_republica!=0 && $cod_estado!=0 && $cod_municipio==0)){
+	$pdf->SetFont('vera','B',8);
+}else{
+	$pdf->SetFont('vera','',8);
+}
+
+        $pdf->Cell(20,5,$cod_republica,'RBL',0,'C');
+		$pdf->Cell(20,5,$cod_estado,'RB',0,'C');
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(20,5,$cod_municipio,'RB',0,'C');
+		$pdf->Cell(20,5,$cod_parroquia,'RB',0,'C');
+		$pdf->Cell(20,5,$cod_centro,'RB',0,'C');
+		$pdf->Cell(20,5,$cod_vialidad,'RB',0,'C');
+		$pdf->Cell(20,5,$cod_vereda,'RB',0,'C');
+		$pdf->Cell(0,5,$datos[$i][0]['denominacion'],'RB',1,'L');
+
+
+	}//fin for
+
+}else{
+    $pdf->Ln(10);
+    $pdf->SetFont('vera','B',20);
+	$pdf->Cell(0,6,'NO TIENE INFORMACIÓN','',1,'C');
+
+}//fin else
+
+
+
+
+
+
+$pdf->Output('ubicacion_geografica_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

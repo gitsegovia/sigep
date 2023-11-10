@@ -1,0 +1,463 @@
+<?php if($opcion==1){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DE LOS CRÈDITOS PRESUPUESTARIOS A NIVEL DE SECTORES, programas y subprogramas",NULL,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion1/forma_2103_a/3'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?= $html->selectTag('datos/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+<?= $sisap->radioTagRemote("datos/tipo_busqueda", array('1'=>'TODO','2'=>'Un SECTOR ESPECIFICO'), array('url1'=>'/reporte_formulacion1/forma_2103_a/2', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+<br><br>
+<div id="funcion"></div>
+
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php
+
+
+}else if($opcion==2){
+	if($opcion2==2){ ?>
+		<table width='100%' border='0' cellspacing='0' cellpadding='0' >
+				<tr>
+					<td align="center" id="radio">
+					  Sector: <?= $sisap->selectTagRemote('datos/cod_sector', $optionElements=$lista_numero,  null, null, $selectAttr = array('id'=>'select_lista_reporte' ,'style'=>'width:200px', 'onchange'=>'vacio', true),  $optionAttr = null,  $showEmpty = true) ?>
+					</td>
+				</tr>
+		</table>
+<?php
+
+	}//fin else
+
+
+}else{
+
+
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo'] = '';
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF  {
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header(){
+		$titulo_A = "RESUMEN DE LOS CRÉDITOS PRESUPUESTARIOS A NIVEL DE SECTORES, PROGRAMAS Y SUBPROGRAMAS";
+		$titulo_B = "(En Bolívares)";
+	       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['ejercicio'],'TRL',1);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(19,4,'','TRL',0,'C');
+		$this->Cell(19,4,'','TR',0,'C');
+		$this->Cell(19,4,'','TR',0,'C');
+		$this->Cell(106,4,'','TR',0,'C');
+		$this->Cell(0,4,'ASIGNACIÓN PRESUPUESTARIA','TRB',1,'C');
+
+		$this->Cell(19,5,'','RL',0,'C');
+		$this->Cell(19,5,'','R',0,'C');
+		$this->Cell(19,5,'SUB','R',0,'C');
+		$this->Cell(106,5,'','R',0,'C');
+		$this->Cell(30,5,'','R',0,'C');
+		$this->Cell(30,5,'','R',0,'C');
+		$this->Cell(30,5,'','R',0,'C');
+		$this->Cell(30,5,'','R',0,'C');
+		$this->Cell(30,5,'INGRESOS','R',0,'C');
+		$this->Cell(0,5,'','R',1,'C');
+
+		$this->Cell(19,3,'SECTOR','RBL',0,'C');
+		$this->Cell(19,3,'PROGRAMA','RB',0,'C');
+		$this->Cell(19,3,'PROGRAMA','RB',0,'C');
+		$this->Cell(106,3,'DENOMINACIÓN','RB',0,'C');
+		$this->Cell(30,3,'ORDINARIO','RB',0,'C');
+		$this->Cell(30,3,'COORDINADO','RB',0,'C');
+		$this->Cell(30,3,'FCI','RB',0,'C');
+		$this->Cell(30,3,'MPPS','RB',0,'C');
+		$this->Cell(30,3,'EXTRAORDINARIOS','RB',0,'C');
+		$this->Cell(0,3,'TOTAL','RB',1,'C');
+    }
+
+    function Footer(){
+		$this->setY(-10);
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,7,'FORMA: 2103-A','',1,'R');
+    }
+
+}//fin clases
+
+
+
+function Formato($price) {
+    $price = preg_replace("/[^0-9\.]/", "", str_replace(',','.',$price));
+    if (substr($price,-3,1)=='.') {
+        $sents = '.'.substr($price,-2);
+        $price = substr($price,0,strlen($price)-3);
+    } elseif (substr($price,-2,1)=='.') {
+        $sents = '.'.substr($price,-1);
+        $price = substr($price,0,strlen($price)-2);
+    } else {
+        $sents = '.00';
+    }
+    $price = preg_replace("/[^0-9]/", "", $price);
+    return number_format($price.$sents,2,'.','');
+}
+
+
+
+
+
+
+
+
+$i=0;
+
+foreach($datos as $row){ $i++;
+	$var[$i]['ano']  =              		 $row['cfpd05']['ano'];
+	$var[$i]['cod_sector']  =                $row['cfpd05']['cod_sector'];
+	$var[$i]['cod_programa']  =        		 $row['cfpd05']['cod_programa'];
+	$var[$i]['cod_sub_prog']  =        		 $row['cfpd05']['cod_sub_prog'];
+	$var[$i]['asignacion_anual']  =       	 $row['cfpd05']['asignacion_anual'];
+	$var[$i]['tipo_presupuesto']  =          $row['cfpd05']['tipo_presupuesto'];
+}//fin for
+
+$a=0;
+$b=0;
+$c=0;
+
+foreach($sector as $s){$a++;
+         $s_aux[$a]['cod_sector'] = $s['cfpd02_sector']['cod_sector'];
+         $s_aux[$a]['denominacion'] = $s['cfpd02_sector']['denominacion'];
+ }
+
+foreach($programa as $p){$b++;
+         	$p_aux[$b]['cod_sector'] = $p['cfpd02_programa']['cod_sector'];
+         	$p_aux[$b]['cod_programa'] = $p['cfpd02_programa']['cod_programa'];
+         	$p_aux[$b]['denominacion'] = $p['cfpd02_programa']['denominacion'];
+}
+
+foreach($subprog as $sp){$c++;
+         	$sp_aux[$c]['cod_sector']   = $sp['cfpd02_sub_prog']['cod_sector'];
+         	$sp_aux[$c]['cod_programa'] = $sp['cfpd02_sub_prog']['cod_programa'];
+         	$sp_aux[$c]['cod_sub_prog'] = $sp['cfpd02_sub_prog']['cod_sub_prog'];
+         	$sp_aux[$c]['denominacion'] = $sp['cfpd02_sub_prog']['denominacion'];
+}
+
+
+
+$ano_fiscal = '';
+
+for($j=1; $j<=$i; $j++){
+	if($ano_fiscal!=$var[$j]['ano']){
+       $ano_fiscal=$var[$j]['ano'];
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true,10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['ejercicio'] = $ano_fiscal;
+$_SESSION['titulo'] = "";
+$pdf->AddPage();
+
+
+   $z = 1;
+   $var_aux[$z]['cod_sector']='';
+   $var_aux[$z]['cod_programa']='';
+   $var_aux2[$z]['cod_sector']='';
+
+   $var_aux3[$z]['cod_sector']='';
+   $var_aux3[$z]['cod_programa']='';
+   $var_aux3[$z]['cod_sub_prog']='';
+
+$total_ordinario_total = 0;
+$total_coordinado_total = 0;
+$total_fci_total = 0;
+$total_mpps_total = 0;
+$total_ie_total = 0;
+$total_total_total = 0;
+
+
+for($k=1; $k<=$i; $k++){
+
+$pdf->SetFont('vera','',7);
+
+$total_ordinario = 0;
+$total_coordinado = 0;
+$total_fci = 0;
+$total_mpps = 0;
+$total_ie = 0;
+$total_total = 0;
+$denominacion = '';
+
+
+
+
+
+
+
+
+
+
+
+
+$pdf->SetFont('vera','B',7);
+
+
+if($var[$k]['cod_sector']!=$var_aux2[$z]['cod_sector']){
+	 	$var_aux2[$z]['cod_sector']=$var[$k]['cod_sector'];
+
+    for($h=1; $h<=$a; $h++){if($s_aux[$h]['cod_sector']==$var[$k]['cod_sector']){$denominacion = $s_aux[$h]['denominacion'];}}
+
+
+  for($l=1; $l<=$i; $l++){
+     	if($var[$l]['cod_sector']==$var[$k]['cod_sector']){
+
+     		 switch($var[$l]['tipo_presupuesto']){
+     		 	case '1':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+                case '2':{$total_coordinado = $total_coordinado + $var[$l]['asignacion_anual'];}break;
+                case '3':{$total_fci = $total_fci + $var[$l]['asignacion_anual'];}break;
+                case '4':{$total_mpps = $total_mpps + $var[$l]['asignacion_anual'];}break;
+                case '5':{$total_ie = $total_ie + $var[$l]['asignacion_anual'];}break;
+                case '6':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+     		 }//fin switch
+
+     		}//fin if
+       }//fin for
+       $total_total = $total_ordinario + $total_coordinado + $total_fci + $total_mpps + $total_ie;
+
+
+    $pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_sector']),'LR',0,'C');//----------------SECTOR
+	$pdf->Cell(19,7,"",'R',0,'C');//-----------------PROGRAMA
+	$pdf->Cell(19,7,"",'R',0,'C');//----------------SUB PROG
+
+$varX = $pdf->GetX();//asigno X
+    $varY = $pdf->GetY();//asigno Y
+     $pdf->Cell(106,1,"",'',2,'C');
+    $pdf->MultiCell(105,3,$denominacion,'','J');
+    $varX = $varX+106;//le sumo a X 70 del Cell debido a que lo capture antes.
+    $pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(30,7,$sisap->Formato2($total_ordinario),'LR',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_coordinado),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_fci),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_mpps),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_ie),'R',0,'R');
+$pdf->Cell(0,7,$sisap->Formato2($total_total),'R',1,'R');
+$pdf->Cell(0,0,"",'T',1);
+}//fin if
+
+
+$total_ordinario_total = $total_ordinario_total + $total_ordinario;
+$total_coordinado_total = $total_coordinado_total + $total_coordinado;
+$total_fci_total = $total_fci_total + $total_fci;
+$total_mpps_total = $total_mpps_total + $total_mpps;
+$total_ie_total = $total_ie_total + $total_ie;
+$total_total_total = $total_total_total + $total_total;
+
+
+$total_ordinario = 0;
+$total_coordinado = 0;
+$total_fci = 0;
+$total_mpps = 0;
+$total_ie = 0;
+$total_total = 0;
+$denominacion = '';
+
+
+
+
+
+
+
+
+
+
+$pdf->SetFont('vera','B',7);
+
+
+if($var[$k]['cod_sector']!=$var_aux[$z]['cod_sector'] || $var[$k]['cod_programa']!= $var_aux[$z]['cod_programa']){
+	 	$var_aux[$z]['cod_sector']=$var[$k]['cod_sector'];
+        $var_aux[$z]['cod_programa']=$var[$k]['cod_programa'];
+
+
+     for($h=1; $h<=$b; $h++){
+      	if($p_aux[$h]['cod_sector']==$var[$k]['cod_sector'] && $p_aux[$h]['cod_programa']==$var[$k]['cod_programa']){
+      		$denominacion = $p_aux[$h]['denominacion'];
+      		}
+      	}
+
+
+
+     for($l=1; $l<=$i; $l++){
+     	if($var[$l]['cod_sector']==$var[$k]['cod_sector'] && $var[$l]['cod_programa']==$var[$k]['cod_programa']){
+
+     		 switch($var[$l]['tipo_presupuesto']){
+     		 	case '1':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+                case '2':{$total_coordinado = $total_coordinado + $var[$l]['asignacion_anual'];}break;
+                case '3':{$total_fci = $total_fci + $var[$l]['asignacion_anual'];}break;
+                case '4':{$total_mpps = $total_mpps + $var[$l]['asignacion_anual'];}break;
+                case '5':{$total_ie = $total_ie + $var[$l]['asignacion_anual'];}break;
+                case '6':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+     		 }//fin switch
+
+     		}//fin if
+       }//fin for
+       $total_total = $total_ordinario + $total_coordinado + $total_fci + $total_mpps + $total_ie;
+$pdf->SetFont('vera','',7);
+$pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_sector']),'LR',0,'C');//----------------SECTOR
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_programa']),'R',0,'C');//-----------------PROGRAMA
+$pdf->Cell(19,7,"",'R',0,'C');//----------------SUB PROG
+
+
+    $varX = $pdf->GetX();//asigno X
+    $varY = $pdf->GetY();//asigno Y
+    $pdf->Cell(106,1,"",'',2,'C');
+    $pdf->MultiCell(105,3,$denominacion,'','J');
+    $varX = $varX+106;//le sumo a X 70 del Cell debido a que lo capture antes.
+    $pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(30,7,$sisap->Formato2($total_ordinario),'LR',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_coordinado),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_fci),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_mpps),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_ie),'R',0,'R');
+$pdf->Cell(0,7,$sisap->Formato2($total_total),'R',1,'R');
+$pdf->Cell(0,0,"",'T',1);
+}//fin if
+
+
+
+
+
+
+$total_ordinario = 0;
+$total_coordinado = 0;
+$total_fci = 0;
+$total_mpps = 0;
+$total_ie = 0;
+$total_total = 0;
+$denominacion = '';
+
+
+
+
+
+
+$pdf->SetFont('vera','',7);
+
+
+if($var[$k]['cod_sector']!=$var_aux3[$z]['cod_sector'] || $var[$k]['cod_programa']!= $var_aux3[$z]['cod_programa']  || $var[$k]['cod_sub_prog']!= $var_aux3[$z]['cod_sub_prog']){
+	 	$var_aux3[$z]['cod_sector']=$var[$k]['cod_sector'];
+        $var_aux3[$z]['cod_programa']=$var[$k]['cod_programa'];
+        $var_aux3[$z]['cod_sub_prog']=$var[$k]['cod_sub_prog'];
+
+      for($h=1; $h<=$c; $h++){
+      	if($sp_aux[$h]['cod_sector']==$var[$k]['cod_sector'] && $sp_aux[$h]['cod_programa']==$var[$k]['cod_programa'] && $sp_aux[$h]['cod_sub_prog']==$var[$k]['cod_sub_prog']){
+      		$denominacion = $sp_aux[$h]['denominacion'];
+      		}
+      	}
+
+     for($l=1; $l<=$i; $l++){
+     	if($var[$l]['cod_sector']==$var[$k]['cod_sector'] && $var[$l]['cod_programa']==$var[$k]['cod_programa']  && $var[$l]['cod_sub_prog']==$var[$k]['cod_sub_prog']){
+
+     		 switch($var[$l]['tipo_presupuesto']){
+     		 	case '1':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+                case '2':{$total_coordinado = $total_coordinado + $var[$l]['asignacion_anual'];}break;
+                case '3':{$total_fci = $total_fci + $var[$l]['asignacion_anual'];}break;
+                case '4':{$total_mpps = $total_mpps + $var[$l]['asignacion_anual'];}break;
+                case '5':{$total_ie = $total_ie + $var[$l]['asignacion_anual'];}break;
+                case '6':{$total_ordinario = $total_ordinario + $var[$l]['asignacion_anual'];}break;
+     		 }//fin switch
+
+     		}//fin if
+       }//fin for
+       $total_total = $total_ordinario + $total_coordinado + $total_fci + $total_mpps + $total_ie;
+
+$pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_sector']),'LR',0,'C');//----------------SECTOR
+$pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_programa']),'R',0,'C');//-----------------PROGRAMA
+$pdf->Cell(19,7,$sisap->AddCero2($var[$k]['cod_sub_prog']),'R',0,'C');//----------------SUB PROG
+
+
+    $varX = $pdf->GetX();//asigno X
+    $varY = $pdf->GetY();//asigno Y
+    $pdf->Cell(106,1,"",'',2,'C');
+    $pdf->MultiCell(105,3,$denominacion,'','J');
+    $varX = $varX+106;//le sumo a X 70 del Cell debido a que lo capture antes.
+    $pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(30,7,$sisap->Formato2($total_ordinario),'LR',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_coordinado),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_fci),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_mpps),'R',0,'R');
+$pdf->Cell(30,7,$sisap->Formato2($total_ie),'R',0,'R');
+$pdf->Cell(0,7,$sisap->Formato2($total_total),'R',1,'R');
+$pdf->Cell(0,0,"",'T',1);
+
+}//fin if
+
+
+
+
+}//fin for
+
+
+$pdf->Cell(19,5,'','TRBL',0,'C');
+$pdf->Cell(19,5,'','TRB',0,'C');
+$pdf->Cell(19,5,'','TRB',0,'C');
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(106,5,'TOTALES:','TRB',0,'R');
+$pdf->Cell(30,5,$sisap->Formato2($total_ordinario_total),'TBR',0,'R');
+$pdf->Cell(30,5,$sisap->Formato2($total_coordinado_total),'TBR',0,'R');
+$pdf->Cell(30,5,$sisap->Formato2($total_fci_total),'TBR',0,'R');
+$pdf->Cell(30,5,$sisap->Formato2($total_mpps_total),'TBR',0,'R');
+$pdf->Cell(30,5,$sisap->Formato2($total_ie_total),'TBR',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_total_total),'TBR',1,'R');
+
+	}//fin if
+}//fin for
+//$pdf->SetFont('vera','B',6);
+//$pdf->Cell(0,7,"FORMA: 2.003 ",'',1,'R');
+$valorx=$pdf->GetX();
+$valory=$pdf->GetY();
+$pdf->OutPut('forma_2103_a_'.date("d-m-Y"),'D');
+
+
+
+}?>

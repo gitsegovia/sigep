@@ -1,0 +1,353 @@
+<?php
+set_time_limit(0);
+
+
+function Cfecha($fecha,$tipo_return){
+	//$paso1 = explode('/', $fecha);
+	//$paso2 = explode('-', $fecha);
+
+$paso_aux = explode('-', $fecha);
+if(strlen($paso_aux[0])=="4"){
+
+$fecha_return = $fecha;
+
+}else{
+
+      if($tipo_return=="A-M-D"){
+           $paso = explode('/', $fecha);
+           $fecha_aux[] = $paso[2];
+           $fecha_aux[] = $paso[1];
+           $fecha_aux[] = $paso[0];
+           $fecha_return=implode('-', $fecha_aux);
+      }else if($tipo_return=="D/M/A"){
+           $paso = explode('-', $fecha);
+           $fecha_aux[] = $paso[2];
+           $fecha_aux[] = $paso[1];
+           $fecha_aux[] = $paso[0];
+           $fecha_return=implode('/', $fecha_aux);
+     }
+
+}//fin else
+
+
+//echo $fecha_return;
+
+//$fecha_return = $fecha;
+
+     return $fecha_return;
+}//fin Cfecha
+
+function edad($nacimiento){
+//restamos los años (año actual - año cumpleaños)
+$edad = date("Y") - ereg_replace("^(.{4}).*","\\1",$nacimiento);
+
+//si pasamos de año, pero aún no cumplimos años, resta 1
+if( date("m-d") < ereg_replace(".*(.{5})$","\\1",$nacimiento) )
+ $edad--;
+
+return $edad;
+}
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+
+    }//fin funtion
+
+    function footer(){
+    	$this->setY(-25);
+    	$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"Secretaria de protección social",'',1,'C');
+		$this->Cell(0,3,"Dirección: calle falcón, entre calle colón y hospital",'',1,'C');
+		$this->Cell(0,3,"telefax: 0268-251.19.35 - 253.16.44",'',1,'C');
+		$this->Cell(0,3,"Email: secretariadeprotecciónsocial@hotmail.com",'',1,'C');
+		$this->Cell(0,3,"Santa Ana de Coro - estado Falcón",'',1,'C');
+
+    }
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+
+
+
+
+
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(28);
+$pdf->SetRightMargin(28);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+if($_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+
+//	$pdf->Image(WWW_ROOT.'img/catsp0/logo_'.LOGOINST.'.jpg',25,14,20);
+	$pdf->Image(WWW_ROOT.'img/catsp0/logo_izquierdo.jpg',25,14,40);
+	$pdf->Image(WWW_ROOT.'img/catsp0/logo_derecho.jpg',175,14,16);
+	//$varX_aux = $pdf->GetX() + 37;
+	$varX_aux = $pdf->GetX() + 37;
+	$varY_aux = $pdf->GetY() + 4;
+	$pdf->SetFont('vera','B',8);
+	$pdf->Text($varX_aux, $varY_aux,'SECRETARIA DE');
+
+    //$varX_aux = $pdf->GetX() + 37;
+	$varX_aux = $pdf->GetX() + 37;
+	$varY_aux = $pdf->GetY() + 7;
+	$pdf->SetFont('vera','B',8);
+	$pdf->Text($varX_aux, $varY_aux,'PROTECCIÓN SOCIAL');
+}else{
+	$pdf->Image(WWW_ROOT.'img/escudos/escudo_'.LOGOINST.'.jpg',25,14,20);
+	//$pdf->Image(WWW_ROOT.'img/catsp0/logo_izquierdo.jpg',25,14,40);
+	//$pdf->Image(WWW_ROOT.'img/catsp0/logo_derecho.jpg',175,14,16);
+	//$varX_aux = $pdf->GetX() + 37;
+	$varX_aux = $pdf->GetX() + 17;
+	$varY_aux = $pdf->GetY() + 4;
+	$pdf->SetFont('vera','B',8);
+	$pdf->Text($varX_aux, $varY_aux,'SECRETARIA DE');
+
+    //$varX_aux = $pdf->GetX() + 37;
+	$varX_aux = $pdf->GetX() + 17;
+	$varY_aux = $pdf->GetY() + 7;
+	$pdf->SetFont('vera','B',8);
+	$pdf->Text($varX_aux, $varY_aux,'PROTECCIÓN SOCIAL');
+}
+
+$pdf->Ln(18);
+$pdf->SetFont('vera','B',16);
+//$pdf->Cell(85,4,"",'',0);
+$pdf->Cell(0,4,"Acta de Entrega",'',1,'C');
+//$pdf->Cell(0,4,"",'',1,'C');
+
+$pdf->SetFont('vera','B',12);
+$pdf->Cell(50,4,"",'',0);
+$pdf->Cell(60,4,"",'T',0,'C');
+$pdf->Cell(0,4,"",'',1,'C');
+$pdf->Ln(2);
+
+
+$pdf->Ln(3);
+
+
+$dias=array('1'=>'Lunes','2'=>'Martes','3'=>'Miercoles','4'=>'Jueves','5'=>'Viernes','6'=>'Sabado','7'=>'Domingo');
+
+$meses=array('1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(7,4," hoy",'',0,'L');
+$pdf->Cell(11,4,mascara(date('d'),2),'B',0,'C');
+
+$pdf->Cell(14,4,"del mes",'',0,'L');
+$pdf->Cell(32,4,$meses[date('n')],'B',0,'L');
+
+$pdf->Cell(7,4,"año",'',0,'L');
+$pdf->Cell(11,4,date('Y'),'B',0,'L');
+
+$pdf->Cell(0,4,"",'',1,'L');
+
+$pdf->Ln(2);
+
+$pdf->Cell(0,4,"La secretaria de protección social, hizo entrega de lo siguiente:",'',1,'L');
+$pdf->Cell(0,1,"",'',1,'L');
+
+$pdf->Ln(3);
+
+$pdf->SetLeftMargin(16);
+$pdf->SetRightMargin(16);
+$pdf->Cell(0,1,"",'',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(32,6,"cantidad",'TRBL',0,'C');
+$pdf->Cell(105,6,"Descripción",'TRB',0,'C');
+$pdf->Cell(25,6,"costo unitario",'TBR',0,'C');
+$pdf->Cell(0,6,"costo total",'TBR',1,'C');
+
+$p=0;
+$monto=0;
+for($i=0;$i<count($datos2);$i++){
+
+	$long=strlen($datos2[$i][0]['descripcion']);
+	if($long<=45){//echo "a";
+		$height=7;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=8;
+	}else if($long>90 && $long<=135){//echo "c";
+		$height=10;
+	}else if($long>135 && $long<=170){//echo "d";
+		$height=12;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=14;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=16;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=18;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=20;
+	}else if($long>315 && $long<=350) {//echo "h";
+		$height=22;
+	}else if($long>350 && $long<=400) {//echo "h";
+		$height=24;
+	}else if($long>400 && $long<=450) {//echo "h";
+		$height=26;
+	}else if($long>450 && $long<=500) {//echo "h";
+		$height=28;
+	}else if($long>500 && $long<=550) {//echo "h";
+		$height=30;
+	}else if($long>550 && $long<=600) {//echo "h";
+		$height=32;
+	}else{//echo "i";
+		$height=34;
+	}
+
+	$por=($datos2[$i][0]['cantidad']*$datos2[$i][0]['precio_unitario']);
+	$pdf->Cell(32,$height,$sisap->Formato2($datos2[$i][0]['cantidad']),'LR',0,'C');
+//	$pdf->Cell(105,$height,$datos2[$i][0]['descripcion'],'RB',0,'L');
+
+	$pdf->Cell(105,1,"",'T',2,'C');
+	$varX = $pdf->GetX();//capturo X
+	$varY = $pdf->GetY();//capturo Y
+	$pdf->MultiCell(105,2,$datos2[$i][0]['descripcion'],'','L');//DENOMINACION
+	$varX =$varX+105;
+	$varY=$varY-1;
+	$pdf->SetXY($varX,$varY);// cargo XY
+
+	$pdf->Cell(25,$height,$sisap->Formato2($datos2[$i][0]['precio_unitario']),'LR',0,'R');
+	$pdf->Cell(0,$height,$sisap->Formato2($por),'LR',1,'R');
+	$pdf->Cell(0,0,'','T',1,'R');
+	$monto+=$por;
+	$p++;
+	if($p==7){
+		break;
+	}
+}
+
+$n=7-$p;
+if($n!=0){
+	for($x=0;$x<$n;$x++){
+		$pdf->Cell(32,6,'','LRB',0,'C');
+		$pdf->Cell(105,6,'','RB',0,'L');
+		$pdf->Cell(25,6,'','LBR',0,'R');
+		$pdf->Cell(0,6,'','LBR',1,'R');
+	}
+}
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(162,6,'TOTAL:','LRB',0,'R');
+$pdf->Cell(0,6,$sisap->Formato2($monto),'LBR',1,'R');
+$pdf->SetFont('vera','',6);
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+$pdf->SetLeftMargin(28);
+$pdf->SetRightMargin(28);
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(24,4,"Al ciudadano(a)",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$datos[0][0]['apellidos_nombres'],'B',1,'L');
+
+$pdf->Ln(2);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(5,4,"C.I:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(30,4,$datos[0][0]['cedula_identidad'],'B',0,'L');
+
+if($datos[0][0]['telefonos_fijos']!='' && $datos[0][0]['telefonos_movil']!=''){
+	$cel=$datos[0][0]['telefonos_fijos']." - ".$datos[0][0]['telefonos_movil'];
+}else if($datos[0][0]['telefonos_fijos']!='' && $datos[0][0]['telefonos_movil']==''){
+	$cel=$datos[0][0]['telefonos_fijos'];
+}else if($datos[0][0]['telefonos_fijos']=='' && $datos[0][0]['telefonos_movil']!=''){
+	$cel=$datos[0][0]['telefonos_movil'];
+}
+$pdf->SetFont('vera','',7);
+$pdf->Cell(9,4,"Edad:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(10,4,edad(Cfecha($direccion[0][0]['fecha_nacimiento'],"A-M-D")),'B',0,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(15,4,"Telefono:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$cel,'B',1,'L');
+
+$pdf->Ln(2);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(16,4,"Dirección:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$direccion[0][0]['direccion_habitacion'],'B',1,'L');
+
+$pdf->Ln(2);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(16,4,"Promotor:",'',0,'L');
+$pdf->SetFont('vera','',6);
+$pdf->Cell(0,4,$datos[0][0]['nombre_promotor_ayuda'],'B',1,'L');
+
+$pdf->Ln(2);
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(0,4,"Retirado por:",'',1,'L');
+
+$pdf->Ln(2);
+$pdf->SetFont('vera','',7);
+$pdf->Cell(10,4,"Sr(a):",'',0,'L');
+$pdf->Cell(70,4,'','B',0,'L');
+
+$pdf->Cell(5,4,"C.I:",'',0,'L');
+$pdf->Cell(0,4,"",'B',1,'L');
+
+$pdf->Ln(2);
+
+$pdf->Cell(15,4,"Telefono:",'',0,'L');
+$pdf->Cell(65,4,"",'B',0,'L');
+
+$pdf->Cell(16,4,"Dirección:",'',0,'L');
+$pdf->Cell(0,4,"",'B',1,'L');
+
+$pdf->Ln(2);
+
+
+$pdf->Ln(2);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,4,"Concepto de la solicitud",'',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(1,18,"",'LT',0,'L');
+$varX = $pdf->GetX();//asigno X
+$varY = $pdf->GetY();//asigno Y
+
+$pdf->Cell(159,1,'','T',2,'C');
+$pdf->MultiCell(159,3,$datos[0][0]['ayuda_solicitada'],'','J');
+$varX = $varX+159;//le sumo a X 50 del Cell debido a que lo capture antes.
+$pdf->SetXY($varX,$varY);// cargo XY
+$pdf->Cell(1,18,"",'L',1,'L');
+$pdf->Cell(0,0,"",'T',1,'L');
+
+
+////////////////////////////////////////////////////////////////////////
+$pdf->Ln(10);
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(26,4,"Recibe conforme:",'',0,'L');
+$pdf->Cell(40,4,"",'B',1,'L');
+
+$pdf->Ln(2);
+
+$pdf->Cell(5,4,"C.I:",'',0,'L');
+$pdf->Cell(49,4,"",'B',1,'L');
+
+$pdf->Output('Acta_Entrega.pdf','D');
+
+
+?>

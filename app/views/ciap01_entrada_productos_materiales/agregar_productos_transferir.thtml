@@ -1,0 +1,84 @@
+<?php
+if(isset($errorMessage)) {
+    echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($msg_error1)){
+	echo $sisap->mensajes_error($msg_error1);
+}
+
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+?>
+
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+		<tr align="center">
+			<td width="12%">Código Producto</td>
+			<td width="45%">Denominación del Producto</td>
+			<td width="10%">Cantidad</td>
+			<td width="12%">Precio Unitario</td>
+			<td width="15%">Total</td>
+			<td width="6%">Acción</td>
+		</tr>
+
+
+		<?
+		$cont=0;
+		$i=0;
+		foreach($_SESSION ["items4"] as $codigos){
+			if($i%2 == 0){
+				$color = "tr_grid_c1";
+			}else{
+				$color = "tr_grid_c2";
+			}
+			?>
+
+			<tr class=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);">
+			<? for($x=0;$x<=7;$x++){
+			    	if($x==0){
+			    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+			    	}else if($x==1){
+			    		echo "<td>".$codigos[$x].' - '.deno_unidad2($cscd01_unidad_medida, $codigos[8])."</td>";
+			    	}else if($x==3){
+			    		echo "<td align=\"right\">".$sisap->Formato2($codigos[$x])."</td>";
+			    	}else if($x==2){
+			    		echo "<td align=\"center\">".$sisap->Formato_6_out($codigos[$x])."</td>";
+			    	}
+					$total=($codigos[2]*$codigos[3]);
+				} ?>
+				<td align="right"><?=$sisap->Formato2($total)?></td>
+				<? if($codigos['status']==2){
+		   		$cont++;
+		   		$url=$codigos['id'];
+		   		?>
+					<td align="center"><?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar_datos'),12,"Agregar Ubicación", "/ciap01_entrada_productos_materiales/ventana_transferir_ubicacion/$url", "750px", "350px" ); ?></td>
+				<? }else{ ?>
+					<td align="center">&nbsp;</td>
+				<? } ?>
+			</tr>
+		<?
+		$i++;
+		} ?>
+
+<input name="data[ciap01][contador]" type="hidden" id="TI" value="<?=$cont?>"/>
+
+	</table>
+
+<? if(isset($otro)){ ?>
+<script language="JavaScript" type="text/javascript">
+   Windows.close(document.getElementById('capa_ventana').value);
+</script>
+<? } ?>

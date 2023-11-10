@@ -1,0 +1,863 @@
+<?php
+/*
+ * Created on 18/12/2008
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+ */
+ vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->Image(WWW_ROOT.'img/escudo_base/escudo10.jpg',6,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"EXPEDIENTE DEL TRABAJADOR",'RL',1,'C');
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 186;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(5);
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(174,5,'DATOS PERSONALES','TRL',0,'C');
+$pdf->Cell(0,5,'FOTO','TR',1,'C');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(25,2,'','TRL',0,'C');
+$pdf->Cell(25,2,'','TR',0,'C');
+$pdf->Cell(31,2,'','TR',0,'C');
+$pdf->Cell(31,2,'','TR',0,'C');
+$pdf->Cell(31,2,'','TR',0,'C');
+$pdf->Cell(31,2,'','TR',0,'C');
+$pdf->Cell(0,2,'','TR',1,'C');
+
+$pdf->Cell(25,3,'CÉDULA DE IDENTIDAD','RBL',0,'C');
+$pdf->Cell(25,3,'NACIONALIDAD','RB',0,'C');
+$pdf->Cell(31,3,'PRIMER APELLIDO','RB',0,'C');
+$pdf->Cell(31,3,'SEGUNDO APELLIDO','RB',0,'C');
+$pdf->Cell(31,3,'PRIMER NOMBRE','RB',0,'C');
+$pdf->Cell(31,3,'SEGUNDO NOMBRE','RB',0,'C');
+$pdf->Cell(0,3,'','R',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(25,7,$datos[0][0]['cedula_identidad'],'RL',0,'C');
+if($datos[0][0]['nacionalidad']=='v' || $datos[0][0]['nacionalidad']=='V'){ $nacionalidad="VENEZOLANO";}else{ $nacionalidad="EXTRANJERO";};
+$pdf->Cell(25,7,$nacionalidad,'R',0,'C');
+$pdf->Cell(31,7,$datos[0][0]['primer_apellido'],'R',0,'L');
+$pdf->Cell(31,7,$datos[0][0]['segundo_apellido'],'R',0,'L');
+$pdf->Cell(31,7,$datos[0][0]['primer_nombre'],'R',0,'L');
+$pdf->Cell(31,7,$datos[0][0]['segundo_nombre'],'R',0,'L');
+$pdf->Cell(0,7,' ','R',1,'C');
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(25,5,'FECHA DE NACIMIENTO','TRL',0,'C');
+$pdf->Cell(25,5,'SEXO','TR',0,'C');
+$pdf->Cell(62,5,'ESTADO CIVIL','TR',0,'C');
+$pdf->Cell(22,5,'GRUPO SANGUINEO','TR',0,'C');
+$pdf->Cell(18,5,'PESO KG.','TR',0,'C');
+$pdf->Cell(22,5,'ESTATURA EN MTS.','TR',0,'C');
+$pdf->Image($url_foto,180,42.5,0,22);
+$pdf->Cell(0,5,' ','R',1,'C');
+
+$pdf->SetFont('vera','',7);
+$pdf->Cell(25,7,$sisap->cambia_fecha($datos[0][0]['fecha_nacimiento']),'TRBL',0,'C');
+if($datos[0][0]['sexo']=='m' || $datos[0][0]['sexo']=='M'){ $sexo="MASCULINO";}elseif($datos[0][0]['sexo']=='f' || $datos[0][0]['sexo']=='F'){ $sexo="FEMENINO";};
+$pdf->Cell(25,7,$sexo,'TRB',0,'C');
+$est_civil = strtoupper($datos[0][0]['estado_civil']);
+switch($est_civil){
+	case 'S':
+			$pdf->SetFont('vera','BI',6);
+			$pdf->Cell(12.4,7,'SOLTERO','TB',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(12.4,7,'CASADO','TB',0,'C');
+			$pdf->Cell(15.2,7,'DIVORCIADO','TB',0,'C');
+			$pdf->Cell(11,7,'VIUDO','TB',0,'C');
+			$pdf->Cell(11,7,'OTRO','TB',0,'C');
+			break;
+	case 'C':
+			$pdf->Cell(12.4,7,'SOLTERO','TB',0,'C');
+			$pdf->SetFont('vera','BI',6);
+			$pdf->Cell(12.4,7,'CASADO','TB',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(15.2,7,'DIVORCIADO','TB',0,'C');
+			$pdf->Cell(11,7,'VIUDO','TB',0,'C');
+			$pdf->Cell(11,7,'OTRO','TB',0,'C');
+			break;
+	case 'D':
+			$pdf->Cell(12.4,7,'SOLTERO','TB',0,'C');
+			$pdf->Cell(12.4,7,'CASADO','TB',0,'C');
+			$pdf->SetFont('vera','BI',6);
+			$pdf->Cell(15.2,7,'DIVORCIADO','TB',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(11,7,'VIUDO','TB',0,'C');
+			$pdf->Cell(11,7,'OTRO','TB',0,'C');
+			break;
+	case 'V':
+			$pdf->Cell(12.4,7,'SOLTERO','TB',0,'C');
+			$pdf->Cell(12.4,7,'CASADO','TB',0,'C');
+			$pdf->Cell(15.2,7,'DIVORCIADO','TB',0,'C');
+			$pdf->SetFont('vera','BI',6);
+			$pdf->Cell(11,7,'VIUDO','TB',0,'C');
+			$pdf->SetFont('vera','',6);
+			$pdf->Cell(11,7,'OTRO','TB',0,'C');
+			break;
+	case 'O':
+			$pdf->Cell(12.4,7,'SOLTERO','TB',0,'C');
+			$pdf->Cell(12.4,7,'CASADO','TB',0,'C');
+			$pdf->Cell(15.2,7,'DIVORCIADO','TB',0,'C');
+			$pdf->Cell(11,7,'VIUDO','TB',0,'C');
+			$pdf->SetFont('vera','BI',6);
+			$pdf->Cell(11,7,'OTRO','TB',0,'C');
+			break;
+}
+$pdf->SetFont('vera','',7);
+$pdf->Cell(22,7,$datos[0][0]['grupo_sanguineo'],'TRBL',0,'C');
+$pdf->Cell(18,7,$datos[0][0]['peso_kilos'],'TRB',0,'C');
+$pdf->Cell(22,7,$datos[0][0]['estatura_metros'],'TRB',0,'C');
+$pdf->Cell(0,7,'','RB',1,'C');
+
+
+$pdf->Ln(6);
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'LUGAR DE NACIMIENTO','TRL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(34,4,'PAÍS','TRBL',0,'C');
+$pdf->Cell(35,4,'ESTADO','TRB',0,'C');
+$pdf->Cell(35,4,'MUNICÍPIO','TRB',0,'C');
+$pdf->Cell(35,4,'PARROQUIA','TRB',0,'C');
+$pdf->Cell(35,4,'CENTRO POBLADO','TRB',0,'C');
+$pdf->Cell(0,4,'CIUDAD','TRB',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(1,7,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(32,1,"",'',2,'C');
+	$pdf->MultiCell(32,2,$datos[0][0]['cod_pais_origen'],'','L');
+	$varX = $varX+32;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(34,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,$datos[0][0]['cod_estado_origen'],'','L');
+	$varX = $varX+34;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(34,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,$datos[0][0]['cod_municipio_origen'],'','L');
+	$varX = $varX+34;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(34,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,$datos[0][0]['cod_parroquia_origen'],'','L');
+	$varX = $varX+34;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(34,1,"",'',2,'C');
+	$pdf->MultiCell(34,2,$datos[0][0]['cod_centropoblado_origen'],'','L');
+	$varX = $varX+34;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(31,1,"",'',2,'C');
+	$pdf->MultiCell(31,2,$datos[0][0]['cod_ciudad_origen'],'','L');
+	$varX = $varX+31;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,7,'','R',1,'C');
+$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(34,4,'NATURALIZADO','TRL',0,'C');
+$pdf->Cell(35,4,'FECHA DE NATURALIZACIÓN','TR',0,'C');
+$pdf->Cell(35,4,'GACETA','TR',0,'C');
+$pdf->Cell(0,4,'IDIOMAS','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+if($datos[0][0]['naturalizado']=='s' || $datos[0][0]['naturalizado']=='S'){
+	$pdf->Cell(34,7,"SI",'TRBL',0,'C');
+	$pdf->Cell(35,7,$sisap->cambia_fecha($datos[0][0]['fecha_naturalizacion']),'TRB',0,'C');
+	$pdf->Cell(35,7,$datos[0][0]['numero_gaceta'],'TRB',0,'C');
+}elseif($datos[0][0]['naturalizado']=='n' || $datos[0][0]['naturalizado']=='N'){
+	$pdf->Cell(34,7,"NO",'TRBL',0,'C');
+	$pdf->Cell(35,7," --   --   --   --   --   --   -- ",'TRB',0,'C');
+	$pdf->Cell(35,7," --   --   --   --   --   --   -- ",'TRB',0,'C');
+}else{// Si viene vacio o diferente de una de estas dos opciones.
+	$pdf->Cell(34,7,"NO",'TRBL',0,'C');
+	$pdf->Cell(35,7," --   --   --   --   --   --   -- ",'TRB',0,'C');
+	$pdf->Cell(35,7," --   --   --   --   --   --   -- ",'TRB',0,'C');
+}
+$str_idioma = $datos[0][0]['idioma'];
+/*echo "<br />0 - ".$str_idioma[0];
+echo "<br />1 - ".$str_idioma[1];
+echo "<br />2 - ".$str_idioma[2];
+echo "<br />3 - ".$str_idioma[3];
+echo "<br />4 - ".$str_idioma[4];
+echo "<br />5 - ".$str_idioma[5];*/
+
+$idioma='';
+if(isset($str_idioma[0]) && $str_idioma[0]==1){ $idioma .= "    ESPAÑOL    "; }
+if(isset($str_idioma[1]) && $str_idioma[1]==1){ $idioma .= "    FRANCES    "; }
+if(isset($str_idioma[2]) && $str_idioma[2]==1){ $idioma .= "    INGLES    ";  }
+if(isset($str_idioma[3]) && $str_idioma[3]==1){ $idioma .= "    ALEMAN    ";  }
+if(isset($str_idioma[4]) && $str_idioma[4]==1){ $idioma .= "    PORTUGUES    "; }
+if(isset($str_idioma[5]) && $str_idioma[5]==1){ $idioma .= "    OTRO    "; }
+//$str_idioma[1]==1 ? $idioma .= "    FRANCES    " : '';
+//$str_idioma[2]==1 ? $idioma .= "    INGLES    " : '';
+//$str_idioma[3]==1 ? $idioma .= "    ALEMAN     " : '';
+//$str_idioma[4]==1 ? $idioma .= "    PORTUGUES    " : '';
+//$str_idioma[5]==1 ? $idioma .= "    OTRO    " : '';
+$pdf->Cell(0,7,$idioma,'TRB',1,'C');
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(65,4,'PROFESIÓN','TRL',0,'C');
+$pdf->Cell(67,4,'ESPECIALIDAD','TR',0,'C');
+$pdf->Cell(0,4,'OFICIO','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(65,6,$datos[0][0]['cod_profesion'],'TRBL',0,'L');
+$pdf->Cell(67,6,$datos[0][0]['cod_especialidad'],'TRB',0,'L');
+$pdf->Cell(0,6,$datos[0][0]['cod_oficio'],'TRB',1,'L');
+
+
+$pdf->Ln(5);
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DIRECCIÓN DE HABITACIÓN ACTUAL','TRL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,4,'ESTADO','TRBL',0,'C');
+$pdf->Cell(40,4,'MUNICÍPIO','TRB',0,'C');
+$pdf->Cell(40,4,'PARROQUIA','TRB',0,'C');
+$pdf->Cell(40,4,'CENTRO POBLADO','TRB',0,'C');
+$pdf->Cell(0,4,'CIUDAD','TRB',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(1,7,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(38,1,"",'',2,'C');
+	$pdf->MultiCell(38,2,$datos[0][0]['cod_estado_habitacion'],'','L');
+	$varX = $varX+38;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(39,1,"",'',2,'C');
+	$pdf->MultiCell(39,2,$datos[0][0]['cod_municipio_habitacion'],'','L');
+	$varX = $varX+39;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(39,1,"",'',2,'C');
+	$pdf->MultiCell(39,2,$datos[0][0]['cod_parroquia_habitacion'],'','L');
+	$varX = $varX+39;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(39,1,"",'',2,'C');
+	$pdf->MultiCell(39,2,$datos[0][0]['cod_centropoblado_habitacion'],'','L');
+	$varX = $varX+39;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(1,7,'','R',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(45,1,"",'',2,'C');
+	$pdf->MultiCell(45,2,$datos[0][0]['cod_ciudad_habitacion'],'','L');
+	$varX = $varX+45;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,7,'','R',1,'L');
+$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(160,4,'DIRECCIÓN DE HABITACIÓN','TRBL',0,'C');
+$pdf->Cell(0,4,'TELÉFONO','TRB',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(1,7,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(159,2,"",'',2,'C');
+	$pdf->MultiCell(159,2,$datos[0][0]['direccion_habitacion'],'','L');
+	$varX = $varX+159;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,7,$datos[0][0]['telefonos_habitacion'],'RL',1,'C');
+$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+
+$pdf->Ln(3);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(160,4,'OTRA DIRECCIÓN','TRBL',0,'C');
+$pdf->Cell(0,4,'OTROS TELÉFONOS','TRB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if($datos[0][0]['otra_direccion_hab']=="0"){
+	$pdf->Cell(1,7,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(159,2,"",'',2,'C');
+	$pdf->MultiCell(159,2,'','','L');
+	$varX = $varX+159;
+	$pdf->SetXY($varX,$varY);
+}else{
+	$pdf->Cell(1,7,'','L',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(159,2,'','',2,'C');
+	$pdf->MultiCell(159,2,$datos[0][0]['otra_direccion_hab'],'','L');
+	$varX = $varX+159;
+	$pdf->SetXY($varX,$varY);
+}
+
+if($datos[0][0]['otros_telefonos']==0){
+	$pdf->Cell(0,7,'','RL',1,'C');
+}else{
+	$pdf->Cell(0,7,$datos[0][0]['otros_telefonos'],'RL',1,'C');
+}
+$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+
+
+$pdf->Ln(5);
+
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(65,4,'CORREO ELECTRÓNICO','TRL',0,'C');
+$pdf->Cell(35,4,'NÚMERO INSCRIPCIÓN S.S.O','TR',0,'C');
+$pdf->Cell(35,4,'NÚMERO INSCRIPCIÓN L.P.H','TR',0,'C');
+$pdf->Cell(35,4,'GRADO LICENCIA DE CONDUCIR','TR',0,'C');
+$pdf->Cell(0,4,'NÚMERO LICENCIA DE CONDUCIR','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(65,7,$datos[0][0]['correo_electronico'],'TRBL',0,'L');
+$pdf->Cell(35,7,$datos[0][0]['numero_inscripcion_sso'],'TRB',0,'C');
+$pdf->Cell(35,7,$datos[0][0]['numero_inscripcion_lph'],'TRB',0,'C');
+$pdf->Cell(35,7,$datos[0][0]['grado_licencia_conducir'],'TRB',0,'C');
+$pdf->Cell(0,7,$datos[0][0]['numero_licencia_conducir'],'TRB',1,'C');
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,4,'USA LENTES?','TRL',0,'C');
+$pdf->Cell(40,4,'TALLA DE CAMISA Ó BLUSA','TR',0,'C');
+$pdf->Cell(40,4,'TALLA DE PANTALÓN O FALDA','TR',0,'C');
+$pdf->Cell(40,4,'TALLA DE CALZADO','TR',0,'C');
+$pdf->Cell(0,4,'TALLA DE KEEPY','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+if($datos[0][0]['usa_lentes']=='s' || $datos[0][0]['usa_lentes']=='S'){ $usalentes="SI";}elseif($datos[0][0]['usa_lentes']=='n' || $datos[0][0]['usa_lentes']=='N'){ $usalentes="NO";};
+$pdf->Cell(40,7,$usalentes,'TRBL',0,'C');
+$pdf->Cell(40,7,$datos[0][0]['talla_camisa_blusa'],'TRB',0,'C');
+$pdf->Cell(40,7,$datos[0][0]['talla_pantalon_falda'],'TRB',0,'C');
+$pdf->Cell(40,7,$datos[0][0]['talla_calzado'],'TRB',0,'C');
+$pdf->Cell(0,7,$datos[0][0]['talla_keppy'],'TRB',1,'C');
+
+$pdf->Ln(5);
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,4,'DEPORTE QUE PRACTICA','TRL',0,'C');
+$pdf->Cell(40,4,'RELIGIÓN','TR',0,'C');
+$pdf->Cell(40,4,'HOBBY FAVORITO','TR',0,'C');
+$pdf->Cell(40,4,'COLOR FAVORITO','TR',0,'C');
+$pdf->Cell(0,4,'CLUB AL CUAL PERTENECE','TR',1,'C');
+
+$pdf->SetFont('vera','',6);
+$pdf->Cell(40,7,$datos[0][0]['deporte_practica'],'TRL',0,'L');
+$pdf->Cell(40,7,$datos[0][0]['religion_pertenece'],'TR',0,'L');
+$pdf->Cell(40,7,$datos[0][0]['hobby_favorito'],'TR',0,'L');
+$pdf->Cell(40,7,$datos[0][0]['color_favorito'],'TR',0,'L');
+$pdf->Cell(0,7,$datos[0][0]['club_pertenece'],'TR',1,'L');
+$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+
+
+
+
+
+
+
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//           DATOS EDUCATIVOS
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'NIVEL EDUCATIVO E INSTITUCIÓN DONDE LO REALIZO','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(30,3,'','RL',0,'C');
+$pdf->Cell(18,3,'FECHA','R',0,'C');
+$pdf->Cell(18,3,'FECHA','R',0,'C');
+$pdf->Cell(45,3,'','R',0,'C');
+$pdf->Cell(30,3,'','R',0,'C');
+$pdf->Cell(30,3,'','R',0,'C');
+$pdf->Cell(0,3,'','R',1,'C');
+
+$pdf->Cell(30,2,'NIVEL EDUCATIVO','RBL',0,'C');
+$pdf->Cell(18,2,'INICIO','RB',0,'C');
+$pdf->Cell(18,2,'CULMINACIÓN','RB',0,'C');
+$pdf->Cell(45,2,'INSTITUCIÓN EDUCATIVA','RB',0,'C');
+$pdf->Cell(30,2,'PAÍS','RB',0,'C');
+$pdf->Cell(30,2,'ESTADO','RB',0,'C');
+$pdf->Cell(0,2,'MUNICIPÌO','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_educativos)==0){
+	$pdf->Cell(30,6,'','RL',0,'C');
+	$pdf->Cell(18,6,'','R',0,'C');
+	$pdf->Cell(18,6,'','R',0,'C');
+	$pdf->Cell(45,6,'','R',0,'C');
+	$pdf->Cell(30,6,'','R',0,'C');
+	$pdf->Cell(30,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_educativos); $i++){
+		$pdf->Cell(1,7,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(29,1,"",'',2,'C');
+			$pdf->MultiCell(29,2,$datos_educativos[$i][0]['nivel_educativo'],'','L');
+			$varX = $varX+29;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(18,7,$sisap->cambia_fecha($datos_educativos[$i][0]['fecha_inicio']),'RL',0,'C');
+		$pdf->Cell(18,7,$sisap->cambia_fecha($datos_educativos[$i][0]['fecha_culminacion']),'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(45,1,"",'',2,'C');
+			$pdf->MultiCell(45,2,$datos_educativos[$i][0]['inst_educativa'],'','L');
+			$varX = $varX+45;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(28,1,"",'',2,'C');
+			$pdf->MultiCell(28,2,$datos_educativos[$i][0]['pais'],'','L');
+			$varX = $varX+28;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(29,1,"",'',2,'C');
+			$pdf->MultiCell(29,2,$datos_educativos[$i][0]['estado'],'','L');
+			$varX = $varX+29;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(34,1,"",'',2,'C');
+			$pdf->MultiCell(34,2,$datos_educativos[$i][0]['municipio'],'','L');
+			$varX = $varX+34;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_educativos
+
+
+
+//***************************************
+//           DATOS FORMACION PROFESIONAL
+//***************************************
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'FORMACIÓN PROFESIONAL','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(50,3,'','RL',0,'C');
+$pdf->Cell(45,3,'','R',0,'C');
+$pdf->Cell(20,3,'','R',0,'C');
+$pdf->Cell(15,3,'FECHA','R',0,'C');
+$pdf->Cell(15,3,'FECHA','R',0,'C');
+$pdf->Cell(0,3,'','R',1,'C');
+
+$pdf->Cell(50,2,'CURSO, TALLER, FORO, ENTRENAMIENTO','RBL',0,'C');
+$pdf->Cell(45,2,'INSTITUTO O INSTRUCTOR','RB',0,'C');
+$pdf->Cell(20,2,'DURACIÓN','RB',0,'C');
+$pdf->Cell(15,2,'DESDE','RB',0,'C');
+$pdf->Cell(15,2,'HASTA','RB',0,'C');
+$pdf->Cell(0,2,'OBSERVACIÓN','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_formacion_profesional)==0){
+	$pdf->Cell(50,6,'','RL',0,'C');
+	$pdf->Cell(45,6,'','R',0,'C');
+	$pdf->Cell(20,6,'','R',0,'C');
+	$pdf->Cell(15,6,'','R',0,'C');
+	$pdf->Cell(15,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_formacion_profesional); $i++){
+		$pdf->Cell(1,8,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(48,1,"",'',2,'C');
+			$pdf->MultiCell(48,2,$datos_formacion_profesional[$i][0]['curso'],'','L');
+			$varX = $varX+48;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,8,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(45,1,"",'',2,'C');
+			$pdf->MultiCell(45,2,$datos_formacion_profesional[$i][0]['inst_educativa'],'','L');
+			$varX = $varX+45;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(20,8,$datos_formacion_profesional[$i][0]['duracion'],'RL',0,'C');
+		$pdf->Cell(15,8,$sisap->cambia_fecha($datos_formacion_profesional[$i][0]['desde']),'R',0,'C');
+		$pdf->Cell(15,8,$sisap->cambia_fecha($datos_formacion_profesional[$i][0]['hasta']),'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(60,1,"",'',2,'C');
+			$pdf->MultiCell(60,2,$datos_formacion_profesional[$i][0]['observaciones'],'','L');
+			$varX = $varX+60;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,8,'','R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_formacion_profesional
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//           REGISTRO DE TITULOS
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'REGISTRO DE TITULOS','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(40,4,'PROFESIÓN','RBL',0,'C');
+$pdf->Cell(40,4,'ESPECIALIDAD','RB',0,'C');
+$pdf->Cell(40,4,'COLEGIO PROFESIONAL','RB',0,'C');
+$pdf->Cell(18,4,'NRO. COLEGIO','RB',0,'C');
+$pdf->Cell(18,4,'NRO. REGISTRO','RB',0,'C');
+$pdf->Cell(12,4,'TOMO','RB',0,'C');
+$pdf->Cell(19,4,'FOLIOS','RB',0,'C');
+$pdf->Cell(0,4,'FECHA REGISTRO','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_registro_titulo)==0){
+	$pdf->Cell(40,6,'','RL',0,'L');
+	$pdf->Cell(40,6,'','R',0,'L');
+	$pdf->Cell(40,6,'','R',0,'L');
+	$pdf->Cell(18,6,'','R',0,'C');
+	$pdf->Cell(18,6,'','R',0,'C');
+	$pdf->Cell(12,6,'','R',0,'C');
+	$pdf->Cell(19,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_registro_titulo); $i++){
+		$pdf->Cell(1,7,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(38,1,"",'',2,'C');
+			$pdf->MultiCell(38,2,$datos_registro_titulo[$i][0]['profesion'],'','L');
+			$varX = $varX+38;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(39,1,"",'',2,'C');
+			$pdf->MultiCell(39,2,$datos_registro_titulo[$i][0]['especialidad'],'','L');
+			$varX = $varX+39;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(40,1,"",'',2,'C');
+			$pdf->MultiCell(40,2,$datos_registro_titulo[$i][0]['colegio_profesional'],'','L');
+			$varX = $varX+40;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(18,7,$datos_registro_titulo[$i][0]['numero_colegio'],'RL',0,'C');
+		$pdf->Cell(18,7,$datos_registro_titulo[$i][0]['numero_registro'],'R',0,'C');
+		$pdf->Cell(12,7,$datos_registro_titulo[$i][0]['tomo'],'R',0,'C');
+		$pdf->Cell(19,7,$datos_registro_titulo[$i][0]['folios'],'R',0,'C');
+		$pdf->Cell(0,7,$sisap->cambia_fecha($datos_registro_titulo[$i][0]['fecha_registro']),'R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_registro_titulo
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//  EXPERIENCIA ADMINISTRACIÓN PÚBLICA
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'EXPERIENCIA ADMINISTRACIÓN PÚBLICA','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(50,4,'INSTITUCIÓN','RBL',0,'C');
+$pdf->Cell(46,4,'CARGO DESEMPEÑADO','RB',0,'C');
+$pdf->Cell(22,4,'FECHA DE INGRESO','RB',0,'C');
+$pdf->Cell(22,4,'FECHA DE EGRESO','RB',0,'C');
+$pdf->Cell(0,4,'MOTIVO DE RETIRO','RB',1,'C');
+
+
+$pdf->SetFont('vera','',6);
+if(count($datos_experiencia_administracion)==0){
+	$pdf->Cell(50,6,'','RL',0,'C');
+	$pdf->Cell(46,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_experiencia_administracion); $i++){
+		$pdf->Cell(1,7,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(48,1,"",'',2,'C');
+			$pdf->MultiCell(48,2,$datos_experiencia_administracion[$i][0]['entidad_federal'],'','L');
+			$varX = $varX+48;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(46,1,"",'',2,'C');
+			$pdf->MultiCell(48,2,$datos_experiencia_administracion[$i][0]['cargo_desempenado'],'','L');
+			$varX = $varX+46;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(22,7,$sisap->cambia_fecha($datos_experiencia_administracion[$i][0]['fecha_ingreso']),'RL',0,'C');
+		$pdf->Cell(22,7,$sisap->cambia_fecha($datos_experiencia_administracion[$i][0]['fecha_egreso']),'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(65,1,"",'',2,'C');
+			$pdf->MultiCell(65,2,$datos_experiencia_administracion[$i][0]['motivo_salida'],'','L');
+			$varX = $varX+65;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,7,'','R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_experiencia_administracion
+
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//  EXPERIENCIA ADMINISTRACIÓN PÚBLICA
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'OTRAS EXPERIENCIAS LABORALES','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(50,4,'EMPRESA','RBL',0,'C');
+$pdf->Cell(46,4,'CARGO DESEMPEÑADO','RB',0,'C');
+$pdf->Cell(22,4,'FECHA DE INGRESO','RB',0,'C');
+$pdf->Cell(22,4,'FECHA DE EGRESO','RB',0,'C');
+$pdf->Cell(0,4,'MOTIVO DE RETIRO','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_experiencia_otras)==0){
+	$pdf->Cell(50,6,'','RL',0,'C');
+	$pdf->Cell(46,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_experiencia_otras); $i++){
+		$pdf->Cell(1,7,'','L',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(48,1,"",'',2,'C');
+			$pdf->MultiCell(48,2,$datos_experiencia_otras[$i][0]['empresa'],'','L');
+			$varX = $varX+48;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(1,7,'','R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(46,1,"",'',2,'C');
+			$pdf->MultiCell(48,2,$datos_experiencia_otras[$i][0]['cargo_desempenado'],'','L');
+			$varX = $varX+46;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(22,7,$sisap->cambia_fecha($datos_experiencia_otras[$i][0]['fecha_ingreso']),'RL',0,'C');
+		$pdf->Cell(22,7,$sisap->cambia_fecha($datos_experiencia_otras[$i][0]['fecha_egreso']),'R',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(65,1,"",'',2,'C');
+			$pdf->MultiCell(65,2,$datos_experiencia_otras[$i][0]['motivo_retiro'],'','L');
+			$varX = $varX+65;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(0,7,'','R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_experiencia_otras
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//             DATOS FAMILIARES
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'DATOS FAMILIARES','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(30,3,'','RL',0,'C');
+$pdf->Cell(60,3,'','R',0,'C');
+$pdf->Cell(22,3,'CÉDULA','R',0,'C');
+$pdf->Cell(22,3,'FECHA','R',0,'C');
+$pdf->Cell(22,3,'','R',0,'C');
+$pdf->Cell(0,3,'','R',1,'C');
+
+$pdf->Cell(30,2,'PARENTESCO','RBL',0,'C');
+$pdf->Cell(60,2,'NOMBRES Y APELLIDOS','RB',0,'C');
+$pdf->Cell(22,2,'IDENTIDAD','RB',0,'C');
+$pdf->Cell(22,2,'DE NACIMIENTO','RB',0,'C');
+$pdf->Cell(22,2,'SEXO','RB',0,'C');
+$pdf->Cell(0,2,'AFILIADO','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_familiares)==0){
+	$pdf->Cell(30,6,'','RL',0,'C');
+	$pdf->Cell(60,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(22,6,'','R',0,'C');
+	$pdf->Cell(0,6,'','R',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_familiares); $i++){
+		$pdf->Cell(30,6,$datos_familiares[$i][0]['parentesco'],'RL',0,'L');
+		$pdf->Cell(60,6,$datos_familiares[$i][0]['nombres_apellidos'],'R',0,'L');
+		$pdf->Cell(22,6,$datos_familiares[$i][0]['numero_cedula'],'R',0,'C');
+		$pdf->Cell(22,6,$sisap->cambia_fecha($datos_familiares[$i][0]['fecha_nacimiento']),'R',0,'C');
+		if($datos_familiares[$i][0]['sexo']=='m' || $datos_familiares[$i][0]['sexo']=='M'){ $sexo="MASCULINO";}elseif($datos_familiares[$i][0]['sexo']=='f' || $datos_familiares[$i][0]['sexo']=='F'){ $sexo="FEMENINO";};
+		$pdf->Cell(22,6,$sexo,'R',0,'C');
+		$pdf->Cell(0,6,$datos_familiares[$i][0]['afiliado']==1 ? 'SI' : 'NO','R',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_familiares
+
+
+$pdf->Ln(6);
+
+
+//***************************************
+//             BIENES QUE POSEE
+//***************************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'BIENES QUE POSEE','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(123,4,'DENOMINACIÓN DEL BIEN','RBL',0,'C');
+$pdf->Cell(20,4,'AÑO COMPRA','RB',0,'C');
+$pdf->Cell(32,4,'COSTO','RB',0,'C');
+$pdf->Cell(0,4,'CANCELADO','RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_bienes)==0){
+	$pdf->Cell(123,7,'','TRL',0,'C');
+	$pdf->Cell(20,7,'','TRL',0,'C');
+	$pdf->Cell(32,7,'','TR',0,'C');
+	$pdf->Cell(0,7,'','TR',1,'C');
+	$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+}else{
+	for($i=0; $i<count($datos_bienes); $i++){
+		$pdf->Cell(1,10,'','TL',0,'C');
+			$varX = $pdf->GetX();
+			$varY = $pdf->GetY();
+			$pdf->Cell(122,2,"",'T',2,'C');
+			$pdf->MultiCell(121,2,$datos_bienes[$i][0]['bien'],'','L');
+			$varX = $varX+122;
+			$pdf->SetXY($varX,$varY);
+		$pdf->Cell(20,10,$datos_bienes[$i][0]['ano_compra'],'TRL',0,'C');
+		$pdf->Cell(32,10,$datos_bienes[$i][0]['costo'],'TR',0,'C');
+		$pdf->Cell(0,10,$datos_bienes[$i][0]['cancelado'],'TR',1,'C');
+		$pdf->Cell(0,0,'','T',1);//LINEA EN BLANCO
+	}
+}//fin if datos_bienes
+
+
+$pdf->Ln(6);
+
+/*
+//*****************************
+//         SOPORTES
+//*****************************
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,'SOPORTES','TRBL',1,'C');
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(30,4,'CÓDIGO SOPORTE','RBL',0,'C');
+$pdf->Cell(0,4,' DENOMINACIÓN DEL SOPORTE','RB',1,'L');
+
+$pdf->SetFont('vera','',6);
+if(count($datos_soportes)==0){
+	$pdf->Cell(30,5,'','RBL',0,'C');
+	$pdf->Cell(0,5,'','RB',1,'L');
+}else{
+	$soportes = array('1'=>'Cédula de Identidad','2'=>'Partida de Nacimiento','3'=>'Foto del empleado o Trabajador','4'=>'Título Fondo Negro Universitario','5'=>'Título Fondo Negro de Bachiller','6'=>'Ficha Curricular','7'=>'Constancia de Trabajo Anteriores','8'=>'Constancia de Adiestramientos','9'=>'Acta de Matrimonio','10'=>'Partida de Nacimiento de los Hijos','11'=>'Inscripción en el Seguro Social','12'=>'Nombramiento','13'=>'Referencias Personales','14'=>'Certificaciones de Carrera Administrativa','15'=>'Licencia de conducir','16'=>'Declaración Jurada de Patrimonio','17'=>'Inscripción Mílitiar','18'=>'Pasaporte');
+	for($i=0; $i<count($datos_soportes); $i++){
+		$pdf->Cell(30,6,$datos_soportes[$i][0]['cod_soporte'],'RBL',0,'C');
+		$pdf->Cell(0,6,$soportes[$datos_soportes[$i][0]['cod_soporte']],'RB',1,'L');
+	}
+}
+*/
+
+$pdf->Output('expediente_trabajador_'.date('d-m-Y').'.pdf','D');//Poner nombre y la opcion D
+unlink($url_foto);
+?>

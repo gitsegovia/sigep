@@ -1,0 +1,117 @@
+<?php
+/**
+ * Create PDF document -test for unicode
+ * @package com.tecnick.tcpdf
+ * @abstract TCPDF - unicode test.
+ * @author Nicola Asuni
+ * @copyright 2004-2006 Tecnick.com S.r.l (www.tecnick.com) Via Ugo Foscolo n.19 - 09045 Quartu Sant'Elena (CA) - ITALY - www.tecnick.com - info@tecnick.com
+ * @link http://tcpdf.sourceforge.net
+ * @license http://www.gnu.org/copyleft/lesser.html LGPL
+ * @since 2004-07-14
+ */
+//require_once('config/lang/eng.php');
+//require_once('../tcpdf.php');
+vendor('utf8_tcpdf/tcpdf');
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+        //Go to 1.5 cm from bottom
+    	$this->SetY(-10);
+    	//Select Arial italic 8
+	$this->SetFont('vera','',5);
+    	//Print current and total page numbers
+   	 //$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		$this->Image('/var/www/diploma.jpg',0,null,null);
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+//for
+foreach($diplomas as $x){
+	$nombre = $x['diploma']['nombres'];
+	$cedula = $sisap->Formato2($x['diploma']['cedula']);
+	$cedula = str_replace(',00','',$cedula);
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Cell(0,22,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(0,10,$nombre,'',1,'C');//NOMBRE
+$pdf->Cell(0,15,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',32);
+$pdf->Cell(38,10,"",'',0);
+$pdf->Cell(0,10,'Comunicación interPersonal','',1);//diploma
+//$pdf->Image('/var/www/curso1.jpg',55,118,null);
+//$pdf->Image('/var/www/curso2.jpg',0,null,null);
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Cell(0,22,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(0,10,$nombre,'',1,'C');//NOMBRE
+$pdf->Cell(0,15,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(2,8,"",'',0);
+$pdf->Cell(0,8,'desarrollo humano fundamentado','',1,'C');//diploma
+$pdf->Cell(0,6,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(20,8,"",'',0);
+$pdf->Cell(0,1,'en inteligencia emocional','',1,'C');//diploma
+//$pdf->Image('/var/www/curso1.jpg',55,118,null);
+//$pdf->Image('/var/www/curso2.jpg',41,118,null);
+}
+//fin for
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Cell(0,22,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(0,10,'','',1,'C');//NOMBRE
+$pdf->Cell(0,15,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',32);
+$pdf->Cell(38,10,"",'',0);
+$pdf->Cell(0,10,'Comunicación interPersonal','',1);//diploma
+//$pdf->Image('/var/www/curso1.jpg',55,118,null);
+//$pdf->Image('/var/www/curso2.jpg',0,null,null);
+$pdf->AddPage();
+$pdf->Ln(45);
+$pdf->Cell(0,22,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(0,10,'','',1,'C');//NOMBRE
+$pdf->Cell(0,15,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(2,8,"",'',0);
+$pdf->Cell(0,8,'desarrollo humano fundamentado','',1,'C');//diploma
+$pdf->Cell(0,6,"",'',1);//ESPACIO
+$pdf->SetFont('freeserif','BI',28);
+$pdf->Cell(20,8,"",'',0);
+$pdf->Cell(0,1,'en inteligencia emocional','',1,'C');//diploma
+$pdf->Output();
+?>

@@ -1,0 +1,202 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: reporte_saldo_partidas_pdf.thtml
+ * Fecha de creacion: 05/07/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['DEP_DENO']=$nom_dep;
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	/*
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=$_SESSION['entidad_federal'];
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION['entidad_federal'];
+        	$varTOPh22=$_SESSION['dependencia'];
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$varTOPh22,'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,9,"SALDOS POR PARTIDAS",'RBL',1,'C');
+
+		$varX_aux = $this->GetX() + 175;
+		$varY_aux = $this->GetY() - 14;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(2);
+		*/
+		
+		$titulo_A = "SALDOS POR PARTIDAS";
+		$this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+
+		if($_SESSION['SScoddep']==1){
+			$this->SetFont('vera','B',6);
+			$this->Cell(16,4,"ORGANISMO: ",'TLB',0,'L');
+			$this->SetFont('vera','',6);
+			$this->Cell(0,4,$_SESSION['DEP_DENO'],'TRB',1,'L');
+			$this->Ln(2);
+		}
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(30,3,"",'TR',0,'C');
+		$this->Cell(26,3,"",'TR',0,'C');
+		$this->Cell(15,3,"",'TR',0,'C');
+		$this->Cell(14,3,"",'TR',0,'C');
+		$this->Cell(30,3,"",'TR',0,'C');
+		$this->Cell(30,3,"MONTO SOLICITADO EN",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(20,3,"SUB. PARTIDA",'RBL',0,'C');
+		$this->Cell(30,3,"TOTAL ASIGNACION",'RB',0,'C');
+		$this->Cell(26,3,"NUMERO SOLICITUD",'RB',0,'C');
+		$this->Cell(15,3,"FECHA",'RB',0,'C');
+		$this->Cell(14,3,"MES",'RB',0,'C');
+		$this->Cell(30,3,"MONTO ENTREGADO",'RB',0,'C');
+		$this->Cell(30,3,"OTROS TIPOS DE RECURSOS",'RB',0,'C');
+		$this->Cell(0,3,"SALDO DISPONIBLE",'RB',1,'C');
+
+    }//fin funtion
+
+
+
+}//fin clase
+
+function get_mes($mes){
+	switch ($mes) {
+		case 1:
+			return "ENERO";
+			break;
+		case 2:
+			return "FEBRERO";
+			break;
+		case 3:
+			return "MARZO";
+			break;
+		case 4:
+			return "ABRIL";
+			break;
+		case 5:
+			return "MAYO";
+			break;
+		case 6:
+			return "JUNIO";
+			break;
+		case 7:
+			return "JULIO";
+			break;
+		case 8:
+			return "AGOSTO";
+			break;
+		case 9:
+			return "SEPTIEMBRE";
+			break;
+		case 10:
+			return "OCTUBRE";
+			break;
+		case 11:
+			return "NOVIEMBRE";
+			break;
+		case 12:
+			return "DICIEMBRE";
+			break;
+
+		default:
+			break;
+	}
+}
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$temp = "0";
+$sum_monto_entregado = 0;
+$pdf->SetFont('vera','',6);
+foreach($datos as $row){
+	$ano_solicitud = $row[0]['ano_solicitud'];
+	$numero_solicitud = $row[0]['numero_solicitud'];
+	$fecha_solicitud = $row[0]['fecha_solicitud'];
+	$mes_solicitado = $row[0]['mes_solicitado'];
+	$ano = $row[0]['ano'];
+	$cod_partida = $row[0]['cod_partida'];
+	$cod_generica = $row[0]['cod_generica'];
+	$cod_especifica = $row[0]['cod_especifica'];
+	$cod_sub_espec = $row[0]['cod_sub_espec'];
+	$cod_auxiliar = $row[0]['cod_auxiliar'];
+	$monto_solicitado = $row[0]['monto_solicitado'];
+	$monto = $row[0]['monto'];
+	$monto_entregado = $row[0]['monto_entregado'];
+	$monto_otros = $row[0]['monto_otros'];
+	$asignacion_anual1 = $row[0]['asignacion_anual1'];
+	$asignacion_anual2 = $row[0]['asignacion_anual2'];
+
+
+	if($asignacion_anual1 == '0.00'){
+		$asignacion_anual = $asignacion_anual2;
+	}else{
+		$asignacion_anual = $asignacion_anual1;
+	}
+
+	$sub_partida = $sisap->zero($cod_partida).".".$sisap->zero($cod_generica).".".$sisap->zero($cod_especifica).".".$sisap->zero($cod_sub_espec).".".$sisap->zero($cod_auxiliar);
+	if($temp != $sub_partida){
+		$sum_monto_entregado = 0;
+		$sum_monto_entregado += $monto_entregado;
+		$pdf->Cell(20,4,$sub_partida,'RBL',0,'C');
+		$pdf->Cell(30,4,$sisap->Formato2($asignacion_anual),'RB',0,'R');
+	}else{
+		$sum_monto_entregado += $monto_entregado;
+		$pdf->Cell(20,4,'','RBL',0,'C');
+		$pdf->Cell(30,4,'','RB',0,'R');
+	}
+
+	$saldo_disponible = $asignacion_anual - ($sum_monto_entregado + $monto_otros);
+	$pdf->Cell(26,4,$sisap->zero($numero_solicitud),'RB',0,'C');
+	$pdf->Cell(15,4,$sisap->Cfecha($fecha_solicitud,'D/M/A'),'RB',0,'C');
+	$pdf->Cell(14,4,get_mes($mes_solicitado),'RB',0,'C');
+	$pdf->Cell(30,4,$sisap->Formato2($monto_entregado),'RB',0,'R');
+	$pdf->Cell(30,4,$sisap->Formato2($monto_otros),'RB',0,'R');
+	$pdf->Cell(0,4,$sisap->Formato2($saldo_disponible),'RB',1,'R');
+
+	$temp = $sub_partida;
+
+
+}
+$pdf->Output('Reporte de saldo por partidas_'.date('d/m/Y').'.pdf', 'D');
+?>

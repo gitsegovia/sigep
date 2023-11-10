@@ -1,0 +1,328 @@
+<?php
+
+if(isset($ELFORM) && $ELFORM==true){
+	?>
+<?= $sisap->Tabla('',true,'EJECUCIÓN PRESUPUESTARIA TRIMESTRAL <br>A NIVEL DE SUBPARTIDAS','','850');?>
+<?= $sisap->OpenTable("850")?>
+<form name='data[cfpp05]'  method = "post" id='form' action="<?php echo  $html->url('/reporte4/reporte_trimestre_2/GENERAR'); ?>">
+
+
+
+<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+
+
+
+<center>Indique Año de Ejecuci&oacute;n:
+<?
+// $sisap->inputTagRemote('reporte/ano', array('url'=>'/reporte2/escribir_ano', 'update'=>'st_seleccion_1','id'=>'ano', 'size'=>'6','value'=>$ano,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);"))
+?>
+<?= $html->input('reporte/ano',array('id'=>'ano', 'size'=>'6','value'=>$ANO,'maxlength'=>4, "onKeyPress"=>"return solonumeros(event);",  'style'=>"text-align:center;"));?>
+<br><br>
+</center>
+
+
+
+
+TIPO DE GASTO:<br><?= $html->radio('cfpp05/tipo_gasto', array('0'=>'todo','1'=>'capital', '2'=>'corriente'), NULL, array('value'=>'0'))?><br>
+<br/>
+TIPO DE RECURSO:<br><?= $html->radio('cfpp05/tipo_recurso', $sisap->tipoPresupuesto(3), NULL, array('value'=>'0'))?><br>
+<br><br>
+
+<?=$html->submit('Generar');?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<br>
+</form>
+<?=$sisap->CloseTable()?>
+<?
+}else if(isset($ELFORM) && $ELFORM==false){
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+ $_SESSION["tipo_gasto_reporte"]='';
+switch($tipo_gasto){
+	case 0:$_SESSION["tipo_gasto_reporte"]='Todo';break;
+    case 1:$_SESSION["tipo_gasto_reporte"]='Capital';break;
+    case 2:$_SESSION["tipo_gasto_reporte"]='Corriente';break;
+}
+
+/*
+ Presupuestos: o recursos
+1.-Ordinario
+2.-Coordinado
+3.-Fci
+4.-Mpps
+5.-Ingresos extraordinarios
+6.-Ingresos propios
+ */
+ $_SESSION["tipo_presupues_recurso"]='';
+switch($tipo_recurso){
+	case 0:$_SESSION["tipo_presupues_recurso"]='Todo';break;
+    case 1:$_SESSION["tipo_presupues_recurso"]='Ordinario';break;
+    case 2:$_SESSION["tipo_presupues_recurso"]='Coordinado';break;
+    case 3:$_SESSION["tipo_presupues_recurso"]='Fci';break;
+    case 4:$_SESSION["tipo_presupues_recurso"]='Mpps';break;
+    case 5:$_SESSION["tipo_presupues_recurso"]='Ingresos extraordinarios';break;
+    case 6:$_SESSION["tipo_presupues_recurso"]='Ingresos propios';break;
+    case 7:$_SESSION["tipo_presupues_recurso"]='Laee';break;
+    case 8:$_SESSION["tipo_presupues_recurso"]='Fides';break;
+
+}
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+    	$this->top_reporte("EJECUCIÓN PRESUPUESTARIA", "TIPO DE GASTO: ".$_SESSION["tipo_gasto_reporte"], "TIPO DE RECURSO: ".$_SESSION["tipo_presupues_recurso"], array("Y"=>"12", "X"=>"16", "Z"=>"12"), array("Y"=>"18", "X"=>"390"));
+
+
+
+		/*$this->Image('/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg',12,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,3,"EXPRESADO EN BOLIVARES",'RL',1,'C');
+		$this->Cell(0,2,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 380;
+		$varY_aux = $this->GetY() - 16;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(5);*/
+$this->SetFont('vera','B',7);
+$this->Cell(88,4,"",'TRL',0,'C');
+$this->Cell(60,4,"PRIMER TRIMESTRE",'TR',0,'C');
+$this->Cell(60,4,"SEGUNDO TRIMESTRE",'TR',0,'C');
+$this->Cell(60,4,"TERCER TRIMESTRE",'TR',0,'C');
+$this->Cell(60,4,"CUARTO TRIMESTRE",'TR',0,'C');
+$this->Cell(0,4,"T O T A L E S",'TR',1,'C');
+
+$this->SetFont('vera','B',6);
+$this->Cell(17,3,"SUB",'TRL',0,'C');
+$this->Cell(71,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+$this->Cell(20,3,"",'TR',0,'C');
+
+$this->Cell(25,3,"",'TR',0,'C');
+$this->Cell(25,3,"",'TR',0,'C');
+$this->Cell(0,3,"",'TR',1,'C');
+
+
+
+$this->Cell(17,3,"PARTIDA",'RBL',0,'C');
+$this->Cell(71,3,"DENOMINACIÓN",'RB',0,'C');
+$this->Cell(20,3,"Compromiso",'RB',0,'C');
+$this->Cell(20,3,"Causado",'RB',0,'C');
+$this->Cell(20,3,"Pagado",'RB',0,'C');
+
+$this->Cell(20,3,"Compromiso",'RB',0,'C');
+$this->Cell(20,3,"Causado",'RB',0,'C');
+$this->Cell(20,3,"Pagado",'RB',0,'C');
+
+$this->Cell(20,3,"Compromiso",'RB',0,'C');
+$this->Cell(20,3,"Causado",'RB',0,'C');
+$this->Cell(20,3,"Pagado",'RB',0,'C');
+
+$this->Cell(20,3,"Compromiso",'RB',0,'C');
+$this->Cell(20,3,"Causado",'RB',0,'C');
+$this->Cell(20,3,"Pagado",'RB',0,'C');
+
+$this->Cell(25,3,"Compromiso",'RB',0,'C');
+$this->Cell(25,3,"Causado",'RB',0,'C');
+$this->Cell(0,3,"Pagado",'RB',1,'C');
+    }//fin funtion
+}//fin clase
+
+function sin_cero ($var) {
+	if($var=='0,00') return '';
+	else return $var;
+}
+
+$pdf = new fpdfview('L','mm','A3');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+foreach($DATA as $rs){
+    $tcompromiso=$rs[$modelo]["compromiso_tri_uno"]+$rs[$modelo]["compromiso_tri_dos"]+$rs[$modelo]["compromiso_tri_tres"]+$rs[$modelo]["compromiso_tri_cuarto"];
+    $tcausado=$rs[$modelo]["causado_tri_uno"]+$rs[$modelo]["causado_tri_dos"]+$rs[$modelo]["causado_tri_tres"]+$rs[$modelo]["causado_tri_cuarto"];
+    $tpagado=$rs[$modelo]["pagado_tri_uno"]+$rs[$modelo]["pagado_tri_dos"]+$rs[$modelo]["pagado_tri_tres"]+$rs[$modelo]["pagado_tri_cuarto"];
+	if($tcompromiso!=0 && $tcausado!=0 && $tpagado!=0){
+	if($rs[$modelo]["cod_generica"]==0 && $rs[$modelo]["cod_especifica"]==0 && $rs[$modelo]["cod_sub_espec"]==0){
+    	$partida=$rs[$modelo]["cod_partida"];
+    }else if($rs[$modelo]["cod_generica"]!=0 && $rs[$modelo]["cod_especifica"]==0 && $rs[$modelo]["cod_sub_espec"]==0){
+        $partida=$rs[$modelo]["cod_partida"].".".$sisap->AddCero2($rs[$modelo]["cod_generica"]);
+    }else if($rs[$modelo]["cod_generica"]!=0 && $rs[$modelo]["cod_especifica"]!=0){
+       $partida=$rs[$modelo]["cod_partida"].".".$sisap->AddCero2($rs[$modelo]["cod_generica"]).".".$sisap->AddCero2($rs[$modelo]["cod_especifica"]).".".$sisap->AddCero2($rs[$modelo]["cod_sub_espec"]);
+    }
+	$pdf->Cell(17,10,$partida,'TRL',0,'L');//------[PARTIDA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+
+	$pdf->Cell(71,1,"",'TS',2,'C');
+	$pdf->MultiCell(70,2,$rs[$modelo]["denominacion"],'','L');//----[DENOMINACIÓN]
+	$varX = $varX+71;
+	$pdf->SetXY($varX,$varY);
+	//$pdf->Cell(55,5,"DENOMINACIÓN",'RB',0,'R');//[DENOMINACIÓN]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_uno"])),'TRL',0,'R');//----[Compromiso Primer Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_uno"])),'TR',0,'R');//-------[Causado Primer Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_uno"])),'TR',0,'R');//--------[Pagado Primer Trimestre]
+
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_dos"])),'TR',0,'R');//----[Compromiso Segundo Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_dos"])),'TR',0,'R');//-------[Causado Segundo Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_dos"])),'TR',0,'R');//--------[Pagado Segundo Trimestre]
+
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_tres"])),'TR',0,'R');//----[Compromiso Tercer Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_tres"])),'TR',0,'R');//-------[Causado Tercer Trimestre]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_tres"])),'TR',0,'R');//--------[Pagado Tercer Trimestre]
+
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_cuarto"])),'TR',0,'R');//----[Compromiso]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_cuarto"])),'TR',0,'R');//-------[Causado]
+	$pdf->Cell(20,10,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_cuarto"])),'TR',0,'R');//--------[Pagado]
+
+	$pdf->Cell(25,10,sin_cero ($sisap->Formato2($tcompromiso)),'TR',0,'R');//----[Compromiso]
+	$pdf->Cell(25,10,sin_cero ($sisap->Formato2($tcausado)),'TR',0,'R');//-------[Causado]
+	$pdf->Cell(0,10,sin_cero ($sisap->Formato2($tpagado)),'TR',1,'R');//---------[Pagado]
+	$pdf->Cell(0,0,"",'T',1,'R');//--Linea en blanco
+	}
+}
+
+		// ***** PAGINA PARA COLOCAR LOS TOTALES DE LOS TRIMESTRES POR PARTIDA *****
+
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$tcompromiso_t[1]=0;
+$tcompromiso_t[2]=0;
+$tcompromiso_t[3]=0;
+$tcompromiso_t[4]=0;
+$tcausado_t[1]=0;
+$tcausado_t[2]=0;
+$tcausado_t[3]=0;
+$tcausado_t[4]=0;
+$tpagado_t[1]=0;
+$tpagado_t[2]=0;
+$tpagado_t[3]=0;
+$tpagado_t[4]=0;
+
+$tcompromisoc=0;
+$tcausadoc=0;
+$tpagadoc=0;
+foreach($DATA as $rs){
+	if($rs[$modelo]["cod_generica"]==0 && $rs[$modelo]["cod_especifica"]==0 && $rs[$modelo]["cod_sub_espec"]==0){
+    	$partida=$rs[$modelo]["cod_partida"];
+    	$tcompromiso=$rs[$modelo]["compromiso_tri_uno"]+$rs[$modelo]["compromiso_tri_dos"]+$rs[$modelo]["compromiso_tri_tres"]+$rs[$modelo]["compromiso_tri_cuarto"];
+    	$tcausado=$rs[$modelo]["causado_tri_uno"]+$rs[$modelo]["causado_tri_dos"]+$rs[$modelo]["causado_tri_tres"]+$rs[$modelo]["causado_tri_cuarto"];
+    	$tpagado=$rs[$modelo]["pagado_tri_uno"]+$rs[$modelo]["pagado_tri_dos"]+$rs[$modelo]["pagado_tri_tres"]+$rs[$modelo]["pagado_tri_cuarto"];
+	if($tcompromiso!=0 && $tcausado!=0 && $tpagado!=0){
+		$pdf->Cell(17,6,$partida,'TRL',0,'C');//------[PARTIDA]
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+	$pdf->Cell(71,1,"",'TS',2,'C');
+	$pdf->MultiCell(70,2,$rs[$modelo]["denominacion"],'','L');//----[DENOMINACIÓN]
+	$varX = $varX+71;
+	$pdf->SetXY($varX,$varY);
+	//$pdf->Cell(55,5,"DENOMINACIÓN",'RB',0,'R');//[DENOMINACIÓN]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_uno"])),'TRL',0,'R');//----[Compromiso Primer Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_uno"])),'TR',0,'R');//-------[Causado Primer Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_uno"])),'TR',0,'R');//--------[Pagado Primer Trimestre]
+
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_dos"])),'TR',0,'R');//----[Compromiso Segundo Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_dos"])),'TR',0,'R');//-------[Causado Segundo Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_dos"])),'TR',0,'R');//--------[Pagado Segundo Trimestre]
+
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_tres"])),'TR',0,'R');//----[Compromiso Tercer Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_tres"])),'TR',0,'R');//-------[Causado Tercer Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_tres"])),'TR',0,'R');//--------[Pagado Tercer Trimestre]
+
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["compromiso_tri_cuarto"])),'TR',0,'R');//----[Compromiso Cuarto Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["causado_tri_cuarto"])),'TR',0,'R');//-------[Causado Cuarto Trimestre]
+	$pdf->Cell(20,6,sin_cero ($sisap->Formato2($rs[$modelo]["pagado_tri_cuarto"])),'TR',0,'R');//--------[Pagado Cuarto Trimestre]
+    // Calculo por Trimestre
+    $tcompromiso_t[1]=$tcompromiso_t[1]+$rs[$modelo]["compromiso_tri_uno"];
+    $tcompromiso_t[2]=$tcompromiso_t[2]+$rs[$modelo]["compromiso_tri_dos"];
+    $tcompromiso_t[3]=$tcompromiso_t[3]+$rs[$modelo]["compromiso_tri_tres"];
+    $tcompromiso_t[4]=$tcompromiso_t[4]+$rs[$modelo]["compromiso_tri_cuarto"];
+    $tcausado_t[1]=$tcausado_t[1]+$rs[$modelo]["causado_tri_uno"];
+    $tcausado_t[2]=$tcausado_t[2]+$rs[$modelo]["causado_tri_dos"];
+    $tcausado_t[3]=$tcausado_t[3]+$rs[$modelo]["causado_tri_tres"];
+    $tcausado_t[4]=$tcausado_t[4]+$rs[$modelo]["causado_tri_cuarto"];
+    $tpagado_t[1]=$tpagado_t[1]+$rs[$modelo]["pagado_tri_uno"];
+    $tpagado_t[2]=$tpagado_t[2]+$rs[$modelo]["pagado_tri_dos"];
+    $tpagado_t[3]=$tpagado_t[3]+$rs[$modelo]["pagado_tri_tres"];
+    $tpagado_t[4]=$tpagado_t[4]+$rs[$modelo]["pagado_tri_cuarto"];
+    // Totales
+	$pdf->Cell(25,6,sin_cero ($sisap->Formato2($tcompromiso)),'TR',0,'R');//----[Compromiso]
+	$pdf->Cell(25,6,sin_cero ($sisap->Formato2($tcausado)),'TR',0,'R');//-------[Causado]
+	$pdf->Cell(0,6,sin_cero ($sisap->Formato2($tpagado)),'TR',1,'R');//---------[Pagado]
+	$pdf->Cell(0,0,"",'T',1,'R');//--Linea en blanco
+	$tcompromisoc=$tcompromisoc+$rs[$modelo]["compromiso_tri_uno"]+$rs[$modelo]["compromiso_tri_dos"]+$rs[$modelo]["compromiso_tri_tres"]+$rs[$modelo]["compromiso_tri_cuarto"];
+    $tcausadoc=$tcausadoc+$rs[$modelo]["causado_tri_uno"]+$rs[$modelo]["causado_tri_dos"]+$rs[$modelo]["causado_tri_tres"]+$rs[$modelo]["causado_tri_cuarto"];
+    $tpagadoc=$tpagadoc+$rs[$modelo]["pagado_tri_uno"]+$rs[$modelo]["pagado_tri_dos"]+$rs[$modelo]["pagado_tri_tres"]+$rs[$modelo]["pagado_tri_cuarto"];
+	}
+	}//fin if
+}
+
+    $pdf->Cell(17,5,"",'TL',0,'L');//------[PARTIDA]
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+
+	$pdf->Cell(71,1,"",'TS',2,'C');
+	$pdf->SetFont('vera','B',8);
+	$pdf->MultiCell(70,2,"TOTALES:",'','R');//----[DENOMINACIÓN]
+	$varX = $varX+71;
+	$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','B',5);
+	//$pdf->Cell(55,5,"DENOMINACIÓN",'RB',0,'R');//[DENOMINACIÓN]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcompromiso_t[1])),'TRL',0,'R');//----[Compromiso Primer Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcausado_t[1])),'TR',0,'R');//-------[Causado Primer Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tpagado_t[1])),'TR',0,'R');//--------[Pagado Primer Trimestre]
+
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcompromiso_t[2])),'TR',0,'R');//----[Compromiso Segundo Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcausado_t[2])),'TR',0,'R');//-------[Causado Segundo Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tpagado_t[2])),'TR',0,'R');//--------[Pagado Segundo Trimestre]
+
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcompromiso_t[3])),'TR',0,'R');//----[Compromiso Tercer Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcausado_t[3])),'TR',0,'R');//-------[Causado Tercer Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tpagado_t[3])),'TR',0,'R');//--------[Pagado Tercer Trimestre]
+
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcompromiso_t[4])),'TR',0,'R');//----[Compromiso Cuarto Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tcausado_t[4])),'TR',0,'R');//-------[Causado Cuarto Trimestre]
+	$pdf->Cell(20,5,sin_cero ($sisap->Formato2($tpagado_t[4])),'TR',0,'R');//--------[Pagado Cuarto Trimestre]
+
+    $pdf->Cell(25,5,sin_cero ($sisap->Formato2($tcompromisoc)),'TR',0,'R');//----[Compromiso Total]
+	$pdf->Cell(25,5,sin_cero ($sisap->Formato2($tcausadoc)),'TR',0,'R');//-------[Causado Total]
+	$pdf->Cell(0,5,sin_cero ($sisap->Formato2($tpagadoc)),'TR',1,'R');//---------[Pagado Total]
+	$pdf->Cell(0,0,'','T',1,'R');
+
+$pdf->Output('ejecucion_presupuesto_por_trimestre_'.date("d-m-Y").".pdf",'D');
+}//fin else if
+?>

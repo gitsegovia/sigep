@@ -1,0 +1,98 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+if(isset($errorExcede) && $errorExcede==true){
+	echo $sisap->mensajes_error("Disculpe esta variable de construcci&oacute;n ya se encuentra agregada a la lista...");
+	$act_m=false;
+?>
+<?}else{$act_m=true;}?>
+<div id="grabar">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabla_ficha_catp tabla_ficha_catp3">
+  <?php
+ if(isset($_SESSION ["items"])){
+  if($_SESSION ["items"]!=null){
+ 	$i=0;
+ 	$total=0;
+ 	$ssmonto_total=0;
+    foreach($_SESSION ["items"] as $codigos){
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila2_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <td align="left" width="24%"><?=$codigos[5];?></td>
+    <td align="center" width="5%"><?=$sisap->AddCero3($codigos[0]);?></td>
+    <td align="left" width="23%"><?=$codigos[1];?></td>
+    <td align="center" width="5%"><?=$sisap->AddCero3($codigos[2]);?></td>
+    <td align="left"  width="23%"><?=$codigos[3];?></td>
+    <td align="center" width="14%"><?=$codigos[4];?></td>
+   <td align="center" width="6%"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/catp02_ficha_datos/eliminar_fila_variable_construccion/'.$codigos['id'], array('update'=>'del1','title'=>'Eliminar Fila',"after"=>"new Effect.DropOut('fila2_$i');"),'Realmente desea eliminar la fila seleccionada?',false,true) ?></td>
+  </tr>
+<?
+
+	if($codigos[4][0]=="-")
+		$ssmonto_total -= $sisap->Formato1($codigos[4]);
+	else
+		$ssmonto_total += $sisap->Formato1($codigos[4]);
+}else{ $ctrfpv=0;
+    foreach($_SESSION["items"] as $codigosv){
+    	if($codigosv[0]==null){
+    		$ctrfpv++;
+    	}
+    }
+	if($ctrfpv==count($_SESSION["items"])){
+		echo "<script> ver_documento('/catp02_ficha_datos/limpiar_lista_variable_construccion/', 'cargar_variables_construccion');</script>";
+		break;
+	}
+}
+    	$i++;
+    }//fin foreach
+  }
+ }
+?>
+<tr height='25px' bgcolor='#87cefa' id='idetotavalord' onclick='new Effect.Highlight(this);'>
+<td colspan="5" align="right">TOTAL: </td>
+<td  align="center" id="tmontovariable"><?=$sisap->Formato2($ssmonto_total);?></td>
+  <td colspan="4" bgcolor='#bfbfbf'>&nbsp;</td>
+</tr>
+<tr>
+<td colspan="10" align="center"><?= $sisap->submitTagRemote('Limpiar Lista', array('funcion'=>'valid_limplista_filas_var', 'url1' => '/catp02_ficha_datos/limpiar_lista_variable_construccion/', 'update1'=>'cargar_variables_construccion', 'id'=>'limpiar_lv')); ?></td></tr>
+<td colspan="10" id="del1">&nbsp;</td>
+</table>
+</div>
+<?php if($act_m===true){ ?>
+
+<?php
+$ssmonto_total=$sisap->Formato2($ssmonto_total);
+$ssmonto_total=$sisap->Formato1($ssmonto_total);
+?>
+
+<script language="JavaScript" type="text/javascript">
+  setTimeout("fondoCampo('idetotavalord',2);", 1000);
+  document.getElementById('d_valor_construccion').value="<?=$ssmonto_total?>";
+if(document.getElementById('area_total').value.indexOf(",")!=-1){
+  document.getElementById('area_total').value = reemplazarPC(document.getElementById('area_total').value);
+}
+if(document.getElementById('c_valor_construccion').value.indexOf(",")!=-1){
+  document.getElementById('c_valor_construccion').value = reemplazarPC(document.getElementById('c_valor_construccion').value);
+}
+  document.getElementById('monto_tota_variables_c').value = redondear((eval($('c_valor_construccion').value) + eval($('d_valor_construccion').value)),4);
+  document.getElementById('d_valor_montoajust').value = redondear(eval($('area_total').value) * eval($('monto_tota_variables_c').value),2);
+  document.getElementById('monto_total_de_construccion').value = redondear((eval($('area_total').value) * eval($('monto_tota_variables_c').value)) * eval($('porc_depreciacion').value),2);
+  document.getElementById('calculo_construccion').value = document.getElementById('monto_total_de_construccion').value;
+  $('d_valor_depreciac').value = $('porc_depreciacion').value;
+
+  moneda('d_valor_montoajust');
+  moneda('d_valor_construccion');
+
+  calcular_distribucion_imp();
+
+</script>
+<?php } ?>

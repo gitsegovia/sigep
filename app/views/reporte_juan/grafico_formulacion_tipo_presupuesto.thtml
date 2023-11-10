@@ -1,0 +1,212 @@
+<?php
+
+if(isset($tipo_presupuesto[0][0])){
+
+$tp=$tipo_presupuesto[0][0];
+$ordinario         = $tp["ordinario"]==null?0.00:$tp["ordinario"];
+$coordinado        = $tp["coordinado"]==null?0.00:$tp["coordinado"];
+$laee              = $tp["laee"]==null?0.00:$tp["laee"];
+$fides             = $tp["fides"]==null?0.00:$tp["fides"];
+$ingresos_extra    = $tp["ingresos_extra"]==null?0.00:$tp["ingresos_extra"];
+$ingresos_propios  = $tp["ingresos_propios"]==null?0.00:$tp["ingresos_propios"];
+$total_presupuesto = $ordinario+$coordinado+$laee+$fides+$ingresos_extra+$ingresos_propios;
+
+$asignacion         = $tp["asignacion_total"];
+$por_asignacion     = ($tp["asignacion_total"] * 100) / $asignacion;
+
+$por_ordinario      = ($ordinario*100) / $total_presupuesto;
+$por_coordinado     = ($coordinado*100) / $total_presupuesto;
+$por_laee           = ($laee*100) / $total_presupuesto;
+$por_fides          = ($fides*100) / $total_presupuesto;
+$por_ingresos_extra   = ($ingresos_extra*100) / $total_presupuesto;
+$por_ingresos_propios = ($ingresos_propios*100) / $total_presupuesto;
+
+$por_ordinario      = sprintf("%01.2f",$por_ordinario);
+$por_coordinado     = sprintf("%01.2f",$por_coordinado);
+$por_laee           = sprintf("%01.2f",$por_laee);
+$por_fides          = sprintf("%01.2f",$por_fides);
+$por_ingresos_extra   = sprintf("%01.2f",$por_ingresos_extra);
+$por_ingresos_propios = sprintf("%01.2f",$por_ingresos_propios);
+
+}else{
+
+
+$ordinario         = 0;
+$coordinado        = 0;
+$laee              = 0;
+$fides             = 0;
+$ingresos_extra      = 0;
+$ingresos_propios    = 0;
+$total_presupuesto = 0;
+
+$por_ordinario      = 0;
+$por_coordinado     = 0;
+$por_laee           = 0;
+$por_fides          = 0;
+$por_ingresos_extra   = 0;
+$por_ingresos_propios = 0;
+$asignacion         = 0;
+$por_asignacion     = 0;
+
+
+}//fin else
+
+
+/*echo "<br>".$ordinario;
+echo "<br>".$coordinado;
+echo "<br>".$laee;
+echo "<br>".$fides;
+echo "<br>".$ingresos_extra;
+echo "<br>%<br>".$por_ordinario;
+echo "<br>".$por_coordinado;
+echo "<br>".$por_laee;
+echo "<br>".$por_fides;
+echo "<br>".$por_ingresos_extra;
+echo "<br>".($por_ordinario+$por_coordinado+$por_laee+$por_fides+$por_ingresos_extra);*/
+?>
+
+<!-- -->
+
+
+
+
+<?php if($ver=="si"){ ?>
+
+<?php
+	 echo $sisap->Tabla($session->read('entidad_federal'),true,'TipoS de Recursos','','950');
+	 echo $sisap->OpenTable('950');
+
+?>
+
+
+			<form>
+						<table border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+						<?php $d=$session->read('SScoddep'); if($d==1){ $_SESSION['tipo_consolidado']=1; $var_inst=1; ?>
+						<tr><td colspan="2">
+						CONSOLIDADO POR:<?= $sisap->radioTagRemote("tipo_presupuestoPDF/opcion", array('1'=>'Por Institucion', '2'=>'Por Dependencia'), array('url1'=>'/reporte5/funcion/', 'update1'=>'cuerpo'), null, $opc=1); ?>
+						</td></tr>
+
+						<?php }else{ $var_inst=2;}//fin  ?>
+
+						 <tr>
+						   <td width='480px' id="ano_recurso"  align="center">Año:<?= $sisap->inputTagRemote('tipo_presupuestoPDF/year', array('url1'=>'/reporte5/partida_lista/'.$var_inst, 'update1'=>'select_lista',  'url3'=>'/reporte5/funcion/', 'update3'=>'cuerpo', 'style'=>'text-align:center;',  'id'=>'ano', 'size'=>'6', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?></td>
+						 </tr>
+
+
+
+			<tr><td colspan="2"  align="center">
+			  <?= $sisap->submitTagRemote('Ver', array('funcion'=>'valida_consumo','url1' => '/reporte_juan/grafico_formulacion_tipo_presupuesto/', 'update1'=>'cuerpo', 'id'=>'ir')); ?>
+			  <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+			</td></tr>
+
+					</table>
+			</form>
+
+<?php }//fin if ?>
+
+<br>
+
+<div id="cuerpo" style="overflow:auto;">
+
+<?php  $username = $_SESSION['nom_usuario'];
+	   $rdm = mt_rand();
+?>
+
+			<form name='data[tipo_presupuetoPDF]'  method = "post" id='form' action="<?php echo $html->url('/reporte_juan/grafico_formulacion_tipo_presupuesto_pdf/');?>" >
+
+			<?= $html->submit('Generar reporte') ?>&nbsp; <br> <br>
+
+				<input type="hidden" name="data[tipo_presupuetoPDF][ordinario]" value="<?=$sisap->Formato2($ordinario)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][coordinado]" value="<?=$sisap->Formato2($coordinado)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][laee]" value="<?=$sisap->Formato2($laee)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][fides]" value="<?=$sisap->Formato2($fides)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][ingresos_extra]"   value="<?=$sisap->Formato2($ingresos_extra)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][ingresos_propios]" value="<?=$sisap->Formato2($ingresos_propios)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_ordinario]" value="<?=$sisap->Formato2(round($por_ordinario,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_coordinado]" value="<?=$sisap->Formato2(round($por_coordinado,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_laee]" value="<?=$sisap->Formato2(round($por_laee,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_fides]" value="<?=$sisap->Formato2(round($por_fides,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_ingresos_extra]"   value="<?=$sisap->Formato2(round($por_ingresos_extra,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][por_ingresos_propios]" value="<?=$sisap->Formato2(round($por_ingresos_propios,1))?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][total_presupuesto]" value="<?=$sisap->Formato2($total_presupuesto)?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][rdm]" value="<?=$rdm?>"/>
+				<input type="hidden" name="data[tipo_presupuetoPDF][year]" value="<?=$year?>"/>
+
+				<table width="100%" background="#000" border="0" style="color:black;background:#fff" id="grafica">
+
+				<tr>
+					<td width="250" width="50%" align="center">
+						<img src="/graficasPHP/graphpastel.php?dat=<?=$ordinario.','.$coordinado.','.$laee.','.$fides.','.$ingresos_extra.','.$ingresos_propios?>&bkg=FFFFFF&wdt=250&hgt=180&usr=<?= $username ?>&rdm=<?= $rdm ?>"><br/><br/>
+					</td>
+					<td width="50%" align="center">
+						<img src="/graficasPHP/graphbarras.php?dat=<?=$ordinario.','.$coordinado.','.$laee.','.$fides.','.$ingresos_extra.','.$ingresos_propios.",".$total_presupuesto?>&bkg=FFFFFF&usr=<?= $username ?>&rdm=<?= $rdm ?>">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="font-size:large;">Leyenda:</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+							<table style="color:black;background:#fff" border="0" width="650">
+
+
+
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=5&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=1&rdm=<?= $rdm ?>"></td>
+							<td>ORDINARIO:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_ordinario, 1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($ordinario)." Bs." ?></td>
+						</tr>
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=8&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=2&rdm=<?= $rdm ?>"></td>
+							<td>COORDINADO:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_coordinado,1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($coordinado)." Bs." ?></td>
+						</tr>
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=11&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=3&rdm=<?= $rdm ?>"></td>
+							<td>FCI:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_laee,1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($laee)." Bs." ?></td>
+						</tr>
+								<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=14&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=4&rdm=<?= $rdm ?>"></td>
+							<td>MPPS:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_fides,1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($fides)." Bs." ?></td>
+						</tr>
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=17&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=5&rdm=<?= $rdm ?>"></td>
+							<td>INGRESOS EXTRAORDINARIOS:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_ingresos_extra,1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($ingresos_extra)." Bs." ?></td>
+						</tr>
+
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=20&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=6&rdm=<?= $rdm ?>"></td>
+							<td>INGRESOS PROPIOS:</td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_ingresos_propios,1))." %" ?></td>
+							<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($ingresos_propios)." Bs." ?></td>
+						</tr>
+
+						<tr>
+							<td><img src="/graficasPHP/graphref.php?ref=23&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=7&rdm=<?= $rdm ?>"></td>
+							<td>TOTAL PRESUPUESTO:</td>
+							<td style="font-size:large;text-align:right;" colspan="2"><?= $sisap->Formato2($total_presupuesto)." Bs." ?></td>
+						</tr>
+
+
+
+						</table>
+					</td>
+				</tr>
+				</table>
+				<br/>
+
+</form>
+
+</div>
+<?php if($ver=="si"){ ?><?= $sisap->CloseTable(); ?> <?php } ?>
+<!-- -->
+

@@ -1,0 +1,122 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF {
+
+    function setup($orientation = 'Landscape', $unit = 'mm', $format = 'Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Footer() {
+
+     //   $this->SetY(-15);
+     //   $this->SetFont('vera', '', 8);
+        //  $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/TPAG', 0, 0, 'C');
+
+    }
+
+    function Header() {
+          $img_dependencia_o = '/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_' . $_SESSION['SScodinst'] . '_' . $_SESSION['SScoddep'] . '.jpg';
+
+        if (file_exists($img_dependencia_o)) {
+            $escudo = $img_dependencia_o;
+            $varTOPh1 = " ";
+            $varTOPh2 = "  ";
+            $varTOPh11 = " ";
+            $varTOPh22 = " ";
+            $t1 = 14;
+            $t2 = 14;
+        } else {
+            //$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+            $escudo = "/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+            $varTOPh1 = $_SESSION['entidad_federal'];
+            $varTOPh2 = $_SESSION['dependencia'];
+            $varTOPh11 = $_SESSION['entidad_federal'];
+            $varTOPh22 = $_SESSION['dependencia'];
+            $t1 = 13;
+            $t2 = 13;
+        }
+
+        $this->Image($escudo, 15, 12, $t1);
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(20, 6, "", 'TL', 0);
+        $this->Cell(170, 6, $varTOPh1, 'TR', 1);
+
+        $this->Cell(20, 6, "", 'L', 0);
+        $this->SetFont('vera', '', 7);
+        $this->Cell(170, 4, "", 'R', 1);
+
+
+        $this->SetFont('vera', 'B', 12);
+        $this->Cell(190, 6, " RESUMEN GENERAL DE TRANSACCIONES", 'RL', 1, 'C');
+
+        $this->SetFont('vera', 'R', 8);
+        $this->Cell(190, 6, $_SESSION['dependencia'], 'RLB', 1, 'L');
+        $this->Ln(5);
+
+        $varX_aux = $this->GetX() + 170;
+        $varY_aux = $this->GetY() - 24;
+        $this->SetFont('vera', 'B', 5);
+        $this->Text($varX_aux, $varY_aux, 'PAGINA: ' . $this->PageNo() . '/TPAG');
+        $this->Text($varX_aux, $varY_aux + 3, 'FECHA: ' . date("d/m/Y"));
+        $this->Text($varX_aux, $varY_aux + 6, 'HORA: ' . date("h:i a"));
+
+        $this->SetFont('vera', 'B', 8);
+
+
+        $this->SetFont('vera', 'B', 8);
+        $this->Cell(25, 4, "CÓDIGO", 'TRL', 0, 'C');
+        $this->Cell(135, 4, "", 'RLT', 0, 'C');
+        $this->Cell(30, 4, "", 'RLT', 1, 'C');
+
+        $this->Cell(25, 4, "TRANSACCIÓN", 'BRL', 0, 'C');
+        $this->Cell(135, 4, "DENOMINACIÓN", 'RLB', 0, 'C');
+        $this->Cell(30, 4, "MONTO ANUAL", 'RLB', 1, 'C');
+    }
+
+}
+
+//fin clase
+$pdf = new fpdfview('P', 'mm', 'letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(13);
+$pdf->SetRightMargin(13);
+$pdf->SetAutoPageBreak(true, 15);
+
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera', '', 8);
+$total = 0;
+$total_general = 0;
+
+//ciclo
+
+foreach ($vista_general as $datos) {
+     $pdf->Cell(25, 6, mascara_tres($datos[0][cod_transaccion]), 'BRL', 0, 'C');
+     $pdf->Cell(135, 6, $datos[0][denominacion], 'BRL', 0, 'L');
+     $pdf->Cell(30, 6, $sisap->Formato2($datos[0][monto_anual]), 'RLB', 1, 'R');
+
+
+$total=$total+$datos[0][monto_anual];
+
+ }
+
+
+
+          $pdf->SetFont('vera', 'B', 9);
+          $pdf->Cell(160, 6,"TOTAL: ", 'TRLB', 0, 'R');
+          $pdf->Cell(30, 6, $sisap->Formato2($total),'TRLB', 1, 'R');
+
+//fin ciclo
+
+fin_ventana_barra_proceso();
+$pdf->Output('reporte_transa_' . date("d-m-Y") . "pdf", 'SISAP_AJAX');
+//fin multiplo
+//$pdf->Output('reporte_arc.pdf', 'D');
+?>

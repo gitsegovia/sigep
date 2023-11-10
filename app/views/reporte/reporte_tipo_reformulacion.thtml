@@ -1,0 +1,77 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+	    $this->SetY(-10);
+	    $this->SetFont('vera','',6);
+	    $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		/*
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	 $escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	 $varTOPh1="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,12,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,9,"TIPOS DE REFORMULACIÓN",'RLB',1,'C');
+		$this->Ln(2);
+		*/
+		$this->top_reporte("TIPOS DE REFORMULACIÓN", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), null, false);
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,7,"CÓDIGO",'TRLB',0,'C');
+$pdf->Cell(0,7,"D E N O M I N A C I Ó N",'TRB',1,'C');
+$pdf->SetFont('vera','',7);
+foreach($datos as $x){
+$pdf->Cell(20,7,$x['cfpd10_reformulacion_tipo']['cod_tipo'],'TRLB',0,'C');
+$pdf->Cell(0,7,$x['cfpd10_reformulacion_tipo']['denominacion'],'TRB',1,'L');
+}//fin for
+$pdf->Output('Tipos_de_reformulacion_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

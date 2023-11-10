@@ -1,0 +1,96 @@
+<?php
+/*
+ * Proyecto: SIGEP
+ * Archivo: tipo_recurso.thtml
+ * Fecha de creacion: 06/06/2008
+ *
+ * Creado por: Ing. Luis Alfredo Diaz Jaramillo
+ * e-mail: ldiazjaramillo@gmail.com
+ *
+ */
+ echo $sisap->Tabla($session->read('entidad_federal'),true,'Recurso Proyectado vs Presupuestado','','950');
+
+ foreach($datos_grap1 as $row){
+	$asignacion_total = $row[0]['asignacion_total'];
+	$monto_presupuestado = $row[0]['monto_presupuestado'];
+	$diferencia = $row[0]['diferencia'];
+	$ano_recurso = $row[0]['ano_recurso'];
+ }
+
+?>
+<?= $sisap->OpenTable('950'); ?>
+<form name='data[tipo_gastoPDF]'  method = "post" id='form' action="<?php echo $html->url('/graficos2/tipo_recurso_proy_presu_pdf/');?>" >
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+<tr>
+<td align="center">A&ntilde;o de Recurso:</td>
+<td align="center">Tipo Recurso</td>
+</tr>
+<tr>
+<td align="center" width="150">
+<?= $sisap->selectTagRemote('graficos2/ano_recurso', $optionElements=$ListAnoRecurso,  $extra_opciones = array(), $selected = $ano_ejecucion, $selectAttr = array('onchange1'=>'/graficos2/get_tipo_recurso', 'update1'=>'r_tipo_recurso', 'id'=>'sel_ano_recurso')) ?>
+</td>
+<td align="center">
+<div id="r_tipo_recurso">
+	<?= $sisap->radioTagRemote('graficos2/tipo_recurso', $recursos, array('url1'=>'tipo_recurso_proy_presu/'.$ano_ejecucion, 'update1'=>'principal_grafico_tipo_recurso'), null, $opc=6); ?>
+</div>
+</td>
+</tr>
+</table>
+
+
+<br><br>
+
+<div id="principal_grafico_tipo_recurso" style="height:350px;">
+<table width="100%" cellspacing="0">
+<tr>
+<td colspan="3"><b>Plan Inversi&oacute;n <?= $ano_recurso ?></b></td>
+</tr>
+<tr bgcolor="#FFFFFF">
+<td align="center">
+<img src="/graficasPHP/graphbarras.php?dat=<?=$monto_presupuestado?>,<?=$diferencia?>,<?=$asignacion_total?>&bkg=FFFFFF&usr=<?=$usr?>&rdm=<?=$rdm?>">
+</td>
+<td align="center" width="250">
+<img src="/graficasPHP/graphpastel.php?dat=<?= $monto_presupuestado; ?>,<?= $diferencia; ?>&bkg=FFFFFF&wdt=250&hgt=180&usr=<?=$usr?>&rdm=<?=$rdm?>"><br/><br/>
+</td>
+<td class="textnegro">
+<table>
+<tr>
+<td>
+<img src="/graficasPHP/graphref.php?ref=5&typ=2&dim=10&bkg=EEEEEE&usr=<?=$usr?>&k=1&rdm=<?=$rdm?>">
+</td>
+<td class="textnegro">Presupuestado: <b><?= $sisap->get_porcentaje($asignacion_total, $monto_presupuestado) ?>% - </b></td>
+<td class="textnegro" align="right">
+<b><?= $sisap->Formato2($monto_presupuestado) ?></b>
+<input type="hidden" name="data[graficos2][monto_presupuestado]" value="<?= $sisap->Formato2($monto_presupuestado) ?>">
+</td>
+</tr>
+<tr>
+<td>
+<img src="/graficasPHP/graphref.php?ref=8&typ=2&dim=10&bkg=EEEEEE&usr=<?=$usr?>&k=2&rdm=<?=$rdm?>">
+</td>
+<td class="textnegro">No Presupuestado: <b><?= $sisap->get_porcentaje($asignacion_total, $diferencia) ?>% - </b></td>
+<td class="textnegro" align="right">
+<b><?= $sisap->Formato2($diferencia) ?></b>
+<input type="hidden" name="data[graficos2][monto_nopresupuestado]" value="<?= $sisap->Formato2($diferencia) ?>">
+</td>
+</tr>
+<tr>
+<td>
+<img src="/graficasPHP/graphref.php?ref=11&typ=2&dim=10&bkg=EEEEEE&usr=<?=$usr?>&k=3&rdm=<?=$rdm?>">
+</td>
+<td class="textnegro">Asignaci&oacute;n Total:</td>
+<td class="textnegro" align="right">
+<b><?= $sisap->Formato2($asignacion_total) ?></b>
+<input type="hidden" name="data[graficos2][asignacion_total]" value="<?= $sisap->Formato2($asignacion_total) ?>">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</div>
+</br>
+<?= $html->submit('GENERAR PDF') ?> &nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+</form>
+<?= $sisap->CloseTable(); ?>

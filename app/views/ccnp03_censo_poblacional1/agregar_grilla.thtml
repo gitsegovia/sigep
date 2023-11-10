@@ -1,0 +1,148 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+function denominacion($deno, $codigo, $cod_trans){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+<? if(!isset($vacio)){
+	?>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro">
+		<td align="center" width="4%">N°</td>
+		<td align="center" width="20%">Apellidos y Nombres</td>
+		<td align="center" width="10%">Cédula</td>
+		<td align="center" width="8%">Fecha de Nacimiento</td>
+		<td align="center" width="5%">Sexo</td>
+		<td align="center" width="5%">Estado<br> Civil</td>
+		<td align="center" width="8%">Parentesco</td>
+		<td align="center" width="10%">Grado de<br> Instrucción</td>
+		<td align="center" width="7%">Estudia</td>
+		<td align="center" width="9%">Ocupación</td>
+		<td align="center" width="9%">Ingreso</td>
+		<td align="center" width="5%">Acción</td>
+	</tr>
+
+
+  <?php
+//  print_r($_SESSION["items1"]);
+ if(isset($_SESSION ["items1"]) && $_SESSION ["items1"]!=array() ){
+
+
+ 	$i=0;
+ 	$j=0;
+	foreach($paren as $x){
+		$deno[$j] = $x['cnmd06_parentesco']['denominacion'];
+		$codigo[$j] = $x['cnmd06_parentesco']['cod_parentesco'];
+		$j++;
+	}
+//	pr($_SESSION ["items1"]);
+    foreach($_SESSION ["items1"] as $codigos){
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+    	$id_fila = (int) rand()."_".$i;
+		$fila = "fila_".$id_fila;
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+
+   <?
+    for($x=0;$x<=10;$x++){
+    	$linea=$codigos[0];
+    	if($x==0){//num linea
+    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+    	}else if($x==1){//nombre apellido
+    		echo "<td>".$codigos[$x]."</td>";
+    	}else if($x==2){//cedula
+    		if($codigos[$x]!=0)$v=$codigos[$x];else $v='';
+    		echo "<td align=\"center\">".$v."</td>";
+    	}else if($x==3 || $x==4){
+    		echo "<td align=\"center\">".$codigos[$x]."</td>";
+    	}else if($x==5){
+    		if($codigos[$x]=='B')$ver='Con'; else $ver=$codigos[$x];
+    		echo "<td align=\"center\">".$ver."</td>";
+    	}else if($x==6){
+    		echo "<td align=\"center\">".denominacion($deno, $codigo,$codigos[$x])."</td>";
+    	}else if($x==8){
+    		if($codigos[$x]==1)$muestra='Si';else $muestra='No';
+    		echo "<td align=\"center\">".$muestra."</td>";
+    	}else if($x==7 || $x==9){
+    		if($codigos[$x]!=0)$g=$codigos[$x];else $g='';
+			echo "<td>".$g."</td>";
+    	}else if($x==10){
+    		if($codigos[$x]!='' || $codigos[$x]!=0){
+    			echo "<td align=\"center\">".$sisap->Formato2($codigos[$x])."</td>";
+    		}else{
+    			echo "<td align=\"center\">".''."</td>";
+    		}
+
+    	}
+    }
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/ccnp03_censo_poblacional1/eliminar_items/'.$codigos['id'].'/'.$codigos[10], array('update'=>'carga_grilla','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+   	$i++;
+
+    }//fin foreach
+
+ }else{
+ 	for($x=0;$x<=11;$x++){
+	   	echo "<td align=\"center\">---</td>";
+ 	}
+ }
+?>
+
+</table>
+<? $linea=$linea+1; ?>
+<script>
+	document.getElementById('num_miembro').value=<?=$linea?>;
+
+	document.getElementById('parentesco_fami').options[0].selected = true;
+
+	document.getElementById('cedula_fami').value='';
+
+	document.getElementById('ape_nom').value='';
+
+	document.getElementById('fecha_nacimiento_fami').value='';
+
+	document.getElementById('sexo_fami').options[0].selected = true;
+	document.getElementById('estado_civil_fami').options[0].selected = true;
+
+	document.getElementById('grado_instruccion_fami').value='';
+
+	document.getElementById('estudia_1').checked=false;
+	document.getElementById('estudia_2').checked=false;
+
+	document.getElementById('ocupacion_fami').value='';
+	document.getElementById('ingreso_fami').value='';
+</script>
+<center>
+<?= $sisap->submitTagRemote('Limpiar Lista', array('url1' => '/ccnp03_censo_poblacional1/limpiar_lista/', 'update1'=>'carga_grilla')); ?>
+</center>
+<div id="del"></div>
+</div>
+<? } ?>
+<input type="hidden" id="familia" value="<?=$x?>"/>
+

@@ -1,0 +1,87 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+?>
+
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"TIPO DE DOCUMENTOS","","750");?>
+
+<form name='data[capp01]'  method = "post" id='form'>
+<?= $sisap->OpenTable("750")?>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="10%">Tipo de Documento</td>
+			<td width="10%">Código</td>
+			<td width="30%">Denominación del tipo de documento</td>
+			<td width="15%">Pasos a Cumplir</td>
+			<td width="15%">Dias Probables para el Pago</td>
+			<td width="10%">Acción</td>
+		</tr>
+
+		<tr>
+			<td><?= $sisap->selectTagRemote('capp01/tipo_documento', $documentos,  array('value1'=>'otros'),'', array('onchange1'=>'/capp01_tipo_documento/mostrar/cod', 'update1'=>'idcodigo','onchange2'=>'/capp01_tipo_documento/mostrar/deno', 'update2'=>'iddenominacion','onChange'=>'vacio', 'id'=>'tipo_documento',true), null, true);?></td>
+			<td align="center" id="idcodigo"><?= $html->input('capp01/codigo', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'codigo','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" id="iddenominacion"><?= $html->input('capp01/denominacion', $htmlAttributes = array('value'=>'','style'=>'width:98%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/pasos', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'pasos','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/dias', $htmlAttributes = array('value'=>'','style'=>'width:98%;text-align:center','id'=>'dias','class'=>'inputtext','onKeyPress'=>'return solonumeros(event);'), false); ?></td>
+			<td width="10%" align="center"><?= $sisap->submitTagRemote('+', array('id'=>'save','disabled'=>'disabled','url1' => '/capp01_tipo_documento/guardar', 'update1'=>'carga_grilla')); ?></td>
+		</tr>
+	</table>
+
+	<div id="carga_grilla"  style="height:150px; overflow:auto;" >
+
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr class="tr_negro" align="center">
+			<td width="10%">Código</td>
+			<td width="40%">Denominación del tipo de documento</td>
+			<td width="15%">Pasos a Cumplir</td>
+			<td width="15%">Dias Probables para el Pago</td>
+			<td width="10%">Acción</td>
+		</tr>
+
+<? if($datos!=null){
+	for($i=0;$i<count($datos);$i++){
+		if($i%2==0){
+			$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+		?>
+		<tr bgcolor=<?=$color?> id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" >
+			<td align="center"><?= $html->input('capp01/codigo'.$i, $htmlAttributes = array('value'=>$sisap->zero($datos[$i][0]['cod_tipo_documento']),'style'=>'width:98%;text-align:center','id'=>'codigo','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/denominacion'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['denominacion'],'style'=>'width:98%','id'=>'denominacion','class'=>'inputtext','readonly'=>'readonly','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/pasos'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['pasos_cumplir'],'style'=>'width:98%;text-align:center','id'=>'pasos','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center"><?= $html->input('capp01/dias'.$i, $htmlAttributes = array('value'=>$datos[$i][0]['dias_probable_pago'],'style'=>'width:98%;text-align:center','id'=>'dias','class'=>'inputtext','readonly'=>'readonly'), false); ?></td>
+			<td align="center" id="<?= "li_".$i ?>">
+				<a href="javascript:ver_documento('/capp01_tipo_documento/modificar/<?=$datos[$i][0]['cod_tipo_documento']?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar datos del familiar'))?></a>
+				<?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/capp01_tipo_documento/eliminar/'.$datos[$i][0]['cod_tipo_documento'],array('update'=>'carga_grilla', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('fila_$i');"), "Realmente desea Eliminar a este registro?", false, true); ?>
+			</td>
+		</tr>
+<? }
+
+}else{ ?>
+	<tr bgcolor="#CDF2FF">
+		<td align="center">&nbsp;</td>
+		<td align="center">&nbsp;</td>
+		<td align="center">&nbsp;</td>
+		<td align="center">&nbsp;</td>
+		<td align="center" >&nbsp;</td>
+	</tr>
+<? } ?>
+<input type="hidden" id="TI" value="<?=$i?>"/>
+
+	</table>
+
+
+	</div>
+<div id="vacio"></div>
+	<?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+
+<?=$sisap->CloseTable() ?>
+</form>

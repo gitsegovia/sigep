@@ -1,0 +1,131 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+$color="";
+
+if($consulta){
+	$readonly='readonly';
+}else{
+	$readonly='';
+}
+
+?>
+
+<?$sisap->Tabla_modulos("",true,"Programación de Actividades Institucionales - Situación Actual y Supuestos","","950","cpop")?>
+<?$sisap->OpenTable("950");?>
+
+	<form name='data[cpod05_control_metas]' method = "post" id='form1'>
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td width="35%">EJERCICIO A FORMULAR</td>
+				<td>
+					<?= $sisap->inputTagRemote('cpod05_control_metas/ano', array('url'=>'/cpop05_control_metas/index/'.$this->data['cpod05_control_metas']['ano'],'update'=>'principal','size'=>'4' , 'id'=>'ano','onKeyPress'=>'return solonumeros_enteros(event);','style'=>'text-align:center;font-weight:bold;font-size:18','value'=>$ano));?>
+					<?= $html->input('cpod05_control_metas/cod_meta',array('id'=>'cod_meta', 'value'=>'0', 'readonly'=>'readonly', 'type'=>'hidden'));?>
+				</td>
+			</tr>
+			<tr>
+				<td>TIPO DEL PROYECTO</td>
+				<td>
+					<?= $sisap->radioTagRemote('cpod05_control_metas/tipo_proyecto', array('GESTION'=>'GESTIÓN'), array('url1'=>'/cpop05_control_metas/proyectos_situacion_actual/'.$ano, 'update1' =>'select_proyecto')); ?>
+				</td>
+			</tr>
+			<tr>
+				<td>PROYECTO</td>
+				<td>
+					<div id="select_proyecto">
+						<?= $html->selectTag('cpod05_control_metas/numero_proyecto', array(), '', array('id'=>'numero_proyecto'));?>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>Situación Actual</td>
+				<td><?= $html->input('cpod05_control_metas/situacion_actual', array('id'=>'situacion_actual', 'class'=>'inputtext','value'=>'EN FORMULACIÓN', 'readonly'=>'readonly'));?>
+				</td>
+			</tr>
+			<tr>
+				<td>Supuestos</td>
+				<td><?= $html->textarea('cpod05_control_metas/supuestos', array('id'=>'supuestos','rows'=>'2',  'cols' => '40', 'class'=>'inputtext', $readonly=>$readonly),  false) ?>
+				</td>
+			</tr>
+			<tr>
+        		<? if(!$consulta){?>
+				<td colspan="2" align="center"> <?= $sisap->submitTagRemote('Guardar Situación Actual', array('funcion'=>'valida_cpod05_situacion_actual','url1' => '/cpop05_control_metas/guardar_situacion_actual/', 'update1'=>'principal')); ?></td>
+				<?}?>
+			</tr>
+		</table>
+	</form>
+
+	<br><br>
+
+	<!--
+	//***************************************
+	//************* grilla*******************
+	//***************************************
+	-->
+
+	<div id="Lista" class="Lista">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+			<tr>
+				<td  colspan="6" align="center">METAS REGISTRADAS PARA ESTE EJERCICIO PRESUPUESTARIO:</td>
+			</tr>
+			<tr class="tr_negro">
+				<td width="5%" align="center" >C&oacute;digo</td>
+				<td width="12%" align="center" >Tipo Proyecto</td>
+				<td width="44%" align="center" >Proyecto</td>
+				<td width="12%" align="center" >Situación Actual</td>
+				<td width="20%" align="center" >Supuestos</td>
+				<td width="7%" align="center" >Acci&oacute;n</td>
+			</tr>
+			<!-- Contenido si existen datos para el año seleccionado -->
+			<?
+				if(isset($datos) && $datos!=null){
+
+					$id=1;
+					foreach($datos as $metas){
+        				$param = $metas[0]['tipo_proyecto']."/".$metas[0]['numero_proyecto']."/".$metas[0]['ano'];
+
+						if($color=="#DAEBFF"){
+		    				$color="#CDF2FF";
+			    		}else{
+				    		$color="#DAEBFF";
+				    	}
+					?>
+
+						<tr bgcolor="<?=$color?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+							<td width="5%" align="center"><?= $id ?></td>
+							<td width="12%" align="center"><?= $metas[0]['tipo_proyecto'] ?></td>
+							<td width="44%" align="center"><?= $metas[0]['proyectos'] ?></td>
+							<td width="12%" align="center"><?= $metas[0]['situacion_actual'] ?></td>
+							<td width="20%" align="center"><?= $metas[0]['supuestos'] ?></td>
+							<td width="7%" align="center">
+						        <?if(!$consulta){?>
+							        <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cpop05_control_metas/eliminar_situacion_actual/'.$param, array('update'=>'principal','title'=>'Eliminar',"after"=>""),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+		      						<? /*= $ajax->link($html->image('edit.png',array('border'=>0)), '/cpop02_recurso_humano/editar/'.$param, array('update'=>'principal','title'=>'Modificar'),false,false,true)*/ ?>
+								<?}?>
+							</td>
+						</tr>
+
+				<?
+					$id++;
+					} // fin foreach
+				}else{ // fin datos
+				 ?>
+					<tr>
+						<td  colspan="7" align="center">NO EXISTEN INFORMACIÓN REGISTRADA EN ESTE AÑO</td>
+					</tr>
+			 	 <?
+				} 
+			?>
+		</table>
+	</div>
+<?= $sisap->buttonTagRemote('cpod05_control_metas/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+
+<?php echo $sisap->CloseTable(); ?>
+<script>
+	$('supuestos').value='';
+</script>

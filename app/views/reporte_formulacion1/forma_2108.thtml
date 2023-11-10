@@ -1,0 +1,176 @@
+<?php if(isset($ir)){ ?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"RESUMEN DE LAS METAS DE LA INSTITUCIÓN A NIVEL DE SECTORES",NULL,"750");?>
+
+
+ <form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_formulacion1/forma_2108/si'); ?>">
+
+<?= $sisap->OpenTable("750")?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('datos/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+<?= $sisap->radio_consolidado('datos/consolidacion', array(), '', true)  ?>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?=$sisap->CloseTable()?>
+
+
+</form>
+
+
+
+<?php }else{
+
+
+
+$_SESSION['entidad_federal_aux'] = '';
+$_SESSION['ejercicio'] = '';
+$_SESSION['titulo_a'] = '';
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+function Header(){
+	$titulo_A = "RESUMEN DE LAS METAS DE LA INSTITUCIÓN A NIVEL DE SECTORES";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['ejercicio'],'TRL',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(18,4,'','TRL',0,'C');
+	$this->Cell(102,4,'','TR',0,'C');
+	$this->Cell(102,4,'','TR',0,'C');
+	$this->Cell(61,4,'','TR',0,'C');
+	$this->Cell(30,4,'CANTIDADES','TR',0,'C');
+	$this->Cell(0,4,'COSTO','TR',1,'C');
+
+	$this->Cell(18,4,'SECTOR','RBL',0,'C');
+	$this->Cell(102,4,'DENOMINACIÓN DEL SECTOR','RB',0,'C');
+	$this->Cell(102,4,'DENOMINACIÓN DE LA META','RB',0,'C');
+	$this->Cell(61,4,'UNIDAD DE MEDIDA','RB',0,'C');
+	$this->Cell(30,4,'PROGRAMADAS','RB',0,'C');
+	$this->Cell(0,4,'FINANCIERO','RB',1,'C');
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2108','',1,'R');
+    }
+
+
+
+}//fin class
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+$_SESSION['entidad_federal_aux'] = $entidad_federal;
+$_SESSION['titulo_a'] = "";
+$_SESSION['ejercicio'] = $var[1]['ano'];
+
+
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+
+
+
+$i=0;
+$total_total= 0;
+$sector=0;
+
+foreach($datos as $row){
+
+    $_SESSION['ejercicio'] = $row[v_cfpd09]['ano'];
+
+		if ($row[v_cfpd09]['cod_sector']==$sector){
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(120,7,"",'TLR',0,'C');
+		}else{
+				$pdf->SetFont('vera','B',6);
+				$pdf->Cell(18,7,$sisap->AddCero2($row[v_cfpd09]['cod_sector']),'TLR',0,'C');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(100,1,"",'T',2,'C');
+				$pdf->MultiCell(100,2,$row[v_cfpd09]['denominacion_sector'],'','L');//------------------ DENOMINACION DEL SECTOR
+				$varX = $varX+101;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(1,7,"",'TR',0);//lateral
+				$pdf->SetFont('vera','',6);
+				$sector=$row[v_cfpd09]['cod_sector'];
+		}
+
+//echo "<script>alert('Transacciones  ".$DATOS_res[0][v_cfpd09]['denominacion_sector']."')</script>";
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(100,1,"",'T',2,'C');
+				$pdf->MultiCell(100,2,$row[v_cfpd09]['denominacion_meta'],'','L');//------------------ DENOMINACION DE LA META
+				$varX = $varX+101;
+				$pdf->SetXY($varX,$varY);
+    			$pdf->Cell(1,7,"",'TR',0);//lateral
+				$pdf->Cell(61,7,$row[v_cfpd09]['unidad_medida'],'TR',0,'C');
+				$pdf->Cell(30,7,$sisap->Formato_redondear_input($row[v_cfpd09]['cantidad_estimada'], 3),'TR',0,'C');
+				$pdf->Cell(0,7,$sisap->Formato2($row[v_cfpd09]['costo_financiero']),'TR',1,'R');
+    			$pdf->Cell(0,0,"",'T',1);
+
+				$total_total += $row[v_cfpd09]['costo_financiero'];
+
+
+}//fin for
+
+
+
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(313,5,'TOTAL: ','TLRB',0,'R');
+$pdf->Cell(0,5,$sisap->Formato2($total_total),'LRBT',1,'R');
+
+
+
+$pdf->OutPut('forma_2108_'.date("d-m-Y"),'D');
+
+}
+
+
+
+?>

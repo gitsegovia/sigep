@@ -1,0 +1,265 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('DETERMINACIÓN DEL COSTO DEL CONTRATO COLECTIVO'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion2/forma_2129/2/'); ?>" >
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?=$html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "DETERMINACIÓN DEL COSTO DEL CONTRATO COLECTIVO";
+	$titulo_B = "(En Bolívares)";
+       	$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"31", "Z"=>"13"), null);
+
+	$this->SetFont('vera','B',8);
+	$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['ano_top'],'TRBL',1);
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(116,5,'REVISADO AÑO ANTERIOR','RBL',0,'C');
+	$this->Cell(116,5,'PRESUPUESTADO AÑO: '.$_SESSION['ano_top'],'RB',0,'C');
+	$this->Cell(0,5,'DIFERENCIA','RB',1,'C');
+
+	$this->Cell(58,4,'NÚMERO DE','RL',0,'C');
+	$this->Cell(58,4,'MONTO ANUAL','R',0,'C');
+	$this->Cell(58,4,'NÚMERO DE','R',0,'C');
+	$this->Cell(58,4,'MONTO ANUAL','R',0,'C');
+	$this->Cell(58,4,'NÚMERO DE','R',0,'C');
+	$this->Cell(0,4,'MONTO ANUAL','R',1,'C');
+
+	$this->Cell(58,3,'TRABAJADORES','RBL',0,'C');
+	$this->Cell(58,3,'EN BOLIVARES','RB',0,'C');
+	$this->Cell(58,3,'TRABAJADORES','RB',0,'C');
+	$this->Cell(58,3,'EN BOLIVARES','RB',0,'C');
+	$this->Cell(58,3,'TRABAJADORES','RB',0,'C');
+	$this->Cell(0,3,'EN BOLIVARES','RB',1,'C');
+
+	$this->Cell(58,6,$_SESSION['trabajador_anterior'],'RBL',0,'C');// NÚMERO DE TRABAJADORES
+	$this->Cell(58,6,$_SESSION['monto_anual_anterior'],'RB',0,'R');// MONTO ANUAL EN BOLIVARES
+	$this->Cell(58,6,$_SESSION['trabajador_actual'],'RB',0,'C');// NÚMERO DE TRABAJADORES
+	$this->Cell(58,6,$_SESSION['monto_anual_actual'],'RB',0,'R');// MONTO ANUAL EN BOLIVARES
+
+	$this->Cell(58,6,$_SESSION['diferencia_tranajadores'],'RB',0,'C');// NÚMERO DE TRABAJADORES
+	$this->Cell(0,6,$_SESSION['diferencia_monto'],'RB',1,'R');// MONTO ANUAL EN BOLIVARES
+
+	$this->Cell(40,6,'SINDICATO:','RBL',0,'C');
+	$this->Cell(18,6,$_SESSION['cod_sindicato'],'RB',0,'C');// CODIGO SINDICATO
+	$this->Cell(0,6,$_SESSION['deno_sindicato'],'RB',1,'L');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(135,5,'CLAUSULAS','RBL',0,'C');
+	$this->Cell(45,5,'','R',0,'C');
+	$this->SetFont('vera','',7);
+	$this->Cell(125,5,'C O S T O ','RB',0,'C');
+	$this->Cell(0,5,'','R',1,'C');
+
+	$this->SetFont('vera','B',7);
+	$this->Cell(15,5,'No','RBL',0,'C');
+	$this->Cell(120,5,'DENOMINACIÓN','RB',0,'C');
+	$this->Cell(45,5,'SUB PARTIDA ESPECIFICA','RB',0,'C');
+	$this->Cell(40,5,'REVISADO ANTERIOR','RB',0,'C');
+	$this->Cell(45,5,'PRESUPUESTADO AÑO: '.$_SESSION['ano_top'],'RB',0,'C');// PRESUPUESTADO AÑO: xxxx
+	$this->Cell(40,5,'DIFERENCIA ABSOLUTA','RB',0,'C');
+	$this->Cell(0,5,'BASES DE CÁLCULO','RB',1,'C');
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2129','',1,'R');
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 10);
+
+$_SESSION['trabajador_anterior']='';
+$_SESSION['trabajador_actual']='';
+$_SESSION['monto_anual_anterior']='';
+$_SESSION['monto_anual_actual']='';
+$_SESSION['cod_sindicato']='';
+$_SESSION['deno_sindicato']='';
+$_SESSION['diferencia_tranajadores']='';
+$_SESSION['diferencia_monto']='';
+$pdf->SetFont('vera','',7);
+if($datos!=null){
+
+	for($i=0;$i<count($datos1);$i++){
+		$_SESSION['trabajador_anterior']=$datos1[$i][0]['numero_trabajadores_anterior'];
+		$_SESSION['trabajador_actual']=$datos1[$i][0]['numero_trabajadores_actual'];
+		$_SESSION['monto_anual_anterior']=$sisap->Formato2($datos1[$i][0]['monto_anual_anterior']);
+		$_SESSION['monto_anual_actual']=$sisap->Formato2($datos1[$i][0]['monto_anual_actual']);
+		$_SESSION['cod_sindicato']=mascara($datos1[$i][0]['cod_sindicato'],2);
+		$_SESSION['deno_sindicato']=$datos1[$i][0]['deno_sindicato'];
+		$diferencia_tranajadores=$sisap->Formato2(($datos1[$i][0]['numero_trabajadores_anterior']-$datos1[$i][0]['numero_trabajadores_actual']));
+		$diferencia_monto=$sisap->Formato2(($datos1[$i][0]['monto_anual_anterior']-$datos1[$i][0]['monto_anual_actual']));
+		$_SESSION['diferencia_tranajadores']=$diferencia_tranajadores;
+		$_SESSION['diferencia_monto']=$diferencia_monto;
+		$pdf->AddPage();
+		$monto=0;
+
+$revisado_anterior=0;
+$presupuestado_actual=0;
+$total_diferencia=0;
+
+		for($j=0;$j<count($datos);$j++){
+
+			if($datos1[$i][0]['cod_sindicato']==$datos[$j][0]['cod_sindicato']){
+
+				$monto++;
+
+				$revisado_anterior+=$datos[$j][0]['revisado_anterior'];
+				$presupuestado_actual+=$datos[$j][0]['presupuestado_actual'];
+
+				$pdf->Cell(15,7,mascara($datos[$j][0]['cod_clausula'],3),'RL',0,'C');// No
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->SetFont('vera','',6);
+					$pdf->Cell(120,1,"",'',2,'C');
+					$pdf->MultiCell(119,3,$datos[$j][0]['deno_clausula'],'','L');// DENOMINACION
+					$varX = $varX+120;
+					$pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',7);
+				$pdf->Cell(45,7,$datos[$j][0]['cod_partida'].".".mascara($datos[$j][0]['cod_generica'],2).".".mascara($datos[$j][0]['cod_especifica'],2).".".mascara($datos[$j][0]['cod_sub_espec'],2),'RL',0,'C');// SUB PARTIDA ESPECIFICA
+				$pdf->Cell(40,7,$sisap->Formato2($datos[$j][0]['revisado_anterior']),'R',0,'R');// REVISADO ANTERIOR
+				$pdf->Cell(45,7,$sisap->Formato2($datos[$j][0]['presupuestado_actual']),'R',0,'R');// PRESUPUESTADO AÑO: xxxx
+				$diferencia=$datos[$j][0]['revisado_anterior']-$datos[$j][0]['presupuestado_actual'];
+				$pdf->Cell(40,7,$sisap->Formato2($diferencia),'R',0,'R');// DIFERENCIA ABSOLUTA
+				$pdf->Cell(0,7,$datos[$j][0]['base_calculo'],'R',1,'C');// BASES DE CÁLCULO
+				$pdf->Cell(0,0,'','T',1);
+
+				$total_diferencia+=$diferencia;
+				$fecha_contrato_inicio=$datos[$j][0]['fecha_contrato_inicio'];
+				$fecha_contrato_fin=$datos[$j][0]['fecha_contrato_fin'];
+			}
+
+		}
+
+	if($monto!=0){
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(180,5,'T O T A L E S: ','RBL',0,'R');
+		$pdf->Cell(40,5,$sisap->Formato2($revisado_anterior),'RB',0,'R');// TOTAL REVISADO ANTERIOR
+		$pdf->Cell(45,5,$sisap->Formato2($presupuestado_actual),'RB',0,'R');// TOTAL PRESUPUESTADO AÑO
+		$pdf->Cell(40,5,$sisap->Formato2($total_diferencia),'RB',0,'R');// TOTAL DIFERENCIA ABSOLUTA
+		$pdf->Cell(0,5,'','RB',1,'C');// BASES DE CÁLCULO
+
+
+		$pdf->Cell(38,5,'FECHA DEL CONTRATO','RBL',0,'C');
+		$pdf->Cell(14,5,'INICIO:','B',0,'C');
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(29,5,cambia_fecha($fecha_contrato_inicio),'RB',0);// FECHA INICIO
+		$pdf->SetFont('vera','B',7);
+		$pdf->Cell(21,5,'CONCLUSIÓN:','B',0,'C');
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(33,5,cambia_fecha($fecha_contrato_fin),'RB',0);// FECHA CONCLUSIÓN
+		$pdf->Cell(0,5,'','RB',1,'C');
+
+
+	}
+
+	}
+
+
+
+}else{
+
+$pdf->SetFont('vera','',7);
+	$pdf->Cell(15,7,'000','RL',0,'C');// No
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->SetFont('vera','',6);
+		$pdf->Cell(120,1,"",'',2,'C');
+		$pdf->MultiCell(119,3,"QQQQQQQ",'','L');// DENOMINACION
+		$varX = $varX+120;
+		$pdf->SetXY($varX,$varY);
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(45,7,'','RL',0,'C');// SUB PARTIDA ESPECIFICA
+	$pdf->Cell(40,7,'XX.XXX.XXX.XX','R',0,'R');// REVISADO ANTERIOR
+	$pdf->Cell(45,7,'XX.XXX.XXX.XX','R',0,'R');// PRESUPUESTADO AÑO: xxxx
+	$pdf->Cell(40,7,'XX.XXX.XXX.XX','R',0,'R');// DIFERENCIA ABSOLUTA
+	$pdf->Cell(0,7,'','R',1,'C');// BASES DE CÁLCULO
+	$pdf->Cell(0,0,'','T',1);
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(180,5,'T O T A L E S: ','RBL',0,'R');
+$pdf->Cell(40,5,'XX.XXX.XXX.XX','RB',0,'R');// TOTAL REVISADO ANTERIOR
+$pdf->Cell(45,5,'XX.XXX.XXX.XX','RB',0,'R');// TOTAL PRESUPUESTADO AÑO
+$pdf->Cell(40,5,'XX.XXX.XXX.XX','RB',0,'R');// TOTAL DIFERENCIA ABSOLUTA
+$pdf->Cell(0,5,'','RB',1,'C');// BASES DE CÁLCULO
+
+
+$pdf->Cell(38,5,'FECHA DEL CONTRATO','RBL',0,'C');
+$pdf->Cell(14,5,'INICIO:','B',0,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(29,5,'XX/XX/XXXX','RB',0);// FECHA INICIO
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(21,5,'CONCLUSIÓN:','B',0,'C');
+$pdf->SetFont('vera','',7);
+$pdf->Cell(33,5,'XX/XX/XXXX','RB',0);// FECHA CONCLUSIÓN
+$pdf->Cell(0,5,'','RB',1,'C');
+
+
+}
+
+
+$pdf->Output('FORMA_2129_determinacion_costo_contrato_colectivo.pdf','D');
+
+}//fin function
+
+
+?>

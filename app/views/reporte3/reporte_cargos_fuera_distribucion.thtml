@@ -1,0 +1,214 @@
+<?php
+/*
+ * Creado el 06/10/2008 a las 11:10:04 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($var) && $var=="si"){
+// onSubmit="return reporte_analitico_pago();"
+?>
+
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"CÓDIGOS PRESUPUESTARIOS DE CARGOS QUE NO APARECEN EN LA DISTRIBUCIÓN","","950");?>
+
+<form name="data[cargos_fuera_distribucion]" method="post" id='form' action="<?php echo $html->url('/reporte3/reporte_cargos_fuera_distribucion/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+	<table  width="50%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="center" width="20%" id="td-ano-ejecucion"><br />
+				Año:&nbsp;<input type="text" name="data[cargos_fuera_distribucion][ano]" id="ano" value="<?=$ano_formulacion?>" size="4" maxlength="4" onKeyPress="return solonumeros_con_punto(event);" style="text-align:center;" />
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+	</table>
+	<?= $sisap->radio_consolidado('cfpp05/consolidacion', null, '', true)  ?>
+	<?= $html->submit('Generar', array('id'=>'enviar')); ?>
+	<?= $sisap->buttonTagRemote('/cargos_fuera_distribucion/salir', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+</form>
+
+
+
+<?php
+}elseif(isset($var) && $var=="no"){
+
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+
+class fpdfview extends TCPDF{
+
+     function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+		$this->image_escudo(11,16,13);
+		$this->SetFont('vera','B',8);
+		$this->Cell(14,4,"",'TL',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'TR',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',7);
+		$this->Cell(0,3,$_SESSION["titulo_a"],'R',1);
+		$this->SetFont('vera','B',8);
+		$this->Cell(0,3,"",'RL',1,'C');
+		$this->Cell(0,3,"CÓDIGOS PRESUPUESTARIOS DE CARGOS QUE NO APARECEN EN LA DISTRIBUCIÓN",'RL',1,'C');
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"AÑO: ".$_SESSION["ano_cargos_fuera"],'RL',1,'C');
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,1,"",'RLB',1,'C');
+
+		$varX_aux = $this->GetX() + 176;
+		$varY_aux = $this->GetY() - 15;
+	    	$this->SetFont('vera','B',5);
+	    	$this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    	$this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    	$this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+		$this->Ln(3);
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(13,3,'CÓDIGO','TRL',0,'C');
+		$this->Cell(13,3,'CÓDIGO','TR',0,'C');
+		$this->Cell(58,3,'','TR',0,'C');
+		$this->Cell(13,3,'CÓDIGO','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'SUB','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'','TR',0,'C');
+		$this->Cell(10,3,'SUB','TR',0,'C');
+		$this->Cell(0,3,'','TR',1,'C');
+
+		$this->Cell(13,3,'DEPEND','RBL',0,'C');
+		$this->Cell(13,3,'NÓMINA','RB',0,'C');
+		$this->Cell(58,3,'DENOMINACIÓN TIPO NÓMINA','RB',0,'C');
+		$this->Cell(13,3,'CARGO','RB',0,'C');
+		$this->Cell(10,3,'SEC','RB',0,'C');
+		$this->Cell(10,3,'PROG','RB',0,'C');
+		$this->Cell(10,3,'PROG','RB',0,'C');
+		$this->Cell(10,3,'PROY','RB',0,'C');
+		$this->Cell(10,3,'ACTV','RB',0,'C');
+		$this->Cell(10,3,'PART','RB',0,'C');
+		$this->Cell(10,3,'GEN','RB',0,'C');
+		$this->Cell(10,3,'ESP','RB',0,'C');
+		$this->Cell(10,3,'ESP','RB',0,'C');
+		$this->Cell(0,3,'AUX','RB',1,'C');
+    }//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+$_SESSION["titulo_a"] = $titulo_a;
+
+$pdf->AddPage();
+
+$cont = 0;
+$dep_1= 0;
+$dep_2= 0;
+$cod_nom_1=0;
+$cod_nom_2=0;
+$pdf->SetFont('vera','',7);
+for($i=0; $i<count($datos); $i++){
+
+	if($datos[$i][0]['existe_cfpd05'] == 0){
+		$deno  = str_replace("\n"," ",$datos[$i][0]['denominacion_nomina']);
+		$deno2 = trim($deno);
+		$char  = strlen($deno2);
+
+		if($char <= 40){
+			$height = 4;
+		}elseif($char > 40 && $char <= 80){
+			$height = 6;
+		}elseif($char > 80 && $char <= 120){
+			$height = 8;
+		}elseif($char > 120 && $char <= 160){
+			$height = 10;
+		}elseif($char > 160 && $char <= 200){
+			$height = 12;
+		}elseif($char > 240 && $char <= 280){
+			$height = 14;
+		}elseif($char > 280 && $char <= 320){
+			$height = 16;
+		}elseif($char > 320 && $char <= 360){
+			$height = 18;
+		}elseif($char > 360 && $char <= 400){
+			$height = 20;
+		}elseif($char > 400 && $char <= 440){
+			$height = 22;
+		}elseif($char > 440 && $char <= 480){
+			$height = 24;
+		}elseif($char > 520 && $char <= 560){
+			$height = 26;
+		}elseif($char > 560){
+			$height = 35;
+		}
+
+		$cont++;
+
+		//Condicion para dejar un salto en blanco si cambia la dependencia.
+		$dep_1 = $datos[$i][0]['cod_dep'];
+		if(($dep_1 != $dep_2) && ($cont != 1)){
+			$pdf->Ln(5);
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(13,5,$datos[$i][0]['cod_dep'],'TRL',1,'C');
+			$pdf->Cell(0,0,'','T',1,'C');
+			$pdf->SetFont('vera','',7);
+			$cod_nom_2 = $datos[$i][0]['cod_tipo_nomina'];
+		}
+
+		//Condicion para dejar un salto en blanco si cambia el codigo de nomina.
+		$cod_nom_1 = $datos[$i][0]['cod_tipo_nomina'];
+		if(($cod_nom_1 != $cod_nom_2) && ($cont != 1)){
+			$pdf->Ln(5);
+			$pdf->SetFont('vera','B',7);
+			$pdf->Cell(13,5,'','',0,'C');
+			$pdf->Cell(13,5,$sisap->AddCero2($datos[$i][0]['cod_tipo_nomina']),'TRL',1,'C');
+			$pdf->Cell(0,0,'','T',1,'C');
+			$pdf->SetFont('vera','',7);
+		}
+
+		$pdf->Cell(13,$height,$datos[$i][0]['cod_dep'],'RL',0,'C');//--[DEPEND]
+		$pdf->Cell(13,$height,$sisap->AddCero2($datos[$i][0]['cod_tipo_nomina']),'R',0,'C');//--[NÓMINA]
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$pdf->Cell(58,1,"",'',2,'C');
+		$pdf->SetFont('vera','',6);
+		$pdf->MultiCell(57,2,$deno2,'','L');//---[DENOMINACIÓN TIPO NÓMINA]
+		$varX = $varX+58;
+		$pdf->SetXY($varX,$varY);
+		$pdf->SetFont('vera','',7);
+		$pdf->Cell(13,$height,$datos[$i][0]['cod_cargo'],'RL',0,'C');//--[CARGO]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sector']),'R',0,'C');//--[SEC]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_programa']),'R',0,'C');//--[PROG]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sub_prog']),'R',0,'C');//--[SUBPROG]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_proyecto']),'R',0,'C');//--[SUB PROY]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_activ_obra']),'R',0,'C');//--[ACTV]
+		$pdf->Cell(10,$height,$datos[$i][0]['cod_partida'],'R',0,'C');//--[PART]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_generica']),'R',0,'C');//--[GEN]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_especifica']),'R',0,'C');//--[ESP]
+		$pdf->Cell(10,$height,$sisap->AddCero2($datos[$i][0]['cod_sub_espec']),'R',0,'C');//--[SUB ESP]
+		$pdf->Cell(0,$height,$sisap->mascara_cuatro($sisap->AddCero2($datos[$i][0]['cod_auxiliar'])),'R',1,'C');//--[AUX]
+		$pdf->Cell(0,0,'','T',1,'C');
+
+		$dep_2 = $datos[$i][0]['cod_dep'];
+		$cod_nom_2 = $datos[$i][0]['cod_tipo_nomina'];
+	}
+}
+$pdf->Output('cargos_fuera_de_la_distribucion_'.date('d-m-Y').'.pdf','D');
+}
+?>

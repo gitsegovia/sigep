@@ -1,0 +1,78 @@
+<?php
+
+if(empty($datosFILAS)){ $errorMessage="NO existen datos"; }
+
+
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);
+ }
+
+
+ function deno_unidad2($unidades, $medida){
+	foreach($unidades as $row){
+		$cod_unidad = $row['cscd01_unidad_medida']['cod_medida'];
+		$expresion = $row['cscd01_unidad_medida']['denominacion'];
+		if($cod_unidad == $medida){
+			return $expresion;
+		}
+	}
+}
+
+ ?>
+
+
+<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+	 <tr>
+	    <th width="10%" align="center">Estado</th>
+	    <th width="10%" align="center">Municipio</th>
+	    <th width="10%" align="center">Parroquia</th>
+	    <th width="15%" align="center">Centro poblado</th>
+	    <th width="10%" align="center">Código consejo</th>
+	    <th width="40%">Denominación del consejo comunal</th>
+	    <th width="5%">ACCIÓN</th>
+      </tr>
+</table>
+
+<div id="distribuir_busqueda" style="height:200px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0"  class="adminlist">
+		        <?php if(!empty($datosFILAS)){ $i=0; $color = 0;
+
+		        	foreach($datosFILAS as $ve){
+
+		        		  if($color==1){$color=0;}else{$color=1;}
+
+		                     ?>
+							      <tr class="row<?php echo $color; ?>">
+							       <td class="" width="10%" ><?= $ve["v_concejo_comunales"]["denominacion_estado"] ?></td>
+							        <td class="" width="10%" ><?= $ve["v_concejo_comunales"]["denominacion_municipio"] ?></td>
+							         <td class="" width="10%" ><?= $ve["v_concejo_comunales"]["denominacion_parroquia"] ?></td>
+							         <td class="" width="15%"><?= $ve["v_concejo_comunales"]["denominacion_centro"] ?></td>
+							        <td class="" width="10%" align="center"><?= mascara_tres($ve["v_concejo_comunales"]["cod_concejo"]) ?></td>
+							        <td class="" width="40%" ><?= $ve["v_concejo_comunales"]["denominacion"] ?></td>
+								    <td class="" width="5%" align="center">
+								     <?php echo $ajax->link($html->image('eye.png',array('border'=>0, "onclick"=>"javascript:Windows.close(document.getElementById('capa_ventana').value); ")), '/ccnp01_concejo_comunal/consulta_especifica/'.$ve["v_concejo_comunales"]["cod_republica"].'/'.$ve["v_concejo_comunales"]["cod_estado"].'/'.$ve["v_concejo_comunales"]["cod_municipio"].'/'.$ve["v_concejo_comunales"]["cod_parroquia"].'/'.$ve["v_concejo_comunales"]["cod_centro"].'/'.$ve["v_concejo_comunales"]["cod_concejo"], array('update'=>'principal','title'=>'ver'),'',false,true); ?>
+		                            </td>
+								  </tr>
+		                <?php
+
+                          }//fin foreach
+
+				       }else{ ?>
+
+                      <tr class="row<?php echo $color; ?>">
+					    <td class="" width="11%" height="22"  width="2">--</td>
+					    <td class="" width="36%">--</td>
+					    <td class="" width="11%">--</td>
+					  </tr>
+
+
+				  <?php } ?>
+         </table>
+</div>
+
+
+<?$sisap->link_paginacion_ventanas('/ccnp01_concejo_comunal/buscar_vista_2/1', 'grilla_busqueda2', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo);?>
+
+

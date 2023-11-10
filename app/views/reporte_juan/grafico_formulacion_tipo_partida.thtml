@@ -1,0 +1,175 @@
+<?php
+
+
+
+if(isset($tipo_partida[0][0])){
+
+$tp=$tipo_partida[0][0];
+$total_presupuesto_partida=0;
+  foreach($PARTIDA as $k=>$v){
+  	$kk[]=$k;
+  }
+  $_SESSION["vector_partidas"]=$kk;
+for($i=0;$i<count($kk);$i++){
+  $partida[$kk[$i]]         = $tp["partida_".$kk[$i]]==null?0:$tp["partida_".$kk[$i]];
+  $total_presupuesto_partida=$total_presupuesto_partida+$partida[$kk[$i]];
+  //if($partida[$kk[$i]]!=0)
+  $partida_aux[]=$partida[$kk[$i]];
+
+}
+$var_monto_partidas=implode(',', $partida_aux);
+for($i=0;$i<count($kk);$i++){
+ $por_partida[$kk[$i]]     = ($partida[$kk[$i]]*100) / $total_presupuesto_partida;
+ $por_partida[$kk[$i]]      = sprintf("%01.2f",$por_partida[$kk[$i]]);
+
+}
+
+$asignacion         = $tp["asignacion_total"];
+$por_asignacion     = ($tp["asignacion_total"] * 100) / $asignacion;
+
+
+}else{
+
+$kk = 0;
+$total_presupuesto_partida = 0;
+$asignacion         = 0;
+$por_asignacion     = 0;
+
+}//fin else
+
+
+
+
+?>
+
+
+
+
+
+
+
+
+
+<?php if($ver=="si"){ ?>
+
+<?php
+	 echo $sisap->Tabla($session->read('entidad_federal'),true,'PRESUPUESTO POR  PARTIDAS','','950');
+	 echo $sisap->OpenTable('950');
+
+?>
+
+
+			<form>
+						<table border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+
+						<?php $d=$session->read('SScoddep'); if($d==1){ $_SESSION['tipo_consolidado']=1; $var_inst=1; ?>
+						<tr><td colspan="2">
+						CONSOLIDADO POR:<?= $sisap->radioTagRemote("tipo_presupuestoPDF/opcion", array('1'=>'Por Institucion', '2'=>'Por Dependencia'), array('url1'=>'/reporte5/funcion/', 'update1'=>'cuerpo'), null, $opc=1); ?>
+						</td></tr>
+
+						<?php }else{ $var_inst=2;}//fin  ?>
+
+						 <tr>
+						   <td width='480px' id="ano_recurso"  align="center">Año:<?= $sisap->inputTagRemote('tipo_presupuestoPDF/year', array( 'url3'=>'/reporte5/funcion/', 'update3'=>'cuerpo', 'style'=>'text-align:right;',  'id'=>'ano', 'size'=>'6', 'value'=>$year, 'onKeyPress'=>"return solonumeros_con_punto(event);"))?></td>
+						 </tr>
+
+
+
+			<tr><td colspan="2"  align="center">
+			  <?= $sisap->submitTagRemote('Ver', array('funcion'=>'valida_consumo','url1' => '/reporte_juan/grafico_formulacion_tipo_partida/', 'update1'=>'cuerpo', 'id'=>'ir')); ?>
+			  <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/administradors/vacio', 'update2'=>'principal'))?>
+			</td></tr>
+
+					</table>
+			</form>
+
+<?php }//fin if ?>
+
+<br>
+
+<div id="cuerpo" style="overflow:auto;">
+
+<?php
+
+ $username = $_SESSION['nom_usuario'];
+ $rdm = mt_rand();
+?>
+		<form name='data[tipo_presupuetoPDF]'  method = "post" id='form' action="<?php echo $html->url('/reporte_juan/grafico_formulacion_tipo_partida_pdf/');?>" >
+
+		<?= $html->submit('Generar reporte') ?>&nbsp; <br> <br>
+
+					<?for($i=0;$i<count($kk);$i++){?>
+					<input type="hidden" name="data[tipo_presupuetoPDF][partida_<?=$kk[$i]?>]" value="<?=$sisap->Formato2($partida[$kk[$i]])?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][por_partida_<?=$kk[$i]?>]" value="<?=$sisap->Formato2(round($por_partida[$kk[$i]],1))?>"/>
+					<?}?>
+
+					<input type="hidden" name="data[tipo_presupuetoPDF][total_presupuesto_partida]" value="<?=$sisap->Formato2($total_presupuesto_partida)?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][rdm]" value="<?= $rdm?>"/>
+					<input type="hidden" name="data[tipo_presupuetoPDF][year]" value="<?= $year?>"/>
+
+					<table width="100%" background="#000" border="0" style="color:black;background:#fff" id="grafica">
+
+
+					<tr>
+					  <td colspan="4" style="font-size:large;" >
+					      <table border="0" width="100%">
+
+								<td width="50%" align="center" >
+									<img src="/graficasPHP/graphbarras.php?dat=<?=$var_monto_partidas.','.$total_presupuesto_partida?>&bkg=FFFFFF&usr=<?= $username ?>&rdm=<?= $rdm ?>">
+								</td>
+							</table>
+						</td>
+					</tr>
+
+
+					<tr>
+						<td colspan="2" style="font-size:large;">Leyenda:</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+
+					<table style="color:black;background:#fff" border="0" width="100%">
+
+
+					 <?
+					 $r=5;
+					 foreach($PARTIDA as $k=>$v){
+					 	   //if($partida[$k]!=0){
+								?>
+								<tr>
+								<td><img src="/graficasPHP/graphref.php?ref=<?=$r?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=<?=$k?>&rdm=<?= $rdm ?>"></td>
+								<td><b><?=$sisap->AddCero3($k)?></b>-<?=$v?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2(round($por_partida[$k], 1))." %" ?></td>
+								<td style="font-size:large;text-align:right;"><?= $sisap->Formato2($partida[$k])." Bs." ?></td>
+							</tr>
+
+							<?
+							//}
+							?>
+
+					<?
+					$x=$k;
+					$r=$r+3;
+					$r=$r>32?5:$r;
+					}
+
+					?>
+							<tr>
+								<td><img src="/graficasPHP/graphref.php?ref=<?=$r?>&typ=2&dim=10&bkg=EEEEEE&usr=<?=$username?>&k=<?=$x+1?>&rdm=<?= $rdm ?>"></td>
+								<td>TOTAL PRESUPUESTO:</td>
+								<td style="font-size:large;text-align:right;" colspan="2"><?= $sisap->Formato2($total_presupuesto_partida)." Bs." ?></td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+					<br/>
+
+		</form>
+
+</div>
+
+
+
+
+<?php if($ver=="si"){ ?><?= $sisap->CloseTable(); ?> <?php } ?>

@@ -1,0 +1,110 @@
+<?
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+<script>
+//document.getElementById('save').disabled='';
+//document.getElementById('dremote').innerHTML='';
+</script>
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td align="center"  width="6%">Año</td>
+    <td align="center" width="7%">Sector</td>
+    <td align="center" width="7%">Prog</td>
+    <td align="center" width="7%">Sub <br />Prog </td>
+    <td align="center" width="7%">Proy</td>
+    <td align="center" width="7%">Activ <br />Obra </td>
+    <td align="center" width="7%">Part</td>
+    <td align="center" width="7%">Gen</td>
+    <td align="center" width="7%">Esp</td>
+    <td align="center" width="7%">Sub <br />Esp </td>
+    <td align="center" width="7%">Auxiliar</td>
+    <td align="center" width="16%">MONTO</td>
+    <td align="center" width="8%">--</td>
+  </tr>
+  <?php
+ if(isset($_SESSION ["codigos"])){
+  if($_SESSION ["codigos"]!=null){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+    foreach($_SESSION ["codigos"] as $codigos){
+    	//print_r($ve);
+
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+
+    	if($codigos[0]!=null){
+?>
+  <tr bgcolor="<?=$color?>" id="<?= "fila2_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+    <?
+
+   for($x=0;$x<=11;$x++){
+   	if($x==11){
+   		$id = $codigos['id'];
+   		$mt = $sisap->formato1($codigos[$x]);
+   		 echo "<td align=\"right\">".$codigos[$x]."</td>";
+   		 echo "<input type='hidden' id='monto2_$id' value='$mt' />";
+   		 $monto_total=$monto_total+$sisap->Formato1($codigos[$x]);
+   		 $monto_total =  $sisap->Formato2($monto_total);
+   		 $monto_total =  $sisap->Formato1($monto_total);
+   	}else{
+   		if($x == 10){
+   			echo "<td align=\"center\">".$sisap->mascara_cuatro($codigos[$x])."</td>";
+   		}else{
+   			echo "<td align=\"center\">".$sisap->zero($codigos[$x])."</td>";
+   		}
+
+   	}
+}
+   ?>
+   <td align="center"><?= $ajax->link($html->image('delete.png',array('border'=>0)), '/caop04_ordencompra/eliminar_items/'.$codigos['id'], array('update'=>'delete2','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila2_$i');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?></td>
+  </tr>
+<?
+}
+
+    	$i++;
+
+    }//fin foreach
+  }
+ }else{
+	$monto_total=0;
+	$color="#CDF2FF";
+ }
+//<tr><td colspan="11">&nbsp;</td><td align="right"><?=$sisap->Formato2($sisap->Formato($monto_total));</td><td>--</td></tr>
+?>
+<input name="data[caop04_ordencompra][manual]" type="hidden" value="1" id="manual">
+<input name="data[caop04_ordencompra][auto]" type="hidden" value="0" id="auto">
+<input name="data[caop04_ordencompra][manual]" type="hidden" value="1" id="dremote">
+<input name="data[caop04_ordencompra][total_manual]" type="hidden" value="<?=$monto_total?>" id="total_manual">
+<tr  bgcolor="<?=$color?>"><td colspan="11">&nbsp;</td><td align="right" class="textnegro"><b><div id="total2_manual"><?=$sisap->Formato2($sisap->Formato($monto_total));?></div></b></td><td>--</td></tr>
+</table>
+<?php
+	$_SESSION['monto_orden'] = $sisap->Formato($monto_total);
+?>
+<div id="delete2"></div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

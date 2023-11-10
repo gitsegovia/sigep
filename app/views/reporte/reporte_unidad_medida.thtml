@@ -1,0 +1,89 @@
+<?php
+if(isset($ir) && $ir=='si'){ ?>
+<?php $sisap->CssSelect();?>
+<?= $sisap->Tabla("",true,"UNIDADES DE MEDIDA","","950");?>
+
+<form name="data[cscp01_unidad_medida]" method="POST" id='form' action="<?php echo $html->url('/reporte/reporte_unidad_medida/no'); ?>">
+<?= $sisap->OpenTable("950")?>
+<div id="cscp01_unidad_medida_principal">
+<table width="400" border="0" cellspacing="0">
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td width="120" align="center">&nbsp;<b>Ordenado por:</b></td>
+	<td width="280" align="center"><?= $html->radio('cscp01_unidad_medida/ordenacion', array('1'=>'Codigo', '2'=>'Expresion', '3'=>'Denominacion'), NULL, array('value'=>'1'))?></td>
+</tr>
+<tr>
+	<td align="center" colspan="2">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center" colspan="2">
+		<?= $html->submit('GENERAR', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;&nbsp;&nbsp;
+        <?= $sisap->buttonTagRemote('/cscp01_unidad_medida/', array ('type'=>'button', 'value'=>'   Salir   '), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+    </td>
+</tr>
+</table>
+</div>
+<?= $sisap->CloseTable()?>
+</div>
+</form>
+
+<?php }elseif(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+	function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+	    $this->SetY(-10);
+		$this->SetFont('vera','',5);
+	    $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		$this->top_reporte("UNIDADES DE MEDIDA", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), null, false);
+		$this->SetFont('vera','B',6);
+		$this->Cell(25,5,"CÓDIGO",'TRL',0,'C');
+		$this->Cell(40,5,"EXPRESIÓN",'TR',0,'C');
+		$this->Cell(0,5,"DENOMINACIÓN",'TR',1,'C');
+	}
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+$pdf->SetFont('vera','',8);
+foreach($datos as $x){
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Cell(25,8,$x['cscd01_unidad_medida']['cod_medida'],'TRL',0,'C');
+$pdf->Cell(40,8,$x['cscd01_unidad_medida']['expresion'],'TRL',0,'C');
+	$varX = $pdf->GetX();
+	$varY = $pdf->GetY();
+	$pdf->Cell(130,1,"",'T',2);
+	$pdf->MultiCell(130,3,$x['cscd01_unidad_medida']['denominacion'],'','L');
+	$varX = $varX+130;
+	$pdf->SetXY($varX,$varY);
+$pdf->Cell(0,8,"",'TR',1,'C');
+}
+$pdf->Cell(0,0,"",'T',1);
+$pdf->Output('Unidades_de_medida.pdf','D');
+}
+?>

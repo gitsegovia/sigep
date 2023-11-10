@@ -1,0 +1,139 @@
+<?php
+if(isset($msj)){
+if(is_array($msj)){
+   if($msj[1]=='error'){
+      echo $infogob->msj_error('&nbsp;'.$msj[0].'&nbsp;');
+   }
+
+   if($msj[1]=='exito'){
+      echo $infogob->msj_exito('&nbsp;'.$msj[0].'&nbsp;');
+   }
+}
+}
+?>
+
+<style>
+.button_generar_arc{
+    background: #e7e7e7 url(/img/pdf.png) no-repeat scroll center left;
+	padding: 2px 1px 0px 18px;
+	border: 1px solid #CC0000;
+	height: 25px;
+	width: 160px;
+}
+</style>
+		<fieldset class="fieldset_marco">
+			<form name="data[cnmd18_record_vacaciones]" method="post" action="<?php echo $html->url("/cnmd18_record_vacaciones/generar_record_vacaciones");?>">
+				<input type="hidden" value="<?= $data[0][0]['cod_dep']?>" name="data[cnmd18_record_vacaciones][cod_dep]">
+				<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+					<?php 
+						foreach ($data as $data0):
+							if($data0[0]['condicion_actividad_ficha'] == 1){
+					?>
+					<tr>
+						<td width="20%" class="fila_titulos">FECHA DE INGRESO:</td>
+						<td width="80%"><?= date_format(date_create($data0[0]['fecha_ingreso']), 'd-m-Y');
+					 ?></td>
+					</tr>
+					<tr>
+						<td width="20%" class="fila_titulos">DEPENDENCIA:</td>
+						<td width="80%"><?= $data0[0]['denominacion_dependencia']?></td>
+					</tr>
+					<tr>
+						<td width="20%" class="fila_titulos">UNIDAD:</td>
+						<td width="80%"><?= $data0[0]['deno_cod_direccion']?></td>
+					</tr>
+					<tr>
+						<td width="20%" class="fila_titulos">TIPO DE N&Oacute;MINA:</td>
+						<td width="80%"><?= $data0[0]['denominacion_nomina']?></td>
+					</tr>
+					<tr>
+						<td width="20%" class="fila_titulos">CARGO:</td>
+						<td width="80%"><?= $data0[0]['demonimacion_puesto']?></td>
+					</tr>
+					<?php 
+							}
+						endforeach;
+					?>
+				</table>
+				<br />
+				<table  width="100%" border="0" cellspacing="0" cellpadding="0"  class="tablacompromiso tablacompromiso2">
+						<tr class="fila_titulos" style="text-align:center;">
+							<td colspan="2">PERIODO</td>
+							<td>CAMBIO CARGO</td>
+							<td>DIAS CORRESPONDIENTES</td>
+							<td>VAC. DISFRUTADAS</td>
+							<td>VAC. PENDIENTE</td>
+							<td>DIAS DE VAC. DIF DE MAS</td>
+							<td>DIAS PENDIENTES</td>
+							<td># FOLIO</td>
+						</tr>
+						<?php 
+							$disabled = '1';
+							$deno = '';
+							$cantidad_dias_pendientes = 0;
+							if(!empty($records)){
+								foreach ($records as $record):
+							?>
+									<tr style="text-align:center;">
+										<td><?= $record['cnmd18_record_vacaciones']['periodo_inicio'] ?></td>
+										<td><?= $record['cnmd18_record_vacaciones']['periodo_fin'] ?></td>
+										<td>
+											<?php 
+												foreach ($data as $data1):
+			                            			if($record['cnmd18_record_vacaciones']['periodo_inicio'] < date('Y', strtotime($data1[0]['fecha_condicion'])))
+			                            			{
+			                            					if($deno != $data1[0]['demonimacion_puesto']){
+			                            						$deno = $data1[0]['demonimacion_puesto']; 
+															
+			                            						echo $data1[0]['demonimacion_puesto']; 
+			                            					}
+																break;
+													}
+												endforeach;
+											?>
+										</td>
+										<td><?= $record['cnmd18_record_vacaciones']['dias_correspondientes'] ?></td>
+										<td>
+											<?= ($record['cnmd18_record_vacaciones']['vac_disfrutadas'] == 1) ? 'SI' : 'NO' ?>
+										</td>
+										<td>
+											<?= ($record['cnmd18_record_vacaciones']['vac_pendiente'] == 1) ? 'SI' : 'NO' ?>
+										</td>
+										<td><?= $record['cnmd18_record_vacaciones']['dias_vac_disf_mas'] ?></td>
+										<td><?= $record['cnmd18_record_vacaciones']['dias_pendientes'] ?></td>
+										<td><?= $record['cnmd18_record_vacaciones']['num_folio'] ?></td>
+									</tr>
+							
+							<?php
+									$cantidad_dias_pendientes = $cantidad_dias_pendientes + $record['cnmd18_record_vacaciones']['dias_pendientes'];
+								endforeach; 
+							?>
+								<tr style="text-align:center;">
+									<td colspan="7">
+										TOTAL DE D&Iacute;AS DE VACACIONES PENDIENTES
+									</td>
+									<td><?= $cantidad_dias_pendientes?></td>
+									<td>--</td>
+								</tr>
+						<?php
+							}else{
+								$disabled = '0';
+						?>
+							<tr>
+								<td colspan="9" style="text-align:center;">
+									Usted no tiene record de vacaciones en esta Intitución...
+								</td>
+							</tr>
+						<?php } ?>
+				</table>
+				<br /><br />
+					<?php if($disabled == 0){ ?>
+						<input type="submit" value="GENERAR RECORD" class="button_generar_arc" disabled>
+					<?php }else{ ?>
+						<input type="submit" value="GENERAR RECORD" class="button_generar_arc" >
+					<?php } ?>
+				
+			</form>
+		</fieldset>
+
+

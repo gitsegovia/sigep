@@ -1,0 +1,220 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE CONTRIBUYENTES DE ARRENDAMIENTO DE TIERRA'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shp200_relacion_contribuyentes_arrendamiento/2/'); ?>" onsubmit="return valida_shd950_solvencia()"  >
+	 <center>
+
+	   Ordenado por:<br><?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Alfabético','2'=>'Rif/c.i'), array('url1'=>'/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+
+     </center>
+
+       <center>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </center>
+
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES DE ARRENDAMIENTO DE TIERRAS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(0,5,"ARREDAMIENTOS OTORGADOS AL CONTRIBUYENTE",'TRL',1,'C');
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,3,"",'TRL',0,'C');
+		$this->Cell(60,3,"Nombres y Apellidos",'TR',0,'C');
+		$this->Cell(20,3,"Número",'TR',0,'C');
+		$this->Cell(20,3,"Fecha de",'TR',0,'C');
+		$this->Cell(75,3,"",'TR',0,'C');
+		$this->Cell(20,3,"Frecuencia",'TR',0,'C');
+		$this->Cell(29,3,"Monto a",'TR',0,'C');
+		$this->Cell(0,3,"Monto",'TR',1,'C');
+
+		$this->Cell(20,3,"RIF/C.I.",'RBL',0,'C');
+		$this->Cell(60,3,"Razón social",'RB',0,'C');
+		$this->Cell(20,3,"Solicitud",'RB',0,'C');
+		$this->Cell(20,3,"Aprobación",'RB',0,'C');
+		$this->Cell(75,3,"Datos del arrendamiento",'RB',0,'C');
+		$this->Cell(20,3,"de pago",'RB',0,'C');
+		$this->Cell(29,3,"cancelar",'RB',0,'C');
+		$this->Cell(0,3,"deuda",'RB',1,'C');
+
+
+
+
+
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+
+if($datos!=null){
+	$pdf->SetFont('vera','',6);
+for($i=0; $i<count($datos); $i++){
+
+	$long=strlen($datos[$i][0]['monto_mensual']);
+	if($long<=25){//echo "a";
+		$height=8;
+	}else if($long<=45){//echo "a";
+		$height=10;
+	}else if($long>45 && $long<=90){//echo "b";
+		$height=12;
+	}else if($long>90 && $long<=135){//echo "c";
+		$height=14;
+	}else if($long>135 && $long<=170){//echo "d";
+		$height=16;
+	}else if($long>170 && $long<=205){//echo "e";
+		$height=19;
+	}else if($long>170 && $long<=240) {//echo "f";
+		$height=22;
+	}else if($long>240 && $long<=280) {//echo "g";
+		$height=24;
+	}else if($long>280 && $long<=315) {//echo "h";
+		$height=26;
+	}else if($long>315 && $long<=350) {//echo "h";
+		$height=29;
+	}else if($long>350 && $long<=400) {//echo "h";
+		$height=31;
+	}else if($long>400 && $long<=450) {//echo "h";
+		$height=33;
+	}else if($long>450 && $long<=500) {//echo "h";
+		$height=36;
+	}else if($long>500 && $long<=550) {//echo "h";
+		$height=40;
+	}else if($long>550 && $long<=600) {//echo "h";
+		$height=42;
+	}else{//echo "i";
+		$height=45;
+	}
+
+	if($datos[$i][0]['frecuencia_pago']==1){
+		$frecuencia='MENSUAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*1;
+	}else if($datos[$i][0]['frecuencia_pago']==2){
+		$frecuencia='BIMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*2;
+	}else if($datos[$i][0]['frecuencia_pago']==3){
+		$frecuencia='TRIMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*3;
+	}else if($datos[$i][0]['frecuencia_pago']==4){
+		$frecuencia='SEMESTRAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*6;
+	}else if($datos[$i][0]['frecuencia_pago']==5){
+		$frecuencia='ANUAL';
+		$monto_cancelar=$datos[$i][0]['monto_mensual']*12;
+	}
+
+	$pdf->Cell(20,$height,$datos[$i][0]['rif_cedula'],'RL',0,'C');// RIF/CI
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(60,1,"",'',2,'C');
+		$pdf->MultiCell(59,2,$datos[$i][0]['nombre_razon'],'','L');// Razón social
+		$varX = $varX+60;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,$height,$datos[$i][0]['numero_solicitud'],'RL',0,'C');
+	$pdf->Cell(20,$height,$sisap->cambia_fecha($datos[$i][0]['fecha_aprobacion']),'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(75,1,"",'',2,'C');
+		$pdf->MultiCell(74,2,$datos[$i][0]['datos_registro_arrendamiento'],'','L');// Datos arrendamiento
+		$varX = $varX+75;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,$height,$frecuencia,'RL',0,'R');// Frecuencia de pago
+	$pdf->Cell(29,$height,$sisap->Formato2($monto_cancelar),'R',0,'R');// Monto a cancelar
+	$pdf->Cell(0,$height,$sisap->Formato2($datos[$i][0]['deuda_vigente']),'R',1,'R');// Monto deuda
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+
+
+
+}else{
+
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(20,6,"",'RL',0,'C');// RIF/CI
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(60,1,"",'',2,'C');
+		$pdf->MultiCell(59,2,"",'','L');// Razón social
+		$varX = $varX+60;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,6,"",'RL',0,'C');
+	$pdf->Cell(20,6,"",'R',0,'C');
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(75,1,"",'',2,'C');
+		$pdf->MultiCell(74,2,"",'','L');// Datos arrendamiento
+		$varX = $varX+75;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(20,6,"",'RL',0,'R');// Frecuencia de pago
+	$pdf->Cell(29,6,"",'R',0,'R');// Monto a cancelar
+	$pdf->Cell(0,6,"",'R',1,'R');// Monto deuda
+	$pdf->Cell(0,0,"",'T',1);
+
+
+
+}
+
+
+
+$pdf->Output('relacion_contribuyentes_arrendamiento_tierra_'.date("d_m_Y_h"), 'D');//Poner nombre y la opcion D
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

@@ -1,0 +1,148 @@
+<?php
+if(isset($msj)){
+if(is_array($msj)){
+ if($msj[1]=='error'){
+   echo $infogob->msj_error('&nbsp;'.$msj[0].'&nbsp;');
+ }
+
+ if($msj[1]=='exito'){
+   echo $infogob->msj_exito('&nbsp;'.$msj[0].'&nbsp;');
+ }
+}
+}
+?>
+<?php
+$sisap->CssSelect();
+function function_deno_bien($var1=null, $var2=null){
+	foreach($var2 as $ve){
+        if($var1==$ve["cnmd06_bienes"]["cod_bien"]){
+        	return $ve["cnmd06_bienes"]["denominacion"];
+        }//fin if
+	}//fin foreach
+}//fin function
+?>
+<form>
+<div id="cuerpo">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td align="center">Cédula</td>
+			<td align="center">Primer apellido</td>
+			<td align="center">Segundo apellido</td>
+			<td align="center">Primer nombre</td>
+			<td align="center">Segundo nombre</td>
+		</tr>
+		<tr id="datos">
+			<td height="30"><input type="text" name="data[cnmp06_datos_bienes][cedula]"      size="10"       value="<?= $ci?>"  maxlength="15" id="cedula"            class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly=readonly /></td>
+			<td height="30"><input type="text" name="" value="<?= $pa?>"  maxlength="15" id="ano_reformulacion" class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly=readonly size="15"/></td>
+			<td height="30"><input type="text" name="" value="<?= $sa?>"  maxlength="15" id="ano_reformulacion" class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly=readonly size="15"/></td>
+			<td height="30"><input type="text" name="" value="<?= $pn?>"  maxlength="15" id="ano_reformulacion" class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly=readonly size="15"/></td>
+			<td height="30"><input type="text" name="" value="<?= $sn?>"  maxlength="15" id="ano_reformulacion" class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly=readonly size="15"/></td>
+		</tr>
+	</table>
+
+	<br>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr>
+			<td width="10%" align="center">Seleccione</td>
+			<td width="10%" align="center">Código</td>
+			<td width="30%" align="center">Denominación del Bien</td>
+			<td width="10%" align="center">Año de compra</td>
+			<td width="15%" align="center">Costo</td>
+			<td width="15%" align="center">Cancelado?</td>
+			<td width="10%" align="center">AGREGAR</td>
+		</tr>
+		<tr>
+			<td align="center">
+				<?= $sisap->selectTagRemote('cnmp06_datos_bienes/cod_bien_select', $lista !='' ? $lista : array(''=>''),  null,  null, array('onchange1'=>'/info_cnmp06_datos_bienes/seleccion_cod_bien', 'update1'=>'funcion', 'id'=>'select_cod_bien','style'=>'width:100px', 'onchange'=>'vacio'  , true), null, true); ?>
+			</td>
+			<td align="center"><input type="text" name="data[cnmp06_datos_bienes][cod_bien]"   value=""  id="cod_bien"    class="input_2" onKeyPress="return solonumeros_con_punto(event);" style="text-align:center" readonly="readonly" size="10" /></td>
+			<td align="center"><input type="text" name="data[cnmp06_datos_bienes][deno_bien]"  value=""  id="deno_bien"   class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly="readonly" size="20"/></td>
+			<td align="center"><input type="text" name="data[cnmp06_datos_bienes][ano_compra]" value=""  id="ano_compra"  class="input_2" onKeyPress="return solonumeros_con_punto(event);"  size="10"/></td>
+			<td align="center"><input type="text" name="data[cnmp06_datos_bienes][costo]"      value=""  id="costo"       class="input_2" onKeyPress="return solonumeros_con_punto(event);" onblur="moneda('costo');" size="10"/></td>
+			<td align="center"><?= $html->radio('cnmp06_datos_bienes/cancelado', array('1'=>'Si', '2'=>'No'),null, array("value"=>"1"))?></td>
+			<td align="center">
+			<?php if($_SESSION["pertenece"]==0){ ?>
+				<?= $sisap->submitTagRemote('+', array('funcion'=>'info_cnmp06_datos_bienes_valida', 'url1' => '/info_cnmp06_datos_bienes/guardar/', 'update1'=>'tab_datos_bienes', 'size'=>'3')); ?>
+			<?php } ?>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<div id="guardar">
+	<div id="distribuir" style="height:150px; overflow:auto;">
+		<table width="100%" cellspacing="0" cellpadding="0" id="grid" class="fila_titulos tablacompromiso">
+			<tr>
+				<td class="td4" width="10%" align="center">Código</td>
+				<td class="td4" width="30%" align="center">Denominación del Bien</td>
+				<td class="td4" width="10%" align="center">Año de compra</td>
+				<td class="td4" width="15%" align="center">Costo</td>
+				<td class="td4" width="15%" >Cancelado?</td>
+				<td class="td4" width="10%" align="center">ACCIÓN</td>
+			</tr>
+				    <?php
+
+
+				      if(!empty($accion)){ $i = 0;
+
+				  	     foreach($accion as $ve){ if($i%2==0){ $color="fila1";  }else{ $color="fila2"; } $i++; ?>
+
+            <tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="<?=$color?>">
+								    <td class="td2center" align="center"><?=               mascara_tres($ve['cnmd06_datos_bienes']['cod_bien'])?></td>
+								    <td class="td2"><?=     function_deno_bien($ve['cnmd06_datos_bienes']['cod_bien'], $dato) ?></td>
+								    <td class="td2center" align="center"        id="campo_a_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  ><?=                  $ve['cnmd06_datos_bienes']['ano_compra'] ?></td>
+								    <td class="td2" align="right" id="campo_b_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  ><?= $sisap->Formato2($ve['cnmd06_datos_bienes']['costo']) ?></td>
+								    <td class="td2center"         id="campo_c_<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"  >
+								     <?= $html->radio('cnmp06_datos_bienes/cancelado'.$ve['cnmd06_datos_bienes']['consecutivo'], array('1'=>'Si', '2'=>'No'),null, array("value"=>$ve['cnmd06_datos_bienes']['cancelado'], "disabled"=>"disabled"))?>
+								    </td>
+
+								    <td class="td2center" height="22">
+
+								    <input type="hidden" name="data[cnmp06_datos_bienes][cod_bien<?= $ve['cnmd06_datos_bienes']['consecutivo']?>]"   value="<?= $ve['cnmd06_datos_bienes']['cod_bien']?>"  id="cod_bien<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"    class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly="readonly" />
+						            <input type="hidden" name="data[cnmp06_datos_bienes][cedula<?= $ve['cnmd06_datos_bienes']['consecutivo']?>]"     value="<?= $ve['cnmd06_datos_bienes']['cedula_identidad']?>"  id="cedula<?= $ve['cnmd06_datos_bienes']['consecutivo']?>"   class="input_2" onKeyPress="return solonumeros_con_punto(event);" readonly="readonly" />
+
+
+
+				                     <div id="iconos_1_<?= $ve['cnmd06_datos_bienes']['consecutivo'] ?>">
+							             <center><?php echo $ajax->link($html->image('edit.png',array('border'=>0)),   '/info_cnmp06_datos_bienes/editar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], array('update'=>'funcion','title'=>'Editar'),false,false,true); ?></center>
+									  </div>
+									  <div id="iconos_2_<?= $ve['cnmd06_datos_bienes']['consecutivo'] ?>" style="display:none;">
+									     <?= $sisap->submitTagRemote('', array('url1' => '/info_cnmp06_datos_bienes/guardar/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], 'update1'=>'tab_datos_bienes', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$ve['cnmd06_datos_bienes']['consecutivo'])); ?>
+								         <?php echo $ajax->link($html->image('cancel.png',array('border'=>0)), '/info_cnmp06_datos_bienes/index/'.$ve['cnmd06_datos_bienes']['cedula_identidad'].'/'.$ve['cnmd06_datos_bienes']['consecutivo'], array('update'=>'tab_datos_bienes','title'=>'Cancelar'),false,false,true); ?>
+									  </div>
+
+								    </td>
+						  </tr>
+
+
+
+
+				  	    <?php }//fin
+
+				      }else{ ?>
+
+							    <tr bgcolor="#CDF2FF" class="textNegro2">
+								    <td class="td2center" height="22"  width="2">--</td>
+								    <td class="td2center">--</td>
+								    <td class="td2center">--</td>
+								    <td class="td2center">--</td>
+								    <td class="td2center">--</td>
+								    <td class="td2center">--</td>
+								</tr>
+
+				      <?php }//fin else
+
+
+				      ?>
+
+				         </table>
+				     </div>
+				</div>
+
+
+				<div id="funcion"></div>
+
+</div>
+
+<br>
+
+</form>

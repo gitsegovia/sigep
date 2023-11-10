@@ -1,0 +1,99 @@
+<?php
+/*
+ * Creado el 13/05/2008 a las 10:01:29 AM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+ if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+ if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+?>
+
+<div style="height:300px;overflow:auto;">
+<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" style:"position:fixed" align="center">
+		<td align="center" width="10%">C&oacute;digo N&oacute;mina</td>
+		<td align="center" width="50%">Denominaci&oacute;n de la N&oacute;mina</td>
+		<td align="center" width="10%">Fecha Desde</td>
+		<td align="center" width="10%">Fecha Hasta</td>
+		<td align="center" width="5%">---</td>
+		<td align="center" width="5%">---</td>
+	</tr>
+
+<?php
+
+function denominacion($deno, $codigo, $cod_nomina){
+	//print_r($deno);
+	for($j=0; $j<count($deno);$j++){
+		//echo 'es; '.$deno[$j];
+		if($codigo[$j]==$cod_nomina){
+			$deno_trans = $deno[$j];
+			//print_r($deno_trans);
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+if(isset($datos) && $datos!=null){
+	$i=0;
+	$j=0;
+	foreach($lista1 as $x){
+		$deno[$j] = $x['Cnmd01']['denominacion'];
+		$codigo[$j] = $x['Cnmd01']['cod_tipo_nomina'];
+		$j++;
+	}
+	foreach($datos as $row){
+		$cod_nomina = $row['cnmd15_rango']['cod_tipo_nomina'];
+		$fecha_desde = $row['cnmd15_rango']['fecha_desde'];
+		$fecha_hasta = $row['cnmd15_rango']['fecha_hasta'];
+		$deno1=denominacion($deno, $codigo,$cod_nomina);
+if($i%2==0){
+	$color="#CDF2FF";
+}else{
+	$color="#DAEBFF";
+}
+?>
+<tr id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2" bgcolor="<?=$color?>">
+
+<td class="td2center">
+	<?=$sisap->zero($cod_nomina); ?>
+</td>
+<td align="legth">
+	<?=$deno1;?>
+</td>
+<td class="td2center">
+	<?=$sisap->cambia_fecha($fecha_desde)?>
+</td>
+<td class="td2center">
+	<?=$sisap->cambia_fecha($fecha_hasta)?>
+</td>
+<td width="75" align="center"  id="<?= "li_".$i ?>">
+<a href="javascript:ver_documento('/cnmp15_rango/modificar/<?=$cod_nomina?>/<?=$i?>','<?= "fila_".$i ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar el documento bancario'))?></a>
+</td>
+<td width="75" align="center"><?= $ajax->link($html->image('delete.png', array('border'=>'0')), '/cnmp15_rango/eliminar/'.$cod_nomina, array('update'=>'vacio', 'title'=>'Eliminar', "after"=>"new Effect.DropOut('fila_$i');"), "Realmente desea Eliminar este registro?", false, true); ?></td>
+
+</tr>
+
+<?
+$i++;
+	}
+}else{
+?>
+<tr  class="textNegro2" bgcolor="#CDF2FF">
+
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td class="td2center">---</td>
+<td width="75" align="center">---</td>
+<td width="75" align="center">---</td>
+</tr>
+
+
+<?php
+}
+?>
+</table>
+<input type="hidden" id="TI" value="<?=$i?>" />
+</div>

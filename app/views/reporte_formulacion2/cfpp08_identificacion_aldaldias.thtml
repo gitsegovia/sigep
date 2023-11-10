@@ -1,0 +1,256 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Identificación de la alcaldía'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_formulacion2/cfpp08_identificacion_aldaldias/2/'); ?>" >
+
+	<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          Ejercicio presupuestario formulado:<?=$html->selectTag('organismo/ano',$anos,$ano_formulacion,array('id'=>'ano_formular', "style"=>"width:70px"))?>
+	    </td>
+	</tr>
+</table>
+<br><br>
+
+
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "IDENTIFICACIÓN DE LA ALCALDÍA";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"31", "Z"=>"13"),null);
+
+		if(!isset($_SESSION['dat'])){
+			$this->SetFont('vera','B',8);
+			$this->Cell(0,5,'PRESUPUESTO: ','TRL',1);
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(180,5,'DOMICILIO LEGAL','TRBL',0,'C');
+			$this->Cell(130,5,'BASE LEGAL','TRB',0,'C');
+			$this->Cell(0,5,'FECHA DE CREACIÓN','TRB',1,'C');
+
+			$this->SetFont('vera','',8);
+			$this->Cell(180,6,'','RBL',0,'C');// DOMICILIO LEGAL
+			$this->Cell(130,6,'','RB',0,'C');// BASE LEGAL
+			$this->Cell(0,6,'','RB',1,'C');// FECHA DE CREACIÓN
+
+			$this->Cell(60,5,'CIUDAD','RBL',0,'C');
+			$this->Cell(60,5,'ESTADO','RB',0,'C');
+			$this->Cell(60,5,'TELÉFONOS','RB',0,'C');
+			$this->Cell(75,5,'DIRECCIÓN INTERNET','RB',0,'C');
+			$this->Cell(31,5,'FAX','RB',0,'C');
+			$this->Cell(31,5,'R.I.F.','RB',0,'C');
+			$this->Cell(0,5,'CÓDIGO POSTAL','RB',1,'C');
+
+			$this->SetFont('vera','',8);
+			$this->Cell(60,6,'','RBL',0);// CIUDAD
+			$this->Cell(60,6,'','RB',0);// ESTADO
+			$this->Cell(60,6,'','RB',0,'C');// TELÉFONOS
+			$this->Cell(75,6,'','RB',0);// DIRECCIÓN INTERNET
+			$this->Cell(31,6,'','RB',0,'C');// FAX
+			$this->Cell(31,6,'','RB',0,'C');// R.I.F.
+			$this->Cell(0,6,'','RB',1,'C');// CÓDIGO POSTAL
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(34,6,'ALCALDE O ALCALDESA:','BL',0,'L');
+			$this->SetFont('vera','',8);
+			$this->Cell(0,6,'','RB',1,'L');// ALCALDE O ALCALDESA:
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(100,5,'PERSONAL DIRECTIVO DE LA ALCALDÍA','RBL',0,'C');
+			$this->Cell(75,5,'TELÉFONOS','RB',0,'C');
+			$this->Cell(75,5,'DIRECCIÓN ELECTRÓNICA','RB',0,'C');
+			$this->SetFont('vera','B',8);
+			$this->Cell(0,5,'CONCEJALES','RB',1,'C');
+
+		}else{
+			$this->SetFont('vera','B',8);
+			$this->Cell(0,5,'PRESUPUESTO: '.$_SESSION['dat'][0][0]['ejercicio_fiscal'],'TRL',1);
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(180,5,'DOMICILIO LEGAL','TRBL',0,'C');
+			$this->Cell(130,5,'BASE LEGAL','TRB',0,'C');
+			$this->Cell(0,5,'FECHA DE CREACIÓN','TRB',1,'C');
+
+			$this->SetFont('vera','',8);
+
+		$can_a = strlen($_SESSION['dat'][0][0]['domicilio_legal']);
+		$can_b = strlen($_SESSION['dat'][0][0]['base_legal']);
+		$total_char = max($can_a, $can_b);
+		$theigth = $this->tam_celda($total_char);
+
+
+			                                $varX = $this->GetX();
+											$varY = $this->GetY();
+											$this->Cell(1,$theigth,"",'L',0,'C');// DOMICILIO LEGAL
+											$this->Cell(180,1,"",'',2,'C');
+											$this->MultiCell(179,3,$_SESSION['dat'][0][0]['domicilio_legal'],'','L');//--[DENOMINACIÓN]
+											$varX = $varX+180;
+											$this->SetXY($varX,$varY);
+
+                                              $this->Cell(1,$theigth,"",'L',0,'C');// DOMICILIO LEGAL
+
+
+											$varX = $this->GetX();
+											$varY = $this->GetY();
+											$this->Cell(129,1,"",'',2,'C');
+											$this->MultiCell(128,3,$_SESSION['dat'][0][0]['base_legal'],'','L');//--[DENOMINACIÓN]
+											$varX = $varX+129;
+											$this->SetXY($varX,$varY);
+			$this->Cell(0,$theigth,cambia_fecha($_SESSION['dat'][0][0]['fecha_creacion']),'RL',1,'C');// FECHA DE CREACIÓN
+
+			$this->Cell(60,5,'CIUDAD','TRBL',0,'C');
+			$this->Cell(60,5,'ESTADO','TRB',0,'C');
+			$this->Cell(60,5,'TELÉFONOS','TRB',0,'C');
+			$this->Cell(75,5,'DIRECCIÓN INTERNET','TRB',0,'C');
+			$this->Cell(31,5,'FAX','TRB',0,'C');
+			$this->Cell(31,5,'R.I.F.','TRB',0,'C');
+			$this->Cell(0,5,'CÓDIGO POSTAL','TRB',1,'C');
+
+			$this->SetFont('vera','',8);
+			$this->Cell(60,6,$_SESSION['dat'][0][0]['ciudad'],'RBL',0);// CIUDAD
+			$this->Cell(60,6,$_SESSION['dat'][0][0]['estado'],'RB',0);// ESTADO
+			$this->Cell(60,6,$_SESSION['dat'][0][0]['telefonos'],'RB',0,'C');// TELÉFONOS
+			$this->Cell(75,6,$_SESSION['dat'][0][0]['direccion_internet'],'RB',0);// DIRECCIÓN INTERNET
+			$this->Cell(31,6,$_SESSION['dat'][0][0]['fax'],'RB',0,'C');// FAX
+			$this->Cell(31,6,$_SESSION['dat'][0][0]['rif'],'RB',0,'C');// R.I.F.
+			$this->Cell(0,6,$_SESSION['dat'][0][0]['codigo_postal'],'RB',1,'C');// CÓDIGO POSTAL
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(34,6,'ALCALDE O ALCALDESA:','BL',0,'L');
+			$this->SetFont('vera','',8);
+			$this->Cell(0,6,$_SESSION['dat'][0][0]['alcalde'],'RB',1,'L');// ALCALDE O ALCALDESA:
+
+			$this->SetFont('vera','B',7);
+			$this->Cell(100,5,'PERSONAL DIRECTIVO DE LA ALCALDÍA','RBL',0,'C');
+			$this->Cell(75,5,'TELÉFONOS','RB',0,'C');
+			$this->Cell(75,5,'DIRECCIÓN ELECTRÓNICA','RB',0,'C');
+			$this->SetFont('vera','B',8);
+			$this->Cell(0,5,'CONCEJALES','RB',1,'C');
+
+		}
+
+
+    }
+
+    function Footer(){
+	$this->setY(-10);
+	$this->SetFont('vera','B',7);
+	$this->Cell(0,7,'FORMA: 2100','',1,'R');
+    }
+
+        function tam_celda($total_char){
+		if($total_char<120){
+			$heigth = 8;
+		}elseif($total_char>=120 && $total_char<240){
+			$heigth = 13;
+		}elseif($total_char>=240 && $total_char<360){
+			$heigth = 18;
+		}elseif($total_char>=360 && $total_char<480){
+			$heigth = 23;
+		}elseif($total_char>=480 && $total_char<600){
+			$heigth = 28;
+		}elseif($total_char>=600 && $total_char<720){
+			$heigth = 33;
+		}elseif($total_char>=720 && $total_char<840){
+			$heigth = 38;
+		}elseif($total_char>=840 && $total_char<960){
+			$heigth = 43;
+		}elseif($total_char>=960 && $total_char<1080){
+			$heigth = 48;
+		}else{
+			$heigth = 53;
+		}
+		return $heigth;
+    }
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(30);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true,10);
+$pdf->AddPage();
+
+
+$pdf->SetFont('vera','',8);
+
+if($datos!=null){
+
+	if($vector!=null){
+		for($i=0;$i<count($vector);$i++){
+			$pdf->Cell(100,6,$vector[$i]['nombre_directivo'],'RBL',0,'L');// PERSONAL DIRECTIVO DE LA ALCALDÍA
+			$pdf->Cell(75,6,$vector[$i]['telefonos'],'RB',0,'L');// TELÉFONOS
+			$pdf->Cell(75,6,$vector[$i]['correo'],'RB',0,'L');// DIRECCIÓN ELECTRÓNICA
+			$pdf->Cell(0,6,$vector[$i]['nombres_apellidos'],'RB',1,'L');// CONCEJALES
+
+		}
+	}else{
+		$pdf->Cell(100,6,'','RBL',0,'R');// PERSONAL DIRECTIVO DE LA ALCALDÍA
+		$pdf->Cell(75,6,'','RB',0,'R');// TELÉFONOS
+		$pdf->Cell(75,6,'','RB',0,'R');// DIRECCIÓN ELECTRÓNICA
+		$pdf->Cell(0,6,'','RB',1,'R');// CONCEJALES
+	}
+
+
+
+}else{
+
+		$pdf->Cell(100,6,'','RBL',0,'R');// PERSONAL DIRECTIVO DE LA ALCALDÍA
+		$pdf->Cell(75,6,'','RB',0,'R');// TELÉFONOS
+		$pdf->Cell(75,6,'','RB',0,'R');// DIRECCIÓN ELECTRÓNICA
+		$pdf->Cell(0,6,'','RB',1,'R');// CONCEJALES
+
+
+}
+
+
+$pdf->Output('FORMA_2100_IDENTIFICACION_ALCALDIA.pdf','D');//Poner nombre y la opcion D
+
+
+     }//fin function
+
+
+?>

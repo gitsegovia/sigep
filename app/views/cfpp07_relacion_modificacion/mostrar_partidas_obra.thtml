@@ -1,0 +1,269 @@
+<?php
+if (isset($msg_error)) {
+    echo $sisap->mensajes_error($msg_error);
+} else if (isset($Message_existe)) {
+    echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+$a  = $sisap->Formato2($a); // presupuesto estimado
+$b  = $sisap->Formato2($b); // aumento obras
+$c  = $sisap->Formato2($c); // disminucion obras
+$aj = $sisap->Formato2($aj); // presupuesto estimado ajustado (( $a + b) - $c)
+$d  = $sisap->Formato2($d); // monto contratado
+$e  = $sisap->Formato2($e); // saldo de la relacion (( $a + b) - ($c + $d)))
+?>
+<script>
+    if($('codigo_obra')){$('codigo_obra').value='<?= $var ?>'; }
+    if($('concepto')){$('concepto').value='<?= $denominacion_obra ?>';  }
+
+    $('aa11').value='<?= $a ?>';
+    $('bb11').value='<?= $b ?>';
+    $('cc11').value='<?= $c ?>';
+    $('aj11').value='<?= $aj ?>';
+    $('dd11').value='<?= $d ?>';
+    $('ee11').value='<?= $e ?>';
+    $('numero_modificacion').value='<?= $numero_modificacion ?>';
+</script>
+
+<div id="distribuir" style="height:200px; overflow:auto;">
+    <table width="100%" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+        <tr class="tr_negro" align="center">
+            <td width="50">A&ntilde;o</td>
+            <td width="50">Sector</td>
+            <td width="50">Prog</td>
+            <td width="50">Sub<br>Prog</td>
+            <td width="50">Proy</td>
+            <td width="50">Actividad<br> u Obra</td>
+            <td width="50">Partida</td>
+            <td width="50">Gener</td>
+            <td width="50">Espec</td>
+            <td width="50">Sub<br>Espec</td>
+            <td width="50">Auxiliar</td>
+            <td width="90">Saldo</td>
+            <td width="110">Monto</td>
+
+        </tr>
+
+        <?php
+        $i = 0;
+        $total = 0;
+        $total_saldo = 0;
+
+        if (!isset($_SESSION["cuenta_fila"])) {
+            $_SESSION["cuenta_fila"] = 0;
+        }
+
+        $cuenta_fila = $_SESSION["cuenta_fila"];
+        if (isset($cfpd07_obras_partidas)) {
+            if ($cfpd07_obras_partidas != null) {
+                foreach ($cfpd07_obras_partidas as $ve) {
+                    $monto = 0;
+                    $cod[0] = $ve['cfpd07_obras_partidas']['ano_estimacion'];
+                    $cod[1] = $ve['cfpd07_obras_partidas']["cod_sector"];
+                    $cod[2] = $ve['cfpd07_obras_partidas']["cod_programa"];
+                    $cod[3] = $ve['cfpd07_obras_partidas']["cod_sub_prog"];
+                    $cod[4] = $ve['cfpd07_obras_partidas']["cod_proyecto"];
+                    $cod[5] = $ve['cfpd07_obras_partidas']["cod_activ_obra"];
+                    $cod[6] = $ve['cfpd07_obras_partidas']['cod_partida'];
+                    $cod[7] = $ve['cfpd07_obras_partidas']["cod_generica"];
+                    $cod[8] = $ve['cfpd07_obras_partidas']["cod_especifica"];
+                    $cod[9] = $ve['cfpd07_obras_partidas']["cod_sub_espec"];
+                    $cod[10] = $ve['cfpd07_obras_partidas']["cod_auxiliar"];
+                    $cod[11] = 0;
+                    $cod[12] = 0;
+
+                    $concate = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1)) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_generica']) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_especifica']) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_espec']);
+                    $concate2 = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1));
+
+
+                    $ano = $ve['cfpd07_obras_partidas']['ano_estimacion'];
+                    $cod_sector = $ve['cfpd07_obras_partidas']['cod_sector'];
+                    $cod_programa = $ve['cfpd07_obras_partidas']['cod_programa'];
+                    $cod_sub_prog = $ve['cfpd07_obras_partidas']['cod_sub_prog'];
+                    $cod_proyecto = $ve['cfpd07_obras_partidas']['cod_proyecto'];
+                    $cod_activ_obra = $ve['cfpd07_obras_partidas']['cod_activ_obra'];
+                    $cod_partida = $ve['cfpd07_obras_partidas']['cod_partida'];
+                    $cod_generica = $ve['cfpd07_obras_partidas']['cod_generica'];
+                    $cod_especifica = $ve['cfpd07_obras_partidas']['cod_especifica'];
+                    $cod_sub_espec = $ve['cfpd07_obras_partidas']['cod_sub_espec'];
+                    $cod_auxiliar = $ve['cfpd07_obras_partidas']['cod_auxiliar'];
+
+                    $codigo = $ano . '/' . $cod_sector . '/' . $cod_programa . '/' . $cod_sub_prog . '/' . $cod_proyecto . '/' . $cod_activ_obra . '/' . $cod_partida . '/' . $cod_generica . '/' . $cod_especifica . '/' . $cod_sub_espec . '/' . $cod_auxiliar . '/';
+
+
+
+                    if ($cod[12] == 0) {
+
+
+                        if (isset($_SESSION["i"])) {
+                            $ii = $_SESSION["i"] + 1;
+                            $_SESSION["i"] = $ii;
+                        } else {
+                            $_SESSION["i"] = 0;
+                            $ii = 0;
+                        }
+                        $vec[$ii][0] = $cod[0];
+                        $vec[$ii][1] = $sisap->AddCero2($cod[1]);
+                        $vec[$ii][2] = $sisap->AddCero2($cod[2]);
+                        $vec[$ii][3] = $sisap->AddCero2($cod[3]);
+                        $vec[$ii][4] = $sisap->AddCero2($cod[4]);
+                        $vec[$ii][5] = $sisap->AddCero2($cod[5]);
+                        $vec[$ii][6] = $cod[6];
+                        $vec[$ii][7] = $sisap->AddCero2($cod[7]);
+                        $vec[$ii][8] = $sisap->AddCero2($cod[8]);
+                        $vec[$ii][9] = $sisap->AddCero2($cod[9]);
+                        $vec[$ii][10] = $sisap->AddCero2($cod[10]);
+                        $vec[$ii][11] = $cod[11];
+                        $vec[$ii]["id"] = $ii;
+                        if (isset($_SESSION["items"])) {
+                            foreach ($_SESSION["items"] as $codi) {
+                                //echo $codi[0].$cod[0].$codi[1].$cod[1].$codi[2].$cod[2].$codi[3].$cod[3].$codi[4].$cod[4].$codi[5].$cod[5].$codi[6].$cod[6].$codi[7].$cod[7]. $codi[8].$cod[8].$codi[9].$cod[9].$codi[10].$cod[10];
+                                if ($codi[0] == $cod[0] && $codi[1] == $cod[1] && $codi[2] == $cod[2] && $codi[3] == $cod[3] && $codi[4] == $cod[4] && $codi[5] == $cod[5] && $codi[6] == $cod[6] && $codi[7] == $cod[7] && $codi[8] == $cod[8] && $codi[9] == $cod[9] && $codi[10] == $cod[10]) {
+                                    $est = true;
+                                    break;
+                                } else {
+                                    $est = false;
+                                }
+                            }//fin foreach
+                            if ($est == true) {
+                                //	echo "no";
+                                $ii = $_SESSION["i"] - 1;
+                                $_SESSION["i"] = $ii;
+                            } else {
+                                $_SESSION["items"] = $_SESSION["items"] + $vec;
+                                //  echo "si";
+                            }
+                        } else {
+                            $_SESSION["items"] = $vec;
+                        }
+
+                        $class_color = $i % 2 == 0 ? 'tr_grid_c1' : 'tr_grid_c2';
+                        ?>
+
+                        <tr class="<?= $class_color ?>" id="<?= "fila_" . $cuenta_fila ?>" onclick="new Effect.Highlight(this);" align="center">
+                            <td><?= $ve['cfpd07_obras_partidas']['ano_estimacion'] ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sector']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_programa']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_prog']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_proyecto']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_activ_obra']) ?></td>
+                            <td><?= $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1)) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_generica']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_especifica']) ?></td>
+                            <td><?= $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_espec']) ?></td>
+                            <td><?= $sisap->mascara_cuatro($ve['cfpd07_obras_partidas']['cod_auxiliar']) ?></td>
+
+                            <td align="right"  > <?= Formato2(($ve['cfpd07_obras_partidas']['monto'] + $ve['cfpd07_obras_partidas']['aumento_obras']) - ($ve['cfpd07_obras_partidas']['monto_contratado'] + $ve['cfpd07_obras_partidas']['disminucion_obras'])) ?> </td>
+
+
+                            <?php $total_saldo += (($ve['cfpd07_obras_partidas']['monto'] + $ve['cfpd07_obras_partidas']['aumento_obras']) - ($ve['cfpd07_obras_partidas']['monto_contratado'] + $ve['cfpd07_obras_partidas']['disminucion_obras'])); ?>
+                            <td width="2">
+                                <?php
+                                $concate = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1)) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_generica']) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_especifica']) . '.' . $sisap->AddCero2($ve['cfpd07_obras_partidas']['cod_sub_espec']);
+                                $concate2 = $sisap->AddCero2(substr($ve['cfpd07_obras_partidas']['cod_partida'], -2), substr($ve['cfpd07_obras_partidas']['cod_partida'], 0, 1));
+                                ?>
+
+                                <?php if ($concate == "4.03.18.01.00") { ?>
+                                    <input type="hidden"  id="<?= "partida_iva_" . $i ?>" />
+                                <?php } ?>
+                                <input type="hidden"  value="1" id="<?= "partida_op_" . $i ?>" />
+                                <?= $sisap->inputTagRemote('cobp01_contratoobras/monto_' . $i, array('class' => 'inputtext', 'url' => '/cfpp07_relacion_modificacion/ver_disponibilidad/' . $i . '/' . $codigo, "value" => $sisap->Formato2(0), 'style' => 'text-align:right', 'update' => 'ver_disponibilidad', 'onFocus' => "javascript:if(this.value=='0,00'){this.value='';}", 'onKeyPress' => "return solonumeros_con_punto(event);", 'id' => 'monto_' . $i, 'maxlength' => '22', 'size' => '12', 'onBlur' => "javascript:if(this.value==''){this.value='0,00';} moneda('monto_$i');  ")); ?>
+                            </td>
+
+                        </tr>
+
+                        <?php
+                        $i++;
+                        $total = 0;
+                        $cuenta_fila++;
+                        $_SESSION["cuenta_fila"]++;
+                    }//fin if
+                }//fin foreach
+
+                $class_color = $i % 2 == 0 ? 'tr_grid_c1' : 'tr_grid_c2';
+                ?>
+                <tr class="<?= $class_color ?>">
+                    <td height="12" colspan="11"  ></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#DAEBFF" class="textNegro2">
+                    <td colspan="11" style="padding-right:5px; text-align:right;" height="22">TOTAL <?= MONEDA2 ?>: </td>
+                    <td  style="padding-right:5px; text-align:right" ><?= $sisap->Formato2($total_saldo); ?></td>
+                    <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"></td>
+                </tr>
+                <?
+            } else {
+                ?>
+                <tr class="tr_grid_c1" align="center">
+                    <td height="22"  width="2">--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>---------</td>
+                    <td>--</td>
+                </tr>
+                <tr class="tr_grid_c2">
+                    <td colspan="11" style="padding-right:5px; text-align:right;"  height="22">TOTAL <?= MONEDA2 ?>: </td>
+                    <td style="padding-right:5px; text-align:right" ><?=  $sisap->Formato2($total_saldo); ?></td>
+                    <td style="padding-right:5px; text-align:right" id="TOTALINGRESOS"></td>
+                    <td>------------------------</td>
+                </tr>
+                <?
+            }
+        } else {
+            $total = 0;
+            ?>
+            <tr class="tr_grid_c1"  align="center">
+                <td height="22"  width="2">--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>--</td>
+                <td>---------</td>
+                <td>--</td>
+            </tr>
+            <tr class="tr_grid_c2" align="center">
+                <td  style="padding-right:5px; text-align:right" ><?= $sisap->Formato2($total_saldo); ?></td>
+                <td  style="padding-right:5px; text-align:right" id="TOTALINGRESOS"></td>
+                <td colspan="11" style="padding-right:5px; text-align:right;" height="22">TOTAL <?= MONEDA2 ?>: </td>
+                <td>--</td>
+            </tr>
+            <?
+        }
+
+//$i--;
+        ?>
+        <input type="hidden" name="data[cobp01_contratoobras][cuenta_i]" id="lista_partidas" value="<?= $i ?>" />
+        <input type="hidden" name="data[cobp01_contratoobras][cuenta_i]" id="cuenta_i" value="<?= $i ?>" />
+        <input type="hidden" name="data[cobp01_contratoobras][estimado_presu]" id="estimado_presu" value="<?= $estimado_presu ?>" />
+
+
+    </table>
+
+    <div id="del"></div>
+    <div id="ver_disponibilidad"></div>
+</div>
+
+
+
+
+
+
+
+
+

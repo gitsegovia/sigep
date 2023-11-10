@@ -1,0 +1,62 @@
+<?php
+ if(isset($errorMessage)) {
+ echo $sisap->mensajes_error($errorMessage);
+ }else if(isset($Message_existe)){
+ echo $sisap->mensajes_correcto($Message_existe);}
+?>
+
+<table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr bgcolor="#000000">
+	<td width="15%" align="center"><font color='ffffff'>Tipo movimiento</td>
+	<td width="10%" align="center"><font color='ffffff'>C&oacute;digo</td>
+	<td width="65%" align="center"><font color='ffffff'>Denominaci&oacute;n del movimiento</td>
+	<td width="10%" align="center"><font color="ffffff">Acciones</font></td>
+   </tr>
+</table>
+
+<div id="distribuir" style="height:150px; overflow:auto;">
+<table width="100%" border="1" cellspacing="0">
+<?php
+$k = 1;
+$j = 0;
+//print_r($datos);
+foreach($datos as $dato){
+	$cod_tipo_mov=$dato['cimd02_tipo_movimiento']['cod_tipo_mov'];
+	if($cod_tipo_mov==1){
+		$tipo='Incorporaci&oacute;n';
+	}else if($cod_tipo_mov==2){
+		$tipo='Desincorporaci&oacute;n';
+	}
+	$cod_mov=$dato['cimd02_tipo_movimiento']['cod_mov'];
+	$denominacion=$dato['cimd02_tipo_movimiento']['denominacion'];
+
+	if($k%2 == 0){
+		$color = "#CDF2FF";
+	}else{
+		$color = "#DAEBFF";
+	}
+	$k++;
+?>
+	<tr id="<?= $j ?>" bgcolor="<?=$color?>">
+		   <td width="15%" id="td_1_<?= $cod_tipo_mov?>_<?= $cod_mov?>"><?= $tipo ?>&nbsp;&nbsp;&nbsp;</td>
+	   	   <td width="10%" align="center" id="td_2_<?= $cod_tipo_mov?>_<?= $cod_mov?>"><?= $sisap->Addcero2($cod_mov) ?>&nbsp;&nbsp;&nbsp;</td>
+		   <td width="65%" id="td_3_<?= $cod_tipo_mov?>_<?= $cod_mov?>">&nbsp;<?= strtoupper($denominacion) ?></td>
+	       <td width="10%" align="center">
+	       			  <div id="iconos_1_<?= $cod_tipo_mov?>_<?= $cod_mov?>">
+		                     <?php echo $ajax->link($html->image('edit.png',array('border'=>0)), '/cimp02_tipo_movimiento/editar/'.$cod_tipo_mov.'/'.$cod_mov, array('update'=>'prueba','title'=>'Editar'),false,false,true); ?>
+						     <?php echo $ajax->link($html->image('delete.png',array('border'=>0)), '/cimp02_tipo_movimiento/eliminar/'.$cod_tipo_mov.'/'.$cod_mov, array('update'=>'grilla','title'=>'Eliminar',"after"=>"new Effect.DropOut('fila_$cod_mov');"),'Realmente desea eliminar este Registro',false,true); ?>
+					  </div>
+					  <div id="iconos_2_<?= $cod_tipo_mov?>_<?= $cod_mov?>"" style="display:none;">
+					     <?= $sisap->submitTagRemote('', array('url1' => '/cimp02_tipo_movimiento/guardar_editar/'.$cod_tipo_mov.'/'.$cod_mov, 'update1'=>'grilla', 'size'=>'3', 'class'=>'guardar_input', 'id'=>'submit'.$cod_tipo_mov.'_'.$cod_mov)); ?>
+                         <?php echo $ajax->link($html->image('cancel.png',array('border'=>0)), '/cimp02_tipo_movimiento/grilla/'.$cod_tipo_mov, array('update'=>'grilla','title'=>'Cancelar'),false,false,true); ?>
+					  </div>
+	       </td>
+       </td>
+    </tr>
+
+<?php
+$j++;
+}//fin del foreach dependencia
+?>
+</table>
+<div id='prueba'></div>

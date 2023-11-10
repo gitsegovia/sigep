@@ -1,0 +1,184 @@
+<?php
+
+vendor('utf8_tcpdf/tcpdf');
+
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+	 //Go to 1.5 cm from bottom
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+	function Footer()
+	{
+
+	}
+
+	function Header()
+	{
+
+		 $img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=14;
+        	$t2=20;
+        }else{
+        	//$escudo="webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="img/escudo_base/escudo10.jpg";
+        	$varTOPh1="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh2="";
+        	$varTOPh11="GOBERNACIÓN DEL ESTADO FALCÓN";
+        	$varTOPh22="";
+        	$t1=14;
+        	$t2=11;
+        }
+		$this->Image($escudo,11,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(15,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(15,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,10,"VALUACIÓN DE OBRAS",'RL',1,'C');
+		$this->Cell(0,6,"MONTO RECALCULADO DE LA AMORTIZACION",'RLB',1,'C');
+		$this->Ln(4);
+
+        $this->Cell(10,3,"",'TL',0,'C');
+        $this->Cell(50,3,"",'TL',0,'C');
+        $this->Cell(25,3,"",'TL',0,'C');
+        $this->Cell(30,3,"",'TL',0,'C');
+		$this->Cell(35,3,"",'TL',0,'C');
+		$this->Cell(30,3,"",'TL',0,'C');
+		$this->Cell(35,3,"",'TL',0,'C');
+		$this->Cell(45,3,"",'TLR',1,'C');
+
+
+        $this->Cell(10,5,"",'L',0,'C');
+        $this->Cell(50,5,"NUMERO DE",'L',0,'C');
+		$this->Cell(25,5,"NUMERO",'L',0,'C');
+		$this->Cell(30,5,"SALDO DE",'L',0,'C');
+		$this->Cell(35,5,"MONTO TOTAL ",'L',0,'C');
+		$this->Cell(30,5,"PORCENTAJE ",'L',0,'C');
+		$this->Cell(35,5,"MONTO DE ",'L',0,'C');
+		$this->Cell(45,5,"MONTO RECALCULADO ",'RL',1,'C');
+
+
+        $this->Cell(10,3,"DEP",'L',0,'C');
+        $this->Cell(50,3,"CONTRATO",'L',0,'C');
+		$this->Cell(25,3,"VALUACION",'L',0,'C');
+		$this->Cell(30,3,"CONTRATO",'L',0,'C');
+		$this->Cell(35,3,"DE LA VALUACION ",'L',0,'C');
+		$this->Cell(30,3,"DE ANTICIPO",'L',0,'C');
+		$this->Cell(35,3,"LA AMORTIZACION",'L',0,'C');
+		$this->Cell(45,3,"DE LA AMORTIZACION",'RL',1,'C');
+
+
+        $this->Cell(10,3,"",'BL',0,'C');
+        $this->Cell(50,3,"",'BL',0,'C');
+        $this->Cell(25,3,"",'BL',0,'C');
+		$this->Cell(30,3,"",'BL',0,'C');
+		$this->Cell(35,3,"",'BL',0,'C');
+		$this->Cell(30,3,"",'BL',0,'C');
+		$this->Cell(35,3,"",'BL',0,'C');
+		$this->Cell(45,3,"",'BRL',1,'C');
+
+
+
+		$this->SetFont('vera','',9);
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+
+
+ $cont_2 = 0;
+      foreach($lista2 as $ve2){
+
+            $A = 0;
+            $B = 0;
+            $C = 0;
+            $R = 0;
+
+            $A = $ve2['cobd01_contratoobras_valuacion_cuerpo']['monto_coniva'];
+            $B = $ve2['cobd01_contratoobras_valuacion_cuerpo']['porcentaje_amortizacion'];
+            $C = $ve2['cobd01_contratoobras_valuacion_cuerpo']['amortizacion_anticipo'];
+            $D = ($ve2['cobd01_contratoobras_valuacion_cuerpo']['monto_original_contrato'] + $ve2['cobd01_contratoobras_valuacion_cuerpo']['aumento']) - $ve2['cobd01_contratoobras_valuacion_cuerpo']['disminucion'];
+
+            $R = $A * ($B/100);
+
+            $R = $sisap->Formato2($R);
+            $R = $sisap->Formato1($R);
+
+            $cod_dep=0;
+
+           if($R==$C){
+
+                /*$pdf->Cell(65,3,$sisap->Formato2($A),'TL',0,'C');
+				$pdf->Cell(50,3,$sisap->Formato2($B),'TL',0,'C');
+				$pdf->Cell(60,3,$sisap->Formato2($C),'TL',0,'C');
+				$pdf->Cell(85,3,$sisap->Formato2($R),'TLR',1,'C');*/
+
+
+           }else{
+
+                    foreach($a as $a_aux){
+					   foreach($b as $b_aux){
+					   	if($ve2['cobd01_contratoobras_valuacion_cuerpo']['numero_contrato_obra']==$a_aux['cobd01_contratoobras_cuerpo']['numero_contrato_obra']){
+					      if($a_aux['cobd01_contratoobras_cuerpo']['ano_estimacion']==$b_aux['cfpd07_obras_cuerpo']['ano_estimacion'] &&  strtoupper($a_aux['cobd01_contratoobras_cuerpo']['cod_obra'])==strtoupper($b_aux['cfpd07_obras_cuerpo']['cod_obra'])){
+                                 $cod_dep = $b_aux['cfpd07_obras_cuerpo']['cod_dep_original'];
+					     }//fin foreach
+					   	}//fin if
+					  }//fin foreach
+					}//fin foreach
+
+
+                    $pdf->Cell(10,6,$sisap->AddCero2($cod_dep),'BL',0,'R');
+                    $pdf->Cell(50,6,$ve2['cobd01_contratoobras_valuacion_cuerpo']['numero_contrato_obra'],'BL',0,'R');
+					$pdf->Cell(25,6,$sisap->AddCero2($ve2['cobd01_contratoobras_valuacion_cuerpo']['numero_valuacion']),'BL',0,'R');
+					$pdf->Cell(30,6,$sisap->Formato2($D),'BL',0,'R');
+                    $pdf->Cell(35,6,$sisap->Formato2($A),'BL',0,'R');
+					$pdf->Cell(30,6,$sisap->Formato2($B),'BL',0,'R');
+					$pdf->Cell(35,6,$sisap->Formato2($C),'BL',0,'R');
+					$pdf->Cell(45,6,$sisap->Formato2($R),'BLR',1,'R');
+
+
+           }//fin felse
+
+
+       }//fin foreach
+
+
+
+
+ $pdf->Output('recalcular_amortizacion.pdf', 'D');
+
+
+?>

@@ -1,0 +1,442 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?= $sisap->Tabla("",true,"COMPROBANTE DIARIO","","750")?>
+
+<?= $sisap->OpenTable("750");?>
+<form name='data[cfpp00]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_contabilidad/comprobante_diario/si'); ?>" >
+
+<center>Año:<?= $sisap->selectTagRemote('cfpp00/ano', $lista_ano,  null,  $year, array('id'=>'ano', 'onChange'=>'vacio','style'=>'width:10%'  , true), null, true);?></center>
+<br>
+
+
+<table width="40%" border="0" cellspacing="0" cellpadding="0" >
+	<tr>
+		<td width="10%" align="center">Indique Mes:</td>
+		<td width="15%">
+			<?= $sisap->selectTagRemote('cfpp00/mes', $mes,  null,  $m, array('id'=>'mes', 'onChange'=>'vacio','style'=>'width:70%'  , true), null, true);?>
+		</td>
+	</tr>
+</table>
+
+<div id="vacio"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='si'){
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+
+    	$titulo_A = "COMPROBANTE DE DIARIO";
+    	$titulo_B = "MES: ".$_SESSION['mes_diario_c']." AÑO: ".$_SESSION['ano_diario_c'];
+		$this->top_reporte2(array($titulo_A,$titulo_B), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"191"));
+
+		$this->SetFont('vera','B',6);
+		$this->Cell(50,5,'CUENTA','TLRB',0,'C');
+		$this->Cell(70,5,'DESCRIPCIÓN','TRB',0,'C');
+		$this->Cell(45,5,'DEBE','TRB',0,'C');
+		$this->Cell(0,5,'HABER','TRB',1,'C');
+    }//fin funtion
+
+
+    function Footer(){
+
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 15);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+
+		$tipo_documento = array( '1'=>'Cheque',
+					     '2'=>'Deposito',
+					     '3'=>'Nota de Credito',
+					     '4'=>'Nota de Debito',
+					     '5'=>'Orden de Compra',
+					     '6'=>'Otros Compromisos',
+					     '7'=>'Contrato de Obras',
+					     '8'=>'Contrato de Servicios',
+					     '9'=>'Orden de Pago',
+					     '10'=>'Retención de i.v.a',
+					     '11'=>'Retención de i.s.l.r',
+					     '12'=>'Retención de timbre',
+					     '13'=>'Retención de impuesto municipal',
+					     '14'=>'Retención de multa',
+					     '15'=>'Retención de responsabilidad',
+					     '16'=>'Bienes muebles',
+					     '17'=>'Bienes inmuebles',
+					     '18'=>'Reintegros',
+					     '19'=>'Rendiciones'
+					    );
+
+	$total_debe=0;
+	$total_haber=0;
+	$concatena=rand().rand().rand();
+
+for($i=0; $i<count($datos); $i++){
+//$pdf->Cell(17,5,mascara($datos[$i][0]['numero_asiento'],4),'RL',1,'C');
+		$concatena1=$datos[$i][0]['cod_dep'].$datos[$i][0]['ano_asiento'].$datos[$i][0]['mes_asiento'].$datos[$i][0]['dia_asiento'].$datos[$i][0]['numero_asiento'];
+		if($i==0){
+
+			if($datos[$i][0]['cod_subdivision']!=0){
+					$descripcion=$datos[$i][0]['deno_subdivision'];
+				}else{
+					if($datos[$i][0]['cod_division']!=0){
+						$descripcion=$datos[$i][0]['deno_division'];
+					}else{
+						if($datos[$i][0]['cod_subcuenta']!=0){
+							$descripcion=$datos[$i][0]['deno_subcuenta'];
+						}else{
+							if($datos[$i][0]['cod_cuenta']!=0){
+								$descripcion=$datos[$i][0]['deno_cuenta'];
+							}else{
+								$descripcion=$datos[$i][0]['deno_tipo_cuenta'];
+							}
+						}
+					}
+				}
+
+			$long=strlen($descripcion);
+			if($long<=45){//echo "a";
+				$height=10;
+			}else if($long>45 && $long<=90){//echo "b";
+				$height=12;
+			}else if($long>90 && $long<=135){//echo "c";
+				$height=14;
+			}else if($long>135 && $long<=170){//echo "d";
+				$height=16;
+			}else if($long>170 && $long<=205){//echo "e";
+				$height=19;
+			}else if($long>170 && $long<=240) {//echo "f";
+				$height=22;
+			}else if($long>240 && $long<=280) {//echo "g";
+				$height=24;
+			}else if($long>280 && $long<=315) {//echo "h";
+				$height=26;
+			}else if($long>315 && $long<=350) {//echo "h";
+				$height=29;
+			}else if($long>350 && $long<=400) {//echo "h";
+				$height=31;
+			}else if($long>400 && $long<=450) {//echo "h";
+				$height=33;
+			}else if($long>450 && $long<=500) {//echo "h";
+				$height=36;
+			}else if($long>500 && $long<=550) {//echo "h";
+				$height=40;
+			}else if($long>550 && $long<=600) {//echo "h";
+				$height=42;
+			}else{//echo "i";
+				$height=45;
+			}
+				$concatena=$datos[$i][0]['cod_dep'].$datos[$i][0]['ano_asiento'].$datos[$i][0]['mes_asiento'].$datos[$i][0]['dia_asiento'].$datos[$i][0]['numero_asiento'];
+				$cuenta=$datos[$i][0]['cod_tipo_cuenta']."-".mascara($datos[$i][0]['cod_cuenta'],3)."-".mascara($datos[$i][0]['cod_subcuenta'],3)."-".mascara($datos[$i][0]['cod_division'],4)."-".mascara($datos[$i][0]['cod_subdivision'],3);
+				$pdf->Cell(50,$height,$cuenta,'LR',0,'C');//[CUENTA]
+
+
+
+
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(70,1,'','',2,'L');
+				$pdf->MultiCell(70,2,$descripcion,'','L');//---[CUENTA]
+				$varX = $varX+70;
+//				$varY = $varY+1;
+				$pdf->SetXY($varX,$varY);
+
+
+				if($datos[$i][0]['debito_credito']==1){
+					$pdf->Cell(45,$height,$sisap->Formato2($datos[$i][0]['monto']),'RL',0,'C');
+					$pdf->Cell(0,$height,'','R',1,'C');
+					$total_debe+=$datos[$i][0]['monto'];
+				}else{
+					$pdf->Cell(45,$height,'','RL',0,'C');
+					$pdf->Cell(0,$height,$sisap->Formato2($datos[$i][0]['monto']),'R',1,'C');
+					$total_haber+=$datos[$i][0]['monto'];
+				}
+
+				$pdf->Cell(0,0,'','T',1,'C');
+
+
+		}else if($concatena==$concatena1){
+				if($datos[$i][0]['cod_subdivision']!=0){
+						$descripcion=$datos[$i][0]['deno_subdivision'];
+					}else{
+						if($datos[$i][0]['cod_division']!=0){
+							$descripcion=$datos[$i][0]['deno_division'];
+						}else{
+							if($datos[$i][0]['cod_subcuenta']!=0){
+								$descripcion=$datos[$i][0]['deno_subcuenta'];
+							}else{
+								if($datos[$i][0]['cod_cuenta']!=0){
+									$descripcion=$datos[$i][0]['deno_cuenta'];
+								}else{
+									$descripcion=$datos[$i][0]['deno_tipo_cuenta'];
+								}
+							}
+						}
+					}
+
+				$long=strlen($descripcion);
+				if($long<=45){//echo "a";
+					$height=10;
+				}else if($long>45 && $long<=90){//echo "b";
+					$height=12;
+				}else if($long>90 && $long<=135){//echo "c";
+					$height=14;
+				}else if($long>135 && $long<=170){//echo "d";
+					$height=16;
+				}else if($long>170 && $long<=205){//echo "e";
+					$height=19;
+				}else if($long>170 && $long<=240) {//echo "f";
+					$height=22;
+				}else if($long>240 && $long<=280) {//echo "g";
+					$height=24;
+				}else if($long>280 && $long<=315) {//echo "h";
+					$height=26;
+				}else if($long>315 && $long<=350) {//echo "h";
+					$height=29;
+				}else if($long>350 && $long<=400) {//echo "h";
+					$height=31;
+				}else if($long>400 && $long<=450) {//echo "h";
+					$height=33;
+				}else if($long>450 && $long<=500) {//echo "h";
+					$height=36;
+				}else if($long>500 && $long<=550) {//echo "h";
+					$height=40;
+				}else if($long>550 && $long<=600) {//echo "h";
+					$height=42;
+				}else{//echo "i";
+					$height=45;
+				}
+				$concatena=$datos[$i][0]['cod_dep'].$datos[$i][0]['ano_asiento'].$datos[$i][0]['mes_asiento'].$datos[$i][0]['dia_asiento'].$datos[$i][0]['numero_asiento'];
+				$cuenta=$datos[$i][0]['cod_tipo_cuenta']."-".mascara($datos[$i][0]['cod_cuenta'],3)."-".mascara($datos[$i][0]['cod_subcuenta'],3)."-".mascara($datos[$i][0]['cod_division'],4)."-".mascara($datos[$i][0]['cod_subdivision'],3);
+				$pdf->Cell(50,$height,$cuenta,'LR',0,'C');//[CUENTA]
+
+
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(70,1,'','',2,'L');
+				$pdf->MultiCell(70,2,$descripcion,'','L');//---[CUENTA]
+				$varX = $varX+70;
+//				$varY = $varY+1;
+				$pdf->SetXY($varX,$varY);
+
+
+				if($datos[$i][0]['debito_credito']==1){
+					$pdf->Cell(45,$height,$sisap->Formato2($datos[$i][0]['monto']),'RL',0,'C');
+					$pdf->Cell(0,$height,'','R',1,'C');
+					$total_debe+=$datos[$i][0]['monto'];
+				}else{
+					$pdf->Cell(45,$height,'','RL',0,'C');
+					$pdf->Cell(0,$height,$sisap->Formato2($datos[$i][0]['monto']),'R',1,'C');
+					$total_haber+=$datos[$i][0]['monto'];
+				}
+				$pdf->Cell(0,0,'','T',1,'C');
+
+
+
+				$long=strlen($datos[$i][0]['concepto']);
+				if($long<=45){//echo "a";
+					$height=10;
+				}else if($long>45 && $long<=90){//echo "b";
+					$height=10;
+				}else if($long>90 && $long<=135){//echo "c";
+					$height=10;
+				}else if($long>135 && $long<=170){//echo "d";
+					$height=10;
+				}else if($long>170 && $long<=205){//echo "e";
+					$height=10;
+				}else if($long>170 && $long<=240) {//echo "f";
+					$height=12;
+				}else if($long>240 && $long<=280) {//echo "g";
+					$height=12;
+				}else if($long>280 && $long<=315) {//echo "h";
+					$height=12;
+				}else if($long>315 && $long<=350) {//echo "h";
+					$height=12;
+				}else if($long>350 && $long<=400) {//echo "h";
+					$height=12;
+				}else if($long>400 && $long<=450) {//echo "h";
+					$height=15;
+				}else if($long>450 && $long<=500) {//echo "h";
+					$height=17;
+				}else if($long>500 && $long<=550) {//echo "h";
+					$height=19;
+				}else if($long>550 && $long<=600) {//echo "h";
+					$height=21;
+				}else if($long>725 && $long<=775) {//echo "h";
+					$height=23;
+				}else{
+					$height=25;
+				}
+
+				$pdf->SetFont('vera','B',5);
+				$pdf->Cell(17,5,"NÚM. ASIENTO",'BRL',0,'C');
+				$pdf->Cell(103,5,"CONCEPTO",'BR',0,'C');
+				$pdf->Cell(45,5,"TIPO DOCUMENTO",'BR',0,'C');
+				$pdf->Cell(20,5,"NÚM. DOC.",'BR',0,'C');
+				$pdf->Cell(0,5,"FECHA DOC.",'BR',1,'C');
+
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(17,$height,mascara($datos[$i][0]['numero_asiento'],4),'RL',0,'C');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(103,1,'','',2,'L');
+				$pdf->MultiCell(103,2,$datos[$i][0]['concepto'],'','J');//---[CUENTA]
+				$varX = $varX+103;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(45,$height,$tipo_documento[$datos[$i][0]['tipo_documento']],'RL',0,'C');
+				$pdf->Cell(20,$height,$datos[$i][0]['numero_documento'],'R',0,'C');
+				$pdf->Cell(0,$height,$sisap->cambia_fecha($datos[$i][0]['fecha_documento']),'R',1,'C');
+				$pdf->Cell(0,0,'','T',1,'C');
+
+
+		}else{
+
+				$pdf->Cell(50,8,'','TBL',0,'C');//--[CODIGO]
+				$pdf->Cell(70,8,'','TB',0,'C');//--[CODIGO]
+				$pdf->Cell(45,8,'','TB',0,'R');//---[DEBE BS
+				$pdf->Cell(0,8,'','TRB',1,'R');//---[HABER BS.]
+
+				if($datos[$i][0]['cod_subdivision']!=0){
+						$descripcion=$datos[$i][0]['deno_subdivision'];
+					}else{
+						if($datos[$i][0]['cod_division']!=0){
+							$descripcion=$datos[$i][0]['deno_division'];
+						}else{
+							if($datos[$i][0]['cod_subcuenta']!=0){
+								$descripcion=$datos[$i][0]['deno_subcuenta'];
+							}else{
+								if($datos[$i][0]['cod_cuenta']!=0){
+									$descripcion=$datos[$i][0]['deno_cuenta'];
+								}else{
+									$descripcion=$datos[$i][0]['deno_tipo_cuenta'];
+								}
+							}
+						}
+					}
+
+				$long=strlen($descripcion);
+				if($long<=45){//echo "a";
+					$height=10;
+				}else if($long>45 && $long<=90){//echo "b";
+					$height=12;
+				}else if($long>90 && $long<=135){//echo "c";
+					$height=14;
+				}else if($long>135 && $long<=170){//echo "d";
+					$height=16;
+				}else if($long>170 && $long<=205){//echo "e";
+					$height=19;
+				}else if($long>170 && $long<=240) {//echo "f";
+					$height=22;
+				}else if($long>240 && $long<=280) {//echo "g";
+					$height=24;
+				}else if($long>280 && $long<=315) {//echo "h";
+					$height=26;
+				}else if($long>315 && $long<=350) {//echo "h";
+					$height=29;
+				}else if($long>350 && $long<=400) {//echo "h";
+					$height=31;
+				}else if($long>400 && $long<=450) {//echo "h";
+					$height=33;
+				}else if($long>450 && $long<=500) {//echo "h";
+					$height=36;
+				}else if($long>500 && $long<=550) {//echo "h";
+					$height=40;
+				}else if($long>550 && $long<=600) {//echo "h";
+					$height=42;
+				}else{//echo "i";
+					$height=45;
+				}
+
+				$concatena=$datos[$i][0]['cod_dep'].$datos[$i][0]['ano_asiento'].$datos[$i][0]['mes_asiento'].$datos[$i][0]['dia_asiento'].$datos[$i][0]['numero_asiento'];
+				$cuenta=$datos[$i][0]['cod_tipo_cuenta']."-".mascara($datos[$i][0]['cod_cuenta'],3)."-".mascara($datos[$i][0]['cod_subcuenta'],3)."-".mascara($datos[$i][0]['cod_division'],4)."-".mascara($datos[$i][0]['cod_subdivision'],3);
+				$pdf->Cell(50,$height,$cuenta,'LR',0,'C');//[CUENTA]
+
+
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(70,1,'','',2,'L');
+				$pdf->MultiCell(70,2,$descripcion,'','L');//---[CUENTA]
+				$varX = $varX+70;
+//				$varY = $varY+1;
+				$pdf->SetXY($varX,$varY);
+
+
+				if($datos[$i][0]['debito_credito']==1){
+					$pdf->Cell(45,$height,$sisap->Formato2($datos[$i][0]['monto']),'RL',0,'C');
+					$pdf->Cell(0,$height,'','R',1,'C');
+					$total_debe+=$datos[$i][0]['monto'];
+				}else{
+					$pdf->Cell(45,$height,'','RL',0,'C');
+					$pdf->Cell(0,$height,$sisap->Formato2($datos[$i][0]['monto']),'R',1,'C');
+					$total_haber+=$datos[$i][0]['monto'];
+				}
+
+				$pdf->Cell(0,0,'','T',1,'C');
+		}
+
+
+}
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,8,'','',1,'L');
+	$pdf->Cell(120,6,'','',0,'R');
+
+	$pdf->SetTextColor(120, 0, 0);
+	$pdf->Cell(45,6,"TOTAL DEBE",'TRBL',0,'C');
+	$pdf->Cell(0,6,"TOTAL HABER",'TRB',1,'C');
+
+	$pdf->SetTextColor(0, 0, 0);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(120,8,'','',0,'R');
+	$pdf->Cell(45,8,$sisap->Formato2($total_debe),'RBL',0,'C');
+	$pdf->Cell(0,8,$sisap->Formato2($total_haber),'RB',1,'C');
+
+
+}else{
+
+	$pdf->Cell(50,8,'','RBL',0,'C');//--[CODIGO]
+	$pdf->Cell(70,8,'','RBL',0,'C');//--[CODIGO]
+	$pdf->Cell(45,8,'','RBL',0,'R');//---[DEBE BS
+	$pdf->Cell(0,8,'','RB',1,'R');//---[HABER BS.]
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(120,8,'totales:','LRB',0,'R');
+	$pdf->SetFont('vera','',7);
+	$pdf->Cell(45,8,'','RB',0,'R');
+	$pdf->Cell(0,8,'','RB',1,'R');
+
+}
+
+$pdf->Output('Comprobante_De_Diario_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

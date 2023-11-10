@@ -1,0 +1,355 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+?>
+
+<? if($cod_transaccion!=null){ ?>
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="10%">Selecci&oacute;n</td>
+			<td width="20%">Código de Transacci&oacute;n</td>
+			<td width="50%">Denominaci&oacute;n de la transacci&oacute;n</td>
+			<td width="10%">Monto</td>
+			<td width="10%">Monto Tope</td>
+		</tr>
+
+		<tr align="center">
+			<td>
+					<?=  $sisap->selectTagRemote('cnmp10/cod_transaccion',$transaccion,null,$cod_transaccion, array('onchange1'=>'/cnmp10_escala_individual_bolivares/seleccion_trans/'.$cod_nomina, 'update1'=>'transaccion','id'=>'select_2', true), null, true); ?>
+			</td>
+			<td ><input name="data[cnmp10][cod_transaccion]"  value="<?=mascara($cod_transaccion,3)?>" id="transaccion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+			<td ><input name="data[cnmp10][deno_transaccion]"  value="<?=$deno_transaccion?>" id="denominacion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			<td align='center'><?= $html->input('cnmp10/monto', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'monto','onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly',"onChange"=>"moneda('monto');"), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10/monto_tope', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'monto_tope','onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly',"onChange"=>"moneda('monto_tope');"), false); ?></td>
+		</tr>
+	</table>
+	<?php if($verifica!=null){
+
+		$frecuencia = $verifica[0][0]['cod_frecuencia'];
+		if($frecuencia==1){
+			$disabled='disabled';
+		}else{
+			$disabled='enabled';
+		}
+		$condicion = $verifica[0][0]['cod_condicion'];
+		if($condicion==2){
+			$cod=$verifica[0][0]['codi_transaccion'];
+			$codigo=mascara($verifica[0][0]['codi_transaccion'],3);
+			$denominacion=$verifica[0][0]['deno_transaccion'];
+			$disabled1='enabled';
+		}else{
+			$cod='';
+			$codigo='';
+			$denominacion='';
+			$disabled1='disabled';
+
+		}
+		$escenario = $verifica[0][0]['activar_frecuencia_eventual'];
+		$tipo_trans= $verifica[0][0]['codi_tipo_transaccion'];
+		$codi_trans= $verifica[0][0]['codi_transaccion'];
+		if($tipo_trans==0){
+			$select_transaccion=array();
+		}
+
+		$monto=$sisap->Formato2($verifica[0][0]['monto']);
+		$monto_tope=$sisap->Formato2($verifica[0][0]['monto_tope']);
+		?>
+		<script language="JavaScript" type="text/javascript">
+		  	$('monto').value='<?=$monto?>';
+		  	$('monto').readOnly=true;
+		  	$('monto_tope').value='<?=$monto_tope?>';
+		  	$('monto_tope').readOnly=true;
+		</script>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr align="center">
+				<td  width="25%">Frecuencia</td>
+				<td  width="25%">Condici&oacute;n</td>
+				<td  width="50%">Activa escenario con frecuencia eventual?</td>
+			</tr>
+			<td align="center">
+			<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'value'=>$frecuencia, 'disabled'=>'disabled'), $return = false); ?>
+			</td>
+			<td align="lefth">
+					<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>$condicion, 'onChange'=>'condicion_show1();'), $return = false); ?>
+			</td>
+			<td align="center">
+					<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>$escenario, 'disabled'=>$disabled, 'id'=>'escenario'), $return = false); ?>
+			</td>
+		</table>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td  width="40%">Tipo de transacci&oacute;n</td>
+			<td  width="10%">---</td>
+			<td  width="10%">Código</td>
+			<td  width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td >
+				<?= $sisap->radioTagRemote('cnmp10/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_individual_bolivares/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>$disabled1,'id'=>'tipo_trans'),null,$tipo_trans);?>
+			</td>
+
+			<td  id="carga_radio">
+				<?= $sisap->selectTagRemote('cnmp10/select4', $select_transaccion,$select_transaccion, $selected =$codi_trans, $selectAttr = array('onchange1'=>'/cnmp10_escala_individual_bolivares/codi_deno_trans/'.$tipo_trans, 'update1'=>'vacio','id'=>'select_4'),  $optionAttr = null,  $showEmpty = true, $return = false) ?>
+			</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="<?=$codigo?>" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="<?=$denominacion?>" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+		</table>
+
+	<? }else{?>
+		<script language="JavaScript" type="text/javascript">
+		  	$('monto').value='';
+		  	$('monto').readOnly=false;
+		  	$('monto_tope').value='';
+		  	$('monto_tope').readOnly=false;
+		</script>
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+			<tr>
+				<td align="center" width="25%">Frecuencia</td>
+				<td align="center" width="25%">Condici&oacute;n</td>
+				<td align="center" width="50%">Activa escenario con frecuencia eventual?</td>
+			</tr>
+			<tr>
+				<td align="center">
+					<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'disabled'=>'disabled'), $return = false); ?>
+				</td>
+				<td align="lefth">
+					<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>1, 'onChange'=>'condicion_show1();'), $return = false); ?>
+				</td>
+				<td align="center">
+					<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>2, 'disabled'=>'disabled', 'id'=>'escenario'), $return = false); ?>
+				</td>
+			</tr>
+		</table>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+			<tr>
+				<td align="center" width="40%">Tipo de transacci&oacute;n</td>
+				<td align="center" width="10%">---</td>
+				<td align="center" width="10%">Código</td>
+				<td align="center" width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+			</tr>
+
+			<tr>
+				<td align="center">
+					<?= $sisap->radioTagRemote('cnmp10/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_individual_bolivares/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>'disabled','id'=>'tipo_trans'),null,null);?>
+				</td>
+
+				<td align="center" id="carga_radio">
+					<select id="select_4"></select>
+				</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+		</table>
+	<? } ?>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+	<tr>
+		<td colspan='9' align='legth'>Buscar:
+		<? if(($ubicacion==null) || ($ubicacion!=null && $verifica!=null)){ ?>
+				<?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar','disabled'=>''),1,"Buscar Ficha", "/cnmp10_escala_individual_bolivares/buscar_ficha/2/".$cod_nomina."/".$cod_transaccion, "750px", "400px" ); ?>
+    	<? }else{ ?>
+    			<?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar','disabled'=>'disabled'),1,"Buscar Ficha", "/cnmp10_escala_individual_bolivares/buscar_ficha/2", "750px", "400px" ); ?>
+    	<? } ?>
+
+    	</td>
+	</tr>
+
+	<tr class="tr_negro">
+		<td align='center' width='8%'>Cód cargo</td>
+		<td align='center' width='8%'>Cód ficha</td>
+		<td align='center' width='13%'>Cédula de identidad</td>
+		<td align='center' width='13%'>Primer apellido</td>
+		<td align='center' width='13%'>Segundo apellido</td>
+		<td align='center' width='13%'>Primer nombre</td>
+		<td align='center' width='13%'>Segundo nombre</td>
+		<td align='center' width='13%'>Cantidad</td>
+		<td align='center' width='5%'>&nbsp;</td>
+	</tr>
+
+	<tr align="center" bgcolor="#DAEBFF">
+		<td ><?= $html->input('cnmp10/cod_cargo', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cod_cargo','readonly'=>'readonly'), false); ?></td>
+		<td ><?= $html->input('cnmp10/cod_ficha', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cod_ficha','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/cedula', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cedula','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/apellido1', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'apellido1','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/apellido2', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'apellido2','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/nombre1', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'nombre1','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/nombre2', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'nombre2','readonly'=>'readonly'), false); ?></td>
+		<td align='center'><?= $html->input('cnmp10/cantidad', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cantidad',"onChange"=>"formato_cantidades2('cantidad',15,'debe ingresar una cantidad menor');",'onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>''), false); ?></td>
+		<td class="td4">
+	    	<? if(($ubicacion==null) || ($ubicacion!=null && $verifica!=null)){ ?>
+					<?= $sisap->submitTagRemote('+', array('disabled'=>'','funcion'=>'cnmp10_escala_individual_bolivares','id'=>'agregar','url1' => '/cnmp10_escala_individual_bolivares/guardar', 'update1'=>'vacio')); ?>
+	    	<? }else{ ?>
+	    			<?= $sisap->submitTagRemote('+', array('disabled'=>'disabled','funcion'=>'cnmp10_escala_individual_bolivares','id'=>'agregar','url1' => '/cnmp10_escala_individual_bolivares/guardar', 'update1'=>'carga_guardar')); ?>
+	    	<? } ?>
+	    </td>
+	</tr>
+</table>
+
+	<div id="carga_guardar" style="height:150px;overflow:auto;">
+			<? if($datos!=null){ ?>
+				<br>
+				<table width="100%" border="1" cellspacing="0" cellpadding="0" id="grid" class="tablacompromiso tablacompromiso3">
+				  <tr class="tr_negro">
+					<td align='center' width='8%'>Cód cargo</td>
+					<td align='center' width='8%'>Cód ficha</td>
+					<td align='center' width='10%'>Cédula de identidad</td>
+					<td align='center' width='13%'>Primer apellido</td>
+					<td align='center' width='13%'>Segundo apellido</td>
+					<td align='center' width='13%'>Primer nombre</td>
+					<td align='center' width='13%'>Segundo nombre</td>
+					<td align='center' width='13%'>Cantidad</td>
+					<td align='center' width='8%'>Acción</td>
+				</tr>
+
+				<? for($i=0;$i<count($datos);$i++){
+					if($i%2 == 0){
+						$color = "tr_grid_c1";
+					}else{
+						$color = "tr_grid_c2";
+					}
+					$id_fila = (int) rand()."_".$i;
+			        $fila = "fila_".$id_fila;
+				?>
+					<tr id="<?= $fila ?>"  class="<?=$color?>">
+						<td class="td2center"><?=mascara($datos[$i][0]['cod_cargo'],3)?></td>
+						<td class="td2center"><?=mascara($datos[$i][0]['cod_ficha'],3)?></td>
+						<td class="td2center"><?=$datos[$i][0]['cedula']?></td>
+						<td ><?=$datos[$i][0]['primer_apellido']?></td>
+						<td ><?=$datos[$i][0]['segundo_apellido']?></td>
+						<td ><?=$datos[$i][0]['primer_nombre']?></td>
+						<td ><?=$datos[$i][0]['segundo_nombre']?></td>
+						<td align="center" id="td_<?=$i?>" ><?=$sisap->Formato2($datos[$i][0]['cantidad'])?></td>
+						<td align="center" id="li_<?=$i?>">
+							<a href="javascript:ver_documento('/cnmp10_escala_individual_bolivares/modificar_items/<?=$datos[$i][0]['cod_tipo_nomina']?>/<?=$datos[$i][0]['cod_transaccion']?>/<?=$datos[$i][0]['cod_cargo']?>/<?=$datos[$i][0]['cod_ficha']?>/<?=$i?>','<?= $fila ?>');"  id="numero_td"><?=$html->image('edit.png',array('border'=>'0', 'width'=>'20', 'height'=>'15', 'title'=>'Modificar'))?></a>
+							<?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cnmp10_escala_individual_bolivares/eliminar_items/'.$datos[$i][0]['cod_tipo_nomina'].'/'.$datos[$i][0]['cod_transaccion'].'/'.$datos[$i][0]['cod_cargo'].'/'.$datos[$i][0]['cod_ficha'], array('update'=>'carga_guardar','title'=>'Eliminar'),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+						</td>
+					</tr>
+				<?} ?>
+				</table>
+				<input type="hidden" id="TI" value="<?=$i?>"/>
+		<? }  ?>
+	</div>
+
+	<br>
+
+<? if($verifica!=null){ ?>
+	<?= $sisap->submitTagRemote('Eliminar', array('disabled'=>'','id'=>'eliminar','url1' => '/cnmp10_escala_individual_bolivares/eliminar/'.$cod_nomina.'/'.$cod_transaccion, 'update1'=>'vacio')); ?>&nbsp;
+	<?= $sisap->submitTagRemote('Modificar', array('disabled'=>'','id'=>'modificar','url1' => '/cnmp10_escala_individual_bolivares/modificar/1', 'update1'=>'vacio',)); ?>&nbsp;
+	<?= $sisap->submitTagRemote('Guardar', array('id'=>'save','disabled'=>'disabled','url1' => '/cnmp10_escala_individual_bolivares/modificar/2/'.$cod_nomina.'/'.$cod_transaccion, 'update1'=>'vacio')); ?>&nbsp;
+	<?= $sisap->submitTagRemote('regresar', array('id'=>'regresa','disabled'=>'disabled','url1' => '/cnmp10_escala_individual_bolivares/modificar/3', 'update1'=>'vacio')); ?>&nbsp;
+<? } ?>
+
+
+
+<?= $sisap->buttonTagRemote('cnmp09_asignacion/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal')); ?>
+
+
+<? }else{///////////////////////////////////VACIO//////////////
+	?>
+
+		<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr align="center">
+			<td width="10%">Selecci&oacute;n</td>
+			<td width="20%">Código de Transacci&oacute;n</td>
+			<td width="50%">Denominaci&oacute;n de la transacci&oacute;n</td>
+			<td width="10%">Monto</td>
+			<td width="10%">Monto Tope</td>
+		</tr>
+
+		<tr align="center">
+			<td>
+					<?=  $sisap->selectTagRemote('cnmp10_escala_individual_bolivares/cod_transaccion',$transaccion,null,  '', array('onchange1'=>'/cnmp10_escala_individual_bolivares/seleccion_trans/'.$cod_nomina, 'update1'=>'transaccion','id'=>'select_2', true), null, true); ?>
+			</td>
+			<td ><input name="data[cnmp10][cod_transaccion]"  value="" id="transaccion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+			<td ><input name="data[cnmp10][deno_transaccion]"  value="" id="denominacion"  maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			<td align='center'><?= $html->input('cnmp10/monto', $htmlAttributes = array('style'=>'width:98%;text-align:right','size'=>'3','id'=>'monto','onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly'), false); ?></td>
+			<td align='center'><?= $html->input('cnmp10/monto_tope', $htmlAttributes = array('style'=>'width:98%;text-align:right','size'=>'3','id'=>'monto_tope','onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly'), false); ?></td>
+		</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+		<tr align="center">
+			<td  width="25%">Frecuencia</td>
+			<td  width="25%">Condici&oacute;n</td>
+			<td  width="50%">Activa escenario con frecuencia eventual?</td>
+		</tr>
+		<tr >
+			<td align="center">
+				<?= $html->radio('cnmp10/frecuencia', $options = array('1'=>'Fijo', '2'=>'Eventual'), $inbetween = null, $htmlAttributes = array('id'=>'frecuencia2', 'disabled'=>'disabled'), $return = false); ?>
+			</td>
+			<td align="lefth">
+				<?= $html->radio('cnmp10/condicion', $options = array('1'=>'Simple', '2'=>'Introcondicional'),'<br>', $htmlAttributes = array('id'=>'condicion', 'value'=>1, 'onChange'=>'condicion_show1();'), $return = false); ?>
+			</td>
+			<td align="center">
+				<?= $html->radio('cnmp10/escenario', $options = array('1'=>'Si', '2'=>'No'), $inbetween = null, $htmlAttributes = array('value'=>2, 'disabled'=>'disabled', 'id'=>'escenario'), $return = false); ?>
+			</td>
+		</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+		<tr align="center">
+			<td  width="40%">Tipo de transacci&oacute;n</td>
+			<td  width="10%">---</td>
+			<td  width="10%">Código</td>
+			<td  width="40%">Denominaci&oacute;n de la transacci&oacute;n</td>
+		</tr>
+
+		<tr align="center">
+			<td >
+				<?= $sisap->radioTagRemote('cnmp10_escala_individual_bolivares/tipo_trans', array('1'=>'Asignacion', '2'=>'Deduccion'), array('url1'=>'/cnmp10_escala_individual_bolivares/select_trans', 'update1'=>'carga_radio','value'=>'','disabled'=>'disabled','id'=>'tipo_trans'),null,null);?>
+			</td>
+
+			<td  id="carga_radio">
+				<select id="select_4"></select>
+
+			</td>
+				<td id="showcod_trans2"><input name="data[cnmp10[codi_trans]"  value="" id="codi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly></td>
+				<td id="show_deno_trans2"><input name="data[cnmp10][denomi_trans]"  value="" id="denomi_trans1"   onKeyPress="return solonumeros(event);" style="width:98%" readonly></td>
+			</tr>
+	</table>
+
+	<table width="100%" border="1" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso3">
+
+	<tr>
+		<td colspan='9' align='legth'>Buscar:<?= $sisap->imagen_ventana(array("value"=>"..",'id'=>'buscar','disabled'=>'disabled'),1,"Buscar Ficha", "/cnmp10_escala_individual_bolivares/buscar_ficha/2", "750px", "400px" ); ?></td>
+	</tr>
+
+	<tr class="tr_negro">
+		<td align='center' width='8%'>Cód cargo</td>
+		<td align='center' width='8%'>Cód ficha</td>
+		<td align='center' width='13%'>Cédula de identidad</td>
+		<td align='center' width='13%'>Primer apellido</td>
+		<td align='center' width='13%'>Segundo apellido</td>
+		<td align='center' width='13%'>Primer nombre</td>
+		<td align='center' width='13%'>Segundo nombre</td>
+		<td align='center' width='13%'>Cantidad</td>
+		<td align='center' width='5%'>&nbsp;</td>
+	</tr>
+
+	<tr align="center" bgcolor="#DAEBFF">
+		<td ><?= $html->input('cnmp10/cod_cargo', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cod_cargo','readonly'=>'readonly'), false); ?></td>
+		<td ><?= $html->input('cnmp10/cod_ficha', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cod_ficha','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/cedula', $htmlAttributes = array('style'=>'width:98%;text-align:center','size'=>'3','id'=>'cedula','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/apellido1', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'apellido1','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/apellido2', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'apellido2','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/nombre1', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'nombre1','readonly'=>'readonly'), false); ?></td>
+		<td align='center' ><?= $html->input('cnmp10/nombre2', $htmlAttributes = array('style'=>'width:98%','size'=>'3','id'=>'nombre2','readonly'=>'readonly'), false); ?></td>
+		<td align='center'><?= $html->input('cnmp10/cantidad', $htmlAttributes = array('style'=>'width:98%;text-align:right','size'=>'3','id'=>'cantidad',"onChange"=>"formato_cantidades2('cantidad',15,'debe ingresar una cantidad menor');",'onKeyPress'=>'return solonumeros_con_punto(event);','readonly'=>'readonly'), false); ?></td>
+		<td align='center'><?= $sisap->submitTagRemote('+', array('funcion'=>'cnmp10_valida_grilla_cantidad','id'=>'agregar','url1' => '/cnmp10_escala_individual_bolivares/guardar_items', 'update1'=>'muestra_grilla')); ?></td>
+	</tr>
+</table>
+
+<? } ?>
+<div id="vacio"></div>

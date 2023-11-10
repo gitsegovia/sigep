@@ -1,0 +1,203 @@
+<?php
+
+
+if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('Contribuyentes y sus impuestos'),'','750');
+echo $sisap->OpenTable('750');
+
+?>
+
+<br> <br>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shd001_contribuyentes_impuestos/2/'); ?>" >
+			<table border="0" >
+
+			<tr>
+			   <td>
+			     ORDENADO POR:
+			     <?= $sisap->radioTagRemote("reporte3/ordenado", array('1'=>'Alfabético','2'=>'Rif'), array('url1'=>'/reporte_hacienda/funcion/', 'update1'=>'funcion', 'id'=>'tipo_ordenado'), null, $opc=1); ?>
+			   </td>
+		    </tr>
+
+
+    <tr>
+       <td  align="center">
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </td>
+     </tr>
+
+		</table>
+	 </form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php
+
+
+
+
+}else{
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+
+		$this->top_reporte($titulo_A = "Contribuyentes y sus impuestos", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"186", "Z"=>"12"));
+
+
+		$this->SetFont('vera','B',6);
+
+		$this->Cell(23,4,'','TRL',0,'C');
+		$this->Cell(25,4,'R.I.F','TR',0,'C');
+		$this->Cell(73,4,'Apellidos y Nombres','TR',0,'C');
+		$this->Cell(50,4,'','TR',0,'C');
+		$this->Cell(0,4,'Impuesto','TR',1,'C');
+
+		$this->Cell(23,3,'Personalidad','BRL',0,'C');
+		$this->Cell(25,3,'Cédula identidad','BR',0,'C');
+        $this->Cell(73,3,'Razón Social','BR',0,'C');
+        $this->Cell(50,3,'Concepto de Impuesto','BR',0,'C');
+		$this->Cell(0,3,'Anual','BR',1,'C');
+
+
+	}//fin funtion
+}//fin clase
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('vera','',6);
+
+
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+//pr($datos);
+if($datos!=null){
+$concatena="";
+
+for($ij=0;$ij<count($datos2);$ij++){
+	$bandera_1 = 0;
+	$bandera_2 = 0;
+	$rif_aux_1 = $datos2[$ij][0]['rif_cedula'];
+				for($i=0;$i<count($datos);$i++){
+				        if($rif_aux_1==$datos[$i][0]['rif_cedula']){ $bandera_1 = 1;
+										if($datos[$i][0]['monto_mensual']==0){
+											$monto_anual='';
+										}else{
+											$monto_anual=($datos[$i][0]['monto_mensual']*12);
+											$monto_anual=$sisap->Formato2($monto_anual);
+										}
+
+										$concatena1=$datos[$i][0]['rif_cedula'];
+										if($concatena!=$concatena1){
+											if($datos[$i][0]['personalidad_juridica']==1) $personalidad='Natural'; else $personalidad='Juridica';
+
+											$pdf->Cell(23,6,$personalidad,'RBL',0,'C');
+											$pdf->Cell(25,6,$datos[$i][0]['rif_cedula'],'RB',0,'C');
+
+											$varX = $pdf->GetX();
+										    $varY = $pdf->GetY();
+										    $pdf->Cell(73,1,'','T',2,'C');
+										    $pdf->MultiCell(73,2,$datos[$i][0]['razon_social_nombres'],'','L');
+										    $varX = $varX+73;
+										    $pdf->SetXY($varX,$varY);
+
+											$luego='';
+										    if($datos[$i][0]['pertenece_tabla']==2){
+										    	$luego=" - placa: ".$datos[$i][0]['numero_solicitud'];
+										    }
+
+											$pdf->Cell(50,6,$datos[$i][0]['concepto_impuesto'].$luego,'RBL',0,'L');
+											$pdf->Cell(0,6,$monto_anual,'RB',1,'R');
+
+											$concatena=$concatena1;
+										}else{
+											$pdf->Cell(23,6,'','RBL',0,'C');
+											$pdf->Cell(25,6,'','RB',0,'C');
+
+											$varX = $pdf->GetX();
+										    $varY = $pdf->GetY();
+										    $pdf->Cell(73,1,'','T',2,'C');
+										    $pdf->MultiCell(73,2,'','','L');
+										    $varX = $varX+73;
+										    $pdf->SetXY($varX,$varY);
+
+										    $luego='';
+										    if($datos[$i][0]['pertenece_tabla']==2){
+										    	$luego=" -placa: ".$datos[$i][0]['numero_solicitud'];
+										    }
+											$pdf->Cell(50,6,$datos[$i][0]['concepto_impuesto'].$luego,'RBL',0,'L');
+
+											$pdf->Cell(0,6,$monto_anual,'RB',1,'R');
+										}
+				        }else{
+				        	if($bandera_1==1){break;}
+				        }
+					}//fin for
+					if($bandera_1==0){
+                       if($datos2[$ij][0]['personalidad_juridica']==1) $personalidad='Natural'; else $personalidad='Juridica';
+                            $pdf->Cell(23,6,$personalidad,'RBL',0,'C');
+							$pdf->Cell(25,6,$datos2[$ij][0]['rif_cedula'],'RB',0,'C');
+							$varX = $pdf->GetX();
+						    $varY = $pdf->GetY();
+						    $pdf->Cell(73,1,'','T',2,'C');
+						    $pdf->MultiCell(73,2,$datos2[$ij][0]['razon_social_nombres'],'','L');
+						    $varX = $varX+73;
+						    $pdf->SetXY($varX,$varY);
+
+							$pdf->Cell(50,6,"",'RBL',0,'L');
+							$pdf->Cell(0,6,"",'RB',1,'R');
+					}//fin if
+}//fin for
+
+		$pdf->Cell(0,0,'','T',1,'C');
+
+}else{
+	$pdf->Cell(23,6,'','RBL',0,'C');
+	$pdf->Cell(25,6,'','RB',0,'C');
+	$pdf->Cell(73,6,' ','RB',0,'C');
+    $pdf->Cell(50,6,'','RB',0,'C');
+	$pdf->Cell(0,6,'','RB',1,'C');
+}
+
+$pdf->Output('Contribuyentes_Impuestos_'.date("d_m_Y_h"),'D');
+
+
+     }//fin function
+
+
+?>

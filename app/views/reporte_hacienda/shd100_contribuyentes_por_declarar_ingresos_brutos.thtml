@@ -1,0 +1,157 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"CONTRIBUYENTES POR REALIZAR DECLARACIONES JURADAS DE INGRESOS BRUTOS","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/shd100_contribuyentes_por_declarar_ingresos_brutos/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "CONTRIBUYENTES POR REALIZAR DECLARACIONES JURADAS DE INGRESOS BRUTOS";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"254"));
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(90,4,'','TRL',0,'C');
+	$this->Cell(142,4,'ÚLTIMA DECLARACIÓN','TR',0,'C');
+	$this->Cell(0,4,'TIEMPO SIN DECLARAR','TR',1,'C');
+
+	$this->Cell(22,3,'','TRL',0,'C');
+	$this->Cell(68,3,'Apellidos y Nombres','TR',0,'C');
+	$this->Cell(16,3,'Fecha','TR',0,'C');
+	$this->Cell(19,3,'Número','TR',0,'C');
+	$this->Cell(19,3,'Fecha','TR',0,'C');
+	$this->Cell(17,3,'Periodo','TR',0,'C');
+	$this->Cell(17,3,'Periodo','TR',0,'C');
+	$this->Cell(18,3,'','TR',0,'C');
+	$this->Cell(18,3,'Número','TR',0,'C');
+	$this->Cell(18,3,'Número','TR',0,'C');
+	$this->Cell(13,3,'','TR',0,'C');
+	$this->Cell(13,3,'','TR',0,'C');
+	$this->Cell(0,3,'','TR',1,'C');
+
+	$this->Cell(22,3,'R.I.F./ C.I.','BRL',0,'C');
+	$this->Cell(68,3,'Razón Social','BR',0,'C');
+	$this->Cell(16,3,'Patente','BR',0,'C');
+	$this->Cell(19,3,'Declaración','BR',0,'C');
+	$this->Cell(19,3,'Declaración','BR',0,'C');
+	$this->Cell(17,3,'Desde','BR',0,'C');
+	$this->Cell(17,3,'Hasta','BR',0,'C');
+	$this->Cell(18,3,'Capital','BR',0,'C');
+	$this->Cell(18,3,'Empleados','BR',0,'C');
+	$this->Cell(18,3,'Obreros','BR',0,'C');
+	$this->Cell(13,3,'Días','BR',0,'C');
+	$this->Cell(13,3,'Meses','BR',0,'C');
+	$this->Cell(0,3,'Años','BR',1,'C');
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+
+if($datos!=null){
+//pr($datos);
+	for($i=0; $i<count($datos); $i++){
+
+//DONDE EL AÑO=>1 AND DONDE ANO=0 Y MES=>3 OR DONDE ANO=0 MES=2 AND DIA>20
+if($datos[$i][0]['ultimo_numero_declaracion']==0 || $datos[$i][0]['ultimo_numero_declaracion']==null){
+	$ano=$datos[$i][0]['ano_diferencia_patente'];
+	$mes=$datos[$i][0]['mes_diferencia_patente'];
+	$dia=$datos[$i][0]['dia_diferencia_patente'];
+$numero_decla='';
+$fecha_decla='';
+$periodo_desde='';
+$periodo_hasta='';
+$periodo_hasta1=$sisap->cambia_fecha($datos[$i][0]['periodo_hasta']);
+}else{
+//	$ano=$datos[$i][0]['ano_diferencia_decla'];
+//	$mes=$datos[$i][0]['mes_diferencia_decla'];
+//	$dia=$datos[$i][0]['dia_diferencia_decla'];
+	$ano=$datos[$i][0]['ano_diferencia_hasta'];
+	$mes=$datos[$i][0]['mes_diferencia_hasta'];
+	$dia=$datos[$i][0]['dia_diferencia_hasta'];
+$numero_decla=mascara($datos[$i][0]['ultimo_numero_declaracion'],6);
+$fecha_decla=$sisap->cambia_fecha($datos[$i][0]['fecha_ultima_decla']);
+$periodo_desde=$sisap->cambia_fecha($datos[$i][0]['periodo_desde']);
+$periodo_hasta=$sisap->cambia_fecha($datos[$i][0]['periodo_hasta']);
+$periodo_hasta1=$sisap->cambia_fecha($datos[$i][0]['periodo_hasta']);
+}
+//echo $a=compara_fechas_basic($periodo_hasta1,date('d/m/Y'));
+//if($a<0){
+			if($ano>=1 || ($ano==0 && $mes>=3) || ($ano==0 && $mes==2 && $dia>20)){
+
+
+				$pdf->Cell(22,6,$datos[$i][0]['rif_cedula'],'RL',0,'C');// R.I.F./ C.I.
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$var_aux_X = $varX;
+					$var_aux_Y = $varY;
+					$pdf->Cell(68,1,"",'',2,'C');
+					$pdf->MultiCell(67,2,$datos[$i][0]['nombre_razon'],'','L');// Razón Social
+					$varX = $varX+68;
+					$pdf->SetXY($varX,$varY);
+				$pdf->Cell(16,6,$sisap->cambia_fecha($datos[$i][0]['fecha_patente']),'RL',0,'C');// Fecha Patente
+
+				$pdf->Cell(19,6,$numero_decla,'R',0,'C');// N Declaración
+				$pdf->Cell(19,6,$fecha_decla,'R',0,'C');// Fecha Declaración
+				$pdf->Cell(17,6,$periodo_desde,'R',0,'C');// Periodo Desde
+				$pdf->Cell(17,6,$periodo_hasta,'R',0,'C');// Periodo Hasta
+				$pdf->Cell(18,6,$sisap->Formato2($datos[$i][0]['capital']),'R',0,'C');// Capital
+				$pdf->Cell(18,6,$datos[$i][0]['numero_empleados'],'R',0,'C');// N Empleados
+				$pdf->Cell(18,6,$datos[$i][0]['numero_obreros'],'R',0,'C');// N Obreros
+				$pdf->Cell(13,6,$dia,'R',0,'C');// Dias
+				$pdf->Cell(13,6,$mes,'R',0,'C');// Meses
+				$pdf->Cell(0,6,$ano,'R',1,'C');// Anos
+				$pdf->Cell(0,0,'','T',1);
+			}
+//}
+	}
+
+}else{
+
+	$pdf->Cell(22,6,'','RL',0,'C');// R.I.F./ C.I.
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(68,1,"",'',2,'C');
+		$pdf->MultiCell(67,2," ",'','L');// Razón Social
+		$varX = $varX+68;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(16,6,'','RL',0,'C');// Fecha Patente
+	$pdf->Cell(19,6,'','R',0,'C');// N Declaración
+	$pdf->Cell(19,6,'','R',0,'C');// Fecha Declaración
+	$pdf->Cell(17,6,'','R',0,'C');// Periodo Desde
+	$pdf->Cell(17,6,'','R',0,'C');// Periodo Hasta
+	$pdf->Cell(18,6,'','R',0,'C');// Capital
+	$pdf->Cell(18,6,'','R',0,'C');// N Empleados
+	$pdf->Cell(18,6,'','R',0,'C');// N Obreros
+	$pdf->Cell(13,6,'','R',0,'C');// Dias
+	$pdf->Cell(13,6,'','R',0,'C');// Meses
+	$pdf->Cell(0,6,'','R',1,'C');// Anos
+	$pdf->Cell(0,0,'','T',1);
+
+}
+$pdf->Output('contribuyentes_por_realizar_declaraciones_ingresos_brutos_'.date("d_m_Y_h"),'D');
+}
+?>

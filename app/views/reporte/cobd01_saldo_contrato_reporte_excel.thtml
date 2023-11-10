@@ -1,0 +1,182 @@
+<? if(isset($ir) && $ir=="si"){ ?>
+<?$sisap->Tabla("",true,"Saldo de los Contrato de Obras","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[cobd01_saldo_contrato]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte/cobd01_saldo_contrato_reporte_xml/no'); ?>" onSubmit="return reporte_cobd01_saldo_contrato(1);">
+
+
+<?= $sisap->radio_consolidado('cobd01_saldo_contrato/consolidacion', null, '', true, 1)  ?>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0"  tablacompromiso2">
+
+	<tr>
+		<td width="50%" align="center">AÑO:
+			<input name="data[cobd01_saldo_contrato][ano]"  style="width:8%;text-align:center" value="<?=$ano;?>" id="ano"  maxlength="4" onKeyPress="return solonumeros(event);" class="inputtext">
+		</td>
+	</tr>
+
+</table>
+<br><br>
+<input type="submit" name="name" value="" id="generar" class="ods_input"/>
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+
+</form>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=="no"){
+
+set_time_limit(0);
+vendor ('Writer');
+
+//$_SESSION["nombre_xml"]="resumen_contratos_obras_".date("d-m-Y h:i:sa").".xml";
+$workbook = new Spreadsheet_Excel_Writer();
+$worksheet =& $workbook->addWorksheet('SALDO DE CONTRATOS');
+$worksheet->setInputEncoding('ISO-8859-1');
+$worksheet->setColumn(0, 0, 18, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(1, 1, 30, $format = null, $hidden = 0, $level = 0);
+$worksheet->setColumn(2, 11, 20, $format = null, $hidden = 0, $level = 0);
+$nombre='saldo_contratos_obras_';
+    $var_filas[0]=array(""=>elimina_acentos($entidad_federal));
+   	$var_filas[1]=array(""=>elimina_acentos(up($titulo_a)));
+   	$var_filas[2]=array(""=>elimina_acentos('EJERCICIO: ').$ano);
+   	$var_filas[3]=array(""=>"SALDO DE CONTRATOS");
+   	$var_filas[4]=array(" ");
+   	$var_filas[5]=array(" ");
+   	$fila_celda=6;
+	$totaltotal=0;
+
+	$cols[0] ="NUMERO CONTRATO";
+    $cols[1] ="FECHA";
+    $cols[2] ="NUMERO OBRA";
+    $cols[3] ="OBRA";
+    $cols[4] ="CONTRATISTA";
+    $cols[5] ="MONTO CONTRATO";
+    $cols[6] ="SALDO CONTRATO";
+    $cols[7] ="MONTO ANTICIPO";
+    $cols[8] ="SALDO ANTICIPO";
+    $cols[9] ="RETENIDO FIEL CUMPLIMIENTO";
+    $cols[10]="MONTO RETENIDO LABORAL";
+    $var_filas[$fila_celda]=$cols;
+    $fila_celda++;
+
+    $xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:x2="http://schemas.microsoft.com/office/excel/2003/xml" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:html="http://www.w3.org/TR/REC-html40" xmlns:c="urn:schemas-microsoft-com:office:component:spreadsheet"><OfficeDocumentSettings xmlns="urn:schemas-microsoft-com:office:office"><Colors><Color><Index>3</Index><RGB>#c0c0c0</RGB></Color><Color><Index>4</Index><RGB>#ff0000</RGB></Color></Colors></OfficeDocumentSettings><ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel"><WindowHeight>9000</WindowHeight><WindowWidth>13860</WindowWidth><WindowTopX>240</WindowTopX><WindowTopY>75</WindowTopY><ProtectStructure>False</ProtectStructure><ProtectWindows>False</ProtectWindows></ExcelWorkbook><Styles><Style ss:ID="Default" ss:Name="Default"/><Style ss:ID="Result" ss:Name="Result"><Font ss:Bold="1" ss:Italic="1" ss:Size="10" ss:Underline="Single"/></Style><Style ss:ID="Result2" ss:Name="Result2"><Font ss:Bold="1" ss:Italic="1" ss:Size="10" ss:Underline="Single"/><NumberFormat ss:Format="Currency"/></Style><Style ss:ID="Heading" ss:Name="Heading"><Alignment ss:Horizontal="Center"/><Font ss:Bold="1" ss:Italic="1" ss:Size="16"/></Style><Style ss:ID="Heading1" ss:Name="Heading1"><Alignment ss:Horizontal="Center" ss:Rotate="90"/><Font ss:Bold="1" ss:Italic="1" ss:Size="16"/></Style>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">NÚMERO CONTRATO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">FECHA</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">NÚMERO OBRA</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">OBRA</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">CONTRATISTA</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">MONTO CONTRATO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">SALDO CONTRATO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">MONTO ANTICIPO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">SALDO ANTICIPO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">RETENIDO FIEL CUMPLIMIENTO</Data></Cell>' .
+			'<Cell ss:StyleID="ce6"><Data ss:Type="String">MONTO RETENIDO LABORAL</Data></Cell>' .
+			'<Cell ss:Index="12"/></Row>';
+
+$total_monto_contrato=0;
+$total_saldo_contrato=0;
+$total_monto_anticipo=0;
+$total_saldo_anticipo=0;
+$total_fiel_cumplimiento=0;
+$total_retencion_laboral=0;
+
+if(isset($datos)){
+
+foreach($datos as $row){
+			//$saldo_contrato= 0;
+				$num_com                          = $row['v_cobp01_cfpd07_cuerpo']['numero_contrato_obra'];
+				$year_contrato                    = $row['v_cobp01_cfpd07_cuerpo']['ano_contrato_obra'];
+				$num_obra                         = $row['v_cobp01_cfpd07_cuerpo']['cod_obra'];
+				$fecha                            = cambiar_formato_fecha($row['v_cobp01_cfpd07_cuerpo']['fecha_contrato_obra']);
+				$deno_obra                        = $row['v_cobp01_cfpd07_cuerpo']['denominacion_obra'];
+				$monto_contrato                   = (($row['v_cobp01_cfpd07_cuerpo']['monto_original_contrato']+$row['v_cobp01_cfpd07_cuerpo']['aumento'])-$row['v_cobp01_cfpd07_cuerpo']['disminucion']);
+				$monto_cancelado                  = $row['v_cobp01_cfpd07_cuerpo']['monto_cancelado'];
+				$monto_amortizacion               = $row['v_cobp01_cfpd07_cuerpo']['monto_amortizacion'];
+				$monto_retencion_laboral          = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_laboral'];
+				$monto_retencion_fielcumplimiento = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_fielcumplimiento'];
+				$saldo_contrato=($monto_contrato-($monto_cancelado+$monto_amortizacion+$monto_retencion_laboral+$monto_retencion_fielcumplimiento));
+				$saldo_contrato                   = $sisap->Formato2($saldo_contrato);
+				$saldo_contrato                   = $sisap->Formato1($saldo_contrato);
+				$monto_anticipo                   = $row['v_cobp01_cfpd07_cuerpo']['monto_anticipo'];
+				$saldo_anticipo                   = $row['v_cobp01_cfpd07_cuerpo']['monto_anticipo']-$row['v_cobp01_cfpd07_cuerpo']['monto_amortizacion'];
+				$fiel_cumplimiento                = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_fielcumplimiento'];
+				$retencion_laboral                = $row['v_cobp01_cfpd07_cuerpo']['monto_retencion_laboral'];
+				$rif                              = $row['v_cobp01_cfpd07_cuerpo']['rif'];
+				$deno_contrato                    = $row['v_cobp01_cfpd07_cuerpo']['denominacion_rif'];
+
+
+				  $marca1 = 0;
+		          $marca2 = 0;
+				  foreach($datos2 as $var2){$marca2 = 0;
+		              if($var2["v_cobp01_cfpd07_partidas"]['numero_contrato_obra']==$num_com && $var2["v_cobp01_cfpd07_partidas"]['ano_contrato_obra']==$year_contrato){
+							   $deno_obra .= "\n ".mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sector']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_programa']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sub_prog']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_proyecto']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_activ_obra']).".";
+							   $deno_obra .= mascara2(substr($var2["v_cobp01_cfpd07_partidas"]['cod_partida'], -2), CE).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_generica']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_especifica']).".";
+							   $deno_obra .= mascara2($var2["v_cobp01_cfpd07_partidas"]['cod_sub_espec']).".";
+							   $deno_obra .= mascara_cuatro($var2["v_cobp01_cfpd07_partidas"]['cod_auxiliar']).':  '.MONEDA2.' ';
+							   $monto_actual = $var2['v_cobp01_cfpd07_partidas']['monto'] + ($var2['v_cobp01_cfpd07_partidas']['aumento'] - $var2['v_cobp01_cfpd07_partidas']['disminucion']) - ($var2['v_cobp01_cfpd07_partidas']['cancelacion']) - ($var2['v_cobp01_cfpd07_partidas']['amortizacion'] + $var2['v_cobp01_cfpd07_partidas']['retencion_fielcumplimiento'] + $var2['v_cobp01_cfpd07_partidas']['retencion_laboral']);
+		                       $deno_obra .= " ".$sisap->Formato2($monto_actual);
+		                       $marca2 = 1;
+		                       $marca1 = 1;
+
+		              }//fin if
+		              if($marca1==1 && $marca2==0){break;}
+				  }//fin foreach
+				  $deno_obra = strtoupper($deno_obra);
+            $deno_obra                        =  str_replace("&ldquo;",'"',$deno_obra);
+		    $deno_obra                        =  str_replace("&",'~',$deno_obra);
+		    $deno_obra                        =  str_replace("~",'&amp;',$deno_obra);
+            $deno_contrato = strtoupper($deno_contrato);
+            $deno_contrato                        =  str_replace("&ldquo;",'"',$deno_contrato);
+		    $deno_contrato                        =  str_replace("&",'~',$deno_contrato);
+		    $deno_contrato                        =  str_replace("~",'&amp;',$deno_contrato);
+
+
+			    $cols[0] =$num_com;
+			    $cols[1] ="".cambiar_formato_fecha($fecha)."";
+			    $cols[2] =$num_obra;
+			    $cols[3] =$deno_obra;
+			    $cols[4] =$deno_contrato;
+			    $cols[5] =$monto_contrato;
+			    $cols[6] =$saldo_contrato;
+			    $cols[7] =$monto_anticipo;
+			    $cols[8] =$saldo_anticipo;
+			    $cols[9] =$fiel_cumplimiento;
+			    $cols[10]=$retencion_laboral;
+			    $var_filas[$fila_celda]=$cols;
+			    $fila_celda++;
+
+
+}//fin foreach
+
+
+
+ }else{
+
+ }
+
+$var_date=date('His').'_'.rand();
+$archivo = $nombre.'_'.$var_date.'.xls';
+foreach($var_filas as $key => $value) {
+  $i = 0;
+    foreach($var_filas[$key] as $fieldname => $fieldvalue) {
+      	$worksheet->writeString($key+1, $i, $fieldvalue);
+      $i++;
+  }
+
+}
+
+$workbook->send($archivo);
+$workbook->close();
+unset($workbook);
+unset($var_filas);
+unset($cols);
+unset($worksheet);
+
+
+ } ?>

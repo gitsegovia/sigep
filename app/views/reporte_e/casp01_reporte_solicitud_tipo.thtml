@@ -1,0 +1,153 @@
+<? if(isset($ir) && $ir=="no"){ ?>
+<?$sisap->Tabla("",true,"SOLICITUDES Y AYUDAS DE ACUERDO A SU TIPO","","750")?>
+
+<?$sisap->OpenTable("750");?>
+<form name='data[organismo]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_e/casp01_reporte_solicitud_tipo/si'); ?>"  onsubmit="return casd01_reporte_solicitudes()" >
+
+
+	<?= $sisap->radioTagRemote('casp01/tipo_peticion', array('1'=>'Nacional', '2'=>'Institucion','3'=>'Dependencia'), array('url1'=>'/reporte_e/casp01_reporte_solicitud_tipo/', 'update1'=>'vacio','value'=>'','disabled'=>'','id'=>'peticion'),null,$opc='2');?>
+
+	<br><br>
+	<center>PERIODO DE LA INFORMACIÓN</center>
+	<br>
+	<?= $sisap->radioTagRemote('casp01/periodo', array('1'=>'Todo', '2'=>'Año especifico','3'=>'Por rango de fechas'), array('url1'=>'/reporte_e/casp01_reporte_solicitud_tipo/periodo', 'update1'=>'cargador','value'=>'','disabled'=>'','id'=>'periodo'),null,$opc='1');?>
+
+	<br>
+	<div id="cargador"></div>
+
+<div id="boton">
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  ', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+</div>
+</form>
+<?=$sisap->CloseTable()?>
+
+
+<? }else if(isset($muestra)){
+	if($muestra==2){ ?>
+		<br>
+			<center>Año:<input name="data[casp01][ano]"  value="" id="ano" style="width:6%"    maxlength="4"  onKeyPress="return solonumeros(event);"  /></center>
+  <?}else if($muestra==3){ ?>
+		<br>
+	<table width="50%">
+		<tr>
+			<td align="right">Desde:</td>
+			<td> <?= $sisap->input_fecha('casp01','fecha_inicial','fecha_inicial');?> </td>
+			<td align="right">Hasta: </td>
+			<td><?= $sisap->input_fecha('casp01','fecha_final','fecha_final');?> </td>
+		</tr>
+	</table>
+  <?}?>
+
+
+
+<? }else if(isset($ir) && $ir=="si"){
+
+set_time_limit(0);
+vendor('utf8_tcpdf/tcpdf');
+/**********************************************************************/
+class fpdfview extends TCPDF{
+
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A5') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+	function Header()
+	{
+
+		$this->top_reporte($titulo_A = "SOLICITUDES Y AYUDAS DE ACUERDO A SU TIPO", null, null, array("Y"=>"11", "X"=>"12", "Z"=>"12"), array("Y"=>"14", "X"=>"185", "Z"=>"12"));
+
+		$this->Cell(0,3,"",'B',1,'C');
+		$this->SetFont('vera','B',8);
+
+		$this->Cell(0,0,"",'T',1,'C');
+
+		$this->SetFont('vera','B',5);
+		$this->Cell(110,4,"TIPO DE AYUDA",'RL',0,'C');
+		$this->Cell(25,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(25,4,"NÚMERO DE",'R',0,'C');
+		$this->Cell(0,4,"MONTO",'R',1,'C');
+
+		$this->Cell(110,1,"",'RL',0,'C');
+		$this->Cell(25,1,"SOLICITUDES",'R',0,'C');
+		$this->Cell(25,1,"AYUDAS",'R',0,'C');
+		$this->Cell(0,1,"",'R',1,'C');
+
+		$this->Cell(110,1,"",'RLB',0,'C');
+		$this->Cell(25,1,"",'RB',0,'C');
+		$this->Cell(25,1,"",'RB',0,'C');
+		$this->Cell(0,1,"",'RB',1,'C');
+
+	}//fin funtion
+}//fin clase
+
+
+$pdf = new fpdfview('P','mm','LETTER');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+$total_solicitudes=0;
+$total_ayudas=0;
+$monto_total=0;
+for($i=0;$i<count($datos);$i++){
+$total_solicitudes+=$datos[$i][0]['numero_solicitudes'];
+$total_ayudas+=$datos[$i][0]['numero_ayudas'];
+$monto_total+=$datos[$i][0]['monto_total'];
+	$height=7;
+		$pdf->SetFont('vera','',5);
+		if($datos[$i][0]['numero_solicitudes']==0){
+			$solicitudes='';
+		}else{
+			$solicitudes=$datos[$i][0]['numero_solicitudes'];
+		}
+		if($datos[$i][0]['numero_ayudas']==0){
+			$ayudas='';
+		}else{
+			$ayudas=$datos[$i][0]['numero_ayudas'];
+		}
+
+		if($datos[$i][0]['monto_total']==0){
+			$monto_ayudas='';
+		}else{
+			$monto_ayudas=$sisap->Formato2($datos[$i][0]['monto_total']);
+		}
+		$pdf->Cell(110,$height,$datos[$i][0]['denominacion'],'RL',0,'L');
+		$pdf->Cell(25,$height,$solicitudes,'R',0,'C');
+		$pdf->Cell(25,$height,$ayudas,'R',0,'C');
+		$pdf->Cell(0,$height,$monto_ayudas,'R',1,'R');
+		$pdf->Cell(0,0,"",'T',1,'R');
+
+}//FIN FOR
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(110,$height,"TOTALES:",'RLB',0,'R');
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(25,$height,$total_solicitudes,'BR',0,'R');
+$pdf->Cell(25,$height,$total_ayudas,'RB',0,'R');
+$pdf->Cell(0,$height,$sisap->Formato2($monto_total),'BR',1,'R');
+
+
+
+
+$pdf->Output('Solicitudes_y_ayudas_segun_tipo'.'.pdf','D');
+
+
+
+
+}?>

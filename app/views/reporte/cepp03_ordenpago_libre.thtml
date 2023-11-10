@@ -1,0 +1,1404 @@
+<?php
+
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}else if(isset($vista)){
+    echo '<br>';
+	if($vista=="1"){?>
+        Año: <input name="data[cepp03_ordenpago][ano]"  value="<?= $year?>" id="ano"  size="3"  maxlength="4"  onKeyPress="return solonumeros(event);"  />
+    <?php 
+    }else  if($vista=="2"){?>
+
+        Año: <input name="data[cepp03_ordenpago][ano]" style="width:8%;text-align:center;font-weight:bold;" value="<?= $year?>" id="ano"  size="3"     maxlength="4"  onKeyPress="return solonumeros(event);"  />
+        Número Desde:<input name="data[cepp03_ordenpago][numero_a]" style="width:8%;text-align:center;font-weight:bold;" value="" id="numero_a"  size="5"    onKeyPress="return solonumeros(event);"  />
+        Número Hasta:<input name="data[cepp03_ordenpago][numero_b]" style="width:8%;text-align:center;font-weight:bold;" value="" id="numero_b"  size="5"    onKeyPress="return solonumeros(event);"  /><br><br>
+
+    <?php 
+    }else if($vista=="3"){ 
+    }//fin else
+
+}else{ // INICIO DEL PDF
+
+
+    // PDF ORDEN DE PAGO NOMINA
+        vendor('utf8_tcpdf/tcpdf');
+
+
+        $_SESSION['titulo_a'] = $titulo_a;
+        $_SESSION['direccion_pie_pagina'] = "";
+        $_SESSION['estado'] = $estado;
+
+        class pdfview extends TCPDF{
+
+
+            function Footer(){
+                if(isset($_SESSION['FIN'])){
+                    $this->Cell(0,0,"",'B',1,'C');
+                }
+            }//fin footer
+
+    
+            function Header(){
+
+                if(isset($_SESSION['FIN'])){
+                    
+                        $this->image_escudo_sin_consolidado(12,16,14);
+                        $this->SetFont('vera','B',8);
+                        $this->Cell(0,5,"                   ".$_SESSION["entidad_federal"],'TRL',1);
+                        $this->SetFont('vera','',6);
+                        $this->Cell(5,3,"",'L',0);
+                        $this->Cell(0,3,"                       ".$_SESSION['dependencia'],'R',1);//$_SESSION['titulo_a']
+                        $this->Cell(172,3,"",'L',0);
+                        //$this->Cell(0,3,'Pagina: '.$this->PageNo().'/TPAG','R',1);//-------------------------PAGINACION
+                        $this->Cell(0,3,"",'R',1);//-------------------------PAGINACION
+                        $this->Cell(5,3,"",'L',0);
+                        $this->Cell(167,3,'','',0);//$_SESSION['titulo_a']
+                        $this->Cell(0,3,'Fecha: '.date('d/m/Y'),'R',1);//-----------------------------FECHA
+                        $this->Cell(172,3,"",'L',0);
+                        $this->Cell(0,3,'Hora: '.date('h:i a'),'R',1);//-----------------------------HORA
+                        $this->SetFont('vera','B',9);
+                        $this->Cell(0,8,"RELACIÓN DE ORDENES DE PAGOS EMITIDAS",'RLB',0,'C');
+                        $this->Ln(10);
+                        $this->SetFont('vera','B',6);
+                        $this->Cell(10,4,"N#",'TRLB',0,'C');
+                        $this->Cell(17,4,"FECHA",'TRLB',0,'C');
+                        $this->Cell(14,4,"AÑO",'TRLB',0,'C');
+                        $this->Cell(27,4,"NÚMERO ORDEN",'TRLB',0,'C');
+                        $this->Cell(97,4,"BENEFICIARIO",'TRLB',0,'C');
+                        $this->Cell(0,4,"MONTO",'TRLB',1,'C');
+                    
+
+                }else{
+
+                    $ano_orden_pago              =    $_SESSION['ano_orden_pago'];
+                    $numero_orden_pago           =    $_SESSION['numero_orden_pago'];
+                    $ordenpago_tipopago          =    $_SESSION['ordenpago_tipopago'];
+                    $fecha_orden_pago            =    $_SESSION['fecha_orden_pago'];
+                    $ano_documento_origen        =    $_SESSION['ano_documento_origen'];
+                    $tipodocu_2                  =    $_SESSION['tipodocu_2'];
+                    $numero_documento_origen     =    $_SESSION['numero_documento_origen'];
+                    $fecha_documento             =    $_SESSION['fecha_documento'];
+                    $numero_documento_adjunto    =    $_SESSION['numero_documento_adjunto'];
+                    $tipodocu                    =    $_SESSION['tipodocu'];
+
+
+                    $long_entid = strlen($_SESSION["entidad_federal"]);
+                    $long_depen = strlen($_SESSION["dependencia"]);
+                    if ($long_entid>$long_depen){$longitud=$long_entid+82;}
+                    if ($long_depen>$long_entid){$longitud=$long_depen+82;}
+                    if ($longitud<106){$longitud=106;}
+
+                    $this->image_escudo(12,16,16);
+                    $this->SetFont('vera','B',9);
+                    $this->Cell(196,6,"",'TL',0);
+
+                    $this->Cell(0,6,"",'RL',1);
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,3,'REPÚBLICA BOLIVARIANA DE VENEZUELA','L',0,'C');
+                    $this->Cell(0,3,'','R',1,'L');
+                    $this->Cell($longitud,3,$_SESSION['estado'],'L',0,'C');
+                    $this->Cell(0,3,'','R',1,'L');
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,4,$_SESSION["entidad_federal"],'L',0,'C');
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(0,4,"ORDEN DE PAGO  ",'R',1,'R');
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,3,$_SESSION['dependencia'],'LB',0,'C');
+                    $varX=$this->getX();
+                    $varY=$this->getY();
+                    $varX=169;
+                    $varY=$varY-1;
+                    $this->Cell(0,3,"",'RB',1);
+                    $this->writeBarcode($varX,$varY,35,4,"C39","","","",$ano_orden_pago.$numero_orden_pago);
+
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(16,5,"AÑO",'RL',0,'C');
+                    $this->Cell(27,5,"NÚMERO",'R',0,'C');
+                    $this->Cell(25,5,"TIPO DE ORDEN",'R',0,'C');
+                    $this->Cell(25,5,"FECHA",'R',0,'C');
+                    $this->Cell(0,5,"TIPO DE PAGO",'R',1,'C');
+
+                    $this->SetFont('vera','',9);
+                    $this->Cell(16,5,$ano_orden_pago,'TRL',0,'C');
+                    $this->SetFont('vera','B',9);
+                    $this->Cell(27,5,$numero_orden_pago,'TR',0,'C');
+                    $this->SetFont('vera','',9);
+
+
+                    if($tipodocu_2==1){
+                    $tipodocu_2 = "PERMANENTE";
+                    }elseif($tipodocu_2==2){
+                    $tipodocu_2 = "ESPECIAL";
+                    }
+
+
+                    $this->SetFont('vera','',8);
+                    $this->Cell(25,5,$tipodocu_2,'TR',0,'C');////////////////////////////////AQUI VIENE ALGO DEL TIPO
+                    $this->Cell(25,5,$fecha_orden_pago,'TR',0,'C');
+                    $this->Cell(0,5,$ordenpago_tipopago,'TR',1,'L');
+                    //--------------------------------------------
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(0,6,"COMPROMISO",'TRLB',1,'C');
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(16,3,"",'RL',0,'C');
+                    $this->Cell(82,3,"",'R',0,'C');
+                    $this->Cell(40,3,"DOCUMENTO",'R',0,'C');
+                    $this->Cell(25,3,"DOCUMENTO",'R',0,'C');
+                    $this->Cell(0,3,"FECHA DOCUMENTO ",'R',1,'C');
+
+                    $this->Cell(16,3,"AÑO",'RLB',0,'C');
+                    $this->Cell(82,3,"TIPO DOCUMENTO",'RB',0,'C');
+                    $this->Cell(40,3,"ORIGEN",'RB',0,'C');
+                    $this->Cell(25,3,"ADJUNTO",'RB',0,'C');
+                    $this->Cell(0,3,"ADJUNTO",'RB',1,'C');
+
+                    //-----------------------------------------------------
+                    $this->SetFont('vera','',9);
+                    $this->Cell(16,5,$ano_documento_origen,'RLB',0,'C');//--------------AÑO
+                    $this->SetFont('vera','',8);
+                    $this->Cell(82,5,"",'RB',0,'L');//-------------------------------------------------------------------------TIPO DOCUMENTO
+                    $this->SetFont('vera','',8);
+                    $this->Cell(40,5,$numero_documento_origen,'RB',0,'C');//------------ORIGEN
+                    $this->Cell(25,5,$numero_documento_adjunto,'RB',0,'C');//-----------ADJUNTO
+                    $this->Cell(0,5,$fecha_documento,'RB',1,'C');//-------------------------------------------------------------------FECHA DOCUMENTO
+
+
+
+                    //------------------------------------------------------
+
+                }//fin if
+            }//fin headre
+
+        }//fin class
+
+        class pdfviewNomina extends TCPDF{
+
+
+            function Footer(){
+                if(isset($_SESSION['FIN'])){
+                    $this->Cell(0,0,"",'B',1,'C');
+                }
+            }//fin footer
+
+    
+            function Header(){
+
+                if(isset($_SESSION['FIN'])){
+                        $titulo_A = "DISTRIBUCIÓN DE DEDUCCIÓN";
+                        $this->top_reporte2(array($titulo_A,$_SESSION['NOMINA'],$_SESSION['CORRE'],$_SESSION['LAPSO']), array("Y"=>'11', "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"186"));
+                }else{
+
+                    $ano_orden_pago              =    $_SESSION['ano_orden_pago'];
+                    $numero_orden_pago           =    $_SESSION['numero_orden_pago'];
+                    $ordenpago_tipopago          =    $_SESSION['ordenpago_tipopago'];
+                    $fecha_orden_pago            =    $_SESSION['fecha_orden_pago'];
+                    $ano_documento_origen        =    $_SESSION['ano_documento_origen'];
+                    $tipodocu_2                  =    $_SESSION['tipodocu_2'];
+                    $numero_documento_origen     =    $_SESSION['numero_documento_origen'];
+                    $fecha_documento             =    $_SESSION['fecha_documento'];
+                    $numero_documento_adjunto    =    $_SESSION['numero_documento_adjunto'];
+                    $tipodocu                    =    $_SESSION['tipodocu'];
+
+
+                    $long_entid = strlen($_SESSION["entidad_federal"]);
+                    $long_depen = strlen($_SESSION["dependencia"]);
+                    if ($long_entid>$long_depen){$longitud=$long_entid+82;}
+                    if ($long_depen>$long_entid){$longitud=$long_depen+82;}
+                    if ($longitud<106){$longitud=106;}
+
+                    $this->image_escudo(12,16,16);
+                    $this->SetFont('vera','B',9);
+                    $this->Cell(196,6,"",'TL',0);
+
+                    $this->Cell(0,6,"",'RL',1);
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,3,'REPÚBLICA BOLIVARIANA DE VENEZUELA','L',0,'C');
+                    $this->Cell(0,3,'','R',1,'L');
+                    $this->Cell($longitud,3,$_SESSION['estado'],'L',0,'C');
+                    $this->Cell(0,3,'','R',1,'L');
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,4,$_SESSION["entidad_federal"],'L',0,'C');
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(0,4,"ORDEN DE PAGO  ",'R',1,'R');
+                    $this->SetFont('vera','B',8);
+                    $this->Cell($longitud,3,$_SESSION['dependencia'],'LB',0,'C');
+                    $varX=$this->getX();
+                    $varY=$this->getY();
+                    $varX=169;
+                    $varY=$varY-1;
+                    $this->Cell(0,3,"",'RB',1);
+                    $this->writeBarcode($varX,$varY,35,4,"C39","","","",$ano_orden_pago.$numero_orden_pago);
+
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(16,5,"AÑO",'RL',0,'C');
+                    $this->Cell(27,5,"NÚMERO",'R',0,'C');
+                    $this->Cell(25,5,"TIPO DE ORDEN",'R',0,'C');
+                    $this->Cell(25,5,"FECHA",'R',0,'C');
+                    $this->Cell(0,5,"TIPO DE PAGO",'R',1,'C');
+
+                    $this->SetFont('vera','',9);
+                    $this->Cell(16,5,$ano_orden_pago,'TRL',0,'C');
+                    $this->SetFont('vera','B',9);
+                    $this->Cell(27,5,$numero_orden_pago,'TR',0,'C');
+                    $this->SetFont('vera','',9);
+
+
+                    if($tipodocu_2==1){
+                    $tipodocu_2 = "PERMANENTE";
+                    }elseif($tipodocu_2==2){
+                    $tipodocu_2 = "ESPECIAL";
+                    }
+
+
+                    $this->SetFont('vera','',8);
+                    $this->Cell(25,5,$tipodocu_2,'TR',0,'C');////////////////////////////////AQUI VIENE ALGO DEL TIPO
+                    $this->Cell(25,5,$fecha_orden_pago,'TR',0,'C');
+                    $this->Cell(0,5,$ordenpago_tipopago,'TR',1,'L');
+                    //--------------------------------------------
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(0,6,"COMPROMISO",'TRLB',1,'C');
+
+                    $this->SetFont('vera','B',7);
+                    $this->Cell(16,3,"",'RL',0,'C');
+                    $this->Cell(82,3,"",'R',0,'C');
+                    $this->Cell(40,3,"DOCUMENTO",'R',0,'C');
+                    $this->Cell(25,3,"DOCUMENTO",'R',0,'C');
+                    $this->Cell(0,3,"FECHA DOCUMENTO ",'R',1,'C');
+
+                    $this->Cell(16,3,"AÑO",'RLB',0,'C');
+                    $this->Cell(82,3,"TIPO DOCUMENTO",'RB',0,'C');
+                    $this->Cell(40,3,"ORIGEN",'RB',0,'C');
+                    $this->Cell(25,3,"ADJUNTO",'RB',0,'C');
+                    $this->Cell(0,3,"ADJUNTO",'RB',1,'C');
+
+                    //-----------------------------------------------------
+                    $this->SetFont('vera','',9);
+                    $this->Cell(16,5,$ano_documento_origen,'RLB',0,'C');//--------------AÑO
+                    $this->SetFont('vera','',8);
+                    $this->Cell(82,5,"",'RB',0,'L');//-------------------------------------------------------------------------TIPO DOCUMENTO
+                    $this->SetFont('vera','',8);
+                    $this->Cell(40,5,$numero_documento_origen,'RB',0,'C');//------------ORIGEN
+                    $this->Cell(25,5,$numero_documento_adjunto,'RB',0,'C');//-----------ADJUNTO
+                    $this->Cell(0,5,$fecha_documento,'RB',1,'C');//-------------------------------------------------------------------FECHA DOCUMENTO
+
+
+
+                    //------------------------------------------------------
+
+                }//fin if
+            }//fin headre
+
+        }//fin class
+        if(isset($ir)){ ?>
+
+            <?php
+            if (isset($errorMessage2)) {
+            echo $sisap->mensajes_error($errorMessage2);
+            } else if (isset($Message_existe2)) {
+            echo $sisap->mensajes_correcto($Message_existe2);
+            }
+            ?>
+
+            <?= $sisap->Tabla($session->read('entidad_federal'),true,"ORDENES DE PAGO (FORMATO LIBRE) - Forma 1 <br> <br>Usuario: ".$usuario,null,"950");?>
+            <form name='data[cfpp07]'  method = "post" id='form' action="<?php echo  $html->url('/reporte/cepp03_ordenpago_libre/si'); ?>" onSubmit="return cscp04_ordencompra_servicio_bienes();">
+
+
+                <?= $sisap->OpenTable("950")?>
+
+
+                <br /><br />
+                <input type="hidden" name="data[reporte][cod_tipo_documento]" value="<?= $tipo_documento ?>" maxlength="5" id="cod_tipo_documento" class="inputtext" />
+                <table width="100%" border="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+                    <tr class="tr_negro">
+                    <td width="5%" align="right">Firma</td>
+                    <td width="5%" align="center" style="border-right:#000000 0px solid; border-top:#000000 0px solid;border-left:#000000 0px solid;border-bottom:#000000 1px solid;">
+                    <?php echo $ajax->link($html->image('broom.png',array('width'=>'18', 'height'=>'18','border'=>0)), '/reporte/borrar_firmas/4', array('update'=>'limpiar99_firmas','title'=>'Limpiar Campos Firmas','style'=>'display:none;','id'=>'link_limpiaf'),"¿Desea limpiar los campos de los datos firmantes.?",false,true); ?>
+                    </td>
+                    <td width="24%" align="center">Responsabilidad</td>
+                    <td width="30%" align="center">Nombre del Funcionario</td>
+                    <td width="24%" align="center">Cargo</td>
+                    <td width="12%" align="center">C&eacute;dula</td>
+                    </tr>
+
+                    <tr>
+                    <td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Primera</b></td>
+                    <td><input type="text" name="data[reporte][responsa_primera_firma]" value="<?= $responsa_primera_firma ?>" maxlength="100" id="responsa_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][funcionario_primera_firma]" value="<?= $funcionario_primera_firma ?>" maxlength="100" id="funcionario_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cargo_primera_firma]" value="<?= $cargo_primera_firma ?>" maxlength="100" id="cargo_primera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cedula_primera_firma]" value="<?= $cedula_primera_firma ?>" maxlength="10" id="cedula_primera_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+                    </tr>
+
+                    <tr>
+                    <td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Segunda</b></td>
+                    <td><input type="text" name="data[reporte][responsa_segunda_firma]" value="<?= $responsa_segunda_firma ?>" maxlength="100" id="responsa_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][funcionario_segunda_firma]" value="<?= $funcionario_segunda_firma ?>" maxlength="100" id="funcionario_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cargo_segunda_firma]" value="<?= $cargo_segunda_firma ?>" maxlength="100" id="cargo_segunda_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cedula_segunda_firma]" value="<?= $cedula_segunda_firma ?>" maxlength="10" id="cedula_segunda_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+                    </tr>
+
+                    <tr>
+                    <td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Tercera</b></td>
+                    <td><input type="text" name="data[reporte][responsa_tercera_firma]" value="<?= $responsa_tercera_firma ?>" maxlength="100" id="responsa_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][funcionario_tercera_firma]" value="<?= $funcionario_tercera_firma ?>" maxlength="100" id="funcionario_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cargo_tercera_firma]" value="<?= $cargo_tercera_firma ?>" maxlength="100" id="cargo_tercera_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cedula_tercera_firma]" value="<?= $cedula_tercera_firma ?>" maxlength="10" id="cedula_tercera_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+                    </tr>
+
+                    <tr>
+                    <td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Cuarta</b></td>
+                    <td><input type="text" name="data[reporte][responsa_cuarta_firma]" value="<?= $responsa_cuarta_firma ?>" maxlength="100" id="responsa_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][funcionario_cuarta_firma]" value="<?= $funcionario_cuarta_firma ?>" maxlength="100" id="funcionario_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cargo_cuarta_firma]" value="<?= $cargo_cuarta_firma ?>" maxlength="100" id="cargo_cuarta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cedula_cuarta_firma]" value="<?= $cedula_cuarta_firma ?>" maxlength="10" id="cedula_cuarta_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+                    </tr>
+
+                    <tr>
+                    <td align="center" colspan="2" style='text-shadow: 0.06em 0.05em cyan;'><b>Quinta</b></td>
+                    <td><input type="text" name="data[reporte][responsa_quinta_firma]" value="<?= $responsa_quinta_firma ?>" maxlength="100" id="responsa_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][funcionario_quinta_firma]" value="<?= $funcionario_quinta_firma ?>" maxlength="100" id="funcionario_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cargo_quinta_firma]" value="<?= $cargo_quinta_firma ?>" maxlength="100" id="cargo_quinta_firma" class="inputtext" <?= $b_readonly ?> /></td>
+                    <td><input type="text" name="data[reporte][cedula_quinta_firma]" value="<?= $cedula_quinta_firma ?>" maxlength="10" id="cedula_quinta_firma" style="text-align:center;" class="inputtext" <?= $b_readonly ?> onKeyPress="return solonumeros_enteros(event);" /></td>
+                    </tr>
+
+                </table>
+                <br />
+
+                <div id="limpiar99_firmas"></div>
+
+                <div id="save99_firmas">
+                <?php if(isset($firma_existe) && $firma_existe=='no'){ ?>
+                <?= $sisap->submitTagRemote('Guardar Firmas', array('funcion'=>'valida_firmas99_reportes', 'url1' => '/reporte/guardar_editar_firmas/si/5', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+                <?php }else if(isset($firma_existe) && $firma_existe=='si'){ ?>
+                <?= $sisap->submitTagRemote('Modificar Firmas', array('url1' => '/reporte/guardar_editar_firmas/no/5', 'update1'=>'save99_firmas', 'id'=>'b_guardar_firmas', 'disabled'=>'enable')); ?>
+                <?php } ?>
+                </div>
+                <br /><br />
+
+
+                <div id="distribuir" style="height:150px; overflow:auto;">
+                <table width="100%" cellspacing="0" cellpadding="0" id="grid">
+                    <tr class="tr_negro"><td colspan="2" class="td2center" height="22">Cola de Impresión</td></tr>
+                    <tr class="tr_negro">
+                    <td class="td4" width="50" height="22">A&ntilde;o Orden Pago</td>
+                    <td class="td4" width="50">Número Orden de Pago</td>
+                    </tr>
+                    <?php
+
+                    $i = 0;
+
+                        if(isset($datos_cepd03_ordenpago_poremitir)){
+                            if($datos_cepd03_ordenpago_poremitir!=null){
+                                foreach($datos_cepd03_ordenpago_poremitir as $ve){
+
+                                    if($i%2==0){ ?>
+
+                                    <tr bgcolor="#CDF2FF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+                                    <td class="td2center" height="22"><?= $ve['cepd03_ordenpago_poremitir']['ano_orden_pago'] ?></td>
+                                    <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_poremitir']['numero_orden_pago']) ?></td>
+                                    </tr>
+
+                                    <?php }else{ ?>
+
+                                    <tr bgcolor="#DAEBFF" id="<?= "fila_".$i ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+                                    <td class="td2center" height="22"><?= $ve['cepd03_ordenpago_poremitir']['ano_orden_pago'] ?></td>
+                                    <td class="td2center"><?= $sisap->mascara_ocho($ve['cepd03_ordenpago_poremitir']['numero_orden_pago']) ?></td>
+                                    </tr>
+
+                                    <?php }//fine
+
+                                    $i++;
+
+                                }//fin foreach
+
+
+                                if($i%2==0){
+                                ?>
+                                    <tr bgcolor="#CDF2FF" class="textNegro2">
+                                    <td class="td2center" height="22"  width="2">--</td>
+                                    <td class="td2center">--</td>
+                                    </tr>
+
+                                <?php }else{ ?>
+                                    <tr bgcolor="#DAEBFF" class="textNegro2">
+                                    <td class="td2center" height="22"  width="2">--</td>
+                                    <td class="td2center">--</td>
+                                    </tr>
+                                <?php
+                                }//fin
+                            }//fin
+                        }//fin
+                    ?>
+                </table>
+                </div>
+
+
+                <?= $sisap->radioTagRemote('cepp03_ordenpago/radio', array('1'=>'Vaciar cola de impresión','2'=>'Por rango', '3'=>'Una especifica'), array('url1'=>'/reporte/cepp03_ordenpago_libre/vista', 'update1'=>'opcion', 'id'=>'cepp03_ordenpago_opcion'), NULL, null); ?>
+
+                <div id="opcion"></div>
+
+
+                <?= $html->submit('Generar'); ?>
+
+                <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+                <?=$sisap->CloseTable()?>
+
+            </form>
+        <?php }else{
+
+        $_SESSION['direccion_pie_pagina'] = $direccion_pie_pagina;
+
+
+        $orden = 0;
+
+        if(isset($datos_cepd03_ordenpago_cuerpo)){
+
+
+            foreach($datos_cepd03_ordenpago_cuerpo as $datos_cuerpo){
+                $orden++;
+
+                $ano_orden_pago[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+                $numero_orden_pago[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+                $tipo_orden_pago[$orden]                    =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['tipo_orden'];
+                $ano_documento_origen[$orden]               =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_documento_origen'];
+                $numero_documento_origen[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+                $numero_documento_adjunto[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_adjunto'];
+                if($isNomina=='si'){
+                    if($beneficiario_dep==1){
+                        $beneficiario[$orden]                       =     "GOBERNACIÓN DEL ESTADO BOLIVARIANO DE GUÁRICO";
+                        $rif[$orden]                                =     "G-20000155-0";
+                        $autorizado[$orden]                         =     "GOBERNACIÓN DEL ESTADO BOLIVARIANO DE GUÁRICO";
+                    }else{
+                        $beneficiario[$orden]                       =     $beneficiario_rif[0]["cepd03_ordenpago_cuerpo"]["beneficiario"];
+                        $rif[$orden]                                =     $beneficiario_rif[0]['cepd03_ordenpago_cuerpo']['rif'];
+                        $autorizado[$orden]                         =     $beneficiario_rif[0]['cepd03_ordenpago_cuerpo']['autorizado'];
+                    }
+                }else{
+                    $beneficiario[$orden]                       =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['beneficiario'];
+                    $rif[$orden]                                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['rif'];
+                    $autorizado[$orden]                         =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['autorizado'];
+                }
+                $cod_tipo_documento[$orden]                 =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_documento'];
+                $cod_tipo_gasto[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cod_tipo_pago'];
+                $cedula_identidad[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cedula_identidad'];
+                $monto_coniva[$orden]                       =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_coniva'];
+                $porcentaje_retencion_iva[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_retencion_iva'];
+                $monto_retencion_iva[$orden]                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_iva'];
+                $porcentaje_laboral[$orden]                 =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_laboral'];
+                $monto_retencion_laboral[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_laboral'];
+                $porcentaje_islr[$orden]                    =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_islr'];
+                $monto_islr[$orden]                         =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_islr'];
+                $porcentaje_fielcumplimiento[$orden]        =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_fielcumplimiento'];
+                $monto_retencion_fielcumplimiento[$orden]   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_retencion_fielcumplimiento'];
+                $monto_sustraendo[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_sustraendo'];
+                $porcentaje_iva[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_iva'];
+                $monto_iva[$orden]                          =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_iva'];
+                $porcentaje_timbre_fiscal[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_timbre_fiscal'];
+                $monto_timbre_fiscal[$orden]                =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_timbre_fiscal'];
+                $monto_descontar_impuesto[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_descontar_impuesto'];
+                $porcentaje_impuesto_municipal[$orden]      =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_impuesto_municipal'];
+                $monto_impuesto_municipal[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_impuesto_municipal'];
+                $porcentaje_amortizacion[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_amortizacion'];
+                $amortizacion_anticipo[$orden]              =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['amortizacion_anticipo'];
+                $monto_orden_pago[$orden]                   =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+                $monto_neto_cobrar[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['monto_neto_cobrar'];
+                $concepto[$orden]                           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['concepto'];
+                $ano_orden_pago[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_orden_pago'];
+                $numero_orden_pago[$orden]                  =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_orden_pago'];
+                $ano_documento_origen[$orden]               =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['ano_documento_origen'];
+                $numero_documento_origen[$orden]            =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['numero_documento_origen'];
+                $fecha_orden_pago[$orden]                   =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_orden_pago']);
+                $fecha_documento[$orden]                    =     $sisap->cambia_fecha($datos_cuerpo['cepd03_ordenpago_cuerpo']['fecha_documento']);
+
+                $porcentaje_imp_multa[$orden]      =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_impuesto_municipal'];
+                $monto_imp_multa[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['retencion_multa'];
+
+                $porcentaje_imp_responsabilidad[$orden]      =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['porcentaje_impuesto_municipal'];
+                $monto_imp_responsabilidad[$orden]           =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['retencion_responsabilidad'];
+
+                $cuenta_banc_ben[$orden]                     =     $datos_cuerpo['cepd03_ordenpago_cuerpo']['cuenta_bancaria_beneficiario'];
+
+                $i[$orden] = 0;
+
+
+                if($isNomina != 'si'){
+                    foreach($datos_cepd03_ordenpago_partidas as $x){
+                        if($x['cepd03_ordenpago_partidas']['numero_orden_pago'] == $numero_orden_pago[$orden]){
+                        $i[$orden]++;
+                        $ano_part[$orden][$i[$orden]]              = $x['cepd03_ordenpago_partidas']['ano'];
+                        $cod_sector[$orden][$i[$orden]]       = $x['cepd03_ordenpago_partidas']['cod_sector'];
+                        $cod_programa[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_programa'];
+                        $cod_sub_prog[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_sub_prog'];
+                        $cod_proyecto[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_proyecto'];
+                        $cod_activ_obra[$orden][$i[$orden]]   = $x['cepd03_ordenpago_partidas']['cod_activ_obra'];
+                        $cod_partida[$orden][$i[$orden]]      = $x['cepd03_ordenpago_partidas']['cod_partida'];
+                        $cod_generica[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_generica'];
+                        $cod_especifica[$orden][$i[$orden]]   = $x['cepd03_ordenpago_partidas']['cod_especifica'];
+                        $cod_sub_espec[$orden][$i[$orden]]    = $x['cepd03_ordenpago_partidas']['cod_sub_espec'];
+                        $cod_auxiliar[$orden][$i[$orden]]     = $x['cepd03_ordenpago_partidas']['cod_auxiliar'];
+                        $monto[$orden][$i[$orden]]            = $x['cepd03_ordenpago_partidas']['monto'];
+                        }//fin if
+                    }//fin for
+                }
+            }//fin foreach
+
+            for($h=1; $h<=$orden; $h++){
+                ////// I  //////
+
+                //$i[$h] = $i[$h]-13;
+                $i_pagina[$h] = $i[$h]/45;
+                if(is_float($i_pagina[$h])){ 
+                $i_pagina[$h] = (intval($i_pagina[$h]) + 1); 
+                }
+
+                if($i[$h]>13){
+                $pagina_total[$h] = $i_pagina[$h]+1;
+                }else{
+                $pagina_total[$h] = $i_pagina[$h];
+                }
+                ////// FIN  I  //////
+            }//fin for
+
+        }//fin if
+
+        $isNomina != 'si' ? $pdf = new pdfview('P','mm','Letter') : $pdf = new pdfviewNomina('P','mm','Letter');
+        
+        $pdf->AliasNbPages('TPAG');
+        $pdf->SetTopMargin(15);
+        $pdf->SetLeftMArgin(10);
+        $pdf->SetRightMargin(10);
+        $pdf->SetAutoPageBreak(true, 5);
+
+
+        for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){  ///inicio del for que va a imprimr cada orden de pago
+
+
+            $listo   = "no";
+            $pagina  =  1;
+
+            if($cod_tipo_documento[$aux_aux]==1){$numero_documento_adjunto[$aux_aux]=$numero_documento_origen[$aux_aux];}
+
+
+            $_SESSION['ano_orden_pago']                   =    $ano_orden_pago[$aux_aux];
+            $_SESSION['numero_orden_pago']                =    $sisap->mascara_ocho($numero_orden_pago[$aux_aux]);
+            $_SESSION['ordenpago_tipopago']               =    $ordenpago_tipopago[$aux_aux][0]['cepd03_ordenpago_tipopago']['denominacion'];
+            $_SESSION['fecha_orden_pago']                 =    $fecha_orden_pago[$aux_aux];
+            $_SESSION['ano_documento_origen']             =    $ano_documento_origen[$aux_aux];
+            $_SESSION['tipodocu_2']                       =    $tipo_orden_pago[$aux_aux];
+            $_SESSION['numero_documento_origen']          =    $sisap->mascara_ocho($numero_documento_origen[$aux_aux]);
+            $_SESSION['fecha_documento']                  =    $fecha_documento[$aux_aux];
+            $_SESSION['numero_documento_adjunto']         =    $sisap->mascara_ocho($numero_documento_adjunto[$aux_aux]);
+            $_SESSION['tipodocu']                         =    $tipodocu[$aux_aux][0]['cepd03_tipo_documento']['denominacion'];
+
+
+            if($_SESSION['numero_documento_adjunto']=="0"){$_SESSION['numero_documento_adjunto']="";}
+
+
+            $pdf->AddPage();
+
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(50,6,"TIPO DE GASTOS",'RLB',0,'C');
+            $pdf->Cell(0,6,"TIPOS DE RECURSOS",'RB',1,'C');
+
+
+            if($corriente[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RLB',0,'C');
+            $pdf->Cell(20,5,"CORRIENTE",'RLB',0,'C');
+
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(25,5,"CORRIENTE",'RLB',0,'C');
+            }
+
+            if($capital[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(20,5,"CAPITAL",'RB',0,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(25,5,"CAPITAL",'RB',0,'C');
+            }
+
+            //------------------------------------------------------
+
+            if($ordinario[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(22,5,"ORDINARIO",'RB',0,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(27,5,"ORDINARIO",'RB',0,'C');
+            }
+
+            if($coordinado[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(22,5,"COORDINADO",'RB',0,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(27,5,"COORDINADO",'RB',0,'C');
+            }
+
+            if($laee[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(18,5,"FCI",'RB',0,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(20,5,"FCI",'RB',0,'C');
+            }
+
+            if($fides[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(18,5,"MPPS",'RB',0,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(20,5,"MPPS",'RB',0,'C');
+            }
+
+            if($ingresosextra[$aux_aux]==1){
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(5,5,"X",'RB',0,'C');
+            $pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+            }else{
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(0,5,"INGRESOS EXTRAORDINARIOS",'RB',1,'C');
+            }
+
+            //--------------------------------------------------------
+
+
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(150,4," BENEFICIARIO:",'RL',0,'L');
+            $pdf->Cell(0,4," R.I.F.",'RL',1,'L');
+
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(150,3,$beneficiario[$aux_aux],'RLB',0,'L');//beneficiario.
+
+
+            if($rif[$aux_aux]=="0"){$rif[$aux_aux]="";}
+            $pdf->Cell(0,3,"          ".$rif[$aux_aux],'RLB',1,'L');//rif
+
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(125,4," AUTORIZADO A COBRAR: ",'RL',0,'L');
+            $pdf->Cell(32,4,"CÉDULA IDENTIDAD",'RL',0,'C');
+            $pdf->Cell(0,4,"CUENTA BANCARIA ",'RL',1,'C');
+
+            $cuenta=$cuenta_banc_ben[$aux_aux];
+            $cuenta_bancaria_bene=substr($cuenta, 0, 4).' '.substr($cuenta, 4, 4).' '.substr($cuenta, 8, 2).' '.substr($cuenta, 10, 10);
+
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(125,3,$autorizado[$aux_aux],'RLB',0,'L');//AUTORIZADO A COBRAR
+            if($cedula_identidad[$aux_aux]=="0"){$cedula_identidad[$aux_aux]="";}
+            $pdf->Cell(32,3,$cedula_identidad[$aux_aux],'RLB',0,'C');//cedula
+            $pdf->Cell(0,3,$cuenta_bancaria_bene,'RLB',1,'C');//cedula
+
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(155,5,"DISTRIBUCIÓN DEL PAGO",'RLB',0,'C');
+
+            $pdf->SetFont('vera','B',6);
+            $pdf->Cell(20,5,"SUSTRAENDO",'RLB',0,'L');
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(0,5,$sisap->Formato2($monto_sustraendo[$aux_aux]),'RLB',1,'R');//MONTO SUSTRAENDO
+
+            if($isNomina != 'si'){
+                $pdf->SetFont('vera','B',7);
+                $pdf->Cell(50,5,"MONTO TOTAL A CANCELAR",'RLB',0,'L');
+                $pdf->Cell(14,5,"",'RLB',0,'R');
+                $pdf->Cell(37,5,$sisap->Formato2($monto_coniva[$aux_aux]),'RLB',0,'R');//MONTO TOTAL A CANCELAR
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,5,"RETENCIÓN  I.V.A.",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,5,$sisap->Formato2($porcentaje_retencion_iva[$aux_aux]),'RLB',0,'R');//PORCENTAJE RETENCION IVA
+                $pdf->Cell(0,5,$sisap->Formato2($monto_retencion_iva[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(50,4,"RETENCIÓN LABORAL",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_laboral[$aux_aux]),'RLB',0,'R');//PORCENTAJE RETENCION LABORAL
+                $pdf->Cell(37,4,$sisap->Formato2($monto_retencion_laboral[$aux_aux]),'RLB',0,'R');
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,4,"I.S.L.R.",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_islr[$aux_aux]),'RLB',0,'R');//PORCENTAJE ISLR
+                $pdf->Cell(0,4,$sisap->Formato2($monto_islr[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(50,4,"RETENCIÓN FIEL CUMPLIMIENTO",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_fielcumplimiento[$aux_aux]),'RLB',0,'R');//PORCENTAJE RETENCION FIEL CUMPLIMIENTO
+                $pdf->Cell(37,4,$sisap->Formato2($monto_retencion_fielcumplimiento[$aux_aux]),'RLB',0,'R');
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,4,"TIMBRE FISCAL",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_timbre_fiscal[$aux_aux]),'RLB',0,'R');//PORCENTAJE TIMBRE FISCAL
+                $pdf->Cell(0,4,$sisap->Formato2($monto_timbre_fiscal[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(50,4,"MONTO DEL I.V.A.",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_iva[$aux_aux]),'RLB',0,'R');//MONTO DEL IVA
+                $pdf->Cell(37,4,$sisap->Formato2($monto_iva[$aux_aux]),'RLB',0,'R');
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,4,"IMPUESTO MUNICIPAL",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_impuesto_municipal[$aux_aux]),'RLB',0,'R');//IMPUESTO MUNICIPAL
+                $pdf->Cell(0,4,$sisap->Formato2($monto_impuesto_municipal[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','B',7);
+                $pdf->Cell(50,4,"MONTO DESCONTAR IMPUESTOS",'RLB',0,'L');
+                $pdf->Cell(14,4,"",'RLB',0,'L');
+                $pdf->Cell(37,4,$sisap->Formato2($monto_descontar_impuesto[$aux_aux]),'RLB',0,'R');//MONTO DESCONTAR IMPUESTOS
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,4,"RESPONSABILIDAD civil",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,"",'RLB',0,'R');//IMPUESTO MUNICIPAL
+                $pdf->Cell(0,4,$sisap->Formato2($monto_imp_multa[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(50,4,"AMORTIZACIÓN DEL ANTICIPO",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,$sisap->Formato2($porcentaje_amortizacion[$aux_aux]),'RLB',0,'R');
+                $pdf->Cell(37,4,$sisap->Formato2($amortizacion_anticipo[$aux_aux]),'RLB',0,'R');
+                $pdf->SetFont('vera','',7);
+                $pdf->Cell(40,4,"RESPONSABILIDAD social",'RLB',0,'L');
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(14,4,"",'RLB',0,'L');
+                $pdf->Cell(0,4,$sisap->Formato2($monto_imp_responsabilidad[$aux_aux]),'RLB',1,'R');
+
+                $pdf->SetFont('vera','B',7);
+                $pdf->Cell(50,5,"MONTO ORDEN DE PAGO",'RLB',0,'L');
+                $pdf->Cell(14,5,"",'RLB',0,'L');
+                $pdf->Cell(37,5,$sisap->Formato2($monto_orden_pago[$aux_aux]),'RLB',0,'R');
+                $pdf->Cell(40,5,"NETO A COBRAR",'RLB',0,'L');
+                $pdf->Cell(14,5,"",'RLB',0,'L');
+                $pdf->Cell(0,5,$sisap->Formato2($monto_neto_cobrar[$aux_aux]),'RLB',1,'R');
+                $neto_a_cobrar_pie_pagina = $monto_neto_cobrar[$aux_aux];
+
+                $pdf->SetFont('vera','B',6);
+                $pdf->Cell(28,7,"CANTIDAD EN LETRAS:",'LB',0,'L');
+                $pdf->SetFont('vera','',6);
+                $pdf->Cell(0,7,$sisap->convertir($neto_a_cobrar_pie_pagina),'RB',1,'L');
+            }
+
+            //-------------------------------------------------------------------------------------------
+
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(0,5,"DESCRIPCIÓN O CONCEPTO DE LA ORDEN PAGO",'RLB',1,'C');
+
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(1,30,"",'LB',0);//margen izquierdo
+
+            $varX = $pdf->GetX();//capturo X
+            $varY = $pdf->GetY();//capturo Y
+            $pdf->Cell(194,0,"",'',2);
+
+            $concepto[$aux_aux]=substr($concepto[$aux_aux],0,805).((strlen($concepto[$aux_aux])>=805 ) ? "..." : " ");
+
+            $pdf->MultiCell(194,4,trim($concepto[$aux_aux]),'','L');//Concepto Orden de Pago
+            $varX = $varX+194;//le sumo a X ---> 180.
+            $pdf->SetXY($varX,$varY-10);// cargo XY
+
+            $pdf->Cell(0,30,"",'RB',1);//margen derecho
+
+            $_SESSION['PAGINA_A_AUX'] = 1;
+            $_SESSION['PAGINA_A'] = 1;
+            $aux_var_para_restar = 14;
+
+            $monto_relacion[$aux_aux] = 0;
+
+
+            /* *
+            * Bloque para imprimir las facturas de la orden de pago.
+            */
+            $numFact = '';
+            foreach($facturas[$aux_aux] as $factura){
+            $numFact .= $factura['cepd03_ordenpago_facturas']['numero_factura'].'  ';
+            }
+            $pdf->SetFont('vera','B',8);
+            $pdf->Cell(20,6,"Facturas: ",'TBL',0);
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(0,6,$numFact,'TRB',1);// Impresion de las facturas.
+
+            while($listo=="no"){
+
+                if($_SESSION['PAGINA_A']!=1){$pdf->AddPage();}
+
+                $pdf->SetFont('vera','B',7);
+                $pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA",'TRLB',1,'C');
+
+                $pdf->SetFont('vera','B',6);
+                $pdf->Cell(12,3,"",'RL',0,'C');
+                $pdf->Cell(13,3,"",'R',0,'C');
+                $pdf->Cell(19,3,"",'R',0,'C');
+                $pdf->Cell(19,3,"SUB",'R',0,'C');
+                $pdf->Cell(18,3,"",'R',0,'C');
+                $pdf->Cell(11,3,"ACTIV",'R',0,'C');
+                $pdf->Cell(15,3,"",'R',0,'C');
+                $pdf->Cell(17,3,"",'R',0,'C');
+                $pdf->Cell(10,3,"",'R',0,'C');
+                $pdf->Cell(15,3,"SUB",'R',0,'C');
+                $pdf->Cell(14,3,"",'R',0,'C');
+                $pdf->Cell(0,3,"",'R',1,'C');
+
+                $pdf->Cell(12,3,"AÑO",'RLB',0,'C');
+                $pdf->Cell(13,3,"SECTOR",'RB',0,'C');
+                $pdf->Cell(19,3,"PROGRAMA",'RB',0,'C');
+                $pdf->Cell(19,3,"PROGRAMA",'RLB',0,'C');
+                $pdf->Cell(18,3,"PROYECTO",'RB',0,'C');
+                $pdf->Cell(11,3,"OBRA",'RB',0,'C');
+                $pdf->Cell(15,3,"PARTIDA",'RB',0,'C');
+                $pdf->Cell(17,3,"GENERICA",'RB',0,'C');
+                $pdf->Cell(10,3,"ESP",'RB',0,'C');
+                $pdf->Cell(15,3,"ESP",'RB',0,'C');
+                $pdf->Cell(14,3,"AUXILIAR",'RB',0,'C');
+                $pdf->Cell(0,3,"M O N T O",'RB',1,'C');
+
+
+                ///////////////////PARTIDAS///////////////////////////
+
+                $total_bsf=0;
+                $acepta_A="no";
+
+                $pdf->SetFont('vera','',8);
+                $pdf->Cell(12,1,"",'RL',0,'C');
+                $pdf->Cell(13,1,"",'R',0,'C');
+                $pdf->Cell(19,1,"",'R',0,'C');
+                $pdf->Cell(19,1,"",'R',0,'C');
+                $pdf->Cell(18,1,"",'R',0,'C');
+                $pdf->Cell(11,1,"",'R',0,'C');
+                $pdf->Cell(15,1,"",'R',0,'C');
+                $pdf->Cell(17,1,"",'R',0,'C');
+                $pdf->Cell(10,1,"",'R',0,'C');
+                $pdf->Cell(15,1,"",'R',0,'C');
+                $pdf->Cell(14,1,"",'R',0,'C');
+                $pdf->Cell(0,1,"",'R',1,'C');
+
+
+                if($isNomina != 'si'){
+                    for($ii=$_SESSION['PAGINA_A_AUX']; $ii<=($_SESSION['PAGINA_A_AUX']+$aux_var_para_restar); $ii++){
+                        if(isset($ano_part[$aux_aux][$ii])){
+                            $pdf->Cell(12,3,$ano_part[$aux_aux][$ii],'RL',0,'C');
+                            $pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$aux_aux][$ii], -2), substr($cod_partida[$aux_aux][$ii], 0, 1 )),'R',0,'C');
+                            $pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(14,3,mascara($cod_auxiliar[$aux_aux][$ii],4),'R',0,'C');
+                            $pdf->SetFont('vera','B',7);
+                            $pdf->Cell(0,3,$sisap->Formato2($monto[$aux_aux][$ii]),'R',1,'R');
+                            $total_bsf=$total_bsf+$monto[$aux_aux][$ii];
+                            $acepta_A = "si";
+                        }else{
+                            $pdf->Cell(12,3,"",'RL',0,'C');
+                            $pdf->Cell(13,3,"",'R',0,'C');
+                            $pdf->Cell(19,3,"",'R',0,'C');
+                            $pdf->Cell(19,3,"",'R',0,'C');
+                            $pdf->Cell(18,3,"",'R',0,'C');
+                            $pdf->Cell(11,3,"",'R',0,'C');
+                            $pdf->Cell(15,3,"",'R',0,'C');
+                            $pdf->Cell(17,3,"",'R',0,'C');
+                            $pdf->Cell(10,3,"",'R',0,'C');
+                            $pdf->Cell(15,3,"",'R',0,'C');
+                            $pdf->Cell(14,3,"",'R',0,'C');
+                            $pdf->Cell(0,3,"",'R',1,'C');
+                        }//fin else
+                        $pdf->SetFont('vera','',8);
+
+
+                        $_SESSION['PAGINA_A'] = $ii;
+
+                    }//fin for
+                    $monto_relacion[$aux_aux] +=  $total_bsf;
+                }else{
+                    /*for($ii=$_SESSION['PAGINA_A_AUX']; $ii<=($_SESSION['PAGINA_A_AUX']+$aux_var_para_restar); $ii++){
+                        if(isset($ano_part[$aux_aux][$ii])){
+                            $pdf->Cell(12,3,$ano_part[$aux_aux][$ii],'RL',0,'C');
+                            $pdf->Cell(13,3,$sisap->AddCero2($cod_sector[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(19,3,$sisap->AddCero2($cod_programa[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(19,3,$sisap->AddCero2($cod_sub_prog[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(18,3,$sisap->AddCero2($cod_proyecto[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(11,3,$sisap->AddCero2($cod_activ_obra[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(15,3,$sisap->AddCero2(substr($cod_partida[$aux_aux][$ii], -2), substr($cod_partida[$aux_aux][$ii], 0, 1 )),'R',0,'C');
+                            $pdf->Cell(17,3,$sisap->AddCero2($cod_generica[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(10,3,$sisap->AddCero2($cod_especifica[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(15,3,$sisap->AddCero2($cod_sub_espec[$aux_aux][$ii]),'R',0,'C');
+                            $pdf->Cell(14,3,mascara($cod_auxiliar[$aux_aux][$ii],4),'R',0,'C');
+                            $pdf->SetFont('vera','B',7);
+                            $pdf->Cell(0,3,$sisap->Formato2($monto[$aux_aux][$ii]),'R',1,'R');
+                            $total_bsf=$total_bsf+$monto[$aux_aux][$ii];
+                            $acepta_A = "si";
+                        }
+                        $pdf->SetFont('vera','',8);
+
+
+                        $_SESSION['PAGINA_A'] = $ii;
+
+                    }//fin for*/
+
+                    $monto_as = 0;
+                    foreach($datos_cepd03_ordenpago_partidas as $x){
+                        $pdf->SetFont('vera','',8);
+                        $pdf->Cell(12,3,$x[0]['ano'],'RL',0,'C');
+                        $pdf->Cell(13,3,$sisap->AddCero2($x[0]['cod_sector']),'R',0,'C');
+                        $pdf->Cell(19,3,$sisap->AddCero2($x[0]['cod_programa']),'R',0,'C');
+                        $pdf->Cell(19,3,$sisap->AddCero2($x[0]['cod_sub_prog']),'R',0,'C');
+                        $pdf->Cell(18,3,$sisap->AddCero2($x[0]['cod_proyecto']),'R',0,'C');
+                        $pdf->Cell(11,3,$sisap->AddCero2($x[0]['cod_activ_obra']),'R',0,'C');
+                        $pdf->Cell(15,3,$sisap->AddCero2(substr($x[0]['cod_partida'], -2), substr($x[0]['cod_partida'], 0, 1 )),'R',0,'C');
+                        $pdf->Cell(17,3,$sisap->AddCero2($x[0]['cod_generica']),'R',0,'C');
+                        $pdf->Cell(10,3,$sisap->AddCero2($x[0]['cod_especifica']),'R',0,'C');
+                        $pdf->Cell(15,3,$sisap->AddCero2($x[0]['cod_sub_espec']),'R',0,'C');
+                        $pdf->Cell(14,3,mascara($x[0]['cod_auxiliar'],4),'R',0,'C');
+                        $pdf->SetFont('vera','B',7);
+                        $pdf->Cell(0,3,$sisap->Formato2($x[0]['monto']),'R',1,'R');
+                        $monto_as = $monto_as + $x[0]['monto'];
+                        $acepta_A = "si";
+                        $_SESSION['PAGINA_A'] +=1;
+                    }//fin for
+
+                    $monto_relacion[$aux_aux] +=  $monto_as;
+                    $pdf->SetFont('vera','B',8);
+                    $pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+                    // total sumatoria del total de asigaciones mas los aportes patronales
+                    $pdf->Cell(0,5,$sisap->Formato2($monto_as),'TRB',1,'R');
+
+                    $pdf->SetFont('vera','B',7);
+                    $pdf->Cell(0,5,"IMPUTACIÓN PRESUPUESTARIA APORTES PATRONALES",'TRLB',1,'C');
+
+                    $pdf->SetFont('vera','',8);
+                    $pdf->Cell(12,1,"",'RL',0,'C');
+                    $pdf->Cell(13,1,"",'R',0,'C');
+                    $pdf->Cell(19,1,"",'R',0,'C');
+                    $pdf->Cell(19,1,"",'R',0,'C');
+                    $pdf->Cell(18,1,"",'R',0,'C');
+                    $pdf->Cell(11,1,"",'R',0,'C');
+                    $pdf->Cell(15,1,"",'R',0,'C');
+                    $pdf->Cell(17,1,"",'R',0,'C');
+                    $pdf->Cell(10,1,"",'R',0,'C');
+                    $pdf->Cell(15,1,"",'R',0,'C');
+                    $pdf->Cell(14,1,"",'R',0,'C');
+                    $pdf->Cell(0,1,"",'R',1,'C');
+
+                    $monto_ap = 0;
+                    foreach ($aportes_patronales as $patrono) {
+                        $pdf->SetFont('vera','',8);
+                        $pdf->Cell(12,3,$patrono[0]['ano'],'RL',0,'C');
+                        $pdf->Cell(13,3,$sisap->AddCero2($patrono[0]['cod_sector']),'R',0,'C');
+                        $pdf->Cell(19,3,$sisap->AddCero2($patrono[0]['cod_programa']),'R',0,'C');
+                        $pdf->Cell(19,3,$sisap->AddCero2($patrono[0]['cod_sub_prog']),'R',0,'C');
+                        $pdf->Cell(18,3,$sisap->AddCero2($patrono[0]['cod_proyecto']),'R',0,'C');
+                        $pdf->Cell(11,3,$sisap->AddCero2($patrono[0]['cod_activ_obra']),'R',0,'C');
+                        $pdf->Cell(15,3,$sisap->AddCero2(substr($patrono[0]['cod_partida'], -2), substr($patrono[0]['cod_partida'], 0, 1 )),'R',0,'C');
+                        $pdf->Cell(17,3,$sisap->AddCero2($patrono[0]['cod_generica']),'R',0,'C');
+                        $pdf->Cell(10,3,$sisap->AddCero2($patrono[0]['cod_especifica']),'R',0,'C');
+                        $pdf->Cell(15,3,$sisap->AddCero2($patrono[0]['cod_sub_espec']),'R',0,'C');
+                        $pdf->Cell(14,3,mascara($patrono[0]['cod_auxiliar'],4),'R',0,'C');
+                        $pdf->SetFont('vera','B',7);
+                        $pdf->Cell(0,3,$sisap->Formato2($patrono[0]['monto']),'R',1,'R');
+                        $monto_ap = $monto_ap + $patrono[0]['monto'];
+                        $acepta_A = "si";
+                        $_SESSION['PAGINA_A'] +=1;
+                    }
+
+                    $pdf->SetFont('vera','B',8);
+                    $pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+                    // total sumatoria del total de asigaciones mas los aportes patronales
+                    $pdf->Cell(0,5,$sisap->Formato2($monto_ap),'TRB',1,'R');
+
+                    for ($i=0; $i < $aux_var_para_restar - count($aportes_patronales); $i++) { 
+                        $pdf->Cell(12,3,"",'RL',0,'C');
+                        $pdf->Cell(13,3,"",'R',0,'C');
+                        $pdf->Cell(19,3,"",'R',0,'C');
+                        $pdf->Cell(19,3,"",'R',0,'C');
+                        $pdf->Cell(18,3,"",'R',0,'C');
+                        $pdf->Cell(11,3,"",'R',0,'C');
+                        $pdf->Cell(15,3,"",'R',0,'C');
+                        $pdf->Cell(17,3,"",'R',0,'C');
+                        $pdf->Cell(10,3,"",'R',0,'C');
+                        $pdf->Cell(15,3,"",'R',0,'C');
+                        $pdf->Cell(14,3,"",'R',0,'C');
+                        $pdf->Cell(0,3,"",'R',1,'C');
+                        $acepta_A = "si";
+                        $_SESSION['PAGINA_A'] +=1;
+                    }
+                }
+            
+
+                ///////////////////FIN ----- PARTIDAS///////////////////////////
+
+                //Pregunto si (ii) es mayor al total de las partidas. "Lo que indicaria que no hay mas partidas por imprimir"
+                if($_SESSION['PAGINA_A']>=$i[$aux_aux]){
+                    $listo="si";//detenemos el ciclo while para que no continue imprimiendo
+                    $pdf->SetFont('vera','B',8);
+                    $pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+               
+                    if($isNomina != 'si'){
+                         // total sumatoria del total
+                        $pdf->Cell(0,5,$sisap->Formato2($monto_relacion[$aux_aux]),'TRB',1,'R');
+                    }else{
+                         // total sumatoria del total de asigaciones mas los aportes patronales
+                        $pdf->Cell(0,5,$sisap->Formato2($monto_relacion[$aux_aux] + $monto_ap),'TRB',1,'R');
+                    }
+                
+
+                }else  if($acepta_A=="si"){
+                    $pdf->SetFont('vera','B',8);
+                    $pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+                    $pdf->Cell(0,5,"--- VAN",'TRB',1,'R');
+
+                }else if($acepta_A=="no"){
+                    $pdf->SetFont('vera','B',8);
+                    $pdf->Cell(163,5,"T O T A L Bs. ",'TRLB',0,'R');
+                    $pdf->Cell(0,5,"",'TRB',1,'R');
+
+                }//fin else
+
+
+
+
+                /////////////////// ***** INICIO NUEVA FORMA DE FIRMA ***** //////////////////////////
+
+                $pdf->SetFont('vera','B',8);
+                $pdf->Cell(0,5,"FIRMAS AUTORIZADAS",'RLB',1,'C');
+
+                // FIRMA REPONSABILIDAD:
+                $ancho=32;
+                $pdf->SetFont('vera', 'B', 5);
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'TL', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $responsa_primera_firma, '', 'C'); // ------------[RESPONSABILIDAD 1]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $responsa_segunda_firma, '', 'C'); // ------------[RESPONSABILIDAD 2]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $responsa_tercera_firma, '', 'C'); // ------------[RESPONSABILIDAD 3]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $responsa_cuarta_firma, '', 'C'); // ------------[RESPONSABILIDAD 4]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $responsa_quinta_firma, '', 'C'); // ------------[RESPONSABILIDAD 5]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell(0, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell(0, 2, "BANCO:", '', 'L'); // ------------[BANCO]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(0, 5, "", 'R', 1, 'R');
+
+
+                // FIRMA CARGO:
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'TL', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $cargo_primera_firma, '', 'C'); // --------[CARGO 1]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $cargo_segunda_firma, '', 'C'); // --------[CARGO 2]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $cargo_tercera_firma, '', 'C'); // ------------[CARGO 3]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $cargo_cuarta_firma, '', 'C'); // ---------[CARGO 4]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell($ancho-1, 1, "", 'T', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $cargo_quinta_firma, '', 'C'); // ---------[CARGO 5]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 6, "", 'L', 0, 'C');
+                $pdf->Cell(0, 1, "", '', 2, 'C');
+                $pdf->MultiCell(0, 2, "_____________________________________\nCUENTA:\n\n_____________________________________\nNº CHEQUE:\n\n_____________________________________\nFECHA CHEQUE:", '', 'L'); // ------------[ESPACIO CUENTA CHEQUE]
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(0, 6, "", 'R', 1, 'R');
+
+
+                $pdf->Cell($ancho, 8, "", 'RL', 0, 'C');
+                $pdf->Cell($ancho, 8, "", 'R', 0, 'C');
+                $pdf->Cell($ancho, 8, "", 'R', 0, 'C');
+                $pdf->Cell($ancho, 8, "", 'R', 0, 'C');
+                $pdf->Cell($ancho, 8, "", 'R', 0, 'C');
+                $pdf->Cell(0, 8, "", 'R', 1, 'L');
+
+
+                // FIRMA FUNCIONARIO:
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", '', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $funcionario_primera_firma, '', 'C'); // ------------[FUNCIONARIO 1]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", '', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $funcionario_segunda_firma, '', 'C'); // ------------[FUNCIONARIO 2]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", '', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $funcionario_tercera_firma, '', 'C'); // ------------[FUNCIONARIO 3]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", '', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $funcionario_cuarta_firma, '', 'C'); // ------------[FUNCIONARIO 4]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell($ancho, 1, "", '', 2, 'C');
+                $pdf->MultiCell($ancho-1, 2, $funcionario_quinta_firma, '', 'C'); // ------------[FUNCIONARIO 5]
+                $varX = $varX + $ancho;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, 4, "", 'L', 0, 'C');
+                $pdf->Cell(0, 1, "", '', 2, 'C');
+                $pdf->MultiCell(0, 2, "", '', 'L');
+                $varX = $varX + 0;
+                $pdf->SetXY($varX, $varY);
+                $pdf->Cell(0, 4, "", 'R', 1, 'R');
+
+                // FIRMA CEDULA:
+
+                $pdf->Cell($ancho, 3, "  ".$cedula_primera_firma, 'RBL', 0, 'C'); // ----------[CEDULA 1]
+                $pdf->Cell($ancho, 3, "  ".$cedula_segunda_firma, 'RB', 0, 'C'); // -----------[CEDULA 2]
+                $pdf->Cell($ancho, 3, "  ".$cedula_tercera_firma, 'RB', 0, 'C'); // -----------[CEDULA 3]
+                $pdf->Cell($ancho, 3, "  ".$cedula_cuarta_firma, 'RB', 0, 'C'); // ------------[CEDULA 4]
+                $pdf->Cell($ancho, 3, "  ".$cedula_quinta_firma, 'RB', 0, 'C'); // ------------[CEDULA 5]
+                $pdf->Cell(0, 3, "", 'RB', 1, 'C');
+
+
+                $pdf->Cell(0,6,"Página ".$pagina."/".$pagina_total[$aux_aux],'RL',1,'R');
+
+                /////////////////////// ****** FIN NUEVA FORMA DE FIRMA ****** ///////////////////////////
+
+
+                if($_SESSION['PAGINA_A']<=$i[$aux_aux]){
+                $_SESSION['PAGINA_A_AUX'] = $_SESSION['PAGINA_A']+1;
+                $pagina++;
+                $aux_var_para_restar = 50;
+                }else{ 
+                $listo="si";
+                }
+            }//---------------------------------------------FIN DEL WHILE LISTO
+        }//fin for del for que hace cada orden de pago
+
+
+
+        $_SESSION['FIN'] = "si";
+
+        if($isNomina != 'si'){
+            /**
+             * Información de la relación de OP
+             * 
+             */
+            $monto_monto = 0;
+            $cont=0;
+            $pdf->AddPage();
+
+            $pdf->SetFont('vera','',6.5);
+            for($aux_aux=1; $aux_aux<=$orden; $aux_aux++){
+                $beneficiario_x = $beneficiario[$aux_aux];
+                $cant=strlen($beneficiario_x);
+                if($cant>67){
+                    $altura_f = 6.7;
+                }else{
+                    $altura_f = 4;
+                }
+                $pdf->Cell(10,$altura_f,$sisap->AddCero2($aux_aux),'RL',0,'C');
+                $pdf->Cell(17,$altura_f,$fecha_orden_pago[$aux_aux],'RL',0,'C');
+                $pdf->Cell(14,$altura_f,$ano_orden_pago[$aux_aux],'RL',0,'C');
+                $pdf->Cell(27,$altura_f,$sisap->mascara_ocho($numero_orden_pago[$aux_aux]),'R',0,'C');
+                $pdf->Cell(1,$altura_f,"",'L',0);//margen izquierdo
+                $varX = $pdf->GetX();//capturo X
+                $varY = $pdf->GetY();//capturo Y
+                $pdf->Cell(97,1,"",'',2);
+                $pdf->MultiCell(94,2.5,$beneficiario_x,'','L');
+                $varX = $varX+96;//le sumo a X ---> 180.
+                $pdf->SetXY($varX,$varY);// cargo XY
+                $pdf->Cell(0,$altura_f,"",'LR',0);//margen derecho     
+                $pdf->Cell(0,$altura_f,  $sisap->Formato2(    $monto_relacion[$aux_aux]),'R',1,'R');
+                $monto_monto +=                       $monto_relacion[$aux_aux];
+                $cont++;
+            }//fin for
+
+
+
+            for($i=$cont; $i<=52; $i++){
+                $pdf->Cell(10,4, "",'RL',0,'C');
+                $pdf->Cell(17,4, "",'R',0,'C');
+                $pdf->Cell(14,4, "",'R',0,'C');
+                $pdf->Cell(27,4, "",'R',0,'C');
+                $pdf->Cell(97,4,"",'R',0,'L');
+                $pdf->Cell(0,4,  "",'R',1,'R');
+            }//fin for
+
+
+            $pdf->Cell(10,5, $sisap->AddCero2($cont),'TRL',0,'C');
+            $pdf->Cell(155,5,"MONTO ".MONEDA2,'TRL',0,'R');
+            $pdf->Cell(0,5,$sisap->Formato2($monto_monto),'TRL',1,'R');
+        }else{
+
+            /**
+            * Informacion de las asignaciones y deducciones
+            */
+
+            $_SESSION['NOMINA']=mascara_tres($cod_tipo_nomina_reporte)." - ".$denominacion_nomina_reporte;
+            $_SESSION['CORRE']=$nomina[0]['v_cnmd08_historia_transacciones']['correspondiente'];
+            $_SESSION['LAPSO']="DESDE: ".cambiar_formato_fecha($nomina[0]['v_cnmd08_historia_transacciones']['periodo_desde'])." - HASTA: ".cambiar_formato_fecha($nomina[0]['v_cnmd08_historia_transacciones']['periodo_hasta']);
+
+
+            //,count(*) as cantidad_de_transacciones
+            $pdf->AddPage();
+
+            $pdf->SetFont('vera','',8);
+            $pdf->Cell(115,5,"RETENCIÓN",'TRLB',0,'C');
+            $pdf->Cell(14,5,"%",'TRLB',0,'C');//PORCENTAJE ISLR
+            $pdf->Cell(0,5,"MONTO",'TRLB',1,'C');
+
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(115,5,"I.S.L.R.",'RLB',0,'L');
+            $pdf->Cell(14,5,$sisap->Formato2($datos_cepd03_ordenpago_cuerpo[0]['cepd03_ordenpago_cuerpo']['porcentaje_islr']),'RLB',0,'R');//PORCENTAJE ISLR
+            $pdf->Cell(0,5,$sisap->Formato2($datos_cepd03_ordenpago_cuerpo[0]['cepd03_ordenpago_cuerpo']['monto_islr']),'RLB',1,'R');
+
+            $pdf->SetFont('vera','B',6);
+            $pdf->Cell(0,3,"",'',1,'C');
+            $pdf->Cell(15,4,"NÚMERO",'TRL',0,'C');
+            $pdf->Cell(15,4,"CÓDIGO",'TRL',0,'C');
+            $pdf->Cell(144,4,"",'TR',0,'C');
+            $pdf->Cell(0,4,"MONTO",'TR',1,'C');
+            $pdf->Cell(0,0,"",'',1,'C');
+            $pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+            $pdf->Cell(15,4,"TRANS.",'RLB',0,'C');
+            $pdf->Cell(144,4,"DESCRIPCIÓN DE LA TRANSACCIÓN",'RB',0,'C');
+            $pdf->Cell(0,4,"DEDUCCIÓN",'RB',1,'C');
+
+            $pdf->SetFont('vera','',6);
+            $asignaciones=0;
+            $sueldo=0;
+            $deducciones=0;
+            $ap=0;
+            $numero_trabajadores=0;
+            
+            foreach($data as $r){
+                extract($r['v_distribucion_asignacion_deduccion']);
+                $pdf->SetFont('vera','B',6);
+                $alto = 4;
+
+            
+                if(in_array($uso_transaccion, array(3, 4, 5, 8))){
+                
+                    $pdf->Cell(15,$alto,$cantidad_de_transacciones,'TRLB',0,'R');//--
+                    $pdf->Cell(15,$alto,mascara_tres($cod_transaccion),'TRLB',0,'C');//--
+                    $pdf->SetFont('vera','',6);
+                    $pdf->Cell(144,$alto,$denominacion,'TRB',0,'L'); //--[Distribucion]
+                    $pdf->Cell(22,$alto,$sisap->Formato2($monto_deduccion),'TRB',1,'R'); //--[deduccion]
+                    $deducciones+=$monto_deduccion;
+                }
+            }
+            
+            $pdf->Cell(0,10,"",'',1,'R');
+            $pdf->Cell(115,4,'','R',0,'R');
+
+            $pdf->SetFont('vera','',7);
+            $pdf->Cell(0,0,"",'',1,'R');
+            $pdf->Cell(115,4,'','',0,'R');
+            $pdf->Cell(59,4,"TOTAL A PAGAR:",'TRL',0,'R');
+
+            $pdf->SetFont('vera','B',7);
+            $pdf->Cell(0,4,$sisap->Formato2(($deducciones)),'TRB',1,'R');
+        }
+       
+
+        $pdf->OutPut('ordenorden_de_pago_'.date("d-m-Y_g_i_a").".pdf",'D');
+
+
+        }//fin del els que termina para  generar el pdf
+        // FIN PDF ORDEN DE PAGO NOMINA
+    
+
+}//fin else
+
+?>
+

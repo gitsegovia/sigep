@@ -1,0 +1,46 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_a'] = $titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Footer()
+	{
+	    $this->SetY(-10);
+	    $this->SetFont('vera','',6);
+	    $this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+	}
+
+	function Header()
+	{
+		$this->top_reporte("TIPOS DE COMPROMISOS", null, null, array("Y"=>"12", "X"=>"15", "Z"=>"11"), null, false);
+	}
+}//fin clase
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(20,7,"CÓDIGO",'TRLB',0,'C');
+$pdf->Cell(0,7,"D E N O M I N A C I Ó N",'TRB',1,'C');
+$pdf->SetFont('vera','',7);
+foreach($datos as $x){
+$pdf->Cell(20,7,$x['cepd01_tipo_compromiso']['cod_tipo_compromiso'],'TRLB',0,'C');
+$pdf->Cell(0,7,$x['cepd01_tipo_compromiso']['denominacion'],'TRB',1,'L');
+}
+$pdf->Output('Tipos_de_Compromiso_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>

@@ -1,0 +1,160 @@
+<?php if($opcion==1){
+
+
+echo $sisap->Tabla($session->read('entidad_federal'),true,strtoupper('RELACIÓN DE SOLVENCIAS (Persona Juridica)'),'','750');
+echo $sisap->OpenTable('750');
+$ano=array();
+for($i=2000;$i<2100;$i++){
+	$ano[$i]=$i;
+}
+
+?>
+
+<form name='data[cepp01_compromiso]'  method = "post" id='registroasignacion' action="<?php echo  $html->url('/reporte_hacienda/shp950_relacion_solvencia_juridica/2/'); ?>" onsubmit="return valida_shd950_solvencia()"  >
+	 <center>
+	  Año: <?= $sisap->selectTagRemote('reporte_hacienda/ano', $lista_ano,  null,  $ano1, array('onchange1'=>'/', 'update1'=>'vacio', 'id'=>'ano','style'=>'width:10%', 'onChange'=>'vacio'  , true), null, true);?>
+	  <br><br>
+	   ORDENADO POR:<br><?= $sisap->radioTagRemote("reporte_hacienda/tipo_busqueda", array('1'=>'Número solvencia','2'=>'Contribuyente','3'=>'Fecha expedición'), array('url1'=>'/', 'update1'=>'funcion', 'id'=>'tipo_busqueda'), null, $opc=1); ?>
+
+     </center>
+
+       <center>
+    		 <?= $html->submit('Generar') ?>
+     		 <?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array( 'url2' => '/modulos/vacio', 'update2'=>'principal'))?>
+       </center>
+
+</form>
+
+
+
+<?= $sisap->CloseTable(); ?>
+
+
+
+
+<?php }else if($opcion==2){
+
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE SOLVENCIAS MUNICIPALES EMITIDAS EN EL AÑO ".$_SESSION['ano_report']." (PERSONA JURÍDICA)";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"16", "Z"=>"13"), array("Y"=>"17", "X"=>"331"));
+
+	$this->SetFont('vera','B',6);
+	$this->Cell(8,3,'','TRL',0,'C');
+	$this->Cell(25,3,'Nro: DE LA','TR',0,'C');
+	$this->Cell(90,3,'','TR',0,'C');
+	$this->Cell(25,3,'','TR',0,'C');
+	$this->Cell(20,3,'FECHA DE','TR',0,'C');
+	$this->Cell(20,3,'FECHA DE','TR',0,'C');
+	$this->Cell(120,3,'','TR',0,'C');
+	$this->Cell(0,3,'MONTO DE LA','TR',1,'C');
+
+	$this->Cell(8,3,'Nro','BRL',0,'C');
+	$this->Cell(25,3,'SOLVENCIA','BR',0,'C');
+	$this->Cell(90,3,'CONTRIBUYENTE','BR',0,'C');
+	$this->Cell(25,3,'RIF','BR',0,'C');
+	$this->Cell(20,3,'EMISION','BR',0,'C');
+	$this->Cell(20,3,'VENCIMIENTO','BR',0,'C');
+	$this->Cell(120,3,'CONCEPTO DE LA SOLVENCIA','BR',0,'C');
+	$this->Cell(0,3,'SOLVENCIA','BR',1,'C');
+    }
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','',6);
+if($datos!=null){
+		$objeto_solvencia=array('1'=>'SOLICITUD DE PATENTE DE INDUSTRIA Y COMERCIO','2'=>'RENOVACIÓN DE CARTA DE PATENTE','3'=>'DECLARACIÓN JURADA DE INGRESOS BRUTOS',
+				  '4'=>'PERMISOS DE CONSTRUCCIÓN','5'=>'VARIABLES URBANAS','6'=>'REPARACIÓN O MEJORAS DE INMUBLES','7'=>'PROTOCOLIZACIÓN DE DOCUMENTOS',
+				  '8'=>'REGULACIÓN O DESOCUPACIÓN DE INMUEBLE','9'=>'SOLICITUD DE CRÉDITO A ENTIDAD FINANCIERA','10'=>'ESPECTACULOS PÚBLICOS','11'=>'CONSTITUCIÓN DE EMPRESAS',
+				  '12'=>'LICITACIONES','14'=>'TRÁMITES ADMINISTRATIVOS','13'=>'OTROS');
+		$k=1;
+		for($i=0; $i<count($datos); $i++){
+			$pdf->Cell(8,5,$k,'RL',0,'C');
+			$pdf->Cell(25,5,mascara($datos[$i][0]['numero_solvencia'],8),'R',0,'C');//--
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(90,1,"",'',2,'C');
+				$pdf->MultiCell(89,2,$datos[$i][0]['razon_social_nombres'],'','L'); //--CONTRIBUYENTE
+				$varX = $varX+90;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(25,5,$datos[$i][0]['rif_cedula'],'RL',0,'C'); //--RIF
+			$pdf->Cell(20,5,$sisap->cambia_fecha($datos[$i][0]['fecha_expedicion']),'R',0,'C'); //--EMISION
+			$pdf->Cell(20,5,$sisap->cambia_fecha($datos[$i][0]['valida_hasta']),'R',0,'C'); //--VENCIMIENTO
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(120,1,"",'',2,'C');
+				$pdf->MultiCell(119,2,$objeto_solvencia[$datos[$i][0]['objeto_solvencia']],'','L'); // CONCEPTO DE LA SOLVENCIA
+				$varX = $varX+120;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,5,$sisap->Formato2($datos[$i][0]['monto_solvencia']),'RL',1,'C');//-- MONTO SOLVENCIA
+			$pdf->Cell(0,0,'','T',1);
+			$k++;
+		}
+
+
+}else{
+
+	$pdf->Cell(8,5,'','RL',0,'C');
+			$pdf->Cell(25,5,'','R',0,'C');//--
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(90,1,"",'',2,'C');
+				$pdf->MultiCell(89,2,"",'','L'); //--CONTRIBUYENTE
+				$varX = $varX+90;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(25,5,'','RL',0,'C'); //--RIF
+			$pdf->Cell(20,5,'','R',0,'C'); //--EMISION
+			$pdf->Cell(20,5,'','R',0,'C'); //--VENCIMIENTO
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$var_aux_X = $varX;
+				$var_aux_Y = $varY;
+				$pdf->Cell(120,1,"",'',2,'C');
+				$pdf->MultiCell(119,2,"",'','L'); // CONCEPTO DE LA SOLVENCIA
+				$varX = $varX+120;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,5,'','RL',1,'C');//-- MONTO SOLVENCIA
+			$pdf->Cell(0,0,'','T',1);
+
+}
+
+
+$pdf->Output('relacion_solvencia_persona_juridica_'.date("d_m_Y_h"), 'D');//Poner nombre y la opcion D
+
+
+
+}//fin else
+
+ ?>
+
+
+
+
+

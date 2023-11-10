@@ -1,0 +1,298 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+$_SESSION['titulo_inst'] = $titulo_inst;
+$_SESSION['titulo_a'] = $titulo_a;
+
+switch($tipo_proveedor){
+	case '1':$_SESSION['titulo_encab']="RELACION DE PROVEEDORES"; $nombre="Relacion_de_Proveedores"; break;
+	case '2':$_SESSION['titulo_encab']="RELACION DE CONTRATISTAS"; $nombre="Relacion_de_Contratistas"; break;
+	case '3':$_SESSION['titulo_encab']="RELACION DE COOPERATIVAS"; $nombre="Relacion_de_Cooperativas"; break;
+	case '4':$_SESSION['titulo_encab']="RELACION DE PERSONAS NATURALES"; $nombre="Relacion_de_Personas_naturales"; break;
+	case '5':$_SESSION['titulo_encab']="";$nombre="R_g_de_pro_conco_y_pers_nat_"; break;
+}
+
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        // I: send the file inline to the browser. The plug-in is used if available.
+        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+        // D: send to the browser and force a file download with the name given by name.
+        // F: save to a local file with the name given by name.
+        // S: return the document as a string. name is ignored.
+        return $this->Output($name, $destination);
+    }
+    //Cabecera de pagina
+
+
+    function Footer(){
+    $this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+
+
+	function Header()
+	{
+		/*
+		$img_dependencia_o='/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_'.$_SESSION['SScodinst'].'_'.$_SESSION['SScoddep'].'.jpg';
+        if(file_exists($img_dependencia_o)){
+        	$escudo=$img_dependencia_o;
+        	$varTOPh1=" ";
+        	$varTOPh2="  ";
+        	$varTOPh11=" ";
+        	$varTOPh22=" ";
+        	$t1=18;
+        	$t2=18;
+        }else{
+        	//$escudo="/var/www/sigep/app/webroot/img/logos_dependencias_reportes/logo_11_1.jpg";
+        	$escudo="/var/www/sigep/app/webroot/img/escudo_base/escudo10.jpg";
+        	$varTOPh1=$_SESSION['titulo_inst'];
+        	$varTOPh2=$_SESSION['titulo_a'];
+        	$varTOPh11=$_SESSION['titulo_inst'];
+        	$varTOPh22=$_SESSION['titulo_a'];
+        	$t1=14;
+        	$t2=14;
+        }
+		$this->Image($escudo,7,15,$t1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(16,4,"",'TL',0);
+		$this->Cell(0,4,$varTOPh1,'TR',1);
+		$this->Cell(16,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$varTOPh2,'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,9,$_SESSION['titulo_encab'],'RLB',1,'C');
+		$this->Ln(2);
+		*/
+		$this->top_reporte($_SESSION['titulo_encab'], null, null, array("Y"=>"6", "X"=>"15", "Z"=>"11"), null);
+
+		$this->SetFont('vera','B',7);
+		$this->Cell(21,3,"",'TRL',0,'C');
+		$this->Cell(48,3,"",'TR',0,'C');
+		$this->Cell(23,3,"FECHA",'TR',0,'C');
+		$this->Cell(65,3,"",'TR',0,'C');
+		$this->Cell(30,3,"",'TR',0,'C');
+		$this->Cell(45,3,"",'TR',0,'C');
+		$this->Cell(0,3,"",'TR',1,'C');
+
+		$this->Cell(21,3,"R.I.F.",'RBL',0,'C');
+		$this->Cell(48,3,"DENOMINACION COMERCIAL",'RB',0,'C');
+		$this->Cell(23,3,"INSCRIPCIÓN",'RB',0,'C');
+		$this->Cell(65,3,"DIRECCIÓN",'RB',0,'C');
+		$this->Cell(30,3,"TELEFONOS",'RB',0,'C');
+		$this->Cell(45,3,"EMAIL",'RB',0,'C');
+		$this->Cell(0,3,"REPRESENTANTE",'RB',1,'C');
+	}
+}//fin de la clase PDF
+
+
+
+
+
+
+
+
+
+
+
+
+if($tipo_proveedor != 5){
+	$pdf = new fpdfview('L','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(5);
+	$pdf->SetRightMargin(5);
+	$pdf->SetAutoPageBreak(true, 10);
+	$pdf->SetFont('vera','',7);
+	$pdf->AddPage();
+	if(isset($datos) && $datos==''){
+	   $pdf->Ln(8);
+	   $pdf->SetFont('vera','BU',11);
+	   $pdf->Cell(0,10,$mensaje,'',0,'C');
+	}elseif(isset($datos) && $datos!=''){
+		$pdf->SetFont('vera','',7);
+		foreach($datos as $prov){
+			$pdf->Cell(21,15,$prov['cpcd02']['rif'],'TRL',0,'C');//--[RIF]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+			$pdf->Cell(48,2,"",'T',2);
+				$pdf->MultiCell(47,3,$prov['cpcd02']['denominacion'],'','L');//--[DENOMINACION]
+				$varX = $varX+48;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(23,15,$sisap->cambia_fecha($prov['cpcd02']['fecha_inscripcion']),'TRL',0,'C');//--[FECHA INSCRIP]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(65,2,"",'T',2);
+				$pdf->MultiCell(64,3,$prov['cpcd02']['direccion_comercial'],'','L');//--[DIRECCION_COMERCIAL]
+				$varX = $varX+65;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(30,15,$prov['cpcd02']['codigo_area_empresa']."-".$prov['cpcd02']['telefonos'],'TRLB',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',5);
+			$pdf->Cell(45,15,$prov['cpcd02']['correo_electronico_empresa'],'TR',0,'C');//--[EMAIL]
+				$pdf->Cell(37,2,"",'T',2);
+				$pdf->SetFont('vera','',7);
+				$pdf->MultiCell(37,3,$prov['cpcd02']['representante_legal'],'','L');//--[REPRESENTANTE_LEGAL]
+				$varX = $varX+107;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,15,"",'TR',1);
+			$pdf->Cell(0,0,"",'T',1);
+		}//fin foreach
+	}
+	$pdf->Output($nombre.'_'.date("d-m-Y_g_i_a").".pdf",'D');
+
+}elseif($tipo_proveedor==5){
+	$pdf = new fpdfview('L','mm','Letter');
+	$pdf->AliasNbPages('TPAG');
+	$pdf->SetTopMargin(15);
+	$pdf->SetLeftMArgin(5);
+	$pdf->SetRightMargin(5);
+	$pdf->SetAutoPageBreak(true, 10);
+	$_SESSION['titulo_encab']="PROVEEDORES";
+	$pdf->SetFont('vera','',7);
+	$pdf->AddPage();
+
+	if(isset($datos_prov) && $datos_prov==''){
+   		$pdf->Ln(8);
+   		$pdf->SetFont('vera','BU',11);
+   		$pdf->Cell(0,10,$mensaje,'',0,'C');
+	}elseif(isset($datos_prov) && $datos_prov!=''){
+		foreach($datos_prov as $prov){
+			$pdf->Cell(21,15,$prov['cpcd02']['rif'],'TRL',0,'C');//--[RIF]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+			$pdf->Cell(48,2,"",'T',2);
+				$pdf->MultiCell(47,3,$prov['cpcd02']['denominacion'],'','L');//--[DENOMINACION]
+				$varX = $varX+48;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(23,15,$sisap->cambia_fecha($prov['cpcd02']['fecha_inscripcion']),'TRL',0,'C');//--[FECHA INSCRIP]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(65,2,"",'T',2);
+				$pdf->MultiCell(64,3,$prov['cpcd02']['direccion_comercial'],'','L');//--[DIRECCION_COMERCIAL]
+				$varX = $varX+65;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(30,15,$prov['cpcd02']['codigo_area_empresa']."-".$prov['cpcd02']['telefonos'],'TRL',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',5);
+			$pdf->Cell(45,15,$prov['cpcd02']['correo_electronico_empresa'],'TRB',0,'C');//--[EMAIL]
+				$pdf->Cell(37,2,"",'T',2);
+				$pdf->SetFont('vera','',7);
+				$pdf->MultiCell(37,3,$prov['cpcd02']['representante_legal'],'','L');//--[REPRESENTANTE_LEGAL]
+				$varX = $varX+107;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,15,"",'TR',1);
+			$pdf->Cell(0,0,"",'T',1);
+		}//fin foreach
+	}
+
+	$_SESSION['titulo_encab']="CONTRATISTAS";
+	$pdf->AddPage();
+	if(isset($datos_cont) && $datos_cont==''){
+   		$pdf->Ln(8);
+   		$pdf->SetFont('vera','BU',11);
+   		$pdf->Cell(0,10,$mensaje,'',0,'C');
+	}elseif(isset($datos_cont) && $datos_cont!=''){
+		foreach($datos_cont as $prov){
+			$pdf->Cell(21,15,$prov['cpcd02']['rif'],'TRL',0,'C');//--[RIF]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+			$pdf->Cell(48,2,"",'T',2);
+				$pdf->MultiCell(47,3,$prov['cpcd02']['denominacion'],'','L');//--[DENOMINACION]
+				$varX = $varX+48;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(23,15,$sisap->cambia_fecha($prov['cpcd02']['fecha_inscripcion']),'TRL',0,'C');//--[FECHA INSCRIP]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(65,2,"",'T',2);
+				$pdf->MultiCell(64,3,$prov['cpcd02']['direccion_comercial'],'','L');//--[DIRECCION_COMERCIAL]
+				$varX = $varX+65;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(30,15,$prov['cpcd02']['codigo_area_empresa']."-".$prov['cpcd02']['telefonos'],'TRL',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',5);
+			$pdf->Cell(45,15,$prov['cpcd02']['correo_electronico_empresa'],'TR',0,'C');//--[EMAIL]
+				$pdf->Cell(37,2,"",'T',2);
+				$pdf->SetFont('vera','',7);
+				$pdf->MultiCell(37,3,$prov['cpcd02']['representante_legal'],'','L');//--[REPRESENTANTE_LEGAL]
+				$varX = $varX+107;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,15,"",'TR',1);
+			$pdf->Cell(0,0,"",'T',1);
+		}//fin foreach
+	}
+
+	$_SESSION['titulo_encab']="COOPERATIVAS";
+	$pdf->AddPage();
+	if(isset($datos_coop) && $datos_coop==''){
+   		$pdf->Ln(8);
+   		$pdf->SetFont('vera','BU',11);
+   		$pdf->Cell(0,10,$mensaje,'',0,'C');
+	}elseif(isset($datos_coop) && $datos_coop!=''){
+		foreach($datos_coop as $prov){
+			$pdf->Cell(21,15,$prov['cpcd02']['rif'],'TRL',0,'C');//--[RIF]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+			$pdf->Cell(48,2,"",'T',2);
+				$pdf->MultiCell(47,3,$prov['cpcd02']['denominacion'],'','L');//--[DENOMINACION]
+				$varX = $varX+48;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(23,15,$sisap->cambia_fecha($prov['cpcd02']['fecha_inscripcion']),'TRL',0,'C');//--[FECHA INSCRIP]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(65,2,"",'T',2);
+				$pdf->MultiCell(64,3,$prov['cpcd02']['direccion_comercial'],'','L');//--[DIRECCION_COMERCIAL]
+				$varX = $varX+65;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(30,15,$prov['cpcd02']['codigo_area_empresa']."-".$prov['cpcd02']['telefonos'],'TRL',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',5);
+			$pdf->Cell(45,15,$prov['cpcd02']['correo_electronico_empresa'],'TR',0,'C');//--[EMAIL]
+				$pdf->Cell(37,2,"",'T',2);
+				$pdf->SetFont('vera','',7);
+				$pdf->MultiCell(37,3,$prov['cpcd02']['representante_legal'],'','L');//--[REPRESENTANTE_LEGAL]
+				$varX = $varX+107;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,15,"",'TR',1);
+			$pdf->Cell(0,0,"",'T',1);
+		}//fin foreach
+	}
+
+	$_SESSION['titulo_encab']="PERSONAS NATURALES";
+	$pdf->AddPage();
+	if(isset($datos_pers) && $datos_pers==''){
+   		$pdf->Ln(8);
+   		$pdf->SetFont('vera','BU',11);
+   		$pdf->Cell(0,10,$mensaje,'',0,'C');
+	}elseif(isset($datos_pers) && $datos_pers!=''){
+		foreach($datos_pers as $prov){
+			$pdf->Cell(21,15,$prov['cpcd02']['rif'],'TRL',0,'C');//--[RIF]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+			$pdf->Cell(48,2,"",'T',2);
+				$pdf->MultiCell(47,3,$prov['cpcd02']['denominacion'],'','L');//--[DENOMINACION]
+				$varX = $varX+48;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(23,15,$sisap->cambia_fecha($prov['cpcd02']['fecha_inscripcion']),'TRL',0,'C');//--[FECHA INSCRIP]
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->Cell(65,2,"",'T',2);
+				$pdf->MultiCell(64,3,$prov['cpcd02']['direccion_comercial'],'','L');//--[DIRECCION_COMERCIAL]
+				$varX = $varX+65;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(30,15,$prov['cpcd02']['codigo_area_empresa']."-".$prov['cpcd02']['telefonos'],'TRL',0,'C');//--[TELEFONOS]
+			$pdf->SetFont('vera','',5);
+			$pdf->Cell(45,15,$prov['cpcd02']['correo_electronico_empresa'],'TR',0,'C');//--[EMAIL]
+				$pdf->Cell(37,2,"",'T',2);
+				$pdf->SetFont('vera','',7);
+				$pdf->MultiCell(37,3,$prov['cpcd02']['representante_legal'],'','L');//--[REPRESENTANTE_LEGAL]
+				$varX = $varX+107;
+				$pdf->SetXY($varX,$varY);
+			$pdf->Cell(0,15,"",'TR',1);
+			$pdf->Cell(0,0,"",'T',1);
+		}//fin foreach
+	}
+	$pdf->Output($nombre.'_'.date("d-m-Y_g_i_a").".pdf",'D');
+}
+?>

@@ -1,0 +1,294 @@
+<?php if($opcion==1){ ?>
+<?= $sisap->Tabla(null,true,"COMPROMISOS NO CAUSADOS",NULL,"750");?>
+<form name='data[cfpp03]'  method = "post" id='form' action="<?php echo  $html->url('/reporte_cierre_ejercicio/forma_cierre_1/2'); ?>" onSubmit="return reportes_cierre();">
+	<?= $sisap->OpenTable("750")?>
+
+	<?= $sisap->radio_consolidado('datos/consolidacion', null, '', true)  ?>
+
+	<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="center">
+				<table width="300" cellspacing="0" cellpadding="0">
+					<tr><td align="center">&nbsp;</td></tr>
+					<tr><td align="center">&nbsp;&nbsp;<b>Fecha Desde:</b>&nbsp;&nbsp;
+					        <?$sisap->input_fecha("reporte","fecha_desde","fecha_desde", null);?>
+						</td>
+					    <td align="center">&nbsp;&nbsp;<b>Fecha Hasta:</b>&nbsp;&nbsp;
+							<?$sisap->input_fecha("reporte","fecha_hasta","fecha_hasta", null);?>
+						</td>
+					</tr>
+					<tr><td align="center">&nbsp;</td></tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td align="center" width="100%">
+				<font color="red"><h4>NOTA: USAR PAPEL OFICIO PARA ESTE REPORTE.</h4></font>
+			</td>
+	    </tr>
+	</table>
+	<?= $html->submit('Generar'); ?>
+	<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+	<?=$sisap->CloseTable()?>
+</form>
+<?php }else if($opcion==2){
+
+foreach($dependencia as $ven){
+	$deno_dep[$ven['cugd02_dependencia']['cod_dependencia']] = $ven['cugd02_dependencia']['denominacion'];
+}
+
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION["fecha_desde"] = $fecha_desde;
+$_SESSION["fecha_hasta"] = $fecha_hasta;
+
+if (!defined('PARAGRAPH_STRING')) define('PARAGRAPH_STRING', '~~~');
+
+class fpdfview extends TCPDF {
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+	function Header(){
+	    $titulo_A = "COMPROMISOS NO CAUSADOS DESDE ".$_SESSION["fecha_desde"]." HASTA ".$_SESSION["fecha_hasta"];
+        $this->top_reporte2(array($titulo_A), array("Y"=>"11", "X"=>"13", "Z"=>"13"), array("Y"=>"15", "X"=>"320"));
+
+        $this->SetFont('vera','B',5);
+	    $this->Cell(126,3,'EJERCICIO CIERRE','RTL',0,'C');
+	    $this->Cell(84,7,' DOC. SOPORTE','TLR',0,'C');
+	    $this->Cell(0,3,'CATEGORÍA PRESUPUESTARIA EJERCICIO SIGUIENTE','RLT',1,'C');
+
+	    $this->Cell(60,3,'CATEGORÍA PRESUPUESTARIA','LRT',0,'C');
+	    $this->Cell(48,3,'PARTIDA','TR',0,'C');
+	    $this->Cell(18,10,'TOTAL MONTO','T',0,'C');
+	      $this->Cell(84,3,'','R',0,'C');
+	    $this->Cell(60,3,'CATEGORÍA PRESUPUESTARIA','TR',0,'C');
+	    $this->Cell(48,3,'PARTIDA','TR',0,'C');
+	    $this->Cell(18,10, 'TOTAL MONTO','T',0,'C');
+	    $this->Cell(0,3, '','RT',1,'C');
+
+
+
+	    $this->Cell(12,3,'SECTOR','LRT',0,'C');
+	    $this->Cell(12,3,'PROG.','LRT',0,'C');
+	    $this->Cell(12,3,'SUB','LRT',0,'C');
+	    $this->Cell(12,3,'PROY','LRT',0,'C');
+	    $this->Cell(12,3,'ACTIV','LRT',0,'C');
+	    $this->Cell(12,3,'PARTIDA','LRT',0,'C');
+	    $this->Cell(12,3,'GENERICA','LRT',0,'C');
+	    $this->Cell(12,3,'ESPEC.','LRT',0,'C');
+	    $this->Cell(12,3,'SUB','LRT',0,'C');
+	    $this->Cell(18,3,'','',0,'C');
+
+        $this->Cell(20,3,'Nº','LRT',0,'C');
+        $this->Cell(21,3,'TIPO','LRT',0,'C');
+        $this->Cell(15,3,'FECHA','LRT',0,'C');
+        $this->Cell(28,3,'BENEFICIARIO','LRT',0,'C');
+
+        $this->Cell(12,3,'SECTOR','LRT',0,'C');
+	    $this->Cell(12,3,'PROG.','LRT',0,'C');
+	    $this->Cell(12,3,'SUB','LRT',0,'C');
+	    $this->Cell(12,3,'PROY','LRT',0,'C');
+	    $this->Cell(12,3,'ACTIV','LRT',0,'C');
+	    $this->Cell(12,3,'PARTIDA','LRT',0,'C');
+	    $this->Cell(12,3,'GENERICA','LRT',0,'C');
+	    $this->Cell(12,3,'ESPEC.','LRT',0,'C');
+	    $this->Cell(12,3,'SUB','LRT',0,'C');
+	    $this->Cell(0,3, '','RL',1,'C');
+
+
+
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'PROG.','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'ESPEC.','LRB',0,'C');
+	    $this->Cell(18,3,'','LRB',0,'C');
+
+        $this->Cell(20,3,'','LRB',0,'C');
+        $this->Cell(21,3,'','LRB',0,'C');
+        $this->Cell(15,3,'','LRB',0,'C');
+        $this->Cell(28,3,'','LRB',0,'C');
+
+        $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'PROG.','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'','LRB',0,'C');
+	    $this->Cell(12,3,'ESPEC.','LRB',0,'C');
+	    $this->Cell(0,3, '','RLB',1,'C');
+ }
+
+    function Footer(){
+		$this->setY(-60);
+        $this->Cell(0,7,"FIRMAS AUTORIZADAS",'',1,'L');
+
+        $varX = $this->GetX();//asigno X
+		$varY = $this->GetY();//asigno Y
+        $this->Cell(220,2,"",'',2,'C');
+		$this->MultiCell(219,3,"Nosotros, los abajo firmantes  en el carácter de (Director, Secretario, Presidente) y Administrador: Certificamos que la Información Suministrada reune los requisitos de exactitud, veracidad, oportunidad y corresponden con los registros y soportes que reposan en esta Dependecia.",'','J');
+		$varX = $varX+220;//le sumo a X 170 del Cell debido a que lo capture antes.
+		$this->SetXY($varX,$varY);// cargo XY
+        $this->Cell(0,1,'','',1,'C');
+
+        $this->Ln(20);
+
+		$this->Cell(60,5,'','',0,'C');
+	    $this->Cell(60,5,'JEFE DE LA UNIDAD ADMINISTRADORA','T',0,'C');
+	    $this->Cell(100,5,'','',0,'C');
+	    $this->Cell(60,5,'MÁXIMA AUTORIDAD O DELEGADO','T',0,'C');
+	    $this->Cell(0,5,'','',1,'C');
+    }
+}//fin clases
+
+
+
+$pdf = new fpdfview('L','mm','Legal');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(12);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 20);
+
+
+
+if($consolidacion==2){$pdf->AddPage();}
+$contar = 0;
+$total1 = 0;
+$total2 = 0;
+
+$total1_aux = 0;
+$total2_aux = 0;
+
+
+$pdf->SetFont('vera','',5);
+
+$consolidacion_aux_dep=0;
+
+foreach($datos as $ve){
+
+	if($consolidacion==1){
+		if($consolidacion_aux_dep!=$ve["v_documentos_comprometidos_no_causados"]["cod_dep"]){
+           $contar                 = 1;
+           $consolidacion_aux_dep  = $ve["v_documentos_comprometidos_no_causados"]["cod_dep"];
+           if($total1!=0){
+	           	$pdf->SetFont('vera','B',5);
+				$pdf->Cell(108,5,'TOTAL','LRB',0,'R');
+				$pdf->Cell(18,5, $sisap->Formato2($total1),'LRB',0,'R');
+				$pdf->Cell(0,5,  $sisap->Formato2($total2),'BR',1,'R');
+				$total1 = 0;
+				$total2 = 0;
+           }
+           $pdf->AddPage();
+           $pdf->SetFont('vera','B',8);
+           $pdf->Cell(0,10,$deno_dep[$consolidacion_aux_dep],'TBLR',1,'C');
+           $pdf->SetFont('vera','',5);
+		}
+	}
+
+
+	if($contar>=11){
+		$contar = 0;
+		$pdf->AddPage();
+	}
+$contar++;
+
+        $partida = CE.".".separa_partida_de_grupo($ve["v_documentos_comprometidos_no_causados"]["cod_partida"]);
+
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sector"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_programa"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sub_prog"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_proyecto"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_activ_obra"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,$partida,'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_generica"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_especifica"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sub_espec"],2),'LR',0,'C');
+	    $pdf->Cell(18,10,$sisap->Formato2($ve[0]["monto"]),'LR',0,'R');
+              if($ve["v_documentos_comprometidos_no_causados"]["tipo_documento"]==1){
+                $tipo_documento = "REGISTRO DE COMPROMISO";
+                $ve["v_documentos_comprometidos_no_causados"]["numero_documento"] = mascara_seis($ve["v_documentos_comprometidos_no_causados"]["numero_documento"]);
+                $align = "C";
+        }else if($ve["v_documentos_comprometidos_no_causados"]["tipo_documento"]==2){
+              	$tipo_documento = "ORDEN DE COMPRA";
+              	$ve["v_documentos_comprometidos_no_causados"]["numero_documento"] = mascara_seis($ve["v_documentos_comprometidos_no_causados"]["numero_documento"]);
+                $align = "C";
+        }else if($ve["v_documentos_comprometidos_no_causados"]["tipo_documento"]==3){
+        	    $tipo_documento = "CONTRATO DE OBRA";
+        	    $align = "J";
+        }else if($ve["v_documentos_comprometidos_no_causados"]["tipo_documento"]==4){
+                $tipo_documento = "CONTRATO DE SERVICIO";
+                $align = "J";
+        }
+
+        $varX = $pdf->GetX();//asigno X
+		$varY = $pdf->GetY();//asigno Y
+        $pdf->Cell(20,1,"",'',2,'C');
+		$pdf->MultiCell(19,2,$ve["v_documentos_comprometidos_no_causados"]["numero_documento"],'',$align);
+		$varX = $varX+20;//le sumo a X 170 del Cell debido a que lo capture antes.
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+        $pdf->Cell(1,10,'','L',0,'C');
+        $varX = $pdf->GetX();//asigno X
+		$varY = $pdf->GetY();//asigno Y
+        $pdf->Cell(20,1,"",'',2,'C');
+		$pdf->MultiCell(19,2,$tipo_documento,'','L');
+		$varX = $varX+20;//le sumo a X 170 del Cell debido a que lo capture antes.
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+        $pdf->Cell(15,10,cambia_fecha($ve["v_documentos_comprometidos_no_causados"]["fecha_documento"]),'LR',0,'C');
+
+        $pdf->Cell(1,10,'','L',0,'C');
+        $varX = $pdf->GetX();//asigno X
+		$varY = $pdf->GetY();//asigno Y
+        $pdf->Cell(27,1,"",'',2,'C');
+		$pdf->MultiCell(26,2,$ve["v_documentos_comprometidos_no_causados"]["beneficiario"],'','L');
+		$varX = $varX+27;//le sumo a X 170 del Cell debido a que lo capture antes.
+		$pdf->SetXY($varX,$varY);// cargo XY
+
+        $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sector"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_programa"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sub_prog"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_proyecto"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_activ_obra"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,$partida,'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_generica"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_especifica"],2),'LR',0,'C');
+	    $pdf->Cell(12,10,mascara($ve["v_documentos_comprometidos_no_causados"]["cod_sub_espec"],2),'LR',0,'C');
+	    $pdf->Cell(0,10,$sisap->Formato2($ve[0]["monto"]),'LR',1,'R');
+	    $pdf->Cell(0,0,'','T',1,'C');
+
+$total1 += $ve[0]["monto"];
+$total2 += $ve[0]["monto"];
+
+$total1_aux += $ve[0]["monto"];
+$total2_aux += $ve[0]["monto"];
+
+}
+
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(108,5,'TOTAL','LRB',0,'R');
+$pdf->Cell(18,5, $sisap->Formato2($total1),'LRB',0,'R');
+$pdf->Cell(0,5,  $sisap->Formato2($total2),'BR',1,'R');
+
+if($consolidacion==1){
+$pdf->SetFont('vera','B',5);
+$pdf->Cell(108,5,'TOTAL GENERAL','LRB',0,'R');
+$pdf->Cell(18,5, $sisap->Formato2($total1_aux),'LRB',0,'R');
+$pdf->Cell(0,5,  $sisap->Formato2($total2_aux),'BR',1,'R');
+}
+
+
+$pdf->OutPut('formato_cierre_ejecicio_compromiso_no_causado_'.date("d-m-Y"),'D');
+
+
+}?>

@@ -1,0 +1,113 @@
+<?if(isset($ir) && $ir=='si'){ ?>
+<?$sisap->Tabla("",true,"Relación de contribuyentes de propaganda comercial","","750")?>
+<form name='data[cimp01]'  method = "post" id='form_reporte' action="<?php echo  $html->url('/reporte_hacienda/shd300_relacion_contribuyentes_propaganda_comercial/no'); ?>" >
+<?$sisap->OpenTable("750");?>
+<br />
+<b>ORDENADO POR:</b><?= $html->radio('reporte_hacienda/ordenamiento', array('1'=>'Alfab&eacute;tico', '2'=>'RIF / C.I'), null, array('value'=>'1')); ?>
+<br />
+<?= $html->submit('Generar', array('id'=>'enviar')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'Salir', 'id'=>'salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?><br><br>
+<?=$sisap->CloseTable()?>
+
+<? }else if(isset($ir) && $ir=='no'){
+
+vendor('utf8_tcpdf/tcpdf');
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+    function Header(){
+	$titulo_A = "RELACIÓN DE CONTRIBUYENTES DE PROPAGANDA COMERCIAL";
+       	$this->top_reporte2(array($titulo_A), array("Y"=>"6", "X"=>"11", "Z"=>"13"), array("Y"=>"12", "X"=>"254"));
+    }
+
+
+}//fin clase
+
+
+$pdf = new fpdfview('L','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(10);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(0,5,"DETALLES DE LA PROPAGANDA COMERCIAL",'TRL',1,'C');
+
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(18,3,"",'TRL',0,'C');
+$pdf->Cell(35,3,"Nombres y Apellidos",'TR',0,'C');
+$pdf->Cell(18,3,"Frecuencia",'TR',0,'C');
+$pdf->Cell(19,3,"Monto total",'TR',0,'C');
+$pdf->Cell(39,3,"",'TR',0,'L');
+$pdf->Cell(19,3,"Monto",'TR',0,'C');
+$pdf->Cell(40,3,"",'TR',0,'C');
+$pdf->Cell(10,3,"Área",'TR',0,'C');
+$pdf->Cell(15,3,"",'TR',0,'C');
+$pdf->Cell(19,3,"Monto",'TR',0,'C');
+$pdf->Cell(19,3,"Monto",'TR',0,'C');
+$pdf->Cell(0,3,"Monto",'TR',1,'C');
+
+$pdf->Cell(18,3,"RIF/C.I.",'RBL',0,'C');
+$pdf->Cell(35,3,"Razón social",'RB',0,'C');
+$pdf->Cell(18,3,"de pago",'RB',0,'C');
+$pdf->Cell(19,3,"a cancelar",'RB',0,'C');
+$pdf->Cell(39,3,"Denominación propaganda",'RB',0,'L');
+$pdf->Cell(19,3,"Deuda",'RB',0,'C');
+$pdf->Cell(40,3,"Ubicación",'RB',0,'C');
+$pdf->Cell(10,3,"MT2",'RB',0,'C');
+$pdf->Cell(15,3,"Cantidad",'RB',0,'C');
+$pdf->Cell(19,3,"Propaganda",'RB',0,'C');
+$pdf->Cell(19,3,"adicional",'RB',0,'C');
+$pdf->Cell(0,3,"Cancelar",'RB',1,'C');
+
+$pdf->SetFont('vera','',6);
+for($i=1; $i<=10; $i++){
+	$pdf->Cell(18,6,"J-XXXXXXX-V",'RL',0,'C');// RIF/CI
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(35,1,"",'',2,'C');
+		$pdf->MultiCell(34,2,"  J & L VISIÓN INTEGRAL C.A.",'','L');// Razón Social
+		$varX = $varX+35;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(18,6,"Trimestral",'RL',0,'C');// Frecuencia de pago
+	$pdf->Cell(19,6,"XX.XXX,XX",'R',0,'C');// Monto total a cancelar
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(39,1,"",'',2,'C');
+		$pdf->MultiCell(38,2,"XXXXXXXXXXX XXXXXXXXX",'','L');// Denominación propaganda
+		$varX = $varX+39;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(19,6,"XX.XXX,XX",'RL',0,'R');// Monto deuda
+		$varX = $pdf->GetX();
+		$varY = $pdf->GetY();
+		$var_aux_X = $varX;
+		$var_aux_Y = $varY;
+		$pdf->Cell(40,1,"",'',2,'C');
+		$pdf->MultiCell(39,2,"XXXXXXXXXXX XXXXXXXXX",'','L');// Ubicacion
+		$varX = $varX+40;
+		$pdf->SetXY($varX,$varY);
+	$pdf->Cell(10,6,"MT2",'RL',0,'R');// Area MT2
+	$pdf->Cell(15,6,"Cantidad",'R',0,'C');// Cantidad
+	$pdf->Cell(19,6,"XX.XXX,XX",'R',0,'R');// Monto propaganda
+	$pdf->Cell(19,6,"XX.XXX,XX",'R',0,'R');// Monto adicional
+	$pdf->Cell(0,6,"XX.XXX,XX",'R',1,'R');// Monto a cancelar
+	$pdf->Cell(0,0,"",'T',1);
+}
+
+$pdf->Output('relacion_contribuyentes_propaganda_comercial_'.date('d-m-Y').'.pdf','D');
+
+}
+?>

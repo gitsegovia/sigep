@@ -1,0 +1,428 @@
+<?php
+/*
+ * Creado el 13/04/2008 a las 06:25:40 PM
+ * Herramienta: EasyEclipse.
+ * Proyecto: SIGEP
+ * Descripcion:
+ */
+vendor('utf8_tcpdf/tcpdf');
+set_time_limit(0);
+$_SESSION['encabezado']="si";
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+
+	function Header()
+	{
+		$this->image_escudo_sin_consolidado(6,16,13);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(14,4,"",'L',0);
+		$this->Cell(165,4,$_SESSION["entidad_federal"],'',0);
+		$this->SetFont('vera','',6);
+		$this->Cell(0,4,"",'R',1);
+		$this->Cell(14,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(165,3,$_SESSION["dependencia"],'',0);
+		$this->SetFont('vera','',6);
+		$this->Cell(0,3,"",'R',1);
+		$this->SetFont('vera','B',10);
+		$this->Cell(0,2,"",'RL',1,'C');
+		$this->Cell(0,4,"RELACIÓN DE ORDENES DE PAGO",'RL',1,'C');
+		$this->SetFont('vera','B',6);
+		$this->Cell(0,4,$_SESSION['subtituloreporte'],'RLB',1,'C');
+		$this->Ln(2);
+
+		if($_SESSION['encabezado']=="si"){
+		$this->SetFont('vera','B',6);
+		$this->Cell(20,5,"NÚMERO",'TBL',0,'C');
+		$this->Cell(15,5,"STATUS",'TBL',0,'C');
+		$this->Cell(20,5,"FECHA",'TBL',0,'C');
+		$this->Cell(65,5,"BENEFICIARIO",'TBL',0,'C');
+		$this->Cell(20,5,"MONTO",'TBL',0,'C');
+		$this->Cell(30,5,"CTA. BANCARIA",'TBL',0,'C');
+		$this->Cell(20,5,"CHEQUE",'TBL',0,'C');
+		$this->Cell(0,5,"FECHA",'TBLR',1,'C');
+		}elseif($_SESSION['encabezado']=="no"){
+		$this->SetFont('vera','B',8);
+		$this->Cell(25,5,"DEPENDENCIA: ",'TLB',0,'L');
+		$this->SetFont('vera','',7);
+		$this->Cell(0,5,$_SESSION["dependencia"],'TRB',1,'L');
+		}
+
+		$varX_aux = $this->GetX() + 185;
+		$varY_aux = $this->GetY() - 22;
+	    $this->SetFont('vera','B',5);
+	    $this->Text($varX_aux, $varY_aux,'PAGINA: '.$this->PageNo().'/TPAG');
+	    $this->Text($varX_aux, $varY_aux+3, 'FECHA: '.date("d/m/Y"));
+	    $this->Text($varX_aux, $varY_aux+6, 'HORA: '.date("h:i a"));
+	}//fin funtion
+}//fin de la clase PDF
+
+if(isset($ir) && $ir=='si'){ ?>
+<?= $sisap->Tabla($session->read('entidad_federal'),true,"RELACIÓN DE ORDENES DE PAGO",null,"950");?>
+<form name='data[relacion_ordenpago]' method = "post" id='form' action="<?php echo  $html->url('/reporte2/reporte_relacion_ordenes_pago/no'); ?>" onSubmit="return valida_reporte_relacion_ordenpago(3);">
+<?= $sisap->OpenTable("950")?>
+
+
+<table width="820" cellspacing="0" cellpadding="0">
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">
+    <b>A&ntilde;o:</b>&nbsp;&nbsp;&nbsp;&nbsp;
+    <?= $sisap->inputTagRemote('relacion_ordenpago/ano', array('url'=>'/consulta_relaciones_documentos/buscar_year_orden_pago/1', 'update'=>'td-beneficiarios', 'style'=>'text-align:center;', 'value'=>$ano,  'id'=>'ano', 'size'=>'4', 'onKeyPress'=>'return solonumeros(event);'))?>
+    </td>
+</tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center"><?= $sisap->radioTagRemote("relacion_ordenpago/estilo_reporte", array('1'=>'Todo según el número', '4'=>'Todo según el tipo de pago', '2'=>'Por beneficiario', '3'=>'Por tipo de pago', '5'=>'Ordenes sin cheque'), array('url1'=>'/reporte2/distinct_beneficiarios_ordenes_pago', 'update1'=>'td-beneficiarios', 'url2'=>'/reporte2/opcionfecha/1', 'update2'=>'td-opcionfecha', 'disabled'=>'enabled', 'id'=>'estilo_reporte'), null, 1);?></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-beneficiarios">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-opcionfecha"><?= $sisap->radioTagRemote("relacion_ordenpago/opcionfecha", array('1'=>'Generar todo', '2'=>'Generar por fecha'), array('url1'=>'/reporte2/seleccionarfecha/1', 'update1'=>'td-fecha', 'disabled'=>'enabled', 'id'=>'opcionfecha'), null, 1);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $html->radio('relacion_ordenpago/condicion_actividad', array('1'=>'Todo', '2'=>'Activas', '3'=>'Anuladas'), "&nbsp;&nbsp;&nbsp;", array('value'=>'1')) ?></td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+<tr><td align="center" id="td-fecha">&nbsp;</td></tr>
+<tr><td align="center">&nbsp;</td></tr>
+</table>
+
+
+<?= $html->submit('Generar', array('id'=>'enviar', 'disabled'=>'enabled')); ?>&nbsp;&nbsp;
+<?= $sisap->buttonTagRemote('/cnmp04_tipo/', array ('type'=>'button', 'value'=>'  Salir  '), array('url1' => '/administradors/vacio', 'update1'=>'principal'))?>
+<?=$sisap->CloseTable()?>
+
+
+<?php }elseif(isset($ir) && $ir=='no'){
+$_SESSION['subtituloreporte'] = $subtituloreporte;
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 20);
+
+/*
+* Todo esto de aqui para abajo es el cuerpo del reporte.
+*/
+if(isset($seguntipo) && $seguntipo=='si'){
+
+$ind=0;// Indice para llenar el vector_resumen
+foreach($tipopago as $a){
+$_SESSION['subtituloreporte']=$a['cepd03_ordenpago_tipopago']['denominacion'];
+$cont_acti=0;
+$cont_anul=0;
+$acum_acti=0;
+$acum_anul=0;
+
+	$pdf->AddPage();
+	$pdf->SetFont('vera','',6);
+	foreach($datos as $x){
+
+
+		if($x['cepd03_ordenpago_cuerpo']['cod_tipo_pago']==$a['cepd03_ordenpago_tipopago']['cod_tipo_pago']){
+
+			if($x['cepd03_ordenpago_cuerpo']['condicion_actividad']==1){
+
+				$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_orden_pago']),'TRL',0,'C');
+				$pdf->Cell(15,6,"",'TR',0,'C');
+				$pdf->Cell(20,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_orden_pago']),'TR',0,'C');
+				    $varX = $pdf->GetX();
+				    $varY = $pdf->GetY();
+				    $pdf->SetFont('vera','',5);
+				    $pdf->Cell(65,1,"",'T',2,'C');
+				    $pdf->MultiCell(65,2,$x['cepd03_ordenpago_cuerpo']['beneficiario'],'','L');//---[Beneficiario]
+				    $varX = $varX+65;
+				    $pdf->SetXY($varX,$varY);
+				    $pdf->SetFont('vera','',6);
+					$pdf->Cell(20,6,$sisap->Formato2($x['cepd03_ordenpago_cuerpo']['monto_orden_pago']),'TLR',0,'R');
+				if($x['cepd03_ordenpago_cuerpo']['cuenta_bancaria']!=0){
+					$pdf->Cell(30,6,$x['cepd03_ordenpago_cuerpo']['cuenta_bancaria'],'TLR',0,'C');
+					$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_cheque']),'TLR',0,'C');
+					$pdf->Cell(0,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_cheque']),'TLR',1,'C');
+					$pdf->Cell(0,0,"",'T',1);
+				}else{
+					$pdf->Cell(30,6,"",'TLR',0,'C');
+					$pdf->Cell(20,6,"",'TLR',0,'C');
+					$pdf->Cell(0,6,"",'TLR',1,'C');
+					$pdf->Cell(0,0,"",'T',1);
+				}
+
+				$acum_acti=$acum_acti+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+				$cont_acti++;
+
+			}elseif($x['cepd03_ordenpago_cuerpo']['condicion_actividad']==2){
+
+				$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_orden_pago']),'TRL',0,'C');
+					$varX = $pdf->GetX();
+				    $varY = $pdf->GetY();
+				    $pdf->SetFont('vera','',5);
+				    $pdf->Cell(15,1,"",'T',2,'C');
+				    $pdf->MultiCell(15,2,"ANULADA ".$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_proceso_anulacion']),'','C');
+				    $varX = $varX+15;
+				    $pdf->SetXY($varX,$varY);
+				$pdf->Cell(20,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_orden_pago']),'TRL',0,'C');
+				    $varX = $pdf->GetX();
+				    $varY = $pdf->GetY();
+				    $pdf->SetFont('vera','',5);
+				    $pdf->Cell(65,1,"",'T',2,'C');
+				    $pdf->MultiCell(65,2,$x['cepd03_ordenpago_cuerpo']['beneficiario'],'','L');//---[Beneficiario]
+				    $varX = $varX+65;
+				    $pdf->SetXY($varX,$varY);
+				    $pdf->SetFont('vera','',6);
+				$pdf->Cell(20,6,$sisap->Formato2($x['cepd03_ordenpago_cuerpo']['monto_orden_pago']),'TLR',0,'R');
+				if($x['cepd03_ordenpago_cuerpo']['cuenta_bancaria']!=0){
+					$pdf->Cell(30,6,$x['cepd03_ordenpago_cuerpo']['cuenta_bancaria'],'TLR',0,'C');
+					$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_cheque']),'TLR',0,'C');
+					$pdf->Cell(0,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_cheque']),'TLR',1,'C');
+					$pdf->Cell(0,0,"",'T',1);
+				}else{
+					$pdf->Cell(30,6,"",'TLR',0,'C');
+					$pdf->Cell(20,6,"",'TLR',0,'C');
+					$pdf->Cell(0,6,"",'TLR',1,'C');
+					$pdf->Cell(0,0,"",'T',1);
+				}
+
+				$acum_anul=$acum_anul+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+				$cont_anul++;
+
+			}//Fin else
+		}//Fin foreach
+	}
+
+	$pdf->SetFont('vera','B',8);
+	$pdf->Cell(0,7,"T O T A L E S",'TRLB',1,'C');
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(55,5,"CANTIDAD DE ORDENES ACTIVAS",'TRL',0,'C');
+	$pdf->Cell(50,5,"MONTO",'TR',0,'C');
+	$pdf->Cell(55,5,"CANTIDAD DE ORDENES ANULADAS",'TR',0,'C');
+	$pdf->Cell(0,5,"MONTO",'TR',1,'C');
+
+	$pdf->SetFont('vera','B',7);
+	$pdf->Cell(55,5,$cont_acti,'TRLB',0,'C');
+	$pdf->Cell(50,5,$sisap->Formato2($acum_acti),'TRB',0,'R');
+	$pdf->Cell(55,5,$cont_anul,'TRB',0,'C');
+	$pdf->Cell(0,5,$sisap->Formato2($acum_anul),'TRB',1,'R');
+
+
+	$vector_resumen[$ind] =  array('titulo'=>$a['cepd03_ordenpago_tipopago']['denominacion'],
+								  	'cant_activas'=>$cont_acti,
+								  	'monto_activas'=>$acum_acti,
+								  	'cant_anuladas'=>$cont_anul,
+								 	'monto_anuladas'=>$acum_anul,
+								  	);
+	$ind++;
+
+}
+
+	$_SESSION['subtituloreporte']="RESUMEN DE ORDENES";
+	$_SESSION['encabezado']="no";
+	$pdf->AddPage();
+
+	$pdf->Ln(2);
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,4,"",'TRL',0,'C');
+	$pdf->Cell(35,4,"CANTIDAD",'TRL',0,'C');
+	$pdf->Cell(30,4,"",'TRL',0,'C');
+	$pdf->Cell(35,4,"CANTIDAD",'TRL',0,'C');
+	$pdf->Cell(0,4,"",'TRL',1,'C');
+
+	$pdf->Cell(70,3,"TIPO ORDEN DE PAGO",'RLB',0,'C');
+	$pdf->Cell(35,3,"ORDENES ACTIVAS",'RLB',0,'C');
+	$pdf->Cell(30,3,"MONTO",'RLB',0,'C');
+	$pdf->Cell(35,3,"ORDENES ANULADAS",'RLB',0,'C');
+	$pdf->Cell(0,3,"MONTO",'RLB',1,'C');
+
+	$resumen_cant_activa  = 0;
+	$resumen_monto_activa = 0;
+	$resumen_cant_anul    = 0;
+	$resumen_monto_anul   = 0;
+
+	for($xy=0; $xy<count($vector_resumen); $xy++){
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,5,$vector_resumen[$xy]['titulo'],'RLB',0,'L');
+	$pdf->SetFont('vera','',6);
+	$pdf->Cell(35,5,$vector_resumen[$xy]['cant_activas'],'RLB',0,'C');
+	$pdf->Cell(30,5,$sisap->Formato2($vector_resumen[$xy]['monto_activas']),'RLB',0,'R');
+	$pdf->Cell(35,5,$vector_resumen[$xy]['cant_anuladas'],'RLB',0,'C');
+	$pdf->Cell(0,5,$sisap->Formato2($vector_resumen[$xy]['monto_anuladas']),'RLB',1,'R');
+
+	$resumen_cant_activa  = $resumen_cant_activa + $vector_resumen[$xy]['cant_activas'];
+	$resumen_monto_activa = $resumen_monto_activa + $vector_resumen[$xy]['monto_activas'];
+	$resumen_cant_anul    = $resumen_cant_anul + $vector_resumen[$xy]['cant_anuladas'];
+	$resumen_monto_anul   = $resumen_monto_anul + $vector_resumen[$xy]['monto_anuladas'];
+	}
+
+	$pdf->SetFont('vera','B',6);
+	$pdf->Cell(70,6,"T O T A L E S",'RLB',0,'C');
+	$pdf->Cell(35,6,$resumen_cant_activa,'RLB',0,'C');
+	$pdf->Cell(30,6,$sisap->Formato2($resumen_monto_activa),'RLB',0,'R');
+	$pdf->Cell(35,6,$resumen_cant_anul,'RLB',0,'C');
+	$pdf->Cell(0,6,$sisap->Formato2($resumen_monto_anul),'RLB',1,'R');
+
+}else{
+$pdf->AddPage();
+$pdf->SetFont('vera','',6);
+
+$cont_acti=0;
+$cont_anul=0;
+$acum_acti=0;
+$acum_anul=0;
+$total_bene=0;
+
+foreach($datos as $x){
+
+
+if($x['cepd03_ordenpago_cuerpo']['condicion_actividad']==1){
+
+
+			  if ($this->data['relacion_ordenpago']['estilo_reporte']==3){
+				if ($total_bene==0){$beneficiario=$x['cepd03_ordenpago_cuerpo']['beneficiario'];}
+					if ($beneficiario==$x['cepd03_ordenpago_cuerpo']['beneficiario']){
+						$total_bene=($total_bene+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago']);
+					}else{
+						$beneficiario=$x['cepd03_ordenpago_cuerpo']['beneficiario'];
+						$pdf->Cell(20,6,"",'TRL',0,'C');
+						$pdf->Cell(15,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(65,6,"",'TR',0);
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,6,$sisap->Formato2($total_bene),'TR',0,'R');
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(30,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(0,6,"",'TR',1,'C');
+						$total_bene=$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+						}
+		  	}
+
+
+	$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_orden_pago']),'TRL',0,'C');
+	$pdf->Cell(15,6,"",'TR',0,'C');
+	$pdf->Cell(20,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_orden_pago']),'TR',0,'C');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',5);
+	    $pdf->Cell(65,1,"",'T',2,'C');
+	    $pdf->MultiCell(65,2,$x['cepd03_ordenpago_cuerpo']['beneficiario'],'','L');//---[Beneficiario]
+	    $varX = $varX+65;
+	    $pdf->SetXY($varX,$varY);
+	    $pdf->SetFont('vera','',6);
+	$pdf->Cell(20,6,$sisap->Formato2($x['cepd03_ordenpago_cuerpo']['monto_orden_pago']),'TLR',0,'R');
+	if($x['cepd03_ordenpago_cuerpo']['cuenta_bancaria']!=0){
+		$pdf->Cell(30,6,$x['cepd03_ordenpago_cuerpo']['cuenta_bancaria'],'TLR',0,'C');
+		$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_cheque']),'TLR',0,'C');
+		$pdf->Cell(0,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_cheque']),'TLR',1,'C');
+		$pdf->Cell(0,0,"",'T',1);
+	}else{
+		$pdf->Cell(30,6,"",'TLR',0,'C');
+		$pdf->Cell(20,6,"",'TLR',0,'C');
+		$pdf->Cell(0,6,"",'TLR',1,'C');
+		$pdf->Cell(0,0,"",'T',1);
+	}
+
+	$acum_acti=$acum_acti+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+	$cont_acti++;
+
+}elseif($x['cepd03_ordenpago_cuerpo']['condicion_actividad']==2){
+
+
+			  if ($this->data['relacion_ordenpago']['estilo_reporte']==3){
+				if ($total_bene==0){$beneficiario=$x['cepd03_ordenpago_cuerpo']['beneficiario'];}
+					if ($beneficiario==$x['cepd03_ordenpago_cuerpo']['beneficiario']){
+						$total_bene=($total_bene+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago']);
+					}else{
+						$beneficiario=$x['cepd03_ordenpago_cuerpo']['beneficiario'];
+						$pdf->Cell(20,6,"",'TRL',0,'C');
+						$pdf->Cell(15,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(65,6,"",'TR',0);
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,6,$sisap->Formato2($total_bene),'TR',0,'R');
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(30,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(0,6,"",'TR',1,'C');
+						$total_bene=$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+						}
+		  	}
+
+
+	$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_orden_pago']),'TRL',0,'C');
+		$varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',5);
+	    $pdf->Cell(15,1,"",'T',2,'C');
+	    $pdf->MultiCell(15,2,"ANULADA ".$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_proceso_anulacion']),'','C');
+	    $varX = $varX+15;
+	    $pdf->SetXY($varX,$varY);
+	//$pdf->Cell(15,6,"ANULADA",'TR',0,'C');
+	$pdf->Cell(20,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_orden_pago']),'TRL',0,'C');
+	    $varX = $pdf->GetX();
+	    $varY = $pdf->GetY();
+	    $pdf->SetFont('vera','',5);
+	    $pdf->Cell(65,1,"",'T',2,'C');
+	    $pdf->MultiCell(65,2,$x['cepd03_ordenpago_cuerpo']['beneficiario'],'','L');//---[Beneficiario]
+	    $varX = $varX+65;
+	    $pdf->SetXY($varX,$varY);
+	    $pdf->SetFont('vera','',6);
+	$pdf->Cell(20,6,$sisap->Formato2($x['cepd03_ordenpago_cuerpo']['monto_orden_pago']),'TLR',0,'R');
+	if($x['cepd03_ordenpago_cuerpo']['cuenta_bancaria']!=0){
+		$pdf->Cell(30,6,$x['cepd03_ordenpago_cuerpo']['cuenta_bancaria'],'TLR',0,'C');
+		$pdf->Cell(20,6,$sisap->mascara_ocho($x['cepd03_ordenpago_cuerpo']['numero_cheque']),'TLR',0,'C');
+		$pdf->Cell(0,6,$sisap->cambia_fecha($x['cepd03_ordenpago_cuerpo']['fecha_cheque']),'TLR',1,'C');
+		$pdf->Cell(0,0,"",'T',1);
+	}else{
+		$pdf->Cell(30,6,"",'TLR',0,'C');
+		$pdf->Cell(20,6,"",'TLR',0,'C');
+		$pdf->Cell(0,6,"",'TLR',1,'C');
+		$pdf->Cell(0,0,"",'T',1);
+		}
+
+
+	$acum_anul=$acum_anul+$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+	$cont_anul++;
+
+	}//Fin else
+}//Fin foreach
+
+			  if ($this->data['relacion_ordenpago']['estilo_reporte']==3){
+						$pdf->Cell(20,6,"",'TRL',0,'C');
+						$pdf->Cell(15,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(65,6,"",'TR',0);
+						$pdf->SetFont('vera','B',6);
+						$pdf->Cell(20,6,$sisap->Formato2($total_bene),'TR',0,'R');
+						$pdf->SetFont('vera','',6);
+						$pdf->Cell(30,6,"",'TR',0,'C');
+						$pdf->Cell(20,6,"",'TR',0,'C');
+						$pdf->Cell(0,6,"",'TR',1,'C');
+						$total_bene=$x['cepd03_ordenpago_cuerpo']['monto_orden_pago'];
+
+			  }
+
+$pdf->SetFont('vera','B',8);
+$pdf->Cell(0,7,"T O T A L E S",'TRLB',1,'C');
+$pdf->SetFont('vera','B',6);
+$pdf->Cell(55,5,"CANTIDAD DE ORDENES ACTIVAS",'TRL',0,'C');
+$pdf->Cell(50,5,"MONTO",'TR',0,'C');
+$pdf->Cell(55,5,"CANTIDAD DE ORDENES ANULADAS",'TR',0,'C');
+$pdf->Cell(0,5,"MONTO",'TR',1,'C');
+
+$pdf->SetFont('vera','B',7);
+$pdf->Cell(55,5,$cont_acti,'TRLB',0,'C');
+$pdf->Cell(50,5,$sisap->Formato2($acum_acti),'TRB',0,'R');
+$pdf->Cell(55,5,$cont_anul,'TRB',0,'C');
+$pdf->Cell(0,5,$sisap->Formato2($acum_anul),'TRB',1,'R');
+}//fin else principal
+
+
+
+$pdf->Output('relacion_de_ordenes_de_pago_'.date("d-m-y").".pdf",'D');
+}
+?>

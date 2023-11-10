@@ -1,0 +1,228 @@
+<?php if($opcion==1){ ?>
+
+<?= $sisap->Tabla($entidad_federal, true, "&Iacute;NDICE DE CATEGOR&Iacute;AS PROGRAM&Aacute;TICAS", null, "750");?>
+
+<form name='data[v_2014_categoria_inst]'  method = "post" id='form' action="<?php echo $html->url('/reporte_formulacion_alc2014/forma_2103/'.$ir); ?>">
+
+<?= $sisap->OpenTable("750") ?>
+
+<table width="100%" border="0" align="left" class="" cellspacing="0" cellpadding="0">
+	<tr>
+	    <td align="center">
+	          EJERCICIO PRESUPUESTARIO FORMULADO:<?= $html->selectTag('v_2014_categoria/ano', $anos, $ano_formulacion, array('id'=>'ano_formular', "style"=>"width:70px")) ?> FORMA: 2103</td>
+	</tr>
+</table>
+<br><br>
+	<?= $sisap->radio_consolidado('v_2014_categoria/consolidacion', array(), '', true)  ?>
+<br><br>
+<div id="funcion"></div>
+
+<?= $html->submit('Generar'); ?>
+
+<?= $sisap->buttonTagRemote('/v_2014_categoria/', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+<?= $sisap->CloseTable() ?>
+
+</form>
+
+
+
+<?php
+
+
+}else{
+
+	set_time_limit(0);
+
+    vendor('utf8_tcpdf/tcpdf');
+
+    class fpdfview extends TCPDF {
+
+        function setup($orientation = 'L', $unit = 'mm', $format = 'EXTRAOFICE') {
+            $this->TCPDF($orientation, $unit, $format);
+        }
+
+        function fpdfOutput($name = 'page.pdf', $destination = 's') {
+            return $this->Output($name, $destination);
+        }
+
+        function Header() {
+            $this->top_reporte22(array("ÍNDICE DE CATEGORÍAS PROGRAMÁTICAS"), array("Y"=>"6", "X"=>"30", "Z"=>"13"), array("Y"=>"20", "X"=>"354"));
+
+            $this->SetFont('vera', 'B', 7);
+            $this->Cell(14, 4, '', 'TRL', 0, 'C',true);
+            $this->Cell(20, 4, '', 'TR', 0, 'C', true);
+            $this->Cell(20, 4, 'SUB', 'TR', 0, 'C', true);
+            $this->Cell(20, 4, '', 'TR', 0, 'C', true);
+            $this->Cell(20, 4, 'ACTIVIDAD', 'TR', 0, 'C', true);
+            $this->Cell(160, 4, '', 'TR', 0, 'C', true);
+            $this->Cell(0, 4, '', 'TR', 1, 'C', true);
+
+            $this->Cell(14, 5, 'SECTOR', 'RBL', 0, 'C', true);
+            $this->Cell(20, 5, 'PROGRAMA', 'RB', 0, 'C', true);
+            $this->Cell(20, 5, 'PROGRAMA', 'RB', 0, 'C', true);
+            $this->Cell(20, 5, 'PROYECTO', 'RB', 0, 'C', true);
+            $this->Cell(20, 5, 'U OBRA', 'RB', 0, 'C', true);
+            $this->SetFont('vera', 'B', 8);
+            $this->Cell(160, 5, 'DENOMINACIÓN', 'RB', 0, 'C', true);
+            $this->Cell(0, 5, 'UNIDAD EJECUTORA', 'RB', 1, 'C', true);
+
+        }
+
+        function Footer() {
+            $this->setY(-10);
+            $this->SetFont('vera', 'B', 7);
+            $this->Cell(0, 7, 'FORMA: 2103', '', 1, 'R');
+        }
+
+    function tam_celda($total_char){
+		if($total_char<80){
+			$heigth = 8;
+		}elseif($total_char>=80 && $total_char<160){
+			$heigth = 12;
+		}elseif($total_char>=160 && $total_char<240){
+			$heigth = 18;
+		}elseif($total_char>=240 && $total_char<320){
+			$heigth = 24;
+		}elseif($total_char>=320 && $total_char<400){
+			$heigth = 30;
+		}elseif($total_char>=400 && $total_char<480){
+			$heigth = 36;
+		}elseif($total_char>=480 && $total_char<560){
+			$heigth = 42;
+		}elseif($total_char>=560 && $total_char<640){
+			$heigth = 48;
+		}elseif($total_char>=640 && $total_char<720){
+			$heigth = 54;
+		}else{
+			$heigth = 60;
+		}
+		return $heigth;
+    }
+    } // End Class
+
+    $pdf = new fpdfview('L', 'mm', 'EXTRAOFICE');
+    $pdf->AliasNbPages('TPAG');
+    $pdf->SetTopMargin(30);
+    $pdf->SetLeftMArgin(5);
+    $pdf->SetRightMargin(5);
+    $pdf->SetAutoPageBreak(true, 10);
+    $pdf->AddPage();
+
+    $pdf->SetFont('vera', '', 7);
+
+if(!empty($datos)){
+	$cod_sector = '';
+    foreach($datos as $row_datos){
+		$deno = str_replace("\n", "", $row_datos[$modelo]['denominacion']);
+		$uni_eje = str_replace("\n", "", $row_datos[$modelo]['unidad_ejecutora']);
+		$can_a = strlen($deno);
+		$can_b = strlen($uni_eje);
+
+		if($can_a > $can_b){
+			$total_char = $can_a;
+		}else{
+			$total_char = $can_b;
+		}
+
+		$theigth = $pdf->tam_celda($total_char);
+
+			if($row_datos[$modelo]['cod_sector'] != 0 && $row_datos[$modelo]['cod_programa'] == 0){
+				$bs = 'B';
+				$bp  = '';
+				$bsp = '';
+				$bpy = '';
+				$bao = '';
+				$cod_programa = '';
+				$cod_sub_prog = '';
+				$cod_proyecto = '';
+				$cod_activ_obra = '';
+			}else if($row_datos[$modelo]['cod_programa'] != 0 && $row_datos[$modelo]['cod_sub_prog'] == 0 && $row_datos[$modelo]['cod_proyecto'] == 0 && $row_datos[$modelo]['cod_activ_obra'] == 0){
+				$bp = 'B';
+				$bs  = '';
+				$bsp = '';
+				$bpy = '';
+				$bao = '';
+				$cod_programa = $sisap->AddCero2($row_datos[$modelo]['cod_programa']);
+				$cod_sub_prog = '';
+				$cod_proyecto = '';
+				$cod_activ_obra = '';
+			}else if($row_datos[$modelo]['cod_programa'] != 0 && $row_datos[$modelo]['cod_sub_prog'] != 0 && $row_datos[$modelo]['cod_proyecto'] == 0 && $row_datos[$modelo]['cod_activ_obra'] == 0){
+				$bsp = 'B';
+				$bs  = '';
+				$bp  = '';
+				$bpy = '';
+				$bao = '';
+				$cod_sub_prog = $sisap->AddCero2($row_datos[$modelo]['cod_sub_prog']);
+				$cod_proyecto = '';
+				$cod_activ_obra = '';
+			}else if($row_datos[$modelo]['cod_programa'] != 0 && $row_datos[$modelo]['cod_sub_prog'] != 0 && $row_datos[$modelo]['cod_proyecto'] != 0 && $row_datos[$modelo]['cod_activ_obra'] == 0){
+				$bpy = 'B';
+				$bs  = '';
+				$bp  = '';
+				$bsp = '';
+				$bao = '';
+				$cod_proyecto = $sisap->AddCero2($row_datos[$modelo]['cod_proyecto']);
+				$cod_activ_obra = '';
+			}else{
+				$bs  = '';
+				$bp  = '';
+				$bsp = '';
+				$bpy = '';
+				$bao = '';
+				$cod_programa = $sisap->AddCero2($row_datos[$modelo]['cod_programa']);
+				$cod_sub_prog = $sisap->AddCero2($row_datos[$modelo]['cod_sub_prog']);
+				$cod_proyecto = $sisap->AddCero2($row_datos[$modelo]['cod_proyecto']);
+				$cod_activ_obra = $sisap->AddCero2($row_datos[$modelo]['cod_activ_obra']);
+			}
+
+		$pdf->SetFont('vera', $bs, 7);
+    	$pdf->Cell(14, $theigth, $sisap->AddCero2($row_datos[$modelo]['cod_sector']), 'RL', 0, 'C'); // SECTOR
+    	$pdf->SetFont('vera', $bp, 7);
+    	$pdf->Cell(20, $theigth, $cod_programa, 'R', 0, 'C');  // PROGRAMA
+    	$pdf->SetFont('vera', $bsp, 7);
+    	$pdf->Cell(20, $theigth, $cod_sub_prog, 'R', 0, 'C');  // SUB PROGRAMA
+    	$pdf->SetFont('vera', $bpy, 7);
+    	$pdf->Cell(20, $theigth, $cod_proyecto, 'R', 0, 'C');  // PROYECTO
+    	$pdf->SetFont('vera', $bao, 7);
+   		$pdf->Cell(20, $theigth, $cod_activ_obra, 'R', 0, 'C');  // ACTIVIDAD U OBRA
+
+		$pdf->SetFont('vera', $bs . $bp . $bsp . $bpy . $bao, 7);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", '', 0, 'L');
+                $pdf->Cell(160, 1, "", '', 2, 'L');
+                $pdf->MultiCell(159, 3, $deno, '', 'L'); // --------[DENOMINACIÓN]
+                $varX = $varX + 160;
+                $pdf->SetXY($varX, $varY);
+
+                $varX = $pdf->GetX();
+                $varY = $pdf->GetY();
+                $pdf->Cell(1, $theigth, "", 'L', 0, 'L');
+                $pdf->Cell(0, 1, "", '', 2, 'L');
+                $pdf->MultiCell(0, 3, $uni_eje, '', 'L'); // --------[UNIDAD EJECUTORA]
+                $varX = $varX;
+                $pdf->SetXY($varX, $varY);
+
+                $pdf->Cell(0, $theigth, "", 'R', 1, 'L');
+                $pdf->Cell(0, 0, "", 'T', 1, 'L');
+                // $cod_sector = $row_datos[$modelo]['cod_sector'];
+    } // Fin Foreach
+} // Fin IF Empty
+
+else{
+            $pdf->SetFont('vera', 'B', 6);
+            $pdf->Cell(12, 6, '', 'TRL', 0, 'C');
+            $pdf->Cell(16, 6, '', 'TR', 0, 'C');
+            $pdf->Cell(16, 6, '', 'TR', 0, 'C');
+            $pdf->Cell(15, 6, '', 'TR', 0, 'C');
+            $pdf->Cell(15, 6, '', 'TR', 0, 'C');
+            $pdf->Cell(120, 6, '', 'TR', 0, 'C');
+            $pdf->Cell(0, 6, '', 'TR', 1, 'C');
+            $pdf->Cell(0, 0, "", 'T', 1, 'L');
+}
+	$pdf->OutPut('forma_2103_'.date("d-m-Y").'.pdf','D');
+
+}
+?>

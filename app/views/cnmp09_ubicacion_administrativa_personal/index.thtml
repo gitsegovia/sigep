@@ -1,0 +1,133 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+
+
+ function denominacion($deno, $codigo, $cod_trans){
+	for($j=0; $j<count($deno);$j++){
+		if($codigo[$j]==$cod_trans){
+			$deno_trans = $deno[$j];
+			break;
+		}
+	}
+
+	return $deno_trans;
+}
+?>
+<div id="principal_cnmp10">
+<?= $sisap->Tabla($session->read('entidad_federal'),true,'UBICACIÓN ADMINISTRATIVA DE LA DIRECCIÓN DE PERSONAL','','750'); ?>
+<?= $sisap->OpenTable('750'); ?>
+<form name='data[cnmp09]'  method = "post" id='form'>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr>
+		<td align="center" width="20%">&nbsp;</td>
+		<td align="center" width="15%">Selección</td>
+		<td align="center" width="65%">Denominación</td>
+	</tr>
+
+	<tr>
+		<td align="legth" width="20%">Tipo de Nómina</td>
+		<td align="center" width="15%"><?=  $sisap->selectTagRemote('cnmp09/cod_nomina', isset($nomina)?$nomina:array(),null,  '', array('onchange1'=>'/cnmp09_ubicacion_administrativa_personal/mostrar1/deno_nomina', 'update1'=>'deno_nomina','onchange2'=>'/cnmp09_ubicacion_administrativa_personal/select2/superior', 'update2'=>'select_st_2','onchange3'=>'/cnmp09_ubicacion_administrativa_personal/select_transferir', 'update3'=>'transferir','id'=>'select_1',true), null, true); ?></td>
+		<td align="center" width="65%" id="deno_nomina"><?= $html->input('cnmp09/deno_nomina', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'cod_nomina','class'=>'inputtext'), false); ?></td>
+	</tr>
+
+	<tr>
+		<td align="legth" width="10%">Dirección Superior</td>
+		<td align="center" width="10%" id="select_st_2"><select id="select_2" class="select100"></select></td>
+		<td align="center" width="70%" id="deno_superior"><?= $html->input('cnmp09/deno_parroquia', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'deno_superior1','class'=>'inputtext'), false); ?></td>
+	</tr>
+
+	<tr>
+		<td align="legth" width="10%">Coordinación</td>
+		<td align="center" width="10%" id="select_st_3"><select id="select_3" class="select100"></select></td>
+		<td align="center" width="70%" id="deno_coordinacion"><?= $html->input('cnmp09/deno_banco', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'deno_coordinacion1','class'=>'inputtext'), false); ?></td>
+	</tr>
+	<tr>
+		<td align="legth" width="10%">Secretaria</td>
+		<td align="center" width="10%" id="select_st_4"><select id="select_4" class="select100"></select></td>
+		<td align="center" width="70%" id="deno_secretaria"><?= $html->input('cnmp09/deno_banco', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'deno_secretaria1','class'=>'inputtext'), false); ?></td>
+	</tr>
+	<tr>
+		<td align="legth" width="10%">Dirección</td>
+		<td align="center" width="10%" id="select_st_5"><select id="select_5" class="select100"></select></td>
+		<td align="center" width="70%" id="deno_direccion"><?= $html->input('cnmp09/deno_banco', $htmlAttributes = array('style'=>'width:98%','size'=>'3', 'readonly'=>'readonly','id'=>'deno_direccion1','class'=>'inputtext'), false); ?></td>
+	</tr>
+
+</table>
+
+<br>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+	<tr class="tr_negro" align="center">
+		<td colspan="4">TRANSFERENCIA DE ESTA NÓMINA A OTRAS</td>
+	</tr>
+	<tr>
+		<td width="10%" align="center">Selección</td>
+		<td width="65%" align="center">Denominación de la nómina</td>
+		<td width="15%" align="center">---</td>
+	</tr>
+
+	<tr>
+		<td id="transferir"><select id="select_transferir"></select></td>
+		<td id="showdeno_transferir" width="60%"><input name="data[cnmp10_asignacion_bolivares_escala_sueldo][deno_transferir]"  value="" id="deno_transferencia"  maxlength="8" size="5" style="width:98%" readonly class="inputtext"></td>
+		<td><?= $sisap->submitTagRemote('Transferir', array('disabled'=>'disabled','id'=>'save_transferir','url1' => '/cnmp09_ubicacion_administrativa_personal/guardar_transferir', 'update1'=>'nominas')); ?></td>
+	</tr>
+
+</table>
+<br>
+
+<div id="nominas" style="height:200px; overflow:auto;">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablacompromiso tablacompromiso2">
+		<tr class="tr_negro">
+			<td align="center" colspan="2">TIPOS DE NÓMINA QUE POSEEN UNA UBICACIÓN ADMINISTRATIVA REGISTRADA</td>
+		</tr>
+		<tr>
+			<td align="center" width="20%">C&oacute;digo de Nómina</td>
+			<td align="center" width="80%">Denominaci&oacute;n de la Nómina</td>
+		</tr>
+
+	<?if(isset($opciones) && $opciones!=''){
+		$i=0;
+		$j=0;
+		foreach($deno_trans as $x){
+			$deno[$j] = $x['Cnmd01']['denominacion'];
+			$codigo[$j] = $x['Cnmd01']['cod_tipo_nomina'];
+			$j++;
+		}
+		foreach($opciones as $row){
+			$cod_trans = $row['cnmd09_ubicacion_direccion_personal']['cod_tipo_nomina'];
+			if($i%2==0){
+				$color="#CDF2FF";
+			}else{
+				$color="#DAEBFF";
+			}
+			?>
+			<tr>
+				<td><input name="data[cnmp10_deduccion_bolivares_escala_sueldo][muestra_trans]"  value="<?=mascara_tres($cod_trans)?>"   maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly class="inputtext"></td>
+				<td><input name="data[cnmp10_deduccion_bolivares_escala_sueldo][muestra_deno_trans]"  value="<?=denominacion($deno, $codigo,$cod_trans)?>"   maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly class="inputtext"></td>
+			</tr>
+		<?
+		}
+	}else{ ?>
+		<tr>
+			<td><input name="data[cnmp10_deduccion_bolivares_escala_sueldo][muestra_trans]"  value=""   maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%;text-align:center" readonly class="inputtext"></td>
+			<td><input name="data[cnmp10_deduccion_bolivares_escala_sueldo][muestra_deno_trans]"  value=""   maxlength="8" onKeyPress="return solonumeros(event);" style="width:98%" readonly class="inputtext"></td>
+		</tr>
+	<? } ?>
+	</table>
+</div>
+
+<br>
+<?= $sisap->submitTagRemote('Grabar', array('id'=>'save','disabled'=>'','url1' => '/cnmp09_ubicacion_administrativa_personal/guardar', 'update1'=>'vacio')); ?>
+ <?= $sisap->submitTagRemote('Eliminar', array('id'=>'eliminar_asignacion','url1' => '/cnmp09_ubicacion_administrativa_personal/eliminar', 'update1'=>'principal'),true); ?>
+ <?= $sisap->submitTagRemote('Consultar', array('id'=>'consultar',''=>'disabled','url1' => '/cnmp09_ubicacion_administrativa_personal/consulta', 'update1'=>'principal')); ?>
+ <?= $sisap->buttonTagRemote('/csrp01_solicitud_recurso/salir', array ('type'=>'button', 'value'=>'Salir'), array('url1' => '/modulos/vacio', 'update1'=>'principal'))?>
+
+</div>
+<div id="vacio"></div>
+</form>
+<?$sisap->CloseTable(); ?>

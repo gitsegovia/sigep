@@ -1,0 +1,101 @@
+<?php
+if(isset($errorMessage)) {
+          echo $sisap->mensajes_error($errorMessage);
+}else if(isset($Message_existe)){
+ 	echo $sisap->mensajes_correcto($Message_existe);
+}
+if(isset($errorExcede) && $errorExcede==true){
+	echo $sisap->mensajes_error("Disculpe esta partida presupuestaria ya fue procesada...");
+}
+?>
+
+<div id="div_consulta" style="height:300px;overflow-y:auto;">
+<table width="100%" border="0" class="tablacompromiso tablacompromiso2" cellspacing="0" cellpadding="0">
+		<tr>
+			<th colspan="16" style="font-weight:bold;background-color:#e0ffff;color:#840000;font-size:12pt;text-align:center;text-shadow: 0.06em 0.05em gray;" class='input_datopk'>PROCESOS REALIZADOS</th>
+		</tr>
+		<tr class="tr_negro">
+			<td align="center"  width="5%">Depen</td>
+			<td align="center" width="5%">Sector</td>
+			<td align="center" width="5%">Prog</td>
+			<td align="center" width="5%">Sub <br />Prog </td>
+			<td align="center" width="5%">Proy</td>
+			<td align="center" width="5%">Activ <br />Obra </td>
+			<td align="center" width="5%">Part</td>
+			<td align="center" width="5%">Gen</td>
+			<td align="center" width="5%">Esp</td>
+			<td align="center" width="5%">Sub <br />Esp </td>
+			<td align="center" width="5%">Auxiliar</td>
+			<td align="center" width="9%">Fecha</td>
+			<td align="center" width="9%">Monto<BR />Disponible</td>
+			<td align="center" width="9%">Monto Actual<BR />Congelado</td>
+			<td align="center" width="9%">Monto a<BR />Congelar</td>
+			<td align="center" width="9%">Monto a<BR />Descongelar</td>
+		</tr>
+
+<?php
+  if(!empty($datosFILAS)){
+ 	$i=0;
+    foreach($datosFILAS as $codigos){
+    	if($i%2==0){
+    		$color="#CDF2FF";
+    	}else{
+    		$color="#DAEBFF";
+    	}
+?>
+  <tr bgcolor="<?=$color?>" class="textNegro2">
+    <td align="center"><?=$cod_dep;?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_sector'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_programa'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_sub_prog'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_proyecto'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_activ_obra'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_partida'],3);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_generica'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_especifica'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_sub_espec'],2);?></td>
+    <td align="center"><?=mascara($codigos['cfpd05_congelar_descongelar']['cod_auxiliar'],4);?></td>
+    <td align="center"><?=$sisap->cambia_fecha($codigos['cfpd05_congelar_descongelar']['fecha']);?></td>
+    <td align="right"><?=$sisap->Formato2($codigos['cfpd05_congelar_descongelar']['disponibilidad']);?></td>
+    <td align="right"><?=$sisap->Formato2($codigos['cfpd05_congelar_descongelar']['monto_congelado_acum']);?></td>
+    <td align="right"><?=$sisap->Formato2($codigos['cfpd05_congelar_descongelar']['monto_congelado']);?></td>
+    <td align="right"><?=$sisap->Formato2($codigos['cfpd05_congelar_descongelar']['monto_descongelado']);?></td>
+  </tr>
+<?php
+    	$i++;
+    }//fin foreach
+  }else{ $i=0;
+?>
+		<tr bgcolor="#CDF2FF">
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+<?php } ?>
+<tr><td colspan="16">&nbsp;</td></tr>
+</table>
+<script language="JavaScript" type="text/javascript">
+	document.getElementById('cant_pp').value='<?=$i?>';
+</script>
+
+<? $sisap->link_paginacion_ventanas('/cfpp05/add_pp_consulta/', 'div_consulta', $total_paginas, $pagina_actual, $anterior, $siguiente, $ultimo); ?>
+
+<?= $sisap->buttonTagRemote('cfpp05/primero', array ('value'=>'Primero' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cfpp05/add_pp_consulta/1', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/anterior', array ('value'=>'Anterior' ,  'disabled'=> ''.$sisap->ant_sig($mostrarA).''), array('url1' => '/cfpp05/add_pp_consulta/'.$anterior.'', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/siguiente', array ('value'=>'Siguiente' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cfpp05/add_pp_consulta/'.$siguiente.'', 'update1'=>'div_consulta')) ?>&nbsp;
+<?= $sisap->buttonTagRemote('cfpp05/ultimo', array ('value'=>'Último' ,  'disabled'=> ''.$sisap->ant_sig($mostrarS).''), array('url1' => '/cfpp05/add_pp_consulta/'.$ultimo.'', 'update1'=>'div_consulta')) ?>&nbsp;
+
+</div>

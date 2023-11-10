@@ -1,0 +1,247 @@
+<?php
+
+
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo'] = $titulo_grafica;
+class fpdfview extends TCPDF{
+    function setup ($orientation='Landscape',$unit='mm',$format='Letter') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+	function Header(){
+		$this->top_reporte2($_SESSION['titulo'], array("Y"=>"11", "X"=>"15", "Z"=>"14"), null);
+
+            if($_SESSION["tipo_top"]==0){
+
+	        $this->SetFont('vera','B',7);
+
+	        $this->Cell(40,5,'República','TBRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+			$this->Ln(24);
+
+	  }else if($_SESSION["tipo_top"]==1){
+
+	        $this->SetFont('vera','B',7);
+
+	        $this->Cell(40,5,'República','TBRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+		    $this->Cell(40,5,'Estado','BRL',0,'L');
+			$this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+			$this->Ln(19);
+
+
+	  }else if($_SESSION["tipo_top"]==2){
+
+	  	     $this->SetFont('vera','B',7);
+
+	         $this->Cell(40,5,'República','TBRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+	  	     $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+		     $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+		     $this->Ln(19);
+
+	  }else if($_SESSION["tipo_top"]==3){
+
+	  	     $this->SetFont('vera','B',7);
+
+	         $this->Cell(40,5,'República','TBRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_REPUBLICA"],'TBR',1,'L'); //// AQUIE EL ESTADO
+
+	  	     $this->Cell(40,5,'Estado','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_ESTADO"],'BR',1,'L'); //// AQUIE EL ESTADO
+
+			 $this->Cell(40,5,'Tipo de Institución','BRL',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_COD_TIPO_INST"],'BR',1,'L'); //// AQUIE EL TIPO DE INSTITUCIÓN
+
+   			 $this->Cell(40,5,'Institución','RLB',0,'L');
+			 $this->Cell(0,5,$_SESSION["DENO_INST"],'RB',1,'L'); //// AQUIE LA INSTITUCIÓN
+
+			 $this->Ln(9);
+
+	  }else{
+	  	     $this->Ln(29);
+	  }
+
+
+	}//fin funtion
+}//fin clase
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 10);
+
+if(isset($tipo_top)){
+	$_SESSION["tipo_top"]           = $tipo_top;
+	$_SESSION["DENO_REPUBLICA"]     = $DENO_REPUBLICA;
+	$_SESSION["DENO_ESTADO"]        = $DENO_ESTADO;
+	$_SESSION["DENO_COD_TIPO_INST"] = $DENO_COD_TIPO_INST;
+	$_SESSION["DENO_INST"]          = $DENO_INST;
+}
+$pdf->AddPage();
+$pdf->Ln(45);
+
+$suma = 5;
+
+
+              if(isset($torta)){
+              	$suma = 23;
+              	$posicion=55;
+              	$tamaño  = 80;
+              	if($cuenta_monto>=17){$posicion=6; $suma=23; $tamaño  = 75;}
+				$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$username.'_'.$rdm.'.png', $posicion,42+$suma,0,$tamaño);
+				$posicion = 138;
+				$pdf->Ln(15);
+				$suma = 5;
+              }else{
+              	$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$username.'_'.$rdm.'.png',40,66+$suma,0,40);
+				$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$username.'_'.$rdm.'.png', 120,60+$suma,0,50);
+				$posicion = 123;
+              }
+
+                $posicion +=5;
+
+				$pdf->SetFont('freeserif','BI',10);
+				$pdf->Cell(20,7,"Leyenda: ",'',0,'L');//NOMBRE
+				$pdf->Cell(0,7,"",'',1,'L');//ESPACIO
+
+               if(!isset($tipo_cantidad)){
+					$pdf->SetFont('freeserif','BI',9);
+					$pdf->Cell(100,7,"",'LT',0,'L');//NOMBRE
+					$pdf->Cell(40,7,"PORCENTAJE ",'TLR',0,'C');//NOMBRE
+					$pdf->Cell(0,7,"MONTO ",'RT',1,'C');//NOMBRE
+               }else{
+               	    $pdf->SetFont('freeserif','BI',9);
+					$pdf->Cell(80,7,"",'LT',0,'L');//NOMBRE
+					$pdf->Cell(40,7,"PORCENTAJE ",'TLR',0,'C');//NOMBRE
+					$pdf->Cell(30,7,"CANTIDAD ",'TLR',0,'C');//NOMBRE
+					$pdf->Cell(0,7,"MONTO ",'RT',1,'C');//NOMBRE
+               }
+
+                $bandera_1=0;
+                $bandera_2=0;
+                $limit    =17;
+				for($i=0; $i<$cuenta_monto; $i++){$bandera_1++; $bandera_2++;
+					if($bandera_1==$limit){
+						$pdf->Cell(0,1, "",'T',1,'R');//NOMBRE
+						$bandera_1 = 0;
+						$limit     =25;
+						$pdf->AddPage();
+						$posicion = 84;
+							$pdf->SetFont('freeserif','BI',10);
+							$pdf->Cell(20,7,"Leyenda: ",'',0,'L');//NOMBRE
+							$pdf->Cell(0,7,"",'',1,'L');//ESPACIO
+
+							  if(!isset($tipo_cantidad)){
+									$pdf->SetFont('freeserif','BI',9);
+									$pdf->Cell(100,7,"",'LT',0,'L');//NOMBRE
+									$pdf->Cell(40,7,"PORCENTAJE ",'TLR',0,'C');//NOMBRE
+									$pdf->Cell(0,7,"MONTO ",'RT',1,'C');//NOMBRE
+				               }else{
+				               	    $pdf->SetFont('freeserif','BI',9);
+									$pdf->Cell(80,7,"",'LT',0,'L');//NOMBRE
+									$pdf->Cell(40,7,"PORCENTAJE ",'TLR',0,'C');//NOMBRE
+									$pdf->Cell(30,7,"CANTIDAD ",'TLR',0,'C');//NOMBRE
+									$pdf->Cell(0,7,"MONTO ",'RT',1,'C');//NOMBRE
+				               }
+					}
+					$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$bandera_2.'_'.$username.'_'.$rdm.'.png',13,$posicion+$suma,4);
+					$posicion += 7;
+
+					if(!isset($tipo_cantidad)){
+							$pdf->SetFont('freeserif','',7);
+							$pdf->Cell(10,7,"",'LT',0,'L');//NOMBRE
+							$pdf->Cell(90,7,$value_titul_aux[$i],'LT',0,'L');//NOMBRE
+							$pdf->Cell(40,7,$sisap->Formato2($value_porce_aux[$i]),'TLR',0,'C');//NOMBRE
+							$pdf->Cell(0,7, $sisap->Formato2($value_monto_aux[$i]),'RT',1,'R');//NOMBRE
+					}else{
+                            $pdf->SetFont('freeserif','',7);
+							$pdf->Cell(10,7,"",'LT',0,'L');//NOMBRE
+							$pdf->Cell(70,7,$value_titul_aux[$i],'LT',0,'L');//NOMBRE
+							$pdf->Cell(40,7,$sisap->Formato2($value_porce_aux[$i]),'TLR',0,'C');//NOMBRE
+							$pdf->Cell(30,7,                 $value_cantidad_aux[$i],'TLR',0,'C');//NOMBRE
+							$pdf->Cell(0,7, $value_monto_aux[$i]!=0?$sisap->Formato2($value_monto_aux[$i]):"",'RT',1,'R');//NOMBRE
+					}
+				}//fin for
+				    $bandera_2++;
+                    $pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$bandera_2.'_'.$username.'_'.$rdm.'.png',13,$posicion+$suma,4);
+					if(!isset($tipo_cantidad)){
+						$pdf->SetFont('freeserif','',7);
+						$pdf->Cell(10,7,"",'BLT',0,'L');//NOMBRE
+						$pdf->Cell(90,7,$nombre_total,'BLT',0,'L');//NOMBRE
+						$pdf->Cell(40,7,$sisap->Formato2($porcentaje_total),'BTLR',0,'C');//NOMBRE
+						$pdf->Cell(0,7, $sisap->Formato2($monto_total),'BRT',1,'R');//NOMBRE
+					}else{
+                        $pdf->SetFont('freeserif','',7);
+						$pdf->Cell(10,7,"",'BLT',0,'L');//NOMBRE
+						$pdf->Cell(70,7,$nombre_total,'BLT',0,'L');//NOMBRE
+						$pdf->Cell(40,7,$sisap->Formato2($porcentaje_total),'BTLR',0,'C');//NOMBRE
+						$pdf->Cell(30,7,                 $cantidad_total,'BTLR',0,'C');//NOMBRE
+						$pdf->Cell(0,7, $monto_total!=0?$sisap->Formato2($monto_total):"",'BRT',1,'R');//NOMBRE
+					}
+
+
+if(isset($grafica_2)){
+$_SESSION['titulo'] = $titulo_grafica2;
+$pdf->AddPage();
+$pdf->Ln(45);
+				if(isset($torta)){
+					$suma = 23;
+					$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$username."2".'_'.$rdm.'.png', 55,42+$suma,0,80);
+					$posicion = 138;
+					$pdf->Ln(15);
+					$suma = 5;
+              }else{
+	              	$pdf->Image('/var/www/sigep/app/tmp/pastel_tipo_gasto_'.$username.'2_'.$rdm.'.png',40,66+$suma,0,40);
+					$pdf->Image('/var/www/sigep/app/tmp/barra_tipo_gasto_'.$username.'2_'.$rdm.'.png', 120,60+$suma,0,50);
+					$posicion = 123;
+              }
+
+              $posicion +=5;
+
+				for($i=1; $i<=$cuenta_monto2; $i++){
+					$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$i.'_'.$username."2".'_'.$rdm.'.png',13,$posicion+$suma,4);
+					$posicion += 7;
+				}
+				$pdf->Image('/var/www/sigep/app/tmp/ref_tipo_gasto'.$i.'_'.$username."2".'_'.$rdm.'.png',13,$posicion+$suma,4);
+
+				$pdf->SetFont('freeserif','BI',10);
+				$pdf->Cell(20,7,"Leyenda: ",'',0,'L');//NOMBRE
+				$pdf->Cell(0,7,"",'',1,'L');//ESPACIO
+
+				$pdf->SetFont('freeserif','BI',9);
+				$pdf->Cell(100,7,"",'LT',0,'L');//NOMBRE
+				$pdf->Cell(40,7,"PORCENTAJE ",'TLR',0,'C');//NOMBRE
+				$pdf->Cell(0,7,"MONTO ",'RT',1,'C');//NOMBRE
+
+
+				for($i=0; $i<$cuenta_monto2; $i++){
+					$pdf->SetFont('freeserif','',7);
+					$pdf->Cell(10,7,"",'LT',0,'L');//NOMBRE
+					$pdf->Cell(90,7,$value_titul_aux2[$i],'LT',0,'L');//NOMBRE
+					$pdf->Cell(40,7,$sisap->Formato2($value_porce_aux2[$i]),'TLR',0,'C');//NOMBRE
+					$pdf->Cell(0,7, $sisap->Formato2($value_monto_aux2[$i]),'RT',1,'R');//NOMBRE
+				}
+
+					$pdf->SetFont('freeserif','',7);
+					$pdf->Cell(10,7,"",'BLT',0,'L');//NOMBRE
+					$pdf->Cell(90,7,$nombre_total,'BLT',0,'L');//NOMBRE
+					$pdf->Cell(40,7,$sisap->Formato2($porcentaje_total2),'BTLR',0,'C');//NOMBRE
+					$pdf->Cell(0,7, $sisap->Formato2($monto_total2),'BRT',1,'R');//NOMBRE
+}
+
+$pdf->Output('grafica_'.date("d-m-Y").".pdf",'D');
+
+?>

@@ -1,0 +1,80 @@
+<?php
+	if(isset($mensaje))	$sisap->mensajes_correcto($mensaje);
+	if(isset($mensajeError))	$sisap->mensajes_error($mensajeError);
+
+
+$sisap->ver_manual('cstp01_entidades_bancarias2');
+
+?>
+
+
+<?= $sisap->Tabla($entidad_federal,true,"REGISTRO DE ENTIDADES BANCARIAS","","950");?>
+<?= $sisap->OpenTable("950")?>
+<?$modelo_form="cstp01_entidades_bancarias2";?>
+<form name='data[consulta]'  method = "post" id='form1'>
+<table width="100%" border="0"  cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso3">
+  <tr class="tr_negro">
+    <td width="10%" align="center">Código<br></td>
+    <td width="80%" align="center">Denominaci&oacute;n Entidad Bancaria</td>
+    <td width="10%" align="center">Acci&oacute;n</td>
+  </tr>
+  <tr>
+    <td><?= $html->input($modelo_form.'/codigo_entidad',array('id'=>'codigo_entidad', 'class'=>'campoText','style'=>'text-align:center','maxlength'=>4,'onKeyPress'=>'return solonumeros(event);'));?></td>
+	<td><?= $html->input($modelo_form.'/denominacion',array('id'=>'denominacion', 'class'=>'campoText','maxlength'=>'100','size'=>'10',"onBlur"=>"verifica_plus_tipo()"));?></td>
+	<td align="center"><?= $sisap->submitTagRemote('+', array('funcion'=>'valida_cstp01_entidades_bancarias_','url1' => '/'.$modelo_form.'/guardar/', 'update1'=>'Lista','id'=>'plus',"loading"=>"Element.show('mini_loading');", "complete"=>"Element.hide('mini_loading')")); ?></td>
+  </tr>
+</table>
+
+<br>
+<input type="hidden" name="" value="0" id="opcion_programa"/>
+
+<div id="Lista" class="Lista">
+
+<div id="grabar">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tablacompromiso tablacompromiso2">
+   <tr class="tr_negro">
+    <td width="10%" align="center">Código<br></td>
+    <td width="80%" align="center">Denominaci&oacute;n Entidad Bancaria</td>
+    <td width="10%" align="center">Acci&oacute;n</td>
+  </tr>
+  <?php
+if(isset($data_tipo)){
+ 	$i=0;
+ 	$total=0;
+ 	$monto_total=0;
+	foreach($data_tipo as $tipo){
+    	$codigos[0]=$tipo[$modelo]["cod_entidad_bancaria"];
+        $codigos[1]=$tipo[$modelo]["denominacion"];
+        $tipo_update=$tipo[$modelo]["cod_entidad_bancaria"];
+    	$ale = rand();
+        $id_fila = ''.$ale.'_'.$i;
+        $fila = 'fila_'.$ale.'_'.$i;
+        $param_eliminar = $tipo[$modelo]["cod_entidad_bancaria"];
+        $param_editar = $tipo[$modelo]["cod_entidad_bancaria"].'/'.$i.'/'.$id_fila;
+    	if($i%2==0){$color="tr_grid_c1";}else{$color="tr_grid_c2";}
+
+?>
+  <tr class="<?=$color?>" id="<?= $fila ?>" onclick="new Effect.Highlight(this);" class="textNegro2">
+     <td align="center"><?=mascara($codigos[0],4)?></td>
+     <td align="left"><?=$codigos[1]?></td>
+     <td align="center" id="<?= "td_accion_".$i ?>"><div id="<?= "accion_".$i ?>">
+       <?= $ajax->link($html->image('delete.png',array('border'=>0)), '/cstp01_entidades_bancarias2/eliminar_items/'.$param_eliminar, array('update'=>'del','title'=>'Eliminar',"after"=>"new Effect.DropOut('$fila');"),'Realmente desea eliminar esta fila de la Lista?',false,true) ?>
+      <?= $ajax->link($html->image('edit.png',array('border'=>0)), '/cstp01_entidades_bancarias2/editar/'.$param_editar, array('update'=>$fila,'title'=>'Modificar'),false,false,true) ?>
+     </div></td>
+  </tr>
+<?
+   	$i++;
+    }//fin foreach
+
+ }
+?>
+</table>
+  <input type="hidden" name="total_filas_tipo" id="total_filas_tipo" value="<?=$i?>"/>
+<div id="del"></div>
+</div>
+</div>
+<br>
+  <?= $sisap->buttonTagRemote($modelo_form.'/principal', array ( 'value'=>'Salir'), array('url1' => '/modulos/vacio/', 'update1'=>'principal')); ?>
+</form>
+<div id="div_guardar"></div>
+<?=$sisap->CloseTable()?>

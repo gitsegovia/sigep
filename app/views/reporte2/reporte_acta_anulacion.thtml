@@ -1,0 +1,423 @@
+<?php
+vendor('utf8_tcpdf/tcpdf');
+
+$_SESSION['titulo_inst']=$titulo_inst;
+$_SESSION['titulo_a']=$titulo_a;
+
+class fpdfview extends TCPDF{
+
+    function setup ($orientation='Landscape',$unit='mm',$format='A4') {
+        $this->TCPDF($orientation, $unit, $format);
+    }
+    function fpdfOutput ($name = 'page.pdf', $destination = 's') {
+        return $this->Output($name, $destination);
+    }
+    function Footer(){
+   	$this->SetY(-10);
+	$this->SetFont('vera','',5);
+   	$this->Cell(0,10,'Página '.$this->PageNo().'/TPAG',0,0,'C');
+    }
+	function Header()
+	{
+
+		$this->image_escudo_sin_consolidado(12,16,14);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,1,"",'TRL',1);
+		$this->Cell(16,4,"",'L',0);
+		$this->Cell(0,4,$_SESSION["entidad_federal"],'R',1);
+		$this->Cell(16,3,"",'L',0);
+		$this->SetFont('vera','',8);
+		$this->Cell(0,3,$_SESSION["dependencia"],'R',1);
+		$this->SetFont('vera','B',9);
+		$this->Cell(0,10,"",'RLB',1,'C');
+		$this->Ln(3);
+
+	}//fin funtion
+}//fin de la clase PDF
+
+
+
+$pdf = new fpdfview('P','mm','Letter');
+$pdf->AliasNbPages('TPAG');
+$pdf->SetTopMargin(15);
+$pdf->SetLeftMArgin(10);
+$pdf->SetRightMargin(10);
+$pdf->SetAutoPageBreak(true, 5);
+
+
+$vector_dia = array('01'=>'Enero','02'=>'Febrero','03'=>'Marzo','04'=>'Abril','05'=>'Mayo','06'=>'Junio','07'=>'Julio','08'=>'Agosto','09'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre');
+
+if($tipo_operacion==231 || $tipo_operacion==232 || $tipo_operacion==233 || $tipo_operacion==234 || $tipo_operacion==241 || $tipo_operacion==242 || $tipo_operacion==243 || $tipo_operacion==244 || $tipo_operacion==245 || $tipo_operacion==246 || $tipo_operacion==247){
+   for($i=0; $i<=$filas-1; $i++){
+		  		$pdf->AddPage();
+				$pdf->SetFont('vera','B',9);
+				$pdf->Cell(0,6,"ACTA DE ANULACIÓN",'TRLB',1,'C');
+				$pdf->Ln(4);
+
+				$cadena_fecha_anul = split('-',$datos[$i][0]['fecha_proceso_anulacion']);
+				$pdf->SetFont('vera','',8);
+
+				//PARA LA GOB DE FALCON
+				if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+					$pdf->MultiCell(0,4,"En la ciudad de Santa Ana de Coro a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+
+				//PARA LA GOB DE APURE
+				}else if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+					$pdf->MultiCell(0,4,$denominacion_municipo." a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+
+				}else{
+					$pdf->MultiCell(0,4,$denominacion_municipo." a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+				}
+
+				//$pdf->MultiCell(0,4,"En la ciudad de santa ana de coro a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", reunidos en la Secretaria de Finanzas los Ciudadanos; ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_tercera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_tercera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_segunda_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_segunda_firma']." y ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_primera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_primera_firma'].", para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+				$pdf->Ln(3);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(130,5,"",'',0,'C');
+				$pdf->Cell(0,5,"ACTA DE ANULACIÓN",'TRL',1,'C');
+
+				$pdf->Cell(130,5,"",'',0,'C');
+				$pdf->Cell(35,5,"NÚMERO",'TRL',0,'C');
+				$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(130,6,"",'',0,'C');
+				$pdf->Cell(35,6,$sisap->mascara_ocho($datos[$i][0]['numero_acta_anulacion']),'TRBL',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['fecha_proceso_anulacion']),'TRB',1,'C');
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"DOCUMENTO A ANULAR",'TRLB',1,'C');
+
+				$pdf->Cell(80,1,"",'TRL',0,'C');
+				$pdf->Cell(50,1,"",'TR',0,'C');
+				$pdf->Cell(35,1,"",'TR',0,'C');
+				$pdf->Cell(0,1,"",'TR',1,'C');
+
+				$pdf->Cell(80,3,"",'RL',0,'C');
+				$pdf->Cell(50,3,"",'R',0,'C');
+				$pdf->Cell(35,3,"NÚMERO",'R',0,'C');
+				$pdf->Cell(0,3,"",'R',1,'C');
+
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(80,3,"TIPO",'RBL',0,'C');
+				$pdf->Cell(50,3,"NÚMERO",'RB',0,'C');
+				$pdf->Cell(35,3,"DOCUMENTO ADJUNTO",'RB',0,'C');
+				$pdf->Cell(0,3,"FECHA",'RB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(80,6,$tipo_documento,'RBL',0,'L');
+				$pdf->Cell(50,6,$sisap->mascara_ocho($datos[$i][0]['numero_documento']),'RB',0,'C');
+				$pdf->Cell(35,6,$sisap->mascara_ocho($datos[$i][0]['numero_documento_adjunto']),'RB',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['fecha_documento']),'RB',1,'C');
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(100,5,"BENEFICIARIO: ",'TRL',0,'L');
+				$pdf->Cell(50,5,"R.I.F. ",'TR',0,'L');
+				$pdf->Cell(0,5,"CÉDULA IDENTIDAD",'TR',1,'L');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(1,6,"",'L',0,'L');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->MultiCell(99,3,$datos[$i][0]['beneficiario'],'','L');//----[beneficiario]
+				$varX =$varX+99;
+				$pdf->SetXY($varX,$varY);
+				$pdf->Cell(50,6,$datos[$i][0]['rif'],'RL',0,'C');
+				$pdf->Cell(0,6,$datos[$i][0]['cedula'],'R',1,'C');
+				$pdf->Cell(0,0,"",'T',1);
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"MOTIVO DE ANULACIÓN",'TRLB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(1,50,"",'LB',0);
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$pdf->MultiCell(194,5,$datos[$i][0]['motivo_anulacion'],'','L');// --- Motivo Acta Anulacion
+					$varX = $varX+194;
+					$pdf->SetXY($varX,$varY);
+				$pdf->Cell(0,50,"",'RB',1);
+				$pdf->Cell(0,4,"",'T',1);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(98,5,"ELABORADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"REVISADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,5,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_cuarta_firma'],'TRBL',0,'C');
+				$pdf->Cell(0,5,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_primera_firma'],'TRB',1,'C');
+
+				$pdf->Ln(4);
+
+				$pdf->Cell(98,5,"CONFORMADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"APROBADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,4,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_segunda_firma'],'TRL',0,'C');
+				$pdf->Cell(0,4,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_tercera_firma'],'TR',1,'C');
+				$pdf->Cell(98,1,"",'RBL',0,'C');
+				$pdf->Cell(0,1,"",'RB',1,'C');
+
+				$pdf->Ln(4);
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['primera_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['segunda_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['tercera_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['cuarta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['quinta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['sexta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['septima_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['octava_copia'],'',1,'L');
+		   }// Fin foreach
+   }// Fin if cheques de cancelaciones
+
+
+
+   if($tipo_operacion==251){
+   for($i=0; $i<=$filas-1; $i++){
+		  		$pdf->AddPage();
+				$pdf->SetFont('vera','B',9);
+				$pdf->Cell(0,6,"ACTA DE ANULACIÓN",'TRLB',1,'C');
+				$pdf->Ln(4);
+
+				$cadena_fecha_anul = split('-',$datos[$i][0]['fecha_proceso_anulacion']);
+				$pdf->SetFont('vera','',8);
+				//PARA LA GOB DE FALCON
+				if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==11 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==11){
+					$pdf->MultiCell(0,4,"En la ciudad de Santa Ana de Coro a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+
+				//PARA LA GOB DE APURE
+				}else if($_SESSION['SScodpresi']==1 && $_SESSION['SScodentidad']==4 && $_SESSION['SScodtipoinst']==30 && $_SESSION['SScodinst']==4){
+					$pdf->MultiCell(0,4,$denominacion_municipo." a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+
+				}else{
+					$pdf->MultiCell(0,4,$denominacion_municipo." a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", se reunierón los ciudadanos abajo firmantes, para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_documento'].".",'','J');
+				}
+
+				//$pdf->MultiCell(0,4,"En la ciudad de santa ana de coro a los ".$cadena_fecha_anul[2]." dias del mes de ".$vector_dia[$cadena_fecha_anul[1]]." del año ".$cadena_fecha_anul[0].", reunidos los Ciudadanos(as); ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_tercera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_tercera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_segunda_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_segunda_firma']." y ".$firmas[0]['cugd07_firmas_oficio_anulacion']['nombre_primera_firma'].", ".$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_primera_firma'].", para proceder a la anulación del siguiente documento: ".$tipo_documento.", número: ".$datos[$i][0]['numero_cheque'].".",'','J');
+				$pdf->Ln(3);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(130,5,"",'',0,'C');
+				$pdf->Cell(0,5,"ACTA DE ANULACIÓN",'TRL',1,'C');
+
+				$pdf->Cell(130,5,"",'',0,'C');
+				$pdf->Cell(35,5,"NÚMERO",'TRL',0,'C');
+				$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(130,6,"",'',0,'C');
+				$pdf->Cell(35,6,$sisap->mascara_ocho($datos[$i][0]['numero_acta_anulacion']),'TRBL',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['fecha_proceso_anulacion']),'TRB',1,'C');
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"DOCUMENTO A ANULAR",'TRLB',1,'C');
+
+				$pdf->Cell(80,1,"",'TRL',0,'C');
+				$pdf->Cell(50,1,"",'TR',0,'C');
+				$pdf->Cell(35,1,"",'TR',0,'C');
+				$pdf->Cell(0,1,"",'TR',1,'C');
+
+				$pdf->Cell(80,3,"",'RL',0,'C');
+				$pdf->Cell(50,3,"",'R',0,'C');
+				$pdf->Cell(35,3,"NÚMERO",'R',0,'C');
+				$pdf->Cell(0,3,"",'R',1,'C');
+
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(80,3,"TIPO",'RBL',0,'C');
+				$pdf->Cell(50,3,"NÚMERO",'RB',0,'C');
+				$pdf->Cell(35,3,"DOCUMENTO ADJUNTO",'RB',0,'C');
+				$pdf->Cell(0,3,"FECHA",'RB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(80,6,$tipo_documento,'RBL',0,'L');
+				$pdf->Cell(50,6,$sisap->mascara_ocho($datos[$i][0]['numero_cheque']),'RB',0,'C');
+				$pdf->Cell(35,6,"- - - - - - - - - - - - - - -",'RB',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos[$i][0]['fecha_cheque']),'RB',1,'C');
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(100,5,"BENEFICIARIO: ",'TRL',0,'L');
+				$pdf->Cell(50,5,"R.I.F. ",'TR',0,'L');
+				$pdf->Cell(0,5,"CÉDULA IDENTIDAD",'TR',1,'L');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(1,6,"",'L',0,'L');
+				$varX = $pdf->GetX();
+				$varY = $pdf->GetY();
+				$pdf->MultiCell(99,3,$datos[$i][0]['beneficiario'],'','L');//----[beneficiario]
+				$varX =$varX+99;
+				$pdf->SetXY($varX,$varY);
+				$pdf->SetFont('vera','',9);
+				$pdf->Cell(50,6,$datos[$i][0]['rif_cedula'],'RL',0,'C');
+				$pdf->Cell(0,6,"- - - - - - - - - - - - - - - - - - - -",'R',1,'C');
+				$pdf->Cell(0,0,"",'T',0);
+				$pdf->Ln(4);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"MOTIVO DE ANULACIÓN",'TRLB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(1,50,"",'LB',0);
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$pdf->MultiCell(194,5,$datos[$i][0]['motivo_anulacion'],'','L');// --- Motivo Acta Anulacion
+					$varX = $varX+194;
+					$pdf->SetXY($varX,$varY);
+				$pdf->Cell(0,50,"",'RB',1);
+				$pdf->Cell(0,4,"",'T',1);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(98,5,"ELABORADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"REVISADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,5,"Funcionario Responsable",'TRBL',0,'C');
+				$pdf->Cell(0,5,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_primera_firma'],'TRB',1,'C');
+
+				$pdf->Ln(4);
+
+				$pdf->Cell(98,5,"CONFORMADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"APROBADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,4,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_segunda_firma'],'TRL',0,'C');
+				$pdf->Cell(0,4,$firmas[0]['cugd07_firmas_oficio_anulacion']['cargo_tercera_firma'],'TR',1,'C');
+				$pdf->Cell(98,1,"",'RBL',0,'C');
+				$pdf->Cell(0,1,"",'RB',1,'C');
+
+				$pdf->Ln(4);
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['primera_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['segunda_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['tercera_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['cuarta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['quinta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['sexta_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['septima_copia'],'',1,'L');
+				$pdf->Cell(0,3,$firmas[0]['cugd07_firmas_oficio_anulacion']['octava_copia'],'',1,'L');
+		   }// Fin foreach
+   }// Fin if cheques de cancelaciones
+
+
+   if($tipo_operacion==261 || $tipo_operacion==262 || $tipo_operacion==263 || $tipo_operacion==264){
+       		for($i=0; $i<=$filas_mov_manuales-1; $i++){
+		  		$pdf->AddPage();
+				$pdf->SetFont('vera','B',9);
+				$pdf->Cell(0,6,"ACTA DE ANULACIÓN",'TRLB',1,'C');
+				$pdf->Ln(6);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(130,5,"",'',0,'C');
+				$pdf->Cell(35,5,"NÚMERO",'TRL',0,'C');
+				$pdf->Cell(0,5,"FECHA",'TR',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(130,6,"",'',0,'C');
+				$pdf->Cell(35,6,$sisap->mascara_ocho($datos_mov_manuales[$i][0]['numero_acta_anulacion']),'TRBL',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos_mov_manuales[$i][0]['fecha_proceso_anulacion']),'TRB',1,'C');
+				$pdf->Ln(6);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"DOCUMENTO A ANULAR",'TRLB',1,'C');
+
+				$pdf->Cell(100,1,"",'TRL',0,'C');
+				$pdf->Cell(30,1,"",'TR',0,'C');
+				$pdf->Cell(35,1,"",'TR',0,'C');
+				$pdf->Cell(0,1,"",'TR',1,'C');
+
+				$pdf->Cell(100,3,"",'RL',0,'C');
+				$pdf->Cell(30,3,"",'R',0,'C');
+				$pdf->Cell(35,3,"NÚMERO",'R',0,'C');
+				$pdf->Cell(0,3,"",'R',1,'C');
+
+				$pdf->SetFont('vera','B',7);
+				$pdf->Cell(80,3,"TIPO",'RBL',0,'C');
+				$pdf->Cell(50,3,"NÚMERO",'RB',0,'C');
+				$pdf->Cell(35,3,"DOCUMENTO ADJUNTO",'RB',0,'C');
+				$pdf->Cell(0,3,"FECHA",'RB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(80,6,$tipo_documento,'RBL',0,'L');
+				$pdf->Cell(50,6,$datos_mov_manuales[$i][0]['numero_documento'],'RB',0,'C');
+				$pdf->Cell(35,6,"- - - - - - - - - - - - - - -",'RB',0,'C');
+				$pdf->Cell(0,6,$sisap->cambia_fecha($datos_mov_manuales[$i][0]['fecha_documento']),'RB',1,'C');
+				$pdf->Ln(6);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(100,5,"BENEFICIARIO: ",'TRL',0,'L');
+				$pdf->Cell(50,5,"R.I.F. ",'TR',0,'L');
+				$pdf->Cell(0,5,"CÉDULA IDENTIDAD",'TR',1,'L');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(100,6,$datos_mov_manuales[$i][0]['beneficiario'],'RLB',0,'L');
+				$pdf->Cell(50,6,"- - - - - - - - - - - - - - - - - - - - -",'RB',0,'C');
+				$pdf->Cell(0,6,"- - - - - - - - - - - - - - - - - - - -",'RB',1,'C');
+				$pdf->Ln(6);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(0,5,"MOTIVO DE ANULACIÓN",'TRLB',1,'C');
+
+				$pdf->SetFont('vera','',8);
+				$pdf->Cell(1,50,"",'LB',0);
+					$varX = $pdf->GetX();
+					$varY = $pdf->GetY();
+					$pdf->MultiCell(194,5,$datos_mov_manuales[$i][0]['motivo_anulacion'],'','L');// --- Motivo Acta Anulacion
+					$varX = $varX+194;
+					$pdf->SetXY($varX,$varY);
+				$pdf->Cell(0,50,"",'RB',1);
+				$pdf->Cell(0,3,"",'T',1);
+
+				$pdf->SetFont('vera','B',8);
+				$pdf->Cell(98,5,"ELABORADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"REVISADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,5,"Funcionario Responsable",'TRBL',0,'C');
+				$pdf->Cell(0,5,"",'TRB',1,'C');
+
+				$pdf->Ln(3);
+
+				$pdf->Cell(98,5,"CONFORMADO POR",'TRBL',0,'C');
+				$pdf->Cell(0,5,"APROBADO POR",'TRB',1,'C');
+
+				$pdf->Cell(98,15,"",'RL',0,'C');
+				$pdf->Cell(0,15,"",'R',1,'C');
+
+				$pdf->Cell(98,4,"",'TRL',0,'C');
+				$pdf->Cell(0,4,"",'TR',1,'C');
+				$pdf->Cell(98,1,"",'RBL',0,'C');
+				$pdf->Cell(0,1,"",'RB',1,'C');
+
+
+	            $pdf->Ln(3);
+				$pdf->SetFont('vera','',6);
+				$pdf->Cell(0,3,"C.C. ARCHIVO (DIR. DE CONTABILIDAD FISCAL ORIGINAL O.P.)",'',1,'L');
+				$pdf->Cell(0,3,"C.C. ASISTENTE ARCHIVO III (T.S.U REINA COLINA)",'',1,'L');
+				$pdf->Cell(0,3,"C.C. SECRETARIO DE FINANZAS",'',1,'L');
+				$pdf->Cell(0,3,"C.C. DIRECCIÓN ESTADAL DE PRESUPUESTO. (DOCUMENTOS ORIGINALES)",'',1,'L');
+				$pdf->Cell(0,3,"C.C. SECRETARIA DE EDUCACION",'',1,'L');
+				$pdf->Cell(0,3,"C.C. SECRETARIA DE SALUD",'',1,'L');
+				$pdf->Cell(0,3,"C.C. DIRECCIÓN DE PERSONAL",'',1,'L');
+
+
+
+		   }// Fin foreach
+	  }//Fin if
+
+$pdf->Output('Reporte_acta_anulacion_'.date("d-m-Y_g_i_a").".pdf",'D');
+?>
